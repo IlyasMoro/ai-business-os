@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { EmployeeForm } from "@/components/hr/employee-form";
 import { updateEmployee } from "@/lib/actions/hr";
@@ -12,7 +12,7 @@ export default async function EditEmployeePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const employee = await db.employee.findUnique({
     where: { id, companyId: session.companyId },

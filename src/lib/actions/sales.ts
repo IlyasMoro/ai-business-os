@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import {
   OrderSchema,
@@ -70,6 +70,10 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
 
 export async function deleteOrder(orderId: string) {
   const session = await verifySession();
+
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect("/dashboard/sales?error=forbidden");
+  }
 
   await db.order.delete({
     where: { id: orderId, companyId: session.companyId },

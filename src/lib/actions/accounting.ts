@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { TransactionSchema, type TransactionFormState } from "@/lib/validation/accounting";
 
@@ -10,7 +10,7 @@ export async function createTransaction(
   _state: TransactionFormState,
   formData: FormData
 ): Promise<TransactionFormState> {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const validated = TransactionSchema.safeParse({
     type: formData.get("type"),
@@ -48,7 +48,7 @@ export async function updateTransaction(
   _state: TransactionFormState,
   formData: FormData
 ): Promise<TransactionFormState> {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const validated = TransactionSchema.safeParse({
     type: formData.get("type"),
@@ -79,7 +79,7 @@ export async function updateTransaction(
 }
 
 export async function deleteTransaction(transactionId: string) {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   await db.transaction.delete({
     where: { id: transactionId, companyId: session.companyId },

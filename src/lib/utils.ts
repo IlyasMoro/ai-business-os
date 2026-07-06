@@ -12,6 +12,16 @@ export function formatCurrency(amount: number) {
   }).format(amount);
 }
 
+export function formatCompactCurrency(amount: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    notation: "compact",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1,
+  }).format(amount);
+}
+
 export function formatDate(date: Date | string) {
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",

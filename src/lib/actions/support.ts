@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import {
   TicketSchema,
@@ -116,6 +116,10 @@ export async function updateTicketStatus(ticketId: string, formData: FormData) {
 
 export async function deleteTicket(ticketId: string) {
   const session = await verifySession();
+
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect("/dashboard/support?error=forbidden");
+  }
 
   await db.ticket.delete({
     where: { id: ticketId, companyId: session.companyId },

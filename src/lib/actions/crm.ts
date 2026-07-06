@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import {
   CustomerSchema,
@@ -79,6 +79,10 @@ export async function updateCustomer(
 export async function deleteCustomer(customerId: string) {
   const session = await verifySession();
 
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect("/dashboard/crm?error=forbidden");
+  }
+
   await db.customer.delete({
     where: { id: customerId, companyId: session.companyId },
   });
@@ -125,6 +129,10 @@ export async function createContact(
 
 export async function deleteContact(customerId: string, contactId: string) {
   const session = await verifySession();
+
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect(`/dashboard/crm/${customerId}?error=forbidden`);
+  }
 
   await db.contact.delete({
     where: { id: contactId, customer: { companyId: session.companyId } },

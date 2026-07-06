@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import {
   PayrollRunSchema,
@@ -25,7 +25,7 @@ export async function createPayrollRun(
   _state: PayrollRunFormState,
   formData: FormData
 ): Promise<PayrollRunFormState> {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const validated = PayrollRunSchema.safeParse({
     periodStart: formData.get("periodStart"),
@@ -49,7 +49,7 @@ export async function createPayrollRun(
 }
 
 export async function updatePayrollRunStatus(payrollRunId: string, formData: FormData) {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const status = formData.get("status");
   if (
@@ -72,7 +72,7 @@ export async function updatePayrollRunStatus(payrollRunId: string, formData: For
 }
 
 export async function deletePayrollRun(payrollRunId: string) {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   await db.payrollRun.delete({
     where: { id: payrollRunId, companyId: session.companyId },
@@ -87,7 +87,7 @@ export async function addPayrollItem(
   _state: PayrollItemFormState,
   formData: FormData
 ): Promise<PayrollItemFormState> {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const validated = PayrollItemSchema.safeParse({
     employeeId: formData.get("employeeId"),
@@ -137,7 +137,7 @@ export async function addPayrollItem(
 }
 
 export async function removePayrollItem(payrollRunId: string, itemId: string) {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   await db.payrollItem.delete({
     where: { id: itemId, payrollRun: { companyId: session.companyId } },

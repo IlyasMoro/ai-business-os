@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import {
   InvoiceSchema,
@@ -91,6 +91,10 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
 
 export async function deleteInvoice(invoiceId: string) {
   const session = await verifySession();
+
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect("/dashboard/invoicing?error=forbidden");
+  }
 
   await db.invoice.delete({
     where: { id: invoiceId, companyId: session.companyId },

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/dal";
-import { db } from "@/lib/db";
+import { getBusinessSnapshot } from "@/lib/business-snapshot";
 import { Card } from "@/components/ui/card";
+import { ErrorBanner } from "@/components/ui/error-banner";
 import {
   Users,
   ShoppingCart,
@@ -11,67 +12,54 @@ import {
   FolderKanban,
 } from "lucide-react";
 
-export default async function DashboardOverviewPage() {
+export default async function DashboardOverviewPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   const user = await getCurrentUser();
-  const companyId = user.companyId;
-
-  const [
-    customerCount,
-    openOrderCount,
-    products,
-    outstandingInvoiceCount,
-    openTicketCount,
-    activeProjectCount,
-  ] = await Promise.all([
-    db.customer.count({ where: { companyId } }),
-    db.order.count({ where: { companyId, status: { in: ["PENDING", "CONFIRMED"] } } }),
-    db.product.findMany({ where: { companyId }, select: { stockQty: true, reorderLevel: true } }),
-    db.invoice.count({ where: { companyId, status: { in: ["SENT", "OVERDUE"] } } }),
-    db.ticket.count({ where: { companyId, status: { in: ["OPEN", "IN_PROGRESS"] } } }),
-    db.project.count({ where: { companyId, status: "ACTIVE" } }),
-  ]);
-
-  const lowStockCount = products.filter((p) => p.stockQty <= p.reorderLevel).length;
+  const snapshot = await getBusinessSnapshot(user.companyId);
 
   const stats = [
     {
       label: "Total customers",
-      value: customerCount,
+      value: snapshot.customerCount,
       href: "/dashboard/crm",
       icon: Users,
       alert: false,
     },
     {
       label: "Open orders",
-      value: openOrderCount,
+      value: snapshot.openOrderCount,
       href: "/dashboard/sales",
       icon: ShoppingCart,
       alert: false,
     },
     {
       label: "Products low on stock",
-      value: lowStockCount,
+      value: snapshot.lowStockCount,
       href: "/dashboard/inventory",
       icon: Boxes,
-      alert: lowStockCount > 0,
+      alert: snapshot.lowStockCount > 0,
     },
     {
       label: "Outstanding invoices",
-      value: outstandingInvoiceCount,
+      value: snapshot.outstandingInvoiceCount,
       href: "/dashboard/invoicing",
       icon: Receipt,
-      alert: outstandingInvoiceCount > 0,
+      alert: snapshot.outstandingInvoiceCount > 0,
     },
     {
       label: "Open support tickets",
-      value: openTicketCount,
+      value: snapshot.openTicketCount,
       href: "/dashboard/support",
       icon: LifeBuoy,
-      alert: openTicketCount > 0,
+      alert: snapshot.openTicketCount > 0,
     },
     {
       label: "Active projects",
-      value: activeProjectCount,
+      value: snapshot.activeProjectCount,
       href: "/dashboard/projects",
       icon: FolderKanban,
       alert: false,
@@ -80,6 +68,7 @@ export default async function DashboardOverviewPage() {
 
   return (
     <div>
+      <ErrorBanner code={error} />
       <h1 className="text-2xl font-semibold text-slate-900">
         Welcome back, {user.name.split(" ")[0]}
       </h1>

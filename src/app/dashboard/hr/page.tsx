@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import type { Prisma } from "@/generated/prisma/client";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { SearchForm } from "@/components/ui/search-form";
+import { Pagination } from "@/components/ui/pagination";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus } from "lucide-react";
 
 const statusTone = {
@@ -11,33 +16,65 @@ const statusTone = {
   TERMINATED: "slate",
 } as const;
 
-export default async function HrPage() {
-  const session = await verifySession();
+export default async function HrPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string; error?: string }>;
+}) {
+  const { page: pageParam, q, error } = await searchParams;
+  const page = parsePage(pageParam);
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const employees = await db.employee.findMany({
-    where: { companyId: session.companyId },
-    orderBy: { name: "asc" },
-  });
+  const where: Prisma.EmployeeWhereInput = {
+    companyId: session.companyId,
+    ...(q
+      ? {
+          OR: [
+            { name: { contains: q } },
+            { position: { contains: q } },
+            { department: { contains: q } },
+          ],
+        }
+      : {}),
+  };
+
+  const [employees, totalCount] = await Promise.all([
+    db.employee.findMany({
+      where,
+      orderBy: { name: "asc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    db.employee.count({ where }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <ErrorBanner code={error} />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">HR</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {employees.length} employee{employees.length === 1 ? "" : "s"}
+            {totalCount} employee{totalCount === 1 ? "" : "s"}
           </p>
         </div>
-        <LinkButton href="/dashboard/hr/new">
-          <Plus className="h-4 w-4" />
-          New employee
-        </LinkButton>
+        <div className="flex items-center gap-3">
+          <SearchForm placeholder="Search by name, position..." defaultValue={q} />
+          <LinkButton href="/dashboard/hr/new">
+            <Plus className="h-4 w-4" />
+            New employee
+          </LinkButton>
+        </div>
       </div>
 
       <Card className="mt-6">
         {employees.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
-            No employees yet. Add your first one to get started.
+            {q
+              ? "No employees match your search."
+              : "No employees yet. Add your first one to get started."}
           </p>
         ) : (
           <table className="w-full text-sm">
@@ -70,6 +107,7 @@ export default async function HrPage() {
             </tbody>
           </table>
         )}
+        <Pagination page={page} totalPages={totalPages} basePath="/dashboard/hr" query={{ q }} />
       </Card>
     </div>
   );

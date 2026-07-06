@@ -1,8 +1,11 @@
 import { PayrollRunForm } from "@/components/payroll/payroll-run-form";
 import { createPayrollRun } from "@/lib/actions/payroll";
 import { dateInputDaysFromNow } from "@/lib/utils";
+import { requireRole } from "@/lib/dal";
 
-export default function NewPayrollRunPage() {
+export default async function NewPayrollRunPage() {
+  await requireRole(["OWNER", "ADMIN"]);
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-slate-900">New payroll run</h1>

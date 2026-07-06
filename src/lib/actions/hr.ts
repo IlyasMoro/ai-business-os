@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { EmployeeSchema, type EmployeeFormState } from "@/lib/validation/hr";
 
@@ -10,7 +10,7 @@ export async function createEmployee(
   _state: EmployeeFormState,
   formData: FormData
 ): Promise<EmployeeFormState> {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const validated = EmployeeSchema.safeParse({
     name: formData.get("name"),
@@ -50,7 +50,7 @@ export async function updateEmployee(
   _state: EmployeeFormState,
   formData: FormData
 ): Promise<EmployeeFormState> {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const validated = EmployeeSchema.safeParse({
     name: formData.get("name"),
@@ -83,7 +83,7 @@ export async function updateEmployee(
 }
 
 export async function deleteEmployee(employeeId: string) {
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const inUse = await db.payrollItem.findFirst({
     where: { employeeId, employee: { companyId: session.companyId } },

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { generateAssistantReply } from "@/lib/ai";
+import { getBusinessSnapshot, formatSnapshotForPrompt } from "@/lib/business-snapshot";
 import { ChatMessageSchema, type ChatMessageFormState } from "@/lib/validation/assistant";
 
 export async function sendChatMessage(
@@ -37,14 +38,18 @@ export async function sendChatMessage(
     select: { role: true, content: true },
   });
 
-  const company = await db.company.findUnique({
-    where: { id: session.companyId },
-    select: { name: true },
-  });
+  const [company, snapshot] = await Promise.all([
+    db.company.findUnique({
+      where: { id: session.companyId },
+      select: { name: true },
+    }),
+    getBusinessSnapshot(session.companyId),
+  ]);
 
   try {
     const reply = await generateAssistantReply(
       company?.name ?? "the company",
+      formatSnapshotForPrompt(snapshot),
       history.map((message) => ({
         role: message.role === "USER" ? "user" : "assistant",
         content: message.content,

@@ -1,9 +1,12 @@
 import Link from "next/link";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { Pagination } from "@/components/ui/pagination";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus } from "lucide-react";
 
 const statusTone = {
@@ -12,21 +15,37 @@ const statusTone = {
   PAID: "green",
 } as const;
 
-export default async function PayrollPage() {
-  const session = await verifySession();
+export default async function PayrollPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; error?: string }>;
+}) {
+  const { page: pageParam, error } = await searchParams;
+  const page = parsePage(pageParam);
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const payrollRuns = await db.payrollRun.findMany({
-    where: { companyId: session.companyId },
-    orderBy: { periodStart: "desc" },
-  });
+  const where = { companyId: session.companyId };
+
+  const [payrollRuns, totalCount] = await Promise.all([
+    db.payrollRun.findMany({
+      where,
+      orderBy: { periodStart: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    db.payrollRun.count({ where }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
   return (
     <div>
+      <ErrorBanner code={error} />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Payroll</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {payrollRuns.length} payroll run{payrollRuns.length === 1 ? "" : "s"}
+            {totalCount} payroll run{totalCount === 1 ? "" : "s"}
           </p>
         </div>
         <LinkButton href="/dashboard/payroll/new">
@@ -69,6 +88,7 @@ export default async function PayrollPage() {
             </tbody>
           </table>
         )}
+        <Pagination page={page} totalPages={totalPages} basePath="/dashboard/payroll" query={{}} />
       </Card>
     </div>
   );

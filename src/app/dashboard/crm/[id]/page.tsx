@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
 import { DeleteButton } from "@/components/ui/delete-button";
+import { ErrorBanner } from "@/components/ui/error-banner";
 import { ContactForm } from "@/components/crm/contact-form";
 import { deleteCustomer, deleteContact } from "@/lib/actions/crm";
 import { Pencil } from "lucide-react";
@@ -18,10 +19,13 @@ const statusTone = {
 
 export default async function CustomerDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const session = await verifySession();
 
   const customer = await db.customer.findUnique({
@@ -33,6 +37,7 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="max-w-3xl">
+      <ErrorBanner code={error} />
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3">

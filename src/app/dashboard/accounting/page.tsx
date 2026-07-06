@@ -1,9 +1,14 @@
 import Link from "next/link";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import type { Prisma } from "@/generated/prisma/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
+import { SearchForm } from "@/components/ui/search-form";
+import { Pagination } from "@/components/ui/pagination";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus } from "lucide-react";
 
 const typeTone = {
@@ -11,35 +16,61 @@ const typeTone = {
   EXPENSE: "red",
 } as const;
 
-export default async function AccountingPage() {
-  const session = await verifySession();
+export default async function AccountingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string; q?: string; error?: string }>;
+}) {
+  const { page: pageParam, q, error } = await searchParams;
+  const page = parsePage(pageParam);
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const transactions = await db.transaction.findMany({
-    where: { companyId: session.companyId },
-    orderBy: { date: "desc" },
-  });
+  const where: Prisma.TransactionWhereInput = {
+    companyId: session.companyId,
+    ...(q ? { category: { contains: q } } : {}),
+  };
 
-  const income = transactions
+  const [transactions, totalCount, allForTotals] = await Promise.all([
+    db.transaction.findMany({
+      where,
+      orderBy: { date: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    db.transaction.count({ where }),
+    db.transaction.findMany({
+      where: { companyId: session.companyId },
+      select: { type: true, amount: true },
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  const income = allForTotals
     .filter((t) => t.type === "INCOME")
     .reduce((sum, t) => sum + t.amount, 0);
-  const expense = transactions
+  const expense = allForTotals
     .filter((t) => t.type === "EXPENSE")
     .reduce((sum, t) => sum + t.amount, 0);
   const net = income - expense;
 
   return (
     <div>
-      <div className="flex items-center justify-between">
+      <ErrorBanner code={error} />
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Accounting</h1>
           <p className="mt-1 text-sm text-slate-500">
-            {transactions.length} transaction{transactions.length === 1 ? "" : "s"}
+            {totalCount} transaction{totalCount === 1 ? "" : "s"}
           </p>
         </div>
-        <LinkButton href="/dashboard/accounting/new">
-          <Plus className="h-4 w-4" />
-          New transaction
-        </LinkButton>
+        <div className="flex items-center gap-3">
+          <SearchForm placeholder="Search by category..." defaultValue={q} />
+          <LinkButton href="/dashboard/accounting/new">
+            <Plus className="h-4 w-4" />
+            New transaction
+          </LinkButton>
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-3 gap-4">
@@ -68,7 +99,9 @@ export default async function AccountingPage() {
       <Card className="mt-6">
         {transactions.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
-            No transactions yet. Add your first one to get started.
+            {q
+              ? "No transactions match your search."
+              : "No transactions yet. Add your first one to get started."}
           </p>
         ) : (
           <table className="w-full text-sm">
@@ -105,6 +138,7 @@ export default async function AccountingPage() {
             </tbody>
           </table>
         )}
+        <Pagination page={page} totalPages={totalPages} basePath="/dashboard/accounting" query={{ q }} />
       </Card>
     </div>
   );

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +23,7 @@ export default async function EmployeeDetailPage({
 }) {
   const { id } = await params;
   const { error } = await searchParams;
-  const session = await verifySession();
+  const session = await requireRole(["OWNER", "ADMIN"]);
 
   const employee = await db.employee.findUnique({
     where: { id, companyId: session.companyId },

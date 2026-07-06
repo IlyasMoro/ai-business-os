@@ -1,8 +1,11 @@
 import { EmployeeForm } from "@/components/hr/employee-form";
 import { createEmployee } from "@/lib/actions/hr";
 import { dateInputDaysFromNow } from "@/lib/utils";
+import { requireRole } from "@/lib/dal";
 
-export default function NewEmployeePage() {
+export default async function NewEmployeePage() {
+  await requireRole(["OWNER", "ADMIN"]);
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-slate-900">New employee</h1>

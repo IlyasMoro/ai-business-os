@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { ProductSchema, type ProductFormState } from "@/lib/validation/inventory";
 
@@ -87,6 +87,10 @@ export async function updateProduct(
 
 export async function deleteProduct(productId: string) {
   const session = await verifySession();
+
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect("/dashboard/inventory?error=forbidden");
+  }
 
   const inUse = await db.orderItem.findFirst({
     where: { productId, product: { companyId: session.companyId } },

@@ -1,8 +1,11 @@
 import { TransactionForm } from "@/components/accounting/transaction-form";
 import { createTransaction } from "@/lib/actions/accounting";
 import { dateInputDaysFromNow } from "@/lib/utils";
+import { requireRole } from "@/lib/dal";
 
-export default function NewTransactionPage() {
+export default async function NewTransactionPage() {
+  await requireRole(["OWNER", "ADMIN"]);
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-slate-900">New transaction</h1>
