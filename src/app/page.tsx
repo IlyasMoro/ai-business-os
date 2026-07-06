@@ -1,4 +1,5 @@
 import { LinkButton } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import {
   BarChart3,
   Boxes,
@@ -19,10 +20,21 @@ const modules = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-white">
-      <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <span className="text-lg font-semibold text-slate-900">AI Business OS</span>
-        <nav className="flex items-center gap-3">
+    <div className="relative min-h-screen overflow-hidden bg-surface">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/15"
+      />
+
+      <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
+        <span className="flex items-center gap-2 text-lg font-semibold text-slate-900">
+          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-700 text-xs font-bold text-white shadow-sm">
+            AI
+          </span>
+          Business OS
+        </span>
+        <nav className="flex items-center gap-1">
+          <ThemeToggle />
           <LinkButton href="/login" variant="ghost" size="sm">
             Sign in
           </LinkButton>
@@ -32,10 +44,14 @@ export default function Home() {
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-16 sm:py-24">
+      <main className="relative mx-auto max-w-6xl px-6 py-16 sm:py-24">
         <div className="max-w-2xl">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            Run your whole business from one AI-powered platform.
+            Run your whole business from{" "}
+            <span className="bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">
+              one AI-powered platform
+            </span>
+            .
           </h1>
           <p className="mt-6 text-lg text-slate-600">
             CRM, sales, inventory, accounting, HR, payroll, invoicing, projects, and support —
@@ -56,9 +72,11 @@ export default function Home() {
           {modules.map((mod) => (
             <div
               key={mod.name}
-              className="rounded-xl border border-slate-200 p-6 transition-shadow hover:shadow-md"
+              className="group rounded-xl border border-slate-200 bg-surface p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg"
             >
-              <mod.icon className="h-6 w-6 text-indigo-600" />
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-50 transition-colors group-hover:bg-indigo-100">
+                <mod.icon className="h-5 w-5 text-indigo-600" />
+              </span>
               <h3 className="mt-4 font-semibold text-slate-900">{mod.name}</h3>
               <p className="mt-1 text-sm text-slate-600">{mod.description}</p>
             </div>

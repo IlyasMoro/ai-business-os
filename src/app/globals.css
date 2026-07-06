@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
+/* Dark mode is driven by a `data-theme` attribute on <html>, toggled by
+   ThemeToggle and set pre-hydration by the inline init script in layout.tsx —
+   not by `prefers-color-scheme`, so the user's explicit choice always wins. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+}
+
+/* Registers `surface`/`surface-hover` as real Tailwind color tokens so
+   bg-surface / text-surface / border-surface utilities are generated —
+   a plain :root custom property alone would not produce utilities. */
+@theme {
+  --color-surface: #ffffff;
+  --color-surface-hover: #f8fafc;
 }
 
 @theme inline {
@@ -12,6 +25,48 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Dark theme: invert the slate ramp and retint the accent/badge colors.
+   Unlayered rules always beat Tailwind's @theme layer, so every existing
+   slate/indigo/badge-tone utility class across the app (bg-, text-, border-)
+   picks this up automatically, with no need to touch every page. */
+:root[data-theme="dark"] {
+  --color-surface: #111a2e;
+  --color-surface-hover: #17223a;
+
+  --color-slate-50: #0a0e1a;
+  --color-slate-100: #141d30;
+  --color-slate-200: #253150;
+  --color-slate-300: #37456a;
+  --color-slate-400: #7c8bab;
+  --color-slate-500: #97a5c2;
+  --color-slate-600: #b3bfd6;
+  --color-slate-700: #cbd5e6;
+  --color-slate-900: #f4f7fc;
+
+  --color-indigo-50: #17203f;
+  --color-indigo-100: #1e2a4d;
+  --color-indigo-500: #818cf8;
+  --color-indigo-600: #6366f1;
+  --color-indigo-700: #a5b4fc;
+
+  --color-red-50: #2a1420;
+  --color-red-100: #3a1420;
+  --color-red-600: #f87171;
+  --color-red-700: #fca5a5;
+
+  --color-emerald-100: #103324;
+  --color-emerald-700: #6ee7b7;
+
+  --color-amber-100: #35270c;
+  --color-amber-700: #fcd34d;
+
+  --color-blue-100: #122a4a;
+  --color-blue-700: #93c5fd;
+
+  --color-purple-100: #2a1d43;
+  --color-purple-700: #d8b4fe;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -19,8 +74,46 @@
   }
 }
 
+html {
+  color-scheme: light;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* Smooth, app-wide theme transition */
+body,
+body * {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: ease;
+}
+
+/* Custom scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-slate-300) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--color-slate-300);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }

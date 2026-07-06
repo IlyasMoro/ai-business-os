@@ -5,13 +5,21 @@ import Link from "next/link";
 import { register } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export default function RegisterPage() {
   const [state, action, pending] = useActionState(register, undefined);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
+    <div className="relative flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/15"
+      />
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
+      <div className="relative w-full max-w-md rounded-xl border border-slate-200 bg-surface p-8 shadow-lg">
         <h1 className="text-xl font-semibold text-slate-900">Create your workspace</h1>
         <p className="mt-1 text-sm text-slate-500">
           Start running your business with an AI-powered operating system.
