@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ---------- Tenancy & Auth ----------
+
+model Company {
+  id        String   @id @default(cuid())
+  name      String
+  industry  String?
+  createdAt DateTime @default(now())
+
+  users        User[]
+  customers    Customer[]
+  products     Product[]
+  orders       Order[]
+  invoices     Invoice[]
+  transactions Transaction[]
+  employees    Employee[]
+  payrollRuns  PayrollRun[]
+  projects     Project[]
+  tickets      Ticket[]
+  chatMessages AiChatMessage[]
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  EMPLOYEE
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(OWNER)
+  createdAt    DateTime @default(now())
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  chatMessages AiChatMessage[]
+
+  @@index([companyId])
+}
+
+// ---------- CRM ----------
+
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+}
+
+model Customer {
+  id        String         @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  company   String?
+  status    CustomerStatus @default(LEAD)
+  notes     String?
+  createdAt DateTime       @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  contacts Contact[]
+  orders   Order[]
+  invoices Invoice[]
+  tickets  Ticket[]
+  projects Project[]
+
+  @@index([companyId])
+}
+
+model Contact {
+  id    String  @id @default(cuid())
+  name  String
+  email String?
+  phone String?
+  role  String?
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+}
+
+// ---------- Inventory ----------
+
+model Product {
+  id           String   @id @default(cuid())
+  sku          String
+  name         String
+  description  String?
+  cost         Float    @default(0)
+  unitPrice    Float
+  stockQty     Int      @default(0)
+  reorderLevel Int      @default(5)
+  createdAt    DateTime @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  orderItems      OrderItem[]
+  invoiceLineItems InvoiceLineItem[]
+
+  @@index([companyId])
+  @@unique([companyId, sku])
+}
+
+// ---------- Sales ----------
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  FULFILLED
+  CANCELLED
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  status      OrderStatus @default(PENDING)
+  totalAmount Float       @default(0)
+  createdAt   DateTime    @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  items   OrderItem[]
+  invoice Invoice?
+
+  @@index([companyId])
+  @@index([customerId])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  quantity  Int
+  unitPrice Float
+
+  orderId String
+  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+// ---------- Invoicing ----------
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String
+  status        InvoiceStatus @default(DRAFT)
+  issueDate     DateTime      @default(now())
+  dueDate       DateTime
+  totalAmount   Float         @default(0)
+  createdAt     DateTime      @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  orderId String? @unique
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  lineItems    InvoiceLineItem[]
+  transactions Transaction[]
+
+  @@index([companyId])
+  @@unique([companyId, invoiceNumber])
+}
+
+model InvoiceLineItem {
+  id          String @id @default(cuid())
+  description String
+  quantity    Int
+  unitPrice   Float
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id])
+
+  @@index([invoiceId])
+}
+
+// ---------- Accounting ----------
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+model Transaction {
+  id          String          @id @default(cuid())
+  type        TransactionType
+  category    String
+  amount      Float
+  description String?
+  date        DateTime        @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([companyId])
+}
+
+// ---------- HR & Payroll ----------
+
+enum EmployeeStatus {
+  ACTIVE
+  TERMINATED
+}
+
+model Employee {
+  id         String         @id @default(cuid())
+  name       String
+  email      String?
+  position   String?
+  department String?
+  salary     Float          @default(0)
+  hireDate   DateTime       @default(now())
+  status     EmployeeStatus @default(ACTIVE)
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  payrollItems PayrollItem[]
+  tasks        Task[]
+
+  @@index([companyId])
+}
+
+enum PayrollRunStatus {
+  DRAFT
+  PROCESSED
+  PAID
+}
+
+model PayrollRun {
+  id          String           @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  status      PayrollRunStatus @default(DRAFT)
+  totalAmount Float            @default(0)
+  processedAt DateTime?
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  items PayrollItem[]
+
+  @@index([companyId])
+}
+
+model PayrollItem {
+  id          String @id @default(cuid())
+  grossPay    Float
+  deductions  Float  @default(0)
+  netPay      Float
+
+  payrollRunId String
+  payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
+
+  employeeId String
+  employee   Employee @relation(fields: [employeeId], references: [id])
+
+  @@index([payrollRunId])
+}
+
+// ---------- Project Management ----------
+
+enum ProjectStatus {
+  ACTIVE
+  COMPLETED
+  ON_HOLD
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  dueDate     DateTime?
+  createdAt   DateTime      @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id])
+
+  tasks Task[]
+
+  @@index([companyId])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  dueDate     DateTime?
+  createdAt   DateTime   @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  assigneeId String?
+  assignee   Employee? @relation(fields: [assigneeId], references: [id])
+
+  @@index([projectId])
+}
+
+// ---------- Customer Support ----------
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Ticket {
+  id          String         @id @default(cuid())
+  subject     String
+  description String?
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  createdAt   DateTime       @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+// ---------- AI Assistant ----------
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+model AiChatMessage {
+  id        String   @id @default(cuid())
+  role      ChatRole
+  content   String
+  createdAt DateTime @default(now())
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
