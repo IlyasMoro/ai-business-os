@@ -179,3 +179,13 @@ body * {
     transform: none;
   }
 }
+
+/* <select> dropdown popups: the closed box respects our dark classes, but
+   the open option-list popup is native browser/OS chrome — Chromium/
+   Firefox only pick up dark colors here if <option> itself is styled,
+   otherwise it falls back to a light gray popup. Every <select> in this
+   app lives in the dark dashboard forms, so this is safe unscoped. */
+select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}
