@@ -71,11 +71,11 @@ export default async function HrPage({
   const deptColors = [VIZ.blue, VIZ.amber, VIZ.emerald, VIZ.red, VIZ.muted, VIZ.borderLight];
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-white">HR</h1>
+          <h1 className="text-2xl font-semibold text-slate-50">HR</h1>
           <p className="mt-1 text-sm text-slate-400">
             {totalCount} employee{totalCount === 1 ? "" : "s"}
           </p>
@@ -88,7 +88,7 @@ export default async function HrPage({
               name="q"
               placeholder="Search by name, position..."
               defaultValue={q}
-              className="w-full rounded-md border border-slate-800 bg-slate-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] bg-[#1A2238] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -102,7 +102,7 @@ export default async function HrPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
           <div className="flex justify-center">
             <DonutChart
               title="Employees by status"
@@ -115,8 +115,8 @@ export default async function HrPage({
             />
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-sm font-semibold text-white">Headcount by department</h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+          <h2 className="text-sm font-semibold text-slate-50">Headcount by department</h2>
           {deptRows.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">No employees yet.</p>
           ) : (
@@ -135,7 +135,7 @@ export default async function HrPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
         {employees.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q
@@ -145,7 +145,7 @@ export default async function HrPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Position</th>
                 <th className="px-5 py-3 font-medium">Department</th>
@@ -154,11 +154,11 @@ export default async function HrPage({
             </thead>
             <tbody>
               {employees.map((employee) => (
-                <tr key={employee.id} className="border-b border-slate-800/60 last:border-0">
+                <tr key={employee.id} className="border-b border-white/[0.04] last:border-0">
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/hr/${employee.id}`}
-                      className="font-medium text-white hover:text-blue-400"
+                      className="font-medium text-slate-50 hover:text-blue-400"
                     >
                       {employee.name}
                     </Link>
@@ -181,7 +181,7 @@ export default async function HrPage({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-slate-800 px-5 py-3">
+          <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
             <p className="text-sm text-slate-500">
               Page {page} of {totalPages}
             </p>
@@ -189,7 +189,7 @@ export default async function HrPage({
               {page > 1 ? (
                 <Link
                   href={hrHref(page - 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
@@ -203,7 +203,7 @@ export default async function HrPage({
               {page < totalPages ? (
                 <Link
                   href={hrHref(page + 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />

@@ -37,18 +37,18 @@ function WidgetsSkeleton() {
     <div className="animate-pulse">
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 rounded-2xl border border-slate-800 bg-slate-900/60" />
+          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
         ))}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl border border-slate-800 bg-slate-900/60" />
+          <div key={i} className="h-20 rounded-xl border border-white/[0.06] bg-[#1A2238]" />
         ))}
       </div>
-      <div className="mt-6 h-64 rounded-2xl border border-slate-800 bg-slate-900/60" />
+      <div className="mt-6 h-64 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="h-64 rounded-2xl border border-slate-800 bg-slate-900/60" />
-        <div className="h-64 rounded-2xl border border-slate-800 bg-slate-900/60" />
+        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
+        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
       </div>
     </div>
   );
@@ -63,12 +63,12 @@ export default async function DashboardOverviewPage({
   const user = await getCurrentUser();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-white">
+          <h1 className="text-2xl font-semibold text-slate-50">
             Welcome back, {user.name.split(" ")[0]}
           </h1>
           <p className="mt-1 text-slate-400">
@@ -259,19 +259,19 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {secondaryStats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
-            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 transition-colors hover:border-slate-700">
+            <div className="rounded-xl border border-white/[0.06] bg-[#1A2238] p-4 transition-colors hover:border-slate-700">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-slate-400">{stat.label}</p>
                 <stat.icon className={`h-4 w-4 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
               </div>
-              <p className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-white">{stat.value}</p>
+              <p className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-slate-50">{stat.value}</p>
             </div>
           </Link>
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="text-sm font-semibold text-white">Performance rings</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <h2 className="text-sm font-semibold text-slate-50">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
           <RingGauge label="Project completion" pct={completionRatio} goodIsHigh />
           <RingGauge label="Avg. task progress" pct={avgTaskCompletion} goodIsHigh />
@@ -280,8 +280,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-sm font-semibold text-white">Customers by status</h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+          <h2 className="text-sm font-semibold text-slate-50">Customers by status</h2>
           <ul className="mt-4 space-y-4">
             {customerStatusRows.map((row) => (
               <AllocationBar
@@ -295,8 +295,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="text-sm font-semibold text-white">Recent activity</h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+          <h2 className="text-sm font-semibold text-slate-50">Recent activity</h2>
           <div className="mt-4">
             <ActivityTimeline items={timelineItems} />
           </div>

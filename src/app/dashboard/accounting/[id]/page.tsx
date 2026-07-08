@@ -29,12 +29,12 @@ export default async function TransactionDetailPage({
   if (!transaction) notFound();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-white">{transaction.category}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50">{transaction.category}</h1>
               <Badge tone={typeTone[transaction.type]}>{transaction.type}</Badge>
             </div>
             <p className="mt-1 text-slate-400">{transaction.date.toLocaleDateString()}</p>
@@ -69,12 +69,12 @@ export default async function TransactionDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Category</p>
-              <p className="text-white">{transaction.category}</p>
+              <p className="text-slate-50">{transaction.category}</p>
             </div>
             {transaction.description && (
               <div className="col-span-2">
                 <p className="text-slate-500">Description</p>
-                <p className="whitespace-pre-wrap text-white">{transaction.description}</p>
+                <p className="whitespace-pre-wrap text-slate-50">{transaction.description}</p>
               </div>
             )}
           </CardContent>

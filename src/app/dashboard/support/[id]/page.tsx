@@ -39,12 +39,12 @@ export default async function TicketDetailPage({
   if (!ticket) notFound();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-white">{ticket.subject}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50">{ticket.subject}</h1>
               <Badge tone={statusTone[ticket.status]}>{ticket.status}</Badge>
             </div>
             <p className="mt-1 text-slate-400">For {ticket.customer.name}</p>
@@ -73,7 +73,7 @@ export default async function TicketDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Description</p>
-              <p className="text-white">{ticket.description ?? "—"}</p>
+              <p className="text-slate-50">{ticket.description ?? "—"}</p>
             </div>
           </CardContent>
         </Card>

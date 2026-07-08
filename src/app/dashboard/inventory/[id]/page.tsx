@@ -27,7 +27,7 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         {error === "in-use" && (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -37,7 +37,7 @@ export default async function ProductDetailPage({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-white">{product.name}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50">{product.name}</h1>
               {product.stockQty <= product.reorderLevel && (
                 <Badge tone="red">Low stock</Badge>
               )}
@@ -60,24 +60,24 @@ export default async function ProductDetailPage({
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Cost</p>
-              <p className="font-mono tabular-nums text-white">${product.cost.toFixed(2)}</p>
+              <p className="font-mono tabular-nums text-slate-50">${product.cost.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-slate-500">Unit price</p>
-              <p className="font-mono tabular-nums text-white">${product.unitPrice.toFixed(2)}</p>
+              <p className="font-mono tabular-nums text-slate-50">${product.unitPrice.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-slate-500">Stock quantity</p>
-              <p className="font-mono tabular-nums text-white">{product.stockQty}</p>
+              <p className="font-mono tabular-nums text-slate-50">{product.stockQty}</p>
             </div>
             <div>
               <p className="text-slate-500">Reorder level</p>
-              <p className="font-mono tabular-nums text-white">{product.reorderLevel}</p>
+              <p className="font-mono tabular-nums text-slate-50">{product.reorderLevel}</p>
             </div>
             {product.description && (
               <div className="col-span-2">
                 <p className="text-slate-500">Description</p>
-                <p className="whitespace-pre-wrap text-white">{product.description}</p>
+                <p className="whitespace-pre-wrap text-slate-50">{product.description}</p>
               </div>
             )}
           </CardContent>

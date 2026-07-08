@@ -39,12 +39,12 @@ export default async function PayrollRunDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-white">
+              <h1 className="text-2xl font-semibold text-slate-50">
                 {payrollRun.periodStart.toLocaleDateString()} –{" "}
                 {payrollRun.periodEnd.toLocaleDateString()}
               </h1>
@@ -68,11 +68,11 @@ export default async function PayrollRunDetailPage({
           </CardHeader>
           <CardContent>
             {payrollRun.items.length > 0 && (
-              <ul className="mb-4 divide-y divide-slate-800">
+              <ul className="mb-4 divide-y divide-white/[0.06]">
                 {payrollRun.items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-white">{item.employee.name}</p>
+                      <p className="font-medium text-slate-50">{item.employee.name}</p>
                       <p className="font-mono text-xs tabular-nums text-slate-500">
                         Gross ${item.grossPay.toFixed(2)} − Deductions ${item.deductions.toFixed(2)} =
                         Net ${item.netPay.toFixed(2)}

@@ -24,7 +24,7 @@ const CTA_CLASS =
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050b1e] via-[#060a18] to-[#03050d] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050b1e] via-[#060a18] to-[#03050d] text-slate-50">
       {/* Ambient background: a single, static, understated glow for depth */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
@@ -35,7 +35,7 @@ export default function Home() {
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050b1e]/60 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <span className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-xs font-bold text-white backdrop-blur-md">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-xs font-bold text-slate-50 backdrop-blur-md">
               AI
             </span>
             Business OS
@@ -88,7 +88,7 @@ export default function Home() {
               ["24/7", "Always on"],
             ].map(([value, label]) => (
               <div key={label}>
-                <p className="text-2xl font-semibold text-white">{value}</p>
+                <p className="text-2xl font-semibold text-slate-50">{value}</p>
                 <p className="mt-1 text-xs text-slate-400">{label}</p>
               </div>
             ))}
@@ -110,10 +110,10 @@ export default function Home() {
             {modules.map((mod, i) => (
               <Reveal key={mod.name} delay={i * 75}>
                 <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-black/30">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition-colors duration-300 group-hover:border-white/25 group-hover:bg-white/15">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-slate-50 transition-colors duration-300 group-hover:border-white/25 group-hover:bg-white/15">
                     <mod.icon className="h-5 w-5" />
                   </span>
-                  <h3 className="mt-4 font-semibold text-white">{mod.name}</h3>
+                  <h3 className="mt-4 font-semibold text-slate-50">{mod.name}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{mod.description}</p>
                 </div>
               </Reveal>
@@ -147,7 +147,7 @@ export default function Home() {
       <footer className="relative border-t border-white/10 px-6 py-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-slate-400 sm:flex-row">
           <span className="flex items-center gap-2 font-medium text-slate-300">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/10 text-[10px] font-bold text-white">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/10 text-[10px] font-bold text-slate-50">
               AI
             </span>
             Business OS

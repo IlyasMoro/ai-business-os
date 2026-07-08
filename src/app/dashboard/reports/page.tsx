@@ -120,33 +120,33 @@ export default async function ReportsPage() {
   }));
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-white">Reports</h1>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+      <h1 className="text-2xl font-semibold text-slate-50">Reports</h1>
       <p className="mt-1 text-sm text-slate-400">A snapshot of revenue, sales, and invoicing over the last 6 months.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
           <p className="text-sm text-slate-400">Income (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalIncome} prefix="R" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
           <p className="text-sm text-slate-400">Expenses (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-red-400">
             <AnimatedCounter value={totalExpense} prefix="R" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
           <p className="text-sm text-slate-400">Net (6 months)</p>
-          <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-white" : "text-red-400"}`}>
+          <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50" : "text-red-400"}`}>
             <AnimatedCounter value={net} prefix="R" decimals={0} />
           </p>
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="mb-4 text-sm font-semibold text-white">Portfolio breakdown</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <h2 className="mb-4 text-sm font-semibold text-slate-50">Portfolio breakdown</h2>
         <div className="flex flex-col items-center justify-around gap-8 sm:flex-row sm:items-start">
           <DonutChart
             title="Income vs expenses"
@@ -180,8 +180,8 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="mb-4 text-sm font-semibold text-white">Revenue vs expenses</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <h2 className="mb-4 text-sm font-semibold text-slate-50">Revenue vs expenses</h2>
         <GroupedBarChart
           data={monthly.map((m) => ({ label: m.label, a: m.income, b: m.expense }))}
           aLabel="Income"
@@ -190,8 +190,8 @@ export default async function ReportsPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="mb-4 text-sm font-semibold text-white">Top customers by order value</h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+          <h2 className="mb-4 text-sm font-semibold text-slate-50">Top customers by order value</h2>
           {customerValues.length === 0 ? (
             <p className="text-sm text-slate-500">No order value recorded yet.</p>
           ) : (
@@ -202,8 +202,8 @@ export default async function ReportsPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-          <h2 className="mb-4 text-sm font-semibold text-white">Value vs average customer</h2>
+        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+          <h2 className="mb-4 text-sm font-semibold text-slate-50">Value vs average customer</h2>
           {customerDeltas.length === 0 ? (
             <p className="text-sm text-slate-500">No order value recorded yet.</p>
           ) : (
@@ -216,9 +216,9 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60">
-        <div className="border-b border-slate-800 p-6 pb-4">
-          <h2 className="text-sm font-semibold text-white">Customer value ranking</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+        <div className="border-b border-white/[0.06] p-6 pb-4">
+          <h2 className="text-sm font-semibold text-slate-50">Customer value ranking</h2>
         </div>
         <div className="p-6 pt-4">
           {customerDeltas.length === 0 ? (
@@ -226,7 +226,7 @@ export default async function ReportsPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-left text-slate-500">
+                <tr className="border-b border-white/[0.06] text-left text-slate-500">
                   <th className="py-2 font-medium">Customer</th>
                   <th className="py-2 font-medium">Order value</th>
                   <th className="py-2 font-medium">Vs average</th>
@@ -234,8 +234,8 @@ export default async function ReportsPage() {
               </thead>
               <tbody>
                 {customerDeltas.map((c) => (
-                  <tr key={c.name} className="border-b border-slate-800/60 last:border-0">
-                    <td className="py-2.5 text-white">{c.name}</td>
+                  <tr key={c.name} className="border-b border-white/[0.04] last:border-0">
+                    <td className="py-2.5 text-slate-50">{c.name}</td>
                     <td className="py-2.5 font-mono tabular-nums text-slate-300">{formatCompactCurrency(c.total)}</td>
                     <td className="py-2.5">
                       <MonoTrendBadge pct={c.deltaPct} />
@@ -248,12 +248,12 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="mb-4 text-sm font-semibold text-white">Recent invoices</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <h2 className="mb-4 text-sm font-semibold text-slate-50">Recent invoices</h2>
         {recentInvoices.length === 0 ? (
           <p className="text-sm text-slate-500">No invoices yet.</p>
         ) : (
-          <ul className="divide-y divide-slate-800/60">
+          <ul className="divide-y divide-white/[0.04]">
             {recentInvoices.map((invoice) => (
               <li key={invoice.id} className="group flex items-center justify-between py-2.5">
                 <div className="min-w-0">
@@ -280,14 +280,14 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="mb-4 text-sm font-semibold text-white">Recent AI activity</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <h2 className="mb-4 text-sm font-semibold text-slate-50">Recent AI activity</h2>
         {recentAiActions.length === 0 ? (
           <p className="text-sm text-slate-500">No actions have been proposed by the AI assistant yet.</p>
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] text-left text-slate-500">
                 <th className="py-2 font-medium">Action</th>
                 <th className="py-2 font-medium">Requested by</th>
                 <th className="py-2 font-medium">Status</th>
@@ -296,8 +296,8 @@ export default async function ReportsPage() {
             </thead>
             <tbody>
               {recentAiActions.map((action) => (
-                <tr key={action.id} className="border-b border-slate-800/60 last:border-0">
-                  <td className="py-2 text-white">{action.summary}</td>
+                <tr key={action.id} className="border-b border-white/[0.04] last:border-0">
+                  <td className="py-2 text-slate-50">{action.summary}</td>
                   <td className="py-2 text-slate-400">{action.requestedBy.name}</td>
                   <td className="py-2 text-xs uppercase tracking-wide text-slate-500">
                     {action.status.toLowerCase()}
@@ -312,8 +312,8 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
-        <h2 className="mb-4 text-sm font-semibold text-white">Recent activity</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <h2 className="mb-4 text-sm font-semibold text-slate-50">Recent activity</h2>
         {recentAuditLogs.length === 0 ? (
           <p className="text-sm text-slate-500">
             No sensitive changes (payroll, employee, or invoice status) have been recorded yet.
@@ -321,7 +321,7 @@ export default async function ReportsPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-800 text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] text-left text-slate-500">
                 <th className="py-2 font-medium">Action</th>
                 <th className="py-2 font-medium">By</th>
                 <th className="py-2 font-medium">Details</th>
@@ -330,8 +330,8 @@ export default async function ReportsPage() {
             </thead>
             <tbody>
               {recentAuditLogs.map((log) => (
-                <tr key={log.id} className="border-b border-slate-800/60 last:border-0">
-                  <td className="py-2 text-white">{formatAuditAction(log.action)}</td>
+                <tr key={log.id} className="border-b border-white/[0.04] last:border-0">
+                  <td className="py-2 text-slate-50">{formatAuditAction(log.action)}</td>
                   <td className="py-2 text-slate-400">{log.user.name}</td>
                   <td className="py-2 text-slate-400">{formatAuditMetadata(log.metadata) ?? "—"}</td>
                   <td className="py-2 font-mono text-xs tabular-nums text-slate-500">

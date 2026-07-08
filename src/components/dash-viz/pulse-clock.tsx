@@ -24,7 +24,7 @@ export function PulseClock() {
   const now = nowSeconds * 1000;
 
   return (
-    <div className="flex items-center gap-2 rounded-full border border-slate-800 bg-slate-900/60 px-3 py-1.5">
+    <div className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-[#1A2238] px-3 py-1.5">
       <span className="relative flex h-2 w-2">
         <span
           className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"

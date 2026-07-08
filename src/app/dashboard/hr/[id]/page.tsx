@@ -32,7 +32,7 @@ export default async function EmployeeDetailPage({
   if (!employee) notFound();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         {error === "in-use" && (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -42,7 +42,7 @@ export default async function EmployeeDetailPage({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-white">{employee.name}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50">{employee.name}</h1>
               <Badge tone={statusTone[employee.status]}>{employee.status}</Badge>
             </div>
             {employee.position && <p className="mt-1 text-slate-400">{employee.position}</p>}
@@ -63,19 +63,19 @@ export default async function EmployeeDetailPage({
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Email</p>
-              <p className="text-white">{employee.email ?? "—"}</p>
+              <p className="text-slate-50">{employee.email ?? "—"}</p>
             </div>
             <div>
               <p className="text-slate-500">Department</p>
-              <p className="text-white">{employee.department ?? "—"}</p>
+              <p className="text-slate-50">{employee.department ?? "—"}</p>
             </div>
             <div>
               <p className="text-slate-500">Salary</p>
-              <p className="font-mono tabular-nums text-white">${employee.salary.toFixed(2)}</p>
+              <p className="font-mono tabular-nums text-slate-50">${employee.salary.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-slate-500">Hire date</p>
-              <p className="text-white">{employee.hireDate.toLocaleDateString()}</p>
+              <p className="text-slate-50">{employee.hireDate.toLocaleDateString()}</p>
             </div>
           </CardContent>
         </Card>
