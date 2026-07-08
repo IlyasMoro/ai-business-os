@@ -1,11 +1,11 @@
 export default function DashboardLoading() {
   return (
-    <div className="animate-pulse">
-      <div className="h-7 w-48 rounded-md bg-slate-200" />
-      <div className="mt-2 h-4 w-72 rounded-md bg-slate-100" />
+    <div className="-m-4 min-h-[calc(100%+2rem)] animate-pulse bg-slate-950 p-4 sm:-m-6 sm:p-6">
+      <div className="h-7 w-48 rounded-md bg-slate-800" />
+      <div className="mt-2 h-4 w-72 rounded-md bg-slate-900" />
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-24 rounded-lg border border-slate-200 bg-surface" />
+          <div key={i} className="h-24 rounded-2xl border border-slate-800 bg-slate-900/60" />
         ))}
       </div>
     </div>
