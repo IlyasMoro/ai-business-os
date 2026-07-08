@@ -30,17 +30,17 @@ export function NavLinks({
             className={cn(
               "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
               active
-                ? "bg-indigo-50 text-indigo-700"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                ? "bg-blue-500/10 text-blue-400"
+                : "text-slate-400 hover:bg-slate-900 hover:text-white"
             )}
           >
             {active && (
-              <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-indigo-600" />
+              <span className="absolute left-0 top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-blue-500" />
             )}
             <item.icon
               className={cn(
                 "h-4 w-4 shrink-0 transition-colors",
-                active ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"
+                active ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"
               )}
             />
             {item.label}

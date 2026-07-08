@@ -2,26 +2,34 @@ import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LinkButton } from "@/components/ui/button";
-import { SearchForm } from "@/components/ui/search-form";
-import { Pagination } from "@/components/ui/pagination";
+import { DonutChart } from "@/components/dash-viz/donut-chart";
+import { AllocationBar } from "@/components/dash-viz/allocation-bar";
+import { VIZ } from "@/components/dash-viz/colors";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
-const statusTone = {
-  OPEN: "blue",
-  IN_PROGRESS: "purple",
-  RESOLVED: "green",
-  CLOSED: "slate",
-} as const;
+const statusOrder = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"] as const;
+const statusColor: Record<(typeof statusOrder)[number], string> = {
+  OPEN: VIZ.blue,
+  IN_PROGRESS: VIZ.amber,
+  RESOLVED: VIZ.emerald,
+  CLOSED: VIZ.muted,
+};
 
-const priorityTone = {
-  LOW: "slate",
-  MEDIUM: "yellow",
-  HIGH: "red",
-} as const;
+const priorityOrder = ["LOW", "MEDIUM", "HIGH"] as const;
+const priorityColor: Record<(typeof priorityOrder)[number], string> = {
+  LOW: VIZ.muted,
+  MEDIUM: VIZ.amber,
+  HIGH: VIZ.red,
+};
+
+function supportHref(page: number, q?: string) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/dashboard/support?${qs}` : "/dashboard/support";
+}
 
 export default async function SupportPage({
   searchParams,
@@ -44,7 +52,7 @@ export default async function SupportPage({
       : {}),
   };
 
-  const [tickets, totalCount] = await Promise.all([
+  const [tickets, totalCount, statusGroups, priorityGroups] = await Promise.all([
     db.ticket.findMany({
       where,
       include: { customer: { select: { name: true } } },
@@ -53,29 +61,78 @@ export default async function SupportPage({
       take: PAGE_SIZE,
     }),
     db.ticket.count({ where }),
+    db.ticket.groupBy({ by: ["status"], where: { companyId: session.companyId }, _count: { _all: true } }),
+    db.ticket.groupBy({ by: ["priority"], where: { companyId: session.companyId }, _count: { _all: true } }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const statusMap = new Map(statusGroups.map((g) => [g.status, g._count._all]));
+  const totalAll = statusGroups.reduce((s, g) => s + g._count._all, 0);
+  const priorityMap = new Map(priorityGroups.map((g) => [g.priority, g._count._all]));
+  const totalPriority = priorityGroups.reduce((s, g) => s + g._count._all, 0) || 1;
 
   return (
-    <div>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Support</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-white">Support</h1>
+          <p className="mt-1 text-sm text-slate-400">
             {totalCount} ticket{totalCount === 1 ? "" : "s"}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <SearchForm placeholder="Search by subject or customer..." defaultValue={q} />
-          <LinkButton href="/dashboard/support/new">
+          <form method="GET" className="relative w-full max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <input
+              type="search"
+              name="q"
+              placeholder="Search by subject or customer..."
+              defaultValue={q}
+              className="w-full rounded-md border border-slate-800 bg-slate-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+            />
+          </form>
+          <Link
+            href="/dashboard/support/new"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+          >
             <Plus className="h-4 w-4" />
             New ticket
-          </LinkButton>
+          </Link>
         </div>
       </div>
 
-      <Card className="mt-6">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <div className="flex justify-center">
+            <DonutChart
+              title="Tickets by status"
+              centerValue={String(totalAll)}
+              centerLabel="tickets"
+              slices={statusOrder.map((status) => ({
+                label: status.charAt(0) + status.slice(1).toLowerCase().replace("_", " "),
+                value: statusMap.get(status) ?? 0,
+                color: statusColor[status],
+              }))}
+            />
+          </div>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6">
+          <h2 className="text-sm font-semibold text-white">Tickets by priority</h2>
+          <ul className="mt-4 space-y-4">
+            {priorityOrder.map((priority) => (
+              <AllocationBar
+                key={priority}
+                label={priority.charAt(0) + priority.slice(1).toLowerCase()}
+                count={priorityMap.get(priority) ?? 0}
+                pct={((priorityMap.get(priority) ?? 0) / totalPriority) * 100}
+                color={priorityColor[priority]}
+              />
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60">
         {tickets.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q ? "No tickets match your search." : "No tickets yet. Create your first one to get started."}
@@ -83,7 +140,7 @@ export default async function SupportPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 text-left text-slate-500">
+              <tr className="border-b border-slate-800 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Subject</th>
                 <th className="px-5 py-3 font-medium">Customer</th>
                 <th className="px-5 py-3 font-medium">Status</th>
@@ -93,23 +150,38 @@ export default async function SupportPage({
             </thead>
             <tbody>
               {tickets.map((ticket) => (
-                <tr key={ticket.id} className="border-b border-slate-50 last:border-0">
+                <tr key={ticket.id} className="border-b border-slate-800/60 last:border-0">
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/support/${ticket.id}`}
-                      className="font-medium text-slate-900 hover:text-indigo-600"
+                      className="font-medium text-white hover:text-blue-400"
                     >
                       {ticket.subject}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-slate-600">{ticket.customer.name}</td>
+                  <td className="px-5 py-3 text-slate-400">{ticket.customer.name}</td>
                   <td className="px-5 py-3">
-                    <Badge tone={statusTone[ticket.status]}>{ticket.status}</Badge>
+                    <span
+                      className="inline-flex items-center gap-1.5 text-xs font-medium"
+                      style={{ color: statusColor[ticket.status] }}
+                    >
+                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[ticket.status] }} />
+                      {ticket.status}
+                    </span>
                   </td>
                   <td className="px-5 py-3">
-                    <Badge tone={priorityTone[ticket.priority]}>{ticket.priority}</Badge>
+                    <span
+                      className="inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-xs"
+                      style={{
+                        borderColor: `${priorityColor[ticket.priority]}40`,
+                        backgroundColor: `${priorityColor[ticket.priority]}1a`,
+                        color: priorityColor[ticket.priority],
+                      }}
+                    >
+                      {ticket.priority}
+                    </span>
                   </td>
-                  <td className="px-5 py-3 text-slate-600">
+                  <td className="px-5 py-3 text-slate-400">
                     {ticket.createdAt.toLocaleDateString()}
                   </td>
                 </tr>
@@ -117,8 +189,45 @@ export default async function SupportPage({
             </tbody>
           </table>
         )}
-        <Pagination page={page} totalPages={totalPages} basePath="/dashboard/support" query={{ q }} />
-      </Card>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-slate-800 px-5 py-3">
+            <p className="text-sm text-slate-500">
+              Page {page} of {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              {page > 1 ? (
+                <Link
+                  href={supportHref(page - 1, q)}
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Link>
+              ) : (
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </span>
+              )}
+              {page < totalPages ? (
+                <Link
+                  href={supportHref(page + 1, q)}
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ const MESSAGES: Record<string, string> = {
 export function ErrorBanner({ code }: { code?: string }) {
   if (!code || !MESSAGES[code]) return null;
   return (
-    <p className="mb-4 rounded-md bg-red-50 px-4 py-3 text-sm text-red-600">
+    <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
       {MESSAGES[code]}
     </p>
   );

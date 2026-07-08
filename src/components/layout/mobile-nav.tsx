@@ -15,7 +15,7 @@ export function MobileNav({ role }: { role: Role }) {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open navigation menu"
-        className="flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 sm:hidden"
+        className="flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-slate-900 hover:text-white sm:hidden"
       >
         <Menu className="h-5 w-5" />
       </button>
@@ -23,21 +23,21 @@ export function MobileNav({ role }: { role: Role }) {
       {open && (
         <div className="fixed inset-0 z-50 sm:hidden">
           <div
-            className="absolute inset-0 bg-slate-900/40"
+            className="absolute inset-0 bg-black/60"
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-y-0 left-0 flex w-64 flex-col bg-surface shadow-xl">
+          <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-slate-800 bg-slate-950 shadow-xl">
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"
                 className="flex items-center gap-2"
                 onClick={() => setOpen(false)}
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-700 text-xs font-bold text-white shadow-sm">
+                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-xs font-bold text-amber-400">
                   AI
                 </span>
-                <span className="text-base font-semibold tracking-tight text-slate-900">
+                <span className="text-base font-semibold tracking-tight text-white">
                   Business OS
                 </span>
               </Link>
@@ -45,7 +45,7 @@ export function MobileNav({ role }: { role: Role }) {
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close navigation menu"
-                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-slate-400 hover:bg-slate-900"
               >
                 <X className="h-5 w-5" />
               </button>

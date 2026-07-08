@@ -2,13 +2,19 @@ import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { LinkButton } from "@/components/ui/button";
-import { SearchForm } from "@/components/ui/search-form";
-import { Pagination } from "@/components/ui/pagination";
+import { RingGauge } from "@/components/dash-viz/ring-gauge";
+import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
+import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+
+function inventoryHref(page: number, q?: string) {
+  const params = new URLSearchParams();
+  if (q) params.set("q", q);
+  if (page > 1) params.set("page", String(page));
+  const qs = params.toString();
+  return qs ? `/dashboard/inventory?${qs}` : "/dashboard/inventory";
+}
 
 export default async function InventoryPage({
   searchParams,
@@ -26,7 +32,7 @@ export default async function InventoryPage({
       : {}),
   };
 
-  const [products, totalCount] = await Promise.all([
+  const [products, totalCount, allForTotals] = await Promise.all([
     db.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -34,29 +40,68 @@ export default async function InventoryPage({
       take: PAGE_SIZE,
     }),
     db.product.count({ where }),
+    db.product.findMany({
+      where: { companyId: session.companyId },
+      select: { stockQty: true, reorderLevel: true, unitPrice: true },
+    }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
+  const totalValue = allForTotals.reduce((s, p) => s + p.stockQty * p.unitPrice, 0);
+  const lowStockCount = allForTotals.filter((p) => p.stockQty <= p.reorderLevel).length;
+  const healthyRatio =
+    allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : 100;
+
   return (
-    <div>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Inventory</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-semibold text-white">Inventory</h1>
+          <p className="mt-1 text-sm text-slate-400">
             {totalCount} product{totalCount === 1 ? "" : "s"}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <SearchForm placeholder="Search by name or SKU..." defaultValue={q} />
-          <LinkButton href="/dashboard/inventory/new">
+          <form method="GET" className="relative w-full max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <input
+              type="search"
+              name="q"
+              placeholder="Search by name or SKU..."
+              defaultValue={q}
+              className="w-full rounded-md border border-slate-800 bg-slate-900/60 py-2 pl-9 pr-3 text-sm text-white placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+            />
+          </form>
+          <Link
+            href="/dashboard/inventory/new"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+          >
             <Plus className="h-4 w-4" />
             New product
-          </LinkButton>
+          </Link>
         </div>
       </div>
 
-      <Card className="mt-6">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <p className="text-sm text-slate-400">Inventory value</p>
+          <p className="mt-2 text-2xl font-semibold text-white">
+            <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
+          </p>
+        </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <p className="text-sm text-slate-400">Low stock items</p>
+          <p className={`mt-2 text-2xl font-semibold ${lowStockCount > 0 ? "text-red-400" : "text-white"}`}>
+            <AnimatedCounter value={lowStockCount} decimals={0} />
+          </p>
+        </div>
+        <div className="flex items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/60 p-5">
+          <RingGauge label="Stock health" pct={healthyRatio} goodIsHigh size={96} strokeWidth={8} />
+        </div>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-slate-800 bg-slate-900/60">
         {products.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q
@@ -66,7 +111,7 @@ export default async function InventoryPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100 text-left text-slate-500">
+              <tr className="border-b border-slate-800 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">SKU</th>
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Unit price</th>
@@ -75,24 +120,26 @@ export default async function InventoryPage({
             </thead>
             <tbody>
               {products.map((product) => (
-                <tr key={product.id} className="border-b border-slate-50 last:border-0">
-                  <td className="px-5 py-3 text-slate-600">{product.sku}</td>
+                <tr key={product.id} className="border-b border-slate-800/60 last:border-0">
+                  <td className="px-5 py-3 font-mono text-xs text-slate-400">{product.sku}</td>
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/inventory/${product.id}`}
-                      className="font-medium text-slate-900 hover:text-indigo-600"
+                      className="font-medium text-white hover:text-blue-400"
                     >
                       {product.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-slate-600">
-                    ${product.unitPrice.toFixed(2)}
+                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300">
+                    {formatCompactCurrency(product.unitPrice)}
                   </td>
                   <td className="px-5 py-3">
                     {product.stockQty <= product.reorderLevel ? (
-                      <Badge tone="red">{product.stockQty} low</Badge>
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 font-mono text-xs tabular-nums text-red-400">
+                        {product.stockQty} low
+                      </span>
                     ) : (
-                      <span className="text-slate-600">{product.stockQty}</span>
+                      <span className="font-mono tabular-nums text-slate-300">{product.stockQty}</span>
                     )}
                   </td>
                 </tr>
@@ -100,8 +147,45 @@ export default async function InventoryPage({
             </tbody>
           </table>
         )}
-        <Pagination page={page} totalPages={totalPages} basePath="/dashboard/inventory" query={{ q }} />
-      </Card>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between border-t border-slate-800 px-5 py-3">
+            <p className="text-sm text-slate-500">
+              Page {page} of {totalPages}
+            </p>
+            <div className="flex items-center gap-2">
+              {page > 1 ? (
+                <Link
+                  href={inventoryHref(page - 1, q)}
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Link>
+              ) : (
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </span>
+              )}
+              {page < totalPages ? (
+                <Link
+                  href={inventoryHref(page + 1, q)}
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-slate-800"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Link>
+              ) : (
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
