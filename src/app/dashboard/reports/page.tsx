@@ -1,8 +1,18 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
+import type { AiActionStatus } from "@/generated/prisma/enums";
+
+const aiActionStatusTone: Record<AiActionStatus, "yellow" | "green" | "red" | "slate"> = {
+  PENDING: "yellow",
+  APPROVED: "green",
+  EXECUTED: "green",
+  REJECTED: "red",
+  FAILED: "red",
+};
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusBar: Record<(typeof orderStatusOrder)[number], string> = {
@@ -55,7 +65,7 @@ export default async function ReportsPage() {
 
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
 
-  const [orderGroups, invoiceGroups, transactions] = await Promise.all([
+  const [orderGroups, invoiceGroups, transactions, recentAiActions] = await Promise.all([
     db.order.groupBy({
       by: ["status"],
       where: { companyId },
@@ -69,6 +79,12 @@ export default async function ReportsPage() {
     db.transaction.findMany({
       where: { companyId, date: { gte: sixMonthsAgo } },
       select: { type: true, amount: true, date: true },
+    }),
+    db.aiAction.findMany({
+      where: { companyId },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: { id: true, summary: true, status: true, createdAt: true, requestedBy: { select: { name: true } } },
     }),
   ]);
 
@@ -227,6 +243,44 @@ export default async function ReportsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Recent AI activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentAiActions.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No actions have been proposed by the AI assistant yet.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-left text-slate-500">
+                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 font-medium">Requested by</th>
+                  <th className="py-2 font-medium">Status</th>
+                  <th className="py-2 font-medium">When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentAiActions.map((action) => (
+                  <tr key={action.id} className="border-b border-slate-50 last:border-0">
+                    <td className="py-2 text-slate-900">{action.summary}</td>
+                    <td className="py-2 text-slate-600">{action.requestedBy.name}</td>
+                    <td className="py-2">
+                      <Badge tone={aiActionStatusTone[action.status]}>
+                        {action.status.toLowerCase()}
+                      </Badge>
+                    </td>
+                    <td className="py-2 text-slate-500">{format(action.createdAt, "MMM d, HH:mm")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

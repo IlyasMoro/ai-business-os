@@ -26,6 +26,7 @@ model Company {
   projects     Project[]
   tickets      Ticket[]
   chatMessages AiChatMessage[]
+  aiActions    AiAction[]
 }
 
 enum UserRole {
@@ -45,7 +46,9 @@ model User {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  chatMessages AiChatMessage[]
+  chatMessages       AiChatMessage[]
+  requestedAiActions AiAction[] @relation("AiActionRequestedBy")
+  decidedAiActions   AiAction[] @relation("AiActionDecidedBy")
 
   @@index([companyId])
 }
@@ -395,5 +398,52 @@ model AiChatMessage {
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  aiActions AiAction[]
+
   @@index([companyId])
+}
+
+// ---------- AI Actions (proposals + audit log) ----------
+
+enum AiActionType {
+  CREATE_TASK
+  UPDATE_TICKET_STATUS
+  UPDATE_TICKET_PRIORITY
+  UPDATE_CUSTOMER_STATUS
+}
+
+enum AiActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXECUTED
+  FAILED
+}
+
+model AiAction {
+  id         String         @id @default(cuid())
+  type       AiActionType
+  status     AiActionStatus @default(PENDING)
+  summary    String
+  input      String
+  result     String?
+  error      String?
+  createdAt  DateTime       @default(now())
+  decidedAt  DateTime?
+  executedAt DateTime?
+
+  companyId String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  requestedByUserId String
+  requestedBy       User @relation("AiActionRequestedBy", fields: [requestedByUserId], references: [id])
+
+  decidedByUserId String?
+  decidedBy       User?   @relation("AiActionDecidedBy", fields: [decidedByUserId], references: [id])
+
+  chatMessageId String?
+  chatMessage   AiChatMessage? @relation(fields: [chatMessageId], references: [id])
+
+  @@index([companyId])
+  @@index([chatMessageId])
 }
