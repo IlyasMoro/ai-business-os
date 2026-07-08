@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
 import { EmployeeSchema, type EmployeeFormState } from "@/lib/validation/hr";
 
 export async function createEmployee(
@@ -39,6 +40,10 @@ export async function createEmployee(
       hireDate: parsedHireDate,
       companyId: session.companyId,
     },
+  });
+
+  await logAudit(session.companyId, session.userId, "employee.created", "Employee", employee.id, {
+    status: rest.status,
   });
 
   revalidatePath("/dashboard/hr");
@@ -77,6 +82,11 @@ export async function updateEmployee(
     data: { ...rest, email: email || null, hireDate: parsedHireDate },
   });
 
+  await logAudit(session.companyId, session.userId, "employee.updated", "Employee", employeeId, {
+    status: rest.status,
+    salary: rest.salary,
+  });
+
   revalidatePath("/dashboard/hr");
   revalidatePath(`/dashboard/hr/${employeeId}`);
   redirect(`/dashboard/hr/${employeeId}`);
@@ -96,6 +106,8 @@ export async function deleteEmployee(employeeId: string) {
   await db.employee.delete({
     where: { id: employeeId, companyId: session.companyId },
   });
+
+  await logAudit(session.companyId, session.userId, "employee.deleted", "Employee", employeeId);
 
   revalidatePath("/dashboard/hr");
   redirect("/dashboard/hr");

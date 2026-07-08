@@ -30,6 +30,24 @@ const invoiceStatusBar: Record<(typeof invoiceStatusOrder)[number], string> = {
   OVERDUE: "bg-red-500",
 };
 
+function formatAuditAction(action: string) {
+  const readable = action.replace(/\./g, " ").replace(/_/g, " ");
+  return readable.charAt(0).toUpperCase() + readable.slice(1);
+}
+
+function formatAuditMetadata(metadata: string | null) {
+  if (!metadata) return null;
+  try {
+    const parsed = JSON.parse(metadata) as Record<string, unknown>;
+    const parts = Object.entries(parsed)
+      .filter(([, value]) => value !== undefined && value !== null && value !== "")
+      .map(([key, value]) => `${key}: ${value}`);
+    return parts.length > 0 ? parts.join(", ") : null;
+  } catch {
+    return null;
+  }
+}
+
 function BarList({
   rows,
 }: {
@@ -65,7 +83,7 @@ export default async function ReportsPage() {
 
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
 
-  const [orderGroups, invoiceGroups, transactions, recentAiActions] = await Promise.all([
+  const [orderGroups, invoiceGroups, transactions, recentAiActions, recentAuditLogs] = await Promise.all([
     db.order.groupBy({
       by: ["status"],
       where: { companyId },
@@ -85,6 +103,12 @@ export default async function ReportsPage() {
       orderBy: { createdAt: "desc" },
       take: 20,
       select: { id: true, summary: true, status: true, createdAt: true, requestedBy: { select: { name: true } } },
+    }),
+    db.auditLog.findMany({
+      where: { companyId },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      select: { id: true, action: true, metadata: true, createdAt: true, user: { select: { name: true } } },
     }),
   ]);
 
@@ -274,6 +298,40 @@ export default async function ReportsPage() {
                       </Badge>
                     </td>
                     <td className="py-2 text-slate-500">{format(action.createdAt, "MMM d, HH:mm")}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle>Recent activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {recentAuditLogs.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              No sensitive changes (payroll, employee, or invoice status) have been recorded yet.
+            </p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-left text-slate-500">
+                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 font-medium">By</th>
+                  <th className="py-2 font-medium">Details</th>
+                  <th className="py-2 font-medium">When</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentAuditLogs.map((log) => (
+                  <tr key={log.id} className="border-b border-slate-50 last:border-0">
+                    <td className="py-2 text-slate-900">{formatAuditAction(log.action)}</td>
+                    <td className="py-2 text-slate-600">{log.user.name}</td>
+                    <td className="py-2 text-slate-600">{formatAuditMetadata(log.metadata) ?? "—"}</td>
+                    <td className="py-2 text-slate-500">{format(log.createdAt, "MMM d, HH:mm")}</td>
                   </tr>
                 ))}
               </tbody>

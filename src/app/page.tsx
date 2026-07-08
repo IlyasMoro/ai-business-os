@@ -1,6 +1,7 @@
 import { LinkButton } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { Reveal } from "@/components/landing/reveal";
 import {
+  ArrowRight,
   BarChart3,
   Boxes,
   Receipt,
@@ -14,75 +15,146 @@ const modules = [
   { icon: Boxes, name: "Inventory", description: "Stay on top of stock levels and reorder points." },
   { icon: Receipt, name: "Invoicing", description: "Generate and send professional invoices in seconds." },
   { icon: Wallet, name: "Accounting & Payroll", description: "Keep the books balanced and pay your team on time." },
-  { icon: BarChart3, name: "Reports", description: "Understand what's driving — or hurting — your business." },
-  { icon: Sparkles, name: "AI Assistant", description: "Ask questions and get answers backed by your real data." },
+  { icon: BarChart3, name: "Reports", description: "Understand what's driving or hurting your business." },
+  { icon: Sparkles, name: "AI Assistant", description: "Ask questions, get answers, and approve actions backed by your real data." },
 ];
+
+const CTA_CLASS =
+  "border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-surface">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-indigo-500/10 blur-3xl dark:bg-indigo-500/15"
-      />
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050b1e] via-[#060a18] to-[#03050d] text-white">
+      {/* Ambient background: a single, static, understated glow for depth */}
+      <div aria-hidden className="pointer-events-none absolute inset-0">
+        <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
+        <div className="absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-blue-700/10 blur-[140px]" />
+      </div>
 
-      <header className="relative mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-        <span className="flex items-center gap-2 text-lg font-semibold text-slate-900">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-gradient-to-br from-indigo-500 to-indigo-700 text-xs font-bold text-white shadow-sm">
-            AI
+      {/* Nav */}
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050b1e]/60 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <span className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-xs font-bold text-white backdrop-blur-md">
+              AI
+            </span>
+            Business OS
           </span>
-          Business OS
-        </span>
-        <nav className="flex items-center gap-1">
-          <ThemeToggle />
-          <LinkButton href="/login" variant="ghost" size="sm">
-            Sign in
-          </LinkButton>
-          <LinkButton href="/register" size="sm">
-            Get started
-          </LinkButton>
-        </nav>
+          <nav className="flex items-center gap-2">
+            <LinkButton href="/login" variant="glass" size="sm" className="border-transparent bg-transparent hover:border-white/15 hover:bg-white/5">
+              Sign in
+            </LinkButton>
+            <LinkButton href="/register" variant="glass" size="sm" className={CTA_CLASS}>
+              Get started
+            </LinkButton>
+          </nav>
+        </div>
       </header>
 
-      <main className="relative mx-auto max-w-6xl px-6 py-16 sm:py-24">
-        <div className="max-w-2xl">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            Run your whole business from{" "}
-            <span className="bg-gradient-to-r from-indigo-600 to-indigo-400 bg-clip-text text-transparent">
-              one AI-powered platform
-            </span>
-            .
-          </h1>
-          <p className="mt-6 text-lg text-slate-600">
-            CRM, sales, inventory, accounting, HR, payroll, invoicing, projects, and support —
-            unified, with an AI assistant that predicts sales, forecasts cash flow, and answers
-            questions about your business.
+      <main className="relative">
+        {/* Hero */}
+        <section className="mx-auto max-w-4xl px-6 pt-20 pb-24 text-center sm:pt-28 sm:pb-32">
+          <p className="animate-fade-up animate-fade-up-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
+            AI Powered Business Operating System
           </p>
-          <div className="mt-8 flex gap-4">
-            <LinkButton href="/register" size="lg">
+
+          <h1 className="animate-fade-up animate-fade-up-2 mx-auto mt-8 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
+            Run your whole business from{" "}
+            <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+              one AI powered platform
+            </span>
+          </h1>
+
+          <p className="animate-fade-up animate-fade-up-3 mx-auto mt-6 max-w-2xl text-balance text-lg leading-relaxed text-slate-300">
+            CRM, sales, inventory, accounting, HR, payroll, invoicing, projects, and support, all
+            unified, with an AI assistant that looks up real data, proposes actions, and executes
+            them once you approve.
+          </p>
+
+          <div className="animate-fade-up animate-fade-up-4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} group`}>
               Start free
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
             </LinkButton>
-            <LinkButton href="/login" variant="secondary" size="lg">
+            <LinkButton href="/login" variant="glass" size="lg">
               Sign in
             </LinkButton>
           </div>
-        </div>
 
-        <div className="mt-20 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((mod) => (
+          <div className="animate-fade-up animate-fade-up-4 mx-auto mt-16 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
+            {[
+              ["9", "Modules unified"],
+              ["1", "AI assistant"],
+              ["24/7", "Always on"],
+            ].map(([value, label]) => (
+              <div key={label}>
+                <p className="text-2xl font-semibold text-white">{value}</p>
+                <p className="mt-1 text-xs text-slate-400">{label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Feature grid */}
+        <section className="mx-auto max-w-6xl px-6 pb-24">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              Every department, one workspace
+            </h2>
+            <p className="mt-3 text-slate-400">
+              Purpose built modules that share the same customers, data, and AI assistant.
+            </p>
+          </Reveal>
+
+          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {modules.map((mod, i) => (
+              <Reveal key={mod.name} delay={i * 75}>
+                <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-black/30">
+                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-white transition-colors duration-300 group-hover:border-white/25 group-hover:bg-white/15">
+                    <mod.icon className="h-5 w-5" />
+                  </span>
+                  <h3 className="mt-4 font-semibold text-white">{mod.name}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{mod.description}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* Closing CTA */}
+        <section className="mx-auto max-w-6xl px-6 pb-24">
+          <Reveal className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-8 py-16 text-center backdrop-blur-xl">
             <div
-              key={mod.name}
-              className="group rounded-xl border border-slate-200 bg-surface p-6 transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-200 hover:shadow-lg"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-indigo-50 transition-colors group-hover:bg-indigo-100">
-                <mod.icon className="h-5 w-5 text-indigo-600" />
-              </span>
-              <h3 className="mt-4 font-semibold text-slate-900">{mod.name}</h3>
-              <p className="mt-1 text-sm text-slate-600">{mod.description}</p>
+              aria-hidden
+              className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-[100px]"
+            />
+            <h2 className="relative text-2xl font-semibold tracking-tight sm:text-3xl">
+              Ready to run your business smarter?
+            </h2>
+            <p className="relative mx-auto mt-3 max-w-md text-slate-400">
+              Create your workspace in minutes, no credit card required.
+            </p>
+            <div className="relative mt-8 flex justify-center">
+              <LinkButton href="/register" variant="glass" size="lg" className={CTA_CLASS}>
+                Start free
+                <ArrowRight className="h-4 w-4" />
+              </LinkButton>
             </div>
-          ))}
-        </div>
+          </Reveal>
+        </section>
       </main>
+
+      <footer className="relative border-t border-white/10 px-6 py-8">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-slate-400 sm:flex-row">
+          <span className="flex items-center gap-2 font-medium text-slate-300">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/10 text-[10px] font-bold text-white">
+              AI
+            </span>
+            Business OS
+          </span>
+          <p>© {new Date().getFullYear()} AI Business OS. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,19 +1,21 @@
 # AI Business Operating System
 
-A multi-tenant business management app built with Next.js 16, Prisma, and SQLite. Each company gets its own scoped workspace covering CRM, Inventory, Sales, Invoicing, Accounting, HR, Payroll, Projects, Support, and an AI Assistant.
+A multi-tenant business management app built with Next.js 16, Prisma, and Postgres. Each company gets its own scoped workspace covering CRM, Inventory, Sales, Invoicing, Accounting, HR, Payroll, Projects, Support, and an AI Assistant with tool-calling and human-approved actions.
 
 ## Tech stack
 
 - **Next.js 16** (App Router, Server Actions)
-- **Prisma 7** with SQLite (via `@prisma/adapter-better-sqlite3`)
+- **Prisma 7** with Postgres (via `@prisma/adapter-pg`)
 - **Tailwind CSS 4**
 - **Zod** for validation
 - **Groq** (free API) for the AI Assistant chat
+- **Resend** for transactional email (password reset)
 
 ## Prerequisites
 
 - Node.js 20+
 - npm
+- A Postgres database (e.g. [Neon](https://neon.tech) or [Supabase](https://supabase.com) — both have a free tier)
 
 ## Setup
 
@@ -27,27 +29,27 @@ A multi-tenant business management app built with Next.js 16, Prisma, and SQLite
 
 2. **Configure environment variables**
 
-   Create a `.env` file in the project root:
+   Copy `.env.example` to `.env` and fill in the values:
 
    ```bash
-   DATABASE_URL="file:./dev.db"
-   JWT_SECRET="a-long-random-string"
-   GROQ_API_KEY="your-groq-api-key"
+   cp .env.example .env
    ```
 
    | Variable | Description |
    | --- | --- |
-   | `DATABASE_URL` | SQLite connection string. `file:./dev.db` works out of the box. |
+   | `DATABASE_URL` | Postgres connection string, e.g. from Neon or Supabase. |
    | `JWT_SECRET` | Secret used to sign session cookies. Use a long random string in production. |
    | `GROQ_API_KEY` | Free API key for the AI Assistant. Get one at [console.groq.com/keys](https://console.groq.com/keys) — no card required. |
+   | `RESEND_API_KEY` | API key for sending password-reset emails. Get one at [resend.com](https://resend.com) — free tier available. |
+   | `RESEND_FROM_EMAIL` | The "from" address used when sending email. `onboarding@resend.dev` works for testing before you verify your own domain. |
 
 3. **Create the database**
 
    ```bash
-   npm run db:push
+   npm run db:migrate
    ```
 
-   This applies the Prisma schema to a fresh `dev.db` SQLite file.
+   This applies all Prisma migrations to your Postgres database. Use `npm run db:deploy` (`prisma migrate deploy`) in CI/production instead — it applies existing migrations without prompting to create new ones.
 
 4. **Run the dev server**
 
@@ -69,7 +71,10 @@ A multi-tenant business management app built with Next.js 16, Prisma, and SQLite
 | `npm run build` | Production build |
 | `npm run start` | Run the production build |
 | `npm run lint` | Run ESLint |
-| `npm run db:push` | Push the Prisma schema to the database |
+| `npm run test` | Run the Vitest unit test suite |
+| `npm run db:migrate` | Create and apply a new Prisma migration (dev) |
+| `npm run db:deploy` | Apply existing migrations without prompting (CI/production) |
+| `npm run db:seed` | Seed the database |
 | `npm run db:studio` | Open Prisma Studio to browse/edit data |
 
 ## Project structure

@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 // ---------- Tenancy & Auth ----------
@@ -27,6 +27,7 @@ model Company {
   tickets      Ticket[]
   chatMessages AiChatMessage[]
   aiActions    AiAction[]
+  auditLogs    AuditLog[]
 }
 
 enum UserRole {
@@ -36,19 +37,61 @@ enum UserRole {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         UserRole @default(OWNER)
-  createdAt    DateTime @default(now())
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  passwordHash        String
+  name                String
+  role                UserRole  @default(OWNER)
+  createdAt           DateTime  @default(now())
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  chatMessages       AiChatMessage[]
-  requestedAiActions AiAction[] @relation("AiActionRequestedBy")
-  decidedAiActions   AiAction[] @relation("AiActionDecidedBy")
+  chatMessages        AiChatMessage[]
+  requestedAiActions  AiAction[]           @relation("AiActionRequestedBy")
+  decidedAiActions    AiAction[]           @relation("AiActionDecidedBy")
+  passwordResetTokens PasswordResetToken[]
+  auditLogs           AuditLog[]
+
+  @@index([companyId])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  metadata   String?
+  createdAt  DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([companyId])
 }
@@ -71,7 +114,7 @@ model Customer {
   notes     String?
   createdAt DateTime       @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   contacts Contact[]
@@ -109,14 +152,14 @@ model Product {
   reorderLevel Int      @default(5)
   createdAt    DateTime @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  orderItems      OrderItem[]
+  orderItems       OrderItem[]
   invoiceLineItems InvoiceLineItem[]
 
-  @@index([companyId])
   @@unique([companyId, sku])
+  @@index([companyId])
 }
 
 // ---------- Sales ----------
@@ -134,7 +177,7 @@ model Order {
   totalAmount Float       @default(0)
   createdAt   DateTime    @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   customerId String
@@ -153,7 +196,7 @@ model OrderItem {
   unitPrice Float
 
   orderId String
-  order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
@@ -179,7 +222,7 @@ model Invoice {
   totalAmount   Float         @default(0)
   createdAt     DateTime      @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   customerId String
@@ -191,8 +234,8 @@ model Invoice {
   lineItems    InvoiceLineItem[]
   transactions Transaction[]
 
-  @@index([companyId])
   @@unique([companyId, invoiceNumber])
+  @@index([companyId])
 }
 
 model InvoiceLineItem {
@@ -225,7 +268,7 @@ model Transaction {
   description String?
   date        DateTime        @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   invoiceId String?
@@ -251,7 +294,7 @@ model Employee {
   hireDate   DateTime       @default(now())
   status     EmployeeStatus @default(ACTIVE)
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   payrollItems PayrollItem[]
@@ -274,7 +317,7 @@ model PayrollRun {
   totalAmount Float            @default(0)
   processedAt DateTime?
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   items PayrollItem[]
@@ -283,10 +326,10 @@ model PayrollRun {
 }
 
 model PayrollItem {
-  id          String @id @default(cuid())
-  grossPay    Float
-  deductions  Float  @default(0)
-  netPay      Float
+  id         String @id @default(cuid())
+  grossPay   Float
+  deductions Float  @default(0)
+  netPay     Float
 
   payrollRunId String
   payrollRun   PayrollRun @relation(fields: [payrollRunId], references: [id], onDelete: Cascade)
@@ -313,7 +356,7 @@ model Project {
   dueDate     DateTime?
   createdAt   DateTime      @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   customerId String?
@@ -370,7 +413,7 @@ model Ticket {
   priority    TicketPriority @default(MEDIUM)
   createdAt   DateTime       @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   customerId String
@@ -392,7 +435,7 @@ model AiChatMessage {
   content   String
   createdAt DateTime @default(now())
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   userId String
@@ -432,11 +475,11 @@ model AiAction {
   decidedAt  DateTime?
   executedAt DateTime?
 
-  companyId String
+  companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   requestedByUserId String
-  requestedBy       User @relation("AiActionRequestedBy", fields: [requestedByUserId], references: [id])
+  requestedBy       User   @relation("AiActionRequestedBy", fields: [requestedByUserId], references: [id])
 
   decidedByUserId String?
   decidedBy       User?   @relation("AiActionDecidedBy", fields: [decidedByUserId], references: [id])

@@ -41,3 +41,31 @@ export type LoginFormState =
       message?: string;
     }
   | undefined;
+
+export const ForgotPasswordSchema = z.object({
+  email: z.email({ error: "Please enter a valid email." }).trim(),
+});
+
+export const ResetPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, { error: "Password must be at least 8 characters." }),
+});
+
+export type ForgotPasswordFormState =
+  | {
+      errors?: {
+        email?: string[];
+      };
+      message?: string;
+    }
+  | undefined;
+
+export type ResetPasswordFormState =
+  | {
+      errors?: {
+        password?: string[];
+      };
+      message?: string;
+    }
+  | undefined;

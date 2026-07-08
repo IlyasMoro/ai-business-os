@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
+import { computeInvoiceTotal } from "@/lib/invoicing-math";
 import {
   InvoiceSchema,
   InvoiceLineItemSchema,
@@ -17,7 +19,7 @@ async function recomputeInvoiceTotal(invoiceId: string) {
     where: { invoiceId },
     select: { quantity: true, unitPrice: true },
   });
-  const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  const totalAmount = computeInvoiceTotal(items);
   await db.invoice.update({ where: { id: invoiceId }, data: { totalAmount } });
 }
 
@@ -83,6 +85,10 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
   await db.invoice.update({
     where: { id: invoiceId, companyId: session.companyId },
     data: { status: status as (typeof InvoiceStatusValues)[number] },
+  });
+
+  await logAudit(session.companyId, session.userId, "invoice.status_changed", "Invoice", invoiceId, {
+    status,
   });
 
   revalidatePath(`/dashboard/invoicing/${invoiceId}`);

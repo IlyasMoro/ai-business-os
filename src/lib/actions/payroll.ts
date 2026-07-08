@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { logAudit } from "@/lib/audit";
+import { computeNetPay, computePayrollRunTotal } from "@/lib/payroll-math";
 import {
   PayrollRunSchema,
   PayrollItemSchema,
@@ -17,7 +19,7 @@ async function recomputePayrollRunTotal(payrollRunId: string) {
     where: { payrollRunId },
     select: { netPay: true },
   });
-  const totalAmount = items.reduce((sum, item) => sum + item.netPay, 0);
+  const totalAmount = computePayrollRunTotal(items);
   await db.payrollRun.update({ where: { id: payrollRunId }, data: { totalAmount } });
 }
 
@@ -65,6 +67,10 @@ export async function updatePayrollRunStatus(payrollRunId: string, formData: For
       status: status as (typeof PayrollRunStatusValues)[number],
       processedAt: status === "DRAFT" ? null : new Date(),
     },
+  });
+
+  await logAudit(session.companyId, session.userId, "payroll_run.status_changed", "PayrollRun", payrollRunId, {
+    status,
   });
 
   revalidatePath(`/dashboard/payroll/${payrollRunId}`);
@@ -126,7 +132,7 @@ export async function addPayrollItem(
       employeeId: employee.id,
       grossPay,
       deductions,
-      netPay: grossPay - deductions,
+      netPay: computeNetPay(grossPay, deductions),
     },
   });
 

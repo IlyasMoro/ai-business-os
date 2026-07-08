@@ -2,17 +2,19 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "glass";
 type Size = "sm" | "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-indigo-600 text-white shadow-sm hover:bg-indigo-500 hover:shadow-md active:bg-indigo-700",
+    "bg-gradient-to-b from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-600/20 hover:from-indigo-400 hover:to-indigo-500 hover:shadow-md hover:shadow-indigo-500/30 active:from-indigo-600 active:to-indigo-700",
   secondary:
     "bg-surface text-slate-900 border border-slate-300 shadow-sm hover:bg-surface-hover hover:border-slate-400 active:bg-slate-100",
   ghost: "text-slate-700 hover:bg-slate-100 active:bg-slate-200",
   danger:
     "bg-red-600 text-white shadow-sm hover:bg-red-500 hover:shadow-md active:bg-red-700",
+  glass:
+    "border border-white/15 bg-white/5 text-white backdrop-blur-md hover:border-white/25 hover:bg-white/10 active:bg-white/15",
 };
 
 const sizeClasses: Record<Size, string> = {

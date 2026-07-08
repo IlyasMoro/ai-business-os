@@ -22,7 +22,7 @@ export default function RegisterPage() {
       <div className="relative w-full max-w-md rounded-xl border border-slate-200 bg-surface p-8 shadow-lg">
         <h1 className="text-xl font-semibold text-slate-900">Create your workspace</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Start running your business with an AI-powered operating system.
+          Start running your business with an AI powered operating system.
         </p>
 
         <form action={action} className="mt-6 space-y-4">

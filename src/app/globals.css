@@ -8,6 +8,18 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Brand accent retinted from indigo/purple to a neutral black-glass
+     graphite family. Unlayered, so it overrides Tailwind's built-in
+     indigo-* palette values — every existing indigo-* utility class across
+     the app (buttons, active nav state, links, focus rings, badges) picks
+     this up with no per-file changes needed. */
+  --color-indigo-50: #f4f4f5;
+  --color-indigo-100: #e4e4e7;
+  --color-indigo-400: #71717a;
+  --color-indigo-500: #3f3f46;
+  --color-indigo-600: #18181b;
+  --color-indigo-700: #09090b;
 }
 
 /* Registers `surface`/`surface-hover` as real Tailwind color tokens so
@@ -21,7 +33,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Century Gothic", CenturyGothic, AppleGothic, var(--font-jost), sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -43,11 +55,12 @@
   --color-slate-700: #cbd5e6;
   --color-slate-900: #f4f7fc;
 
-  --color-indigo-50: #17203f;
-  --color-indigo-100: #1e2a4d;
-  --color-indigo-500: #818cf8;
-  --color-indigo-600: #6366f1;
-  --color-indigo-700: #a5b4fc;
+  --color-indigo-50: #1c2437;
+  --color-indigo-100: #232d45;
+  --color-indigo-400: #94a3b8;
+  --color-indigo-500: #64748b;
+  --color-indigo-600: #475569;
+  --color-indigo-700: #cbd5e1;
 
   --color-red-50: #2a1420;
   --color-red-100: #3a1420;
@@ -76,6 +89,7 @@
 
 html {
   color-scheme: light;
+  scroll-behavior: smooth;
 }
 
 html[data-theme="dark"] {
@@ -116,4 +130,52 @@ body * {
   border-radius: 9999px;
   border: 2px solid transparent;
   background-clip: content-box;
+}
+
+/* Landing page: faint dot-grid texture for the glass hero backdrop */
+.bg-dot-grid {
+  background-image: radial-gradient(circle, rgba(148, 163, 184, 0.35) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Landing page: staggered entrance for hero content */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  opacity: 0;
+  animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-up-1 {
+  animation-delay: 0.05s;
+}
+.animate-fade-up-2 {
+  animation-delay: 0.15s;
+}
+.animate-fade-up-3 {
+  animation-delay: 0.25s;
+}
+.animate-fade-up-4 {
+  animation-delay: 0.35s;
+}
+
+/* Respect reduced-motion preferences across all the effects above */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-fade-up {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+  }
 }

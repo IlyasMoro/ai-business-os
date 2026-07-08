@@ -1,11 +1,22 @@
 "use client";
 
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { login } from "@/lib/actions/auth";
 import { Button } from "@/components/ui/button";
 import { Input, Label, FieldError } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+
+function ResetSuccessBanner() {
+  const searchParams = useSearchParams();
+  if (searchParams.get("reset") !== "success") return null;
+  return (
+    <p className="mt-4 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+      Your password has been reset. Sign in with your new password.
+    </p>
+  );
+}
 
 export default function LoginPage() {
   const [state, action, pending] = useActionState(login, undefined);
@@ -23,6 +34,10 @@ export default function LoginPage() {
         <h1 className="text-xl font-semibold text-slate-900">Welcome back</h1>
         <p className="mt-1 text-sm text-slate-500">Sign in to your business dashboard.</p>
 
+        <Suspense fallback={null}>
+          <ResetSuccessBanner />
+        </Suspense>
+
         <form action={action} className="mt-6 space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>
@@ -30,7 +45,12 @@ export default function LoginPage() {
             <FieldError messages={state?.errors?.email} />
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link href="/forgot-password" className="mb-1 text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                Forgot password?
+              </Link>
+            </div>
             <Input id="password" name="password" type="password" required />
             <FieldError messages={state?.errors?.password} />
           </div>

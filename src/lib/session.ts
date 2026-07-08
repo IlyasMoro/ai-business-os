@@ -58,10 +58,7 @@ export async function createSession(payload: SessionPayload) {
 export async function getSessionPayload(): Promise<SessionPayload | null> {
   const cookieStore = await cookies();
   const session = cookieStore.get(SESSION_COOKIE)?.value;
-  console.log("[DEBUG getSessionPayload] cookie present:", !!session, session?.slice(0, 20));
-  const result = await decrypt(session);
-  console.log("[DEBUG getSessionPayload] decrypted:", result);
-  return result;
+  return decrypt(session);
 }
 
 export async function deleteSession() {

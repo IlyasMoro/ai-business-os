@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const publicRoutes = ["/", "/login", "/register"];
+const publicRoutes = ["/", "/login", "/register", "/forgot-password"];
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const isPublicRoute = publicRoutes.includes(path);
+  const isPublicRoute = publicRoutes.includes(path) || path.startsWith("/reset-password/");
 
   const cookie = req.cookies.get("session")?.value;
   const session = await decrypt(cookie);
