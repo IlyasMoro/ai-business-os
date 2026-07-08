@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Label, Select, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Label, Select, FieldError } from "@/components/ui-dark/input";
 import type { OrderFormState } from "@/lib/validation/sales";
 
 type Action = (
@@ -38,7 +38,7 @@ export function OrderForm({
         <FieldError messages={state?.errors?.customerId} />
       </div>
 
-      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 
       <Button type="submit" disabled={pending}>
         {pending ? "Creating..." : submitLabel}

@@ -16,8 +16,8 @@ export default async function NewInvoicePage() {
   const defaultDueDate = dateInputDaysFromNow(30);
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-900">New invoice</h1>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+      <h1 className="text-2xl font-semibold text-white">New invoice</h1>
       <div className="mt-6">
         <InvoiceForm
           action={createInvoice}

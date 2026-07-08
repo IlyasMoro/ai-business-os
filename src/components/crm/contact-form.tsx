@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Input, FieldError } from "@/components/ui-dark/input";
 import { createContact } from "@/lib/actions/crm";
 import type { ContactFormState } from "@/lib/validation/crm";
 

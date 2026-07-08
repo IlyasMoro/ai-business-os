@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DeleteButton } from "@/components/ui/delete-button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
+import { Badge } from "@/components/ui-dark/badge";
+import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { PayrollItemForm } from "@/components/payroll/payroll-item-form";
 import { PayrollRunStatusForm } from "@/components/payroll/payroll-run-status-form";
 import { deletePayrollRun, removePayrollItem } from "@/lib/actions/payroll";
@@ -39,65 +39,67 @@ export default async function PayrollRunDetailPage({
   });
 
   return (
-    <div className="max-w-3xl">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              {payrollRun.periodStart.toLocaleDateString()} –{" "}
-              {payrollRun.periodEnd.toLocaleDateString()}
-            </h1>
-            <Badge tone={statusTone[payrollRun.status]}>{payrollRun.status}</Badge>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+      <div className="max-w-3xl">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold text-white">
+                {payrollRun.periodStart.toLocaleDateString()} –{" "}
+                {payrollRun.periodEnd.toLocaleDateString()}
+              </h1>
+              <Badge tone={statusTone[payrollRun.status]}>{payrollRun.status}</Badge>
+            </div>
+            {payrollRun.processedAt && (
+              <p className="mt-1 text-sm text-slate-500">
+                Processed {payrollRun.processedAt.toLocaleDateString()}
+              </p>
+            )}
           </div>
-          {payrollRun.processedAt && (
-            <p className="mt-1 text-sm text-slate-500">
-              Processed {payrollRun.processedAt.toLocaleDateString()}
+          <div className="flex items-center gap-2">
+            <PayrollRunStatusForm payrollRunId={payrollRun.id} status={payrollRun.status} />
+            <DeleteButton action={deletePayrollRun.bind(null, payrollRun.id)} />
+          </div>
+        </div>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Items</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {payrollRun.items.length > 0 && (
+              <ul className="mb-4 divide-y divide-slate-800">
+                {payrollRun.items.map((item) => (
+                  <li key={item.id} className="flex items-center justify-between py-2 text-sm">
+                    <div>
+                      <p className="font-medium text-white">{item.employee.name}</p>
+                      <p className="font-mono text-xs tabular-nums text-slate-500">
+                        Gross ${item.grossPay.toFixed(2)} − Deductions ${item.deductions.toFixed(2)} =
+                        Net ${item.netPay.toFixed(2)}
+                      </p>
+                    </div>
+                    <DeleteButton
+                      action={removePayrollItem.bind(null, payrollRun.id, item.id)}
+                      confirmMessage="Remove this payroll item?"
+                      label=""
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <PayrollItemForm payrollRunId={payrollRun.id} employees={employees} />
+            <p className="mt-4 text-right font-mono text-sm font-semibold tabular-nums text-amber-400">
+              Total: ${payrollRun.totalAmount.toFixed(2)}
             </p>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <PayrollRunStatusForm payrollRunId={payrollRun.id} status={payrollRun.status} />
-          <DeleteButton action={deletePayrollRun.bind(null, payrollRun.id)} />
-        </div>
+          </CardContent>
+        </Card>
+
+        <p className="mt-6">
+          <Link href="/dashboard/payroll" className="text-sm text-slate-500 hover:text-slate-300">
+            ← Back to payroll
+          </Link>
+        </p>
       </div>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {payrollRun.items.length > 0 && (
-            <ul className="mb-4 divide-y divide-slate-100">
-              {payrollRun.items.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-2 text-sm">
-                  <div>
-                    <p className="font-medium text-slate-900">{item.employee.name}</p>
-                    <p className="text-slate-500">
-                      Gross ${item.grossPay.toFixed(2)} − Deductions ${item.deductions.toFixed(2)} =
-                      Net ${item.netPay.toFixed(2)}
-                    </p>
-                  </div>
-                  <DeleteButton
-                    action={removePayrollItem.bind(null, payrollRun.id, item.id)}
-                    confirmMessage="Remove this payroll item?"
-                    label=""
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-          <PayrollItemForm payrollRunId={payrollRun.id} employees={employees} />
-          <p className="mt-4 text-right text-sm font-semibold text-slate-900">
-            Total: ${payrollRun.totalAmount.toFixed(2)}
-          </p>
-        </CardContent>
-      </Card>
-
-      <p className="mt-6">
-        <Link href="/dashboard/payroll" className="text-sm text-slate-500 hover:text-slate-700">
-          ← Back to payroll
-        </Link>
-      </p>
     </div>
   );
 }

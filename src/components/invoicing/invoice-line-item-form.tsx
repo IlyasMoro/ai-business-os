@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input, Select, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Input, Select, FieldError } from "@/components/ui-dark/input";
 import { addInvoiceLineItem } from "@/lib/actions/invoicing";
 import type { InvoiceLineItemFormState } from "@/lib/validation/invoicing";
 
@@ -62,7 +62,7 @@ export function InvoiceLineItemForm({
       <Button type="submit" variant="secondary" disabled={pending}>
         {pending ? "Adding..." : "Add item"}
       </Button>
-      {state?.message && <p className="col-span-full text-sm text-red-600">{state.message}</p>}
+      {state?.message && <p className="col-span-full text-sm text-red-400">{state.message}</p>}
     </form>
   );
 }

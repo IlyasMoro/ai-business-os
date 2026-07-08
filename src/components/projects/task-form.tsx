@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input, Select, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Input, Select, FieldError } from "@/components/ui-dark/input";
 import { addTask } from "@/lib/actions/projects";
 import type { TaskFormState } from "@/lib/validation/projects";
 
@@ -56,7 +56,7 @@ export function TaskForm({
       >
         {pending ? "Adding..." : "Add task"}
       </Button>
-      {state?.message && <p className="col-span-full text-sm text-red-600">{state.message}</p>}
+      {state?.message && <p className="col-span-full text-sm text-red-400">{state.message}</p>}
     </form>
   );
 }

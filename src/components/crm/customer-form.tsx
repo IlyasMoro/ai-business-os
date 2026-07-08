@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input, Label, Select, Textarea, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Input, Label, Select, Textarea, FieldError } from "@/components/ui-dark/input";
 import type { CustomerFormState } from "@/lib/validation/crm";
 
 type Action = (
@@ -69,7 +69,7 @@ export function CustomerForm({
         <FieldError messages={state?.errors?.notes} />
       </div>
 
-      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 
       <Button type="submit" disabled={pending}>
         {pending ? "Saving..." : submitLabel}

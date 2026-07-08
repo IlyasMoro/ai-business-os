@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Select } from "@/components/ui/input";
+import { Select } from "@/components/ui-dark/input";
 import { updateOrderStatus } from "@/lib/actions/sales";
 
 export function OrderStatusForm({

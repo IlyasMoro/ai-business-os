@@ -13,8 +13,8 @@ export default async function NewTicketPage() {
   });
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-900">New ticket</h1>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+      <h1 className="text-2xl font-semibold text-white">New ticket</h1>
       <div className="mt-6">
         <TicketForm action={createTicket} customers={customers} submitLabel="Create ticket" />
       </div>

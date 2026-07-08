@@ -2,9 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { DeleteButton } from "@/components/ui/delete-button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
+import { Badge } from "@/components/ui-dark/badge";
+import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { OrderItemForm } from "@/components/sales/order-item-form";
 import { OrderStatusForm } from "@/components/sales/order-status-form";
 import { deleteOrder, removeOrderItem } from "@/lib/actions/sales";
@@ -41,62 +41,64 @@ export default async function OrderDetailPage({
   });
 
   return (
-    <div className="max-w-3xl">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold text-slate-900">
-              Order for {order.customer.name}
-            </h1>
-            <Badge tone={statusTone[order.status]}>{order.status}</Badge>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+      <div className="max-w-3xl">
+        <div className="flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold text-white">
+                Order for {order.customer.name}
+              </h1>
+              <Badge tone={statusTone[order.status]}>{order.status}</Badge>
+            </div>
+            <p className="mt-1 text-slate-400">
+              Created {order.createdAt.toLocaleDateString()}
+            </p>
           </div>
-          <p className="mt-1 text-slate-500">
-            Created {order.createdAt.toLocaleDateString()}
-          </p>
+          <div className="flex items-center gap-2">
+            <OrderStatusForm orderId={order.id} status={order.status} />
+            <DeleteButton action={deleteOrder.bind(null, order.id)} />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <OrderStatusForm orderId={order.id} status={order.status} />
-          <DeleteButton action={deleteOrder.bind(null, order.id)} />
-        </div>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Items</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {order.items.length > 0 && (
+              <ul className="mb-4 divide-y divide-slate-800">
+                {order.items.map((item) => (
+                  <li key={item.id} className="flex items-center justify-between py-2 text-sm">
+                    <div>
+                      <p className="font-medium text-white">{item.product.name}</p>
+                      <p className="font-mono text-xs tabular-nums text-slate-500">
+                        {item.quantity} × ${item.unitPrice.toFixed(2)} = $
+                        {(item.quantity * item.unitPrice).toFixed(2)}
+                      </p>
+                    </div>
+                    <DeleteButton
+                      action={removeOrderItem.bind(null, order.id, item.id)}
+                      confirmMessage="Remove this item?"
+                      label=""
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <OrderItemForm orderId={order.id} products={products} />
+            <p className="mt-4 text-right font-mono text-sm font-semibold tabular-nums text-amber-400">
+              Total: ${order.totalAmount.toFixed(2)}
+            </p>
+          </CardContent>
+        </Card>
+
+        <p className="mt-6">
+          <Link href="/dashboard/sales" className="text-sm text-slate-500 hover:text-slate-300">
+            ← Back to orders
+          </Link>
+        </p>
       </div>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Items</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {order.items.length > 0 && (
-            <ul className="mb-4 divide-y divide-slate-100">
-              {order.items.map((item) => (
-                <li key={item.id} className="flex items-center justify-between py-2 text-sm">
-                  <div>
-                    <p className="font-medium text-slate-900">{item.product.name}</p>
-                    <p className="text-slate-500">
-                      {item.quantity} × ${item.unitPrice.toFixed(2)} = $
-                      {(item.quantity * item.unitPrice).toFixed(2)}
-                    </p>
-                  </div>
-                  <DeleteButton
-                    action={removeOrderItem.bind(null, order.id, item.id)}
-                    confirmMessage="Remove this item?"
-                    label=""
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
-          <OrderItemForm orderId={order.id} products={products} />
-          <p className="mt-4 text-right text-sm font-semibold text-slate-900">
-            Total: ${order.totalAmount.toFixed(2)}
-          </p>
-        </CardContent>
-      </Card>
-
-      <p className="mt-6">
-        <Link href="/dashboard/sales" className="text-sm text-slate-500 hover:text-slate-700">
-          ← Back to orders
-        </Link>
-      </p>
     </div>
   );
 }

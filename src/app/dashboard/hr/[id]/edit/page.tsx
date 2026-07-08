@@ -26,8 +26,8 @@ export default async function EditEmployeePage({
   ) => Promise<EmployeeFormState>;
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold text-slate-900">Edit employee</h1>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-slate-950 p-4 sm:-m-6 sm:p-6">
+      <h1 className="text-2xl font-semibold text-white">Edit employee</h1>
       <div className="mt-6">
         <EmployeeForm
           action={action}

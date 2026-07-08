@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input, Label, Textarea, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Input, Label, Textarea, FieldError } from "@/components/ui-dark/input";
 import type { ProductFormState } from "@/lib/validation/inventory";
 
 type Action = (
@@ -110,7 +110,7 @@ export function ProductForm({
         </div>
       </div>
 
-      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 
       <Button type="submit" disabled={pending}>
         {pending ? "Saving..." : submitLabel}
