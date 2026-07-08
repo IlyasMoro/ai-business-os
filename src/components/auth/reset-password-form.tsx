@@ -1,8 +1,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input, Label, FieldError } from "@/components/ui/input";
+import { Button } from "@/components/ui-dark/button";
+import { Input, Label, FieldError } from "@/components/ui-dark/input";
 import type { ResetPasswordFormState } from "@/lib/validation/auth";
 
 type Action = (
@@ -21,7 +21,7 @@ export function ResetPasswordForm({ action }: { action: Action }) {
         <FieldError messages={state?.errors?.password} />
       </div>
 
-      {state?.message && <p className="text-sm text-red-600">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Resetting..." : "Reset password"}
