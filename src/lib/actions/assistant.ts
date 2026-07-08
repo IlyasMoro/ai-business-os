@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { sendEmail } from "@/lib/email";
 import { generateAssistantReply } from "@/lib/ai";
 import { getBusinessSnapshot, formatSnapshotForPrompt } from "@/lib/business-snapshot";
 import { ChatMessageSchema, type ChatMessageFormState } from "@/lib/validation/assistant";
@@ -147,6 +148,51 @@ async function executeAiAction(
       });
       return { result: { customerId: args.customerId, status: args.status } };
     }
+    case "CREATE_INVOICE": {
+      const customer = await db.customer.findUnique({
+        where: { id: args.customerId, companyId },
+        select: { id: true },
+      });
+      if (!customer) return { error: "Customer no longer exists." };
+
+      const dueDate = new Date(args.dueDate);
+      if (Number.isNaN(dueDate.getTime())) return { error: "Invalid due date." };
+
+      const count = await db.invoice.count({ where: { companyId } });
+      const invoiceNumber = `INV-${String(count + 1).padStart(4, "0")}`;
+
+      const invoice = await db.invoice.create({
+        data: { invoiceNumber, customerId: args.customerId, dueDate, companyId },
+      });
+      return { result: { invoiceId: invoice.id, invoiceNumber } };
+    }
+    case "SEND_OVERDUE_REMINDER": {
+      const customer = await db.customer.findUnique({
+        where: { id: args.customerId, companyId },
+        select: { name: true, email: true },
+      });
+      if (!customer?.email) return { error: "Customer has no email on file." };
+
+      const invoices = await db.invoice.findMany({
+        where: { companyId, customerId: args.customerId, status: { in: ["SENT", "OVERDUE"] } },
+        select: { invoiceNumber: true, totalAmount: true, dueDate: true },
+      });
+      if (invoices.length === 0) return { error: "No outstanding invoices for this customer." };
+
+      const lines = invoices
+        .map(
+          (inv) =>
+            `<li>${inv.invoiceNumber} — $${inv.totalAmount.toFixed(2)}, due ${inv.dueDate.toLocaleDateString()}</li>`
+        )
+        .join("");
+
+      await sendEmail({
+        to: customer.email,
+        subject: "Payment reminder: outstanding invoice(s)",
+        html: `<p>Hi ${customer.name},</p><p>This is a friendly reminder that the following invoice(s) are outstanding:</p><ul>${lines}</ul><p>Please arrange payment at your earliest convenience.</p>`,
+      });
+      return { result: { customerEmail: customer.email, invoiceCount: invoices.length } };
+    }
     default:
       return { error: `Unknown action type: ${type}` };
   }
@@ -196,6 +242,7 @@ export async function approveAiAction(actionId: string) {
   revalidatePath("/dashboard/projects");
   revalidatePath("/dashboard/support");
   revalidatePath("/dashboard/crm");
+  revalidatePath("/dashboard/invoicing");
 }
 
 export async function rejectAiAction(actionId: string) {

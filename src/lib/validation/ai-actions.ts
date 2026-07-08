@@ -3,6 +3,7 @@ import type { Groq } from "groq-sdk";
 import { TicketStatusValues, TicketPriorityValues } from "@/lib/validation/support";
 
 export const CustomerStatusValues = ["LEAD", "ACTIVE", "INACTIVE"] as const;
+export const SalesPeriodValues = ["this_month", "last_month"] as const;
 
 // ---------- Tool definitions (Groq / OpenAI-compatible function schema) ----------
 
@@ -112,9 +113,74 @@ export const TOOL_DEFINITIONS: Groq.Chat.ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "summarize_sales",
+      description:
+        "Get a summary of sales for a period: number of orders, total order value, average order value, and the top customer by order value. Read-only, runs immediately.",
+      parameters: {
+        type: "object",
+        properties: {
+          period: {
+            type: "string",
+            enum: [...SalesPeriodValues],
+            description: "Defaults to this_month if omitted.",
+          },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "forecast_next_month_revenue",
+      description:
+        "Estimate next month's revenue using a trailing 3-month average of recorded income. This is a rough trend estimate, not a guarantee — say so when reporting it. Read-only, runs immediately.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "create_invoice",
+      description:
+        "Propose creating a new draft invoice for a customer. Requires a customer id from find_customer.",
+      parameters: {
+        type: "object",
+        properties: {
+          customerId: { type: "string" },
+          dueDate: { type: "string", description: "Due date, YYYY-MM-DD." },
+        },
+        required: ["customerId", "dueDate"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "send_overdue_reminder",
+      description:
+        "Propose emailing a customer a reminder about their overdue/outstanding invoices. Requires a customer id — from find_customer or list_overdue_invoices.",
+      parameters: {
+        type: "object",
+        properties: {
+          customerId: { type: "string" },
+        },
+        required: ["customerId"],
+      },
+    },
+  },
 ];
 
-const READ_TOOL_NAMES = new Set(["find_customer", "list_open_tickets", "list_overdue_invoices", "list_projects"]);
+const READ_TOOL_NAMES = new Set([
+  "find_customer",
+  "list_open_tickets",
+  "list_overdue_invoices",
+  "list_projects",
+  "summarize_sales",
+  "forecast_next_month_revenue",
+]);
 
 export function isReadTool(name: string) {
   return READ_TOOL_NAMES.has(name);
@@ -149,6 +215,19 @@ export const UpdateCustomerStatusArgs = z.object({
   customerId: z.string().min(1),
   status: z.enum(CustomerStatusValues),
 });
+export const SummarizeSalesArgs = z.object({
+  period: z.enum(SalesPeriodValues).optional(),
+});
+export const CreateInvoiceArgs = z.object({
+  customerId: z.string().min(1),
+  dueDate: z
+    .string()
+    .trim()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "dueDate must be YYYY-MM-DD." }),
+});
+export const SendOverdueReminderArgs = z.object({
+  customerId: z.string().min(1),
+});
 
 // ---------- Summary formatters ----------
 
@@ -166,4 +245,12 @@ export function summarizeUpdateTicketPriority(subject: string, priority: string)
 
 export function summarizeUpdateCustomerStatus(name: string, status: string) {
   return `Set customer "${name}" status to ${status}`;
+}
+
+export function summarizeCreateInvoice(customerName: string, dueDate: string) {
+  return `Create a draft invoice for "${customerName}" due ${dueDate}`;
+}
+
+export function summarizeSendOverdueReminder(customerName: string) {
+  return `Email "${customerName}" a reminder about their overdue invoice(s)`;
 }

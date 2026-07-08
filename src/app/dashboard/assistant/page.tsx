@@ -48,7 +48,7 @@ export default async function AssistantPage() {
       <div className="max-w-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-50">AI Assistant</h1>
+            <h1 className="text-2xl font-semibold text-slate-50">AI Copilot</h1>
             <p className="mt-1 text-sm text-slate-400">
               Ask questions about your business, or ask it to take action.
             </p>

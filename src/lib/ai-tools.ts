@@ -1,4 +1,5 @@
 import "server-only";
+import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/db";
 import {
   FindCustomerArgs,
@@ -6,10 +7,15 @@ import {
   UpdateTicketStatusArgs,
   UpdateTicketPriorityArgs,
   UpdateCustomerStatusArgs,
+  SummarizeSalesArgs,
+  CreateInvoiceArgs,
+  SendOverdueReminderArgs,
   summarizeCreateTask,
   summarizeUpdateTicketStatus,
   summarizeUpdateTicketPriority,
   summarizeUpdateCustomerStatus,
+  summarizeCreateInvoice,
+  summarizeSendOverdueReminder,
 } from "@/lib/validation/ai-actions";
 
 export {
@@ -58,7 +64,14 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
     case "list_overdue_invoices": {
       const invoices = await db.invoice.findMany({
         where: { companyId, status: { in: ["SENT", "OVERDUE"] } },
-        select: { id: true, invoiceNumber: true, totalAmount: true, dueDate: true, customer: { select: { name: true } } },
+        select: {
+          id: true,
+          invoiceNumber: true,
+          totalAmount: true,
+          dueDate: true,
+          customerId: true,
+          customer: { select: { name: true } },
+        },
         take: 20,
       });
       return {
@@ -67,6 +80,7 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
           invoiceNumber: i.invoiceNumber,
           totalAmount: i.totalAmount,
           dueDate: i.dueDate.toISOString().slice(0, 10),
+          customerId: i.customerId,
           customerName: i.customer.name,
         })),
       };
@@ -78,6 +92,55 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
         take: 20,
       });
       return { projects };
+    }
+    case "summarize_sales": {
+      const parsed = SummarizeSalesArgs.safeParse(rawArgs);
+      if (!parsed.success) return { error: "Invalid arguments for summarize_sales." };
+      const period = parsed.data.period ?? "this_month";
+      const monthsAgo = period === "last_month" ? 1 : 0;
+      const start = startOfMonth(subMonths(new Date(), monthsAgo));
+      const end = endOfMonth(subMonths(new Date(), monthsAgo));
+
+      const orders = await db.order.findMany({
+        where: { companyId, createdAt: { gte: start, lte: end } },
+        select: { totalAmount: true, customer: { select: { name: true } } },
+      });
+      const totalValue = orders.reduce((s, o) => s + o.totalAmount, 0);
+      const byCustomer = new Map<string, number>();
+      for (const o of orders) {
+        byCustomer.set(o.customer.name, (byCustomer.get(o.customer.name) ?? 0) + o.totalAmount);
+      }
+      const top = Array.from(byCustomer.entries()).sort((a, b) => b[1] - a[1])[0];
+
+      return {
+        period,
+        orderCount: orders.length,
+        totalOrderValue: totalValue,
+        averageOrderValue: orders.length > 0 ? totalValue / orders.length : 0,
+        topCustomer: top ? { name: top[0], value: top[1] } : null,
+      };
+    }
+    case "forecast_next_month_revenue": {
+      const months = [2, 1, 0].map((n) => ({
+        start: startOfMonth(subMonths(new Date(), n)),
+        end: endOfMonth(subMonths(new Date(), n)),
+      }));
+      const totals = await Promise.all(
+        months.map(async ({ start, end }) => {
+          const income = await db.transaction.aggregate({
+            where: { companyId, type: "INCOME", date: { gte: start, lte: end } },
+            _sum: { amount: true },
+          });
+          return income._sum.amount ?? 0;
+        })
+      );
+      const average = totals.reduce((s, v) => s + v, 0) / totals.length;
+
+      return {
+        method: "trailing 3-month average of recorded income transactions — a rough trend estimate, not a guarantee",
+        lastThreeMonthsIncome: totals,
+        estimatedNextMonthRevenue: Math.round(average),
+      };
     }
     default:
       return { error: `Unknown read tool: ${name}` };
@@ -191,6 +254,56 @@ export async function proposeAiAction(
       const action = await db.aiAction.create({
         data: {
           type: "UPDATE_CUSTOMER_STATUS",
+          summary,
+          input: JSON.stringify(parsed.data),
+          companyId,
+          requestedByUserId,
+          chatMessageId,
+        },
+      });
+      return { id: action.id, summary };
+    }
+    case "create_invoice": {
+      const parsed = CreateInvoiceArgs.safeParse(rawArgs);
+      if (!parsed.success) return { error: "Invalid arguments for create_invoice." };
+
+      const customer = await db.customer.findUnique({
+        where: { id: parsed.data.customerId, companyId },
+        select: { id: true, name: true },
+      });
+      if (!customer) return { error: "customerId does not belong to this company." };
+
+      const dueDate = new Date(parsed.data.dueDate);
+      if (Number.isNaN(dueDate.getTime())) return { error: "Invalid dueDate." };
+
+      const summary = summarizeCreateInvoice(customer.name, parsed.data.dueDate);
+      const action = await db.aiAction.create({
+        data: {
+          type: "CREATE_INVOICE",
+          summary,
+          input: JSON.stringify(parsed.data),
+          companyId,
+          requestedByUserId,
+          chatMessageId,
+        },
+      });
+      return { id: action.id, summary };
+    }
+    case "send_overdue_reminder": {
+      const parsed = SendOverdueReminderArgs.safeParse(rawArgs);
+      if (!parsed.success) return { error: "Invalid arguments for send_overdue_reminder." };
+
+      const customer = await db.customer.findUnique({
+        where: { id: parsed.data.customerId, companyId },
+        select: { id: true, name: true, email: true },
+      });
+      if (!customer) return { error: "customerId does not belong to this company." };
+      if (!customer.email) return { error: "This customer has no email on file." };
+
+      const summary = summarizeSendOverdueReminder(customer.name);
+      const action = await db.aiAction.create({
+        data: {
+          type: "SEND_OVERDUE_REMINDER",
           summary,
           input: JSON.stringify(parsed.data),
           companyId,

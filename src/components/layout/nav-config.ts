@@ -24,6 +24,7 @@ export const navItems: {
   roles?: Role[];
 }[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard/assistant", label: "AI Copilot", icon: Sparkles },
   { href: "/dashboard/crm", label: "CRM", icon: Users },
   { href: "/dashboard/sales", label: "Sales", icon: ShoppingCart },
   { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
@@ -34,5 +35,4 @@ export const navItems: {
   { href: "/dashboard/payroll", label: "Payroll", icon: Banknote, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
-  { href: "/dashboard/assistant", label: "AI Assistant", icon: Sparkles },
 ];
