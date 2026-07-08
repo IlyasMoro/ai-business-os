@@ -22,7 +22,7 @@ export function KpiCard({
   trend: number[];
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+    <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate-400">{label}</p>

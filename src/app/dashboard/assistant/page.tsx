@@ -44,7 +44,7 @@ export default async function AssistantPage() {
   }
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <div className="max-w-2xl">
         <div className="flex items-center justify-between">
           <div>

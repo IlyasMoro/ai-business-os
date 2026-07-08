@@ -16,7 +16,7 @@ export function Topbar({
   const initial = userName.trim().charAt(0).toUpperCase() || "?";
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-white/[0.06] bg-[#0B1120] px-4 sm:px-6">
+    <header className="flex h-16 items-center justify-between border-b border-white/[0.06] bg-black px-4 sm:px-6">
       <div className="flex items-center gap-3">
         <MobileNav role={role} />
         <p className="text-sm font-semibold text-slate-50">{companyName}</p>

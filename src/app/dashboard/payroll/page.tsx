@@ -53,7 +53,7 @@ export default async function PayrollPage({
   const totalPaid = statusGroups.find((g) => g.status === "PAID")?._sum.totalAmount ?? 0;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
       <div className="flex items-center justify-between">
         <div>
@@ -72,13 +72,13 @@ export default async function PayrollPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5 lg:col-span-1">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5 lg:col-span-1">
           <p className="text-sm text-slate-400">Total paid</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalPaid} prefix="$" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6 lg:col-span-2">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-2">
           <div className="flex justify-center">
             <DonutChart
               title="Payroll runs by status"
@@ -94,7 +94,7 @@ export default async function PayrollPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {payrollRuns.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No payroll runs yet. Create your first one to get started.

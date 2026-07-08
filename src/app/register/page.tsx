@@ -10,12 +10,12 @@ export default function RegisterPage() {
   const [state, action, pending] = useActionState(register, undefined);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-[#0B1120] px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-black px-4">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
       />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#1A2238] p-8 shadow-lg">
+      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg">
         <h1 className="text-xl font-semibold text-slate-50">Create your workspace</h1>
         <p className="mt-1 text-sm text-slate-400">
           Start running your business with an AI powered operating system.

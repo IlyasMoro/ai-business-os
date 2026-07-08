@@ -57,7 +57,7 @@ export default async function AccountingPage({
   const net = income - expense;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -74,7 +74,7 @@ export default async function AccountingPage({
               name="q"
               placeholder="Search by category..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#1A2238] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -89,26 +89,26 @@ export default async function AccountingPage({
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2 lg:grid-cols-1">
-          <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
             <p className="text-sm text-slate-400">Income</p>
             <p className="mt-2 text-2xl font-semibold text-emerald-400">
               <AnimatedCounter value={income} prefix="$" decimals={0} />
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
             <p className="text-sm text-slate-400">Expenses</p>
             <p className="mt-2 text-2xl font-semibold text-red-400">
               <AnimatedCounter value={expense} prefix="$" decimals={0} />
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+          <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
             <p className="text-sm text-slate-400">Net</p>
             <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50" : "text-red-400"}`}>
               <AnimatedCounter value={net} prefix="$" decimals={0} />
             </p>
           </div>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6 lg:col-span-1">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-1">
           <div className="flex justify-center">
             <DonutChart
               title="Income vs expenses"
@@ -123,7 +123,7 @@ export default async function AccountingPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {transactions.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q

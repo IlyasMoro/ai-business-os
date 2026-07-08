@@ -120,24 +120,24 @@ export default async function ReportsPage() {
   }));
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50">Reports</h1>
       <p className="mt-1 text-sm text-slate-400">A snapshot of revenue, sales, and invoicing over the last 6 months.</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Income (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalIncome} prefix="R" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Expenses (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-red-400">
             <AnimatedCounter value={totalExpense} prefix="R" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Net (6 months)</p>
           <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50" : "text-red-400"}`}>
             <AnimatedCounter value={net} prefix="R" decimals={0} />
@@ -145,7 +145,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-50">Portfolio breakdown</h2>
         <div className="flex flex-col items-center justify-around gap-8 sm:flex-row sm:items-start">
           <DonutChart
@@ -180,7 +180,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-50">Revenue vs expenses</h2>
         <GroupedBarChart
           data={monthly.map((m) => ({ label: m.label, a: m.income, b: m.expense }))}
@@ -190,7 +190,7 @@ export default async function ReportsPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <h2 className="mb-4 text-sm font-semibold text-slate-50">Top customers by order value</h2>
           {customerValues.length === 0 ? (
             <p className="text-sm text-slate-500">No order value recorded yet.</p>
@@ -202,7 +202,7 @@ export default async function ReportsPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <h2 className="mb-4 text-sm font-semibold text-slate-50">Value vs average customer</h2>
           {customerDeltas.length === 0 ? (
             <p className="text-sm text-slate-500">No order value recorded yet.</p>
@@ -216,7 +216,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         <div className="border-b border-white/[0.06] p-6 pb-4">
           <h2 className="text-sm font-semibold text-slate-50">Customer value ranking</h2>
         </div>
@@ -248,7 +248,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-50">Recent invoices</h2>
         {recentInvoices.length === 0 ? (
           <p className="text-sm text-slate-500">No invoices yet.</p>
@@ -280,7 +280,7 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-50">Recent AI activity</h2>
         {recentAiActions.length === 0 ? (
           <p className="text-sm text-slate-500">No actions have been proposed by the AI assistant yet.</p>
@@ -312,7 +312,7 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
         <h2 className="mb-4 text-sm font-semibold text-slate-50">Recent activity</h2>
         {recentAuditLogs.length === 0 ? (
           <p className="text-sm text-slate-500">

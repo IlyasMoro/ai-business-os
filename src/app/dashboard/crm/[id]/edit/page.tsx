@@ -25,7 +25,7 @@ export default async function EditCustomerPage({
   ) => Promise<CustomerFormState>;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50">Edit customer</h1>
       <div className="mt-6">
         <CustomerForm action={action} defaultValues={customer} submitLabel="Save changes" />

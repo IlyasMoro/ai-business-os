@@ -37,18 +37,18 @@ function WidgetsSkeleton() {
     <div className="animate-pulse">
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
+          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] bg-[#111111]" />
         ))}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl border border-white/[0.06] bg-[#1A2238]" />
+          <div key={i} className="h-20 rounded-xl border border-white/[0.06] bg-[#111111]" />
         ))}
       </div>
-      <div className="mt-6 h-64 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
+      <div className="mt-6 h-64 rounded-2xl border border-white/[0.06] bg-[#111111]" />
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
-        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#1A2238]" />
+        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#111111]" />
+        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#111111]" />
       </div>
     </div>
   );
@@ -63,7 +63,7 @@ export default async function DashboardOverviewPage({
   const user = await getCurrentUser();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -259,7 +259,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {secondaryStats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
-            <div className="rounded-xl border border-white/[0.06] bg-[#1A2238] p-4 transition-colors hover:border-slate-700">
+            <div className="rounded-xl border border-white/[0.06] bg-[#111111] p-4 transition-colors hover:border-slate-700">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-slate-400">{stat.label}</p>
                 <stat.icon className={`h-4 w-4 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
@@ -270,7 +270,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
         <h2 className="text-sm font-semibold text-slate-50">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
           <RingGauge label="Project completion" pct={completionRatio} goodIsHigh />
@@ -280,7 +280,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <h2 className="text-sm font-semibold text-slate-50">Customers by status</h2>
           <ul className="mt-4 space-y-4">
             {customerStatusRows.map((row) => (
@@ -295,7 +295,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <h2 className="text-sm font-semibold text-slate-50">Recent activity</h2>
           <div className="mt-4">
             <ActivityTimeline items={timelineItems} />

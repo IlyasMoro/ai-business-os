@@ -27,7 +27,7 @@ export function MobileNav({ role }: { role: Role }) {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-white/[0.06] bg-[#0B1120] shadow-xl">
+          <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-white/[0.06] bg-black shadow-xl">
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"

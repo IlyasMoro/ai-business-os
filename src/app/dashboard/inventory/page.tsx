@@ -54,7 +54,7 @@ export default async function InventoryPage({
     allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : 100;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50">Inventory</h1>
@@ -70,7 +70,7 @@ export default async function InventoryPage({
               name="q"
               placeholder="Search by name or SKU..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#1A2238] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -84,24 +84,24 @@ export default async function InventoryPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Inventory value</p>
           <p className="mt-2 text-2xl font-semibold text-slate-50">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Low stock items</p>
           <p className={`mt-2 text-2xl font-semibold ${lowStockCount > 0 ? "text-red-400" : "text-slate-50"}`}>
             <AnimatedCounter value={lowStockCount} decimals={0} />
           </p>
         </div>
-        <div className="flex items-center justify-center rounded-2xl border border-white/[0.06] bg-[#1A2238] p-5">
+        <div className="flex items-center justify-center rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <RingGauge label="Stock health" pct={healthyRatio} goodIsHigh size={96} strokeWidth={8} />
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {products.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q

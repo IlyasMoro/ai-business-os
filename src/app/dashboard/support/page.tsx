@@ -72,7 +72,7 @@ export default async function SupportPage({
   const totalPriority = priorityGroups.reduce((s, g) => s + g._count._all, 0) || 1;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50">Support</h1>
@@ -88,7 +88,7 @@ export default async function SupportPage({
               name="q"
               placeholder="Search by subject or customer..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#1A2238] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -102,7 +102,7 @@ export default async function SupportPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <div className="flex justify-center">
             <DonutChart
               title="Tickets by status"
@@ -116,7 +116,7 @@ export default async function SupportPage({
             />
           </div>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <h2 className="text-sm font-semibold text-slate-50">Tickets by priority</h2>
           <ul className="mt-4 space-y-4">
             {priorityOrder.map((priority) => (
@@ -132,7 +132,7 @@ export default async function SupportPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {tickets.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q ? "No tickets match your search." : "No tickets yet. Create your first one to get started."}

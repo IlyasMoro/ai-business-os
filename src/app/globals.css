@@ -186,6 +186,6 @@ body * {
    otherwise it falls back to a light gray popup. Every <select> in this
    app lives in the dark dashboard forms, so this is safe unscoped. */
 select option {
-  background-color: #1a2238;
+  background-color: #111111;
   color: #f8fafc;
 }

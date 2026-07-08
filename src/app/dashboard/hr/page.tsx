@@ -71,7 +71,7 @@ export default async function HrPage({
   const deptColors = [VIZ.blue, VIZ.amber, VIZ.emerald, VIZ.red, VIZ.muted, VIZ.borderLight];
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-[#0B1120] p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -88,7 +88,7 @@ export default async function HrPage({
               name="q"
               placeholder="Search by name, position..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#1A2238] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -102,7 +102,7 @@ export default async function HrPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <div className="flex justify-center">
             <DonutChart
               title="Employees by status"
@@ -115,7 +115,7 @@ export default async function HrPage({
             />
           </div>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#1A2238] p-6">
+        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
           <h2 className="text-sm font-semibold text-slate-50">Headcount by department</h2>
           {deptRows.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">No employees yet.</p>
@@ -135,7 +135,7 @@ export default async function HrPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#1A2238]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {employees.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q
