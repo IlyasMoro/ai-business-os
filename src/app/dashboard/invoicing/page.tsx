@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
+import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
@@ -67,6 +68,22 @@ export default async function InvoicingPage({
   const collectibleTotal = paidCount + sentCount + overdueCount;
   const collectionRate = collectibleTotal > 0 ? (paidCount / collectibleTotal) * 100 : 100;
 
+  const outstandingInvoices = await db.invoice.findMany({
+    where: { companyId: session.companyId, status: { in: ["SENT", "OVERDUE"] } },
+    include: { customer: { select: { name: true } } },
+  });
+  const outstandingByCustomer = new Map<string, number>();
+  for (const inv of outstandingInvoices) {
+    outstandingByCustomer.set(
+      inv.customer.name,
+      (outstandingByCustomer.get(inv.customer.name) ?? 0) + inv.totalAmount
+    );
+  }
+  const topOutstanding = Array.from(outstandingByCustomer.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -112,6 +129,13 @@ export default async function InvoicingPage({
           <RingGauge label="Collection rate" pct={collectionRate} goodIsHigh />
         </div>
       </div>
+
+      {topOutstanding.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
+          <h2 className="mb-4 text-sm font-semibold text-slate-50">Outstanding by customer</h2>
+          <HorizontalBarChart data={topOutstanding} color={VIZ.red} />
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {invoices.length === 0 ? (

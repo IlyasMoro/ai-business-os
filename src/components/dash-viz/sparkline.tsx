@@ -29,7 +29,7 @@ export function Sparkline({
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
       <path d={areaPath} fill={color} opacity={0.1} />
       <path d={linePath} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={points[points.length - 1][0]} cy={points[points.length - 1][1]} r={3} fill={color} stroke="#020617" strokeWidth={2} />
+      <circle cx={points[points.length - 1][0]} cy={points[points.length - 1][1]} r={3} fill={color} stroke="#000000" strokeWidth={2} />
     </svg>
   );
 }

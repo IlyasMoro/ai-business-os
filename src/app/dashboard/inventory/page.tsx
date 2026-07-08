@@ -3,7 +3,9 @@ import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
+import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
+import { VIZ } from "@/components/dash-viz/colors";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
@@ -42,7 +44,7 @@ export default async function InventoryPage({
     db.product.count({ where }),
     db.product.findMany({
       where: { companyId: session.companyId },
-      select: { stockQty: true, reorderLevel: true, unitPrice: true },
+      select: { name: true, stockQty: true, reorderLevel: true, unitPrice: true },
     }),
   ]);
 
@@ -52,6 +54,12 @@ export default async function InventoryPage({
   const lowStockCount = allForTotals.filter((p) => p.stockQty <= p.reorderLevel).length;
   const healthyRatio =
     allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : 100;
+
+  const topProductsByValue = allForTotals
+    .map((p) => ({ label: p.name, value: p.stockQty * p.unitPrice }))
+    .filter((p) => p.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
@@ -100,6 +108,13 @@ export default async function InventoryPage({
           <RingGauge label="Stock health" pct={healthyRatio} goodIsHigh size={96} strokeWidth={8} />
         </div>
       </div>
+
+      {topProductsByValue.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
+          <h2 className="mb-4 text-sm font-semibold text-slate-50">Top products by value</h2>
+          <HorizontalBarChart data={topProductsByValue} color={VIZ.blue} />
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {products.length === 0 ? (

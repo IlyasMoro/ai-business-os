@@ -4,9 +4,11 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
+import { Sparkline } from "@/components/dash-viz/sparkline";
 import { VIZ } from "@/components/dash-viz/colors";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
+import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
 
 const statusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
@@ -56,6 +58,19 @@ export default async function SalesPage({
   const totalAll = statusGroups.reduce((s, g) => s + g._count._all, 0);
   const totalValue = statusGroups.reduce((s, g) => s + (g._sum.totalAmount ?? 0), 0);
 
+  const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+  const ordersForTrend = await db.order.findMany({
+    where: { companyId: session.companyId, createdAt: { gte: sixMonthsAgo } },
+    select: { createdAt: true, totalAmount: true },
+  });
+  const monthlyValueTrend = Array.from({ length: 6 }).map((_, i) => {
+    const monthStart = startOfMonth(subMonths(new Date(), 5 - i));
+    const monthEnd = endOfMonth(monthStart);
+    return ordersForTrend
+      .filter((o) => o.createdAt >= monthStart && o.createdAt <= monthEnd)
+      .reduce((s, o) => s + o.totalAmount, 0);
+  });
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -92,6 +107,11 @@ export default async function SalesPage({
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
+          {monthlyValueTrend.some((v) => v > 0) && (
+            <div className="mt-3">
+              <Sparkline data={monthlyValueTrend} color={VIZ.emerald} width={180} height={32} />
+            </div>
+          )}
         </div>
         <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-2">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">

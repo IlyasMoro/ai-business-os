@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
+import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
@@ -42,7 +43,7 @@ export default async function AccountingPage({
     db.transaction.count({ where }),
     db.transaction.findMany({
       where: { companyId: session.companyId },
-      select: { type: true, amount: true },
+      select: { type: true, amount: true, category: true },
     }),
   ]);
 
@@ -55,6 +56,15 @@ export default async function AccountingPage({
     .filter((t) => t.type === "EXPENSE")
     .reduce((sum, t) => sum + t.amount, 0);
   const net = income - expense;
+
+  const categoryTotals = new Map<string, number>();
+  for (const t of allForTotals) {
+    categoryTotals.set(t.category, (categoryTotals.get(t.category) ?? 0) + t.amount);
+  }
+  const topCategories = Array.from(categoryTotals.entries())
+    .map(([label, value]) => ({ label, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 6);
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
@@ -122,6 +132,13 @@ export default async function AccountingPage({
           </div>
         </div>
       </div>
+
+      {topCategories.length > 0 && (
+        <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
+          <h2 className="mb-4 text-sm font-semibold text-slate-50">Top categories</h2>
+          <HorizontalBarChart data={topCategories} color={VIZ.amber} />
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
         {transactions.length === 0 ? (

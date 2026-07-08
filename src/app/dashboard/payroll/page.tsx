@@ -3,6 +3,7 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
+import { Sparkline } from "@/components/dash-viz/sparkline";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { formatCompactCurrency } from "@/lib/utils";
@@ -52,6 +53,14 @@ export default async function PayrollPage({
   const totalAll = statusGroups.reduce((s, g) => s + g._count._all, 0);
   const totalPaid = statusGroups.find((g) => g.status === "PAID")?._sum.totalAmount ?? 0;
 
+  const recentRuns = await db.payrollRun.findMany({
+    where,
+    orderBy: { periodEnd: "desc" },
+    take: 6,
+    select: { totalAmount: true },
+  });
+  const payrollTrend = recentRuns.map((r) => r.totalAmount).reverse();
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
@@ -77,6 +86,11 @@ export default async function PayrollPage({
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalPaid} prefix="$" decimals={0} />
           </p>
+          {payrollTrend.length > 1 && (
+            <div className="mt-3">
+              <Sparkline data={payrollTrend} color={VIZ.emerald} width={180} height={32} />
+            </div>
+          )}
         </div>
         <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-2">
           <div className="flex justify-center">
