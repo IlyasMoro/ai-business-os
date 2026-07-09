@@ -1,5 +1,7 @@
 import { LinkButton } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
+import { SiteHeader } from "@/components/landing/site-header";
+import { SiteFooter } from "@/components/landing/site-footer";
 import {
   ArrowRight,
   BarChart3,
@@ -31,25 +33,7 @@ export default function Home() {
         <div className="absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-blue-700/10 blur-[140px]" />
       </div>
 
-      {/* Nav */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050b1e]/60 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <span className="flex items-center gap-2.5 text-lg font-semibold tracking-tight">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-xs font-bold text-slate-50 backdrop-blur-md">
-              AI
-            </span>
-            Business OS
-          </span>
-          <nav className="flex items-center gap-2">
-            <LinkButton href="/login" variant="glass" size="sm" className="border-transparent bg-transparent hover:border-white/15 hover:bg-white/5">
-              Sign in
-            </LinkButton>
-            <LinkButton href="/register" variant="glass" size="sm" className={CTA_CLASS}>
-              Get started
-            </LinkButton>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
 
       <main className="relative">
         {/* Hero */}
@@ -144,17 +128,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="relative border-t border-white/10 px-6 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 text-sm text-slate-400 sm:flex-row">
-          <span className="flex items-center gap-2 font-medium text-slate-300">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/10 text-[10px] font-bold text-slate-50">
-              AI
-            </span>
-            Business OS
-          </span>
-          <p>© {new Date().getFullYear()} AI Business OS. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

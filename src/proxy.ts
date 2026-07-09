@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
 // Routes anyone can view, logged in or not, with no redirect either way.
-const openRoutes = ["/", "/terms", "/privacy"];
+const openRoutes = ["/", "/terms", "/privacy", "/pricing"];
 // Routes for signed out visitors only — a logged in user is redirected to
 // the dashboard instead of seeing them.
 const authRoutes = ["/login", "/register", "/forgot-password"];
