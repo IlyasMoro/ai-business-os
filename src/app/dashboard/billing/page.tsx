@@ -41,7 +41,7 @@ export default async function BillingPage({
         )}
         {checkout === "cancelled" && (
           <div className="rounded-md border border-white/[0.06] light:border-slate-200 bg-white/5 px-4 py-2 text-sm text-slate-300 light:text-slate-600">
-            Checkout was cancelled — no changes were made.
+            Checkout was cancelled. No changes were made.
           </div>
         )}
       </div>
@@ -52,13 +52,13 @@ export default async function BillingPage({
             <CreditCard className="h-5 w-5" />
           </span>
           <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">Business OS — $49/month</p>
+            <p className="font-medium text-slate-50 light:text-slate-900">Business OS ($49/month)</p>
             {!subscription && (
               <p className="text-sm text-slate-400 light:text-slate-500">No subscription yet.</p>
             )}
             {isTrialing && subscription?.trialEndsAt && (
               <p className="text-sm text-amber-400">
-                Trial — {daysLeft(subscription.trialEndsAt)} day
+                Trial: {daysLeft(subscription.trialEndsAt)} day
                 {daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left
               </p>
             )}
@@ -66,12 +66,12 @@ export default async function BillingPage({
               <p className="text-sm text-emerald-400">
                 Active
                 {subscription?.currentPeriodEnd &&
-                  ` — renews ${subscription.currentPeriodEnd.toLocaleDateString()}`}
+                  ` (renews ${subscription.currentPeriodEnd.toLocaleDateString()})`}
                 {subscription?.cancelAtPeriodEnd && " (cancels at period end)"}
               </p>
             )}
             {subscription?.status === "PAST_DUE" && (
-              <p className="text-sm text-red-400">Payment failed — please update your card.</p>
+              <p className="text-sm text-red-400">Payment failed. Please update your card.</p>
             )}
             {subscription?.status === "CANCELED" && (
               <p className="text-sm text-slate-400 light:text-slate-500">Canceled.</p>
@@ -82,7 +82,7 @@ export default async function BillingPage({
         <div className="mt-5 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
           {!isActive && (
             <form action={startCheckout}>
-              <SubmitButton pendingText="Redirecting...">Subscribe — $49/month</SubmitButton>
+              <SubmitButton pendingText="Redirecting...">Subscribe for $49/month</SubmitButton>
             </form>
           )}
           {hasStripeCustomer && (

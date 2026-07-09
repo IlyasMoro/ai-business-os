@@ -26,7 +26,7 @@ export default async function PlatformSettingsPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Platform settings</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        App-wide configuration, visible only to the platform operator — not exposed to any
+        Platform wide configuration, visible only to the platform operator, not exposed to any
         company&apos;s regular users.
       </p>
 
@@ -39,7 +39,7 @@ export default async function PlatformSettingsPage({
         )}
         {testsent && (
           <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            Test email sent to {user.email} — check your inbox.
+            Test email sent to {user.email}. Check your inbox.
           </div>
         )}
       </div>
@@ -54,7 +54,7 @@ export default async function PlatformSettingsPage({
             <p className="text-sm text-slate-400 light:text-slate-500">
               {configured
                 ? "Configured. Used for password resets, invoice reminders, and notifications for every company on this platform."
-                : "Not configured — those emails currently fail silently."}
+                : "Not configured. Those emails currently fail silently."}
             </p>
           </div>
         </div>
@@ -66,7 +66,7 @@ export default async function PlatformSettingsPage({
               id="resendApiKey"
               name="resendApiKey"
               type="password"
-              placeholder={settings?.resendApiKey ? "•••••••••••••••• (configured — leave blank to keep)" : "re_..."}
+              placeholder={settings?.resendApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "re_..."}
               autoComplete="off"
             />
           </div>
