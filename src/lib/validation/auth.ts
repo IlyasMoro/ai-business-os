@@ -9,14 +9,14 @@ export const RegisterSchema = z.object({
     .string()
     .min(2, { error: "Your name must be at least 2 characters." })
     .trim(),
-  email: z.email({ error: "Please enter a valid email." }).trim(),
+  email: z.email({ error: "Please enter a valid email." }).trim().toLowerCase(),
   password: z
     .string()
     .min(8, { error: "Password must be at least 8 characters." }),
 });
 
 export const LoginSchema = z.object({
-  email: z.email({ error: "Please enter a valid email." }).trim(),
+  email: z.email({ error: "Please enter a valid email." }).trim().toLowerCase(),
   password: z.string().min(1, { error: "Password is required." }),
 });
 
@@ -43,7 +43,7 @@ export type LoginFormState =
   | undefined;
 
 export const ForgotPasswordSchema = z.object({
-  email: z.email({ error: "Please enter a valid email." }).trim(),
+  email: z.email({ error: "Please enter a valid email." }).trim().toLowerCase(),
 });
 
 export const ResetPasswordSchema = z.object({

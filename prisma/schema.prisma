@@ -612,3 +612,15 @@ model GoogleIntegration {
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
+
+// ---------- Automation locking ----------
+
+// Singleton row (a fixed id, e.g. "automations") used as a lease lock so
+// only one process runs a given background job at a time, safe under
+// Prisma's connection pooling (unlike a Postgres advisory lock, which is
+// tied to a specific connection the pool doesn't guarantee stays fixed
+// across an acquire/release pair).
+model RunLock {
+  id          String    @id
+  lockedUntil DateTime?
+}

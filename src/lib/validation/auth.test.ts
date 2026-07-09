@@ -34,6 +34,17 @@ describe("RegisterSchema", () => {
     ).toBe(false);
   });
 
+  it("normalizes email to lowercase", () => {
+    const result = RegisterSchema.safeParse({
+      companyName: "Acme Co",
+      name: "Jane Doe",
+      email: "Jane@Acme.COM",
+      password: "supersecret1",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.email).toBe("jane@acme.com");
+  });
+
   it("rejects a password shorter than 8 characters", () => {
     expect(
       RegisterSchema.safeParse({
@@ -59,5 +70,11 @@ describe("LoginSchema", () => {
 
   it("rejects an invalid email", () => {
     expect(LoginSchema.safeParse({ email: "nope", password: "anything" }).success).toBe(false);
+  });
+
+  it("normalizes email to lowercase so login isn't case-sensitive", () => {
+    const result = LoginSchema.safeParse({ email: "Jane@ACME.com", password: "anything" });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.email).toBe("jane@acme.com");
   });
 });

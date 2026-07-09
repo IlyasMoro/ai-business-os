@@ -103,7 +103,10 @@ export async function login(
     // Backstop for attempts against emails that don't exist, since there's no
     // user row to attach a per-account lockout to.
     const ip = await getClientIp();
-    await checkRateLimit(`login:${ip}`, { max: 10, windowMs: 15 * 60 * 1000 });
+    const allowed = await checkRateLimit(`login:${ip}`, { max: 10, windowMs: 15 * 60 * 1000 });
+    if (!allowed) {
+      return { message: "Too many attempts. Please try again later." };
+    }
     return { message: "Invalid email or password." };
   }
 

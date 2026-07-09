@@ -7,6 +7,8 @@ import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
 const STALE_LEAD_MS = 30 * 24 * 60 * 60 * 1000;
+const LOCK_ID = "automations";
+const LOCK_LEASE_MS = 10 * 60 * 1000;
 
 async function runOverdueInvoiceReminders(companyId: string) {
   const now = new Date();
@@ -120,28 +122,68 @@ async function runStaleLeadCleanup(companyId: string) {
   });
 }
 
-export async function runAutomations() {
-  const companies = await db.automationSettings.findMany({
-    where: {
-      OR: [
-        { overdueInvoiceReminders: true },
-        { lowStockReorder: true },
-        { staleTicketEscalation: true },
-        { staleLeadCleanup: true },
-      ],
-    },
-  });
+async function acquireLock(): Promise<boolean> {
+  const now = new Date();
+  const leaseUntil = new Date(now.getTime() + LOCK_LEASE_MS);
 
-  for (const settings of companies) {
-    try {
-      if (settings.overdueInvoiceReminders) await runOverdueInvoiceReminders(settings.companyId);
-      if (settings.lowStockReorder) await runLowStockReorder(settings.companyId);
-      if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId);
-      if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId);
-    } catch (err) {
-      console.error(`[automations] run failed for company ${settings.companyId}:`, err);
-    }
+  // Atomic conditional update: only succeeds if no one holds the lease, or
+  // the previous holder's lease expired (e.g. it crashed mid-run). Using a
+  // row + WHERE condition rather than a Postgres advisory lock, since
+  // advisory locks are tied to a specific DB connection, and Prisma's
+  // pooling doesn't guarantee the acquire/release pair share one — a leaked
+  // lock could block every future run.
+  const claimed = await db.runLock.updateMany({
+    where: { id: LOCK_ID, OR: [{ lockedUntil: null }, { lockedUntil: { lt: now } }] },
+    data: { lockedUntil: leaseUntil },
+  });
+  if (claimed.count > 0) return true;
+
+  // First run ever: the singleton row doesn't exist yet. Creating it IS
+  // claiming the lock (a fresh row has never been locked).
+  try {
+    await db.runLock.create({ data: { id: LOCK_ID, lockedUntil: leaseUntil } });
+    return true;
+  } catch {
+    // Row was created by a concurrent caller between the updateMany and
+    // this create — that caller holds the lock, not us.
+    return false;
+  }
+}
+
+async function releaseLock(): Promise<void> {
+  await db.runLock.update({ where: { id: LOCK_ID }, data: { lockedUntil: null } });
+}
+
+export async function runAutomations() {
+  if (!(await acquireLock())) {
+    return { companiesProcessed: 0, skipped: true };
   }
 
-  return { companiesProcessed: companies.length };
+  try {
+    const companies = await db.automationSettings.findMany({
+      where: {
+        OR: [
+          { overdueInvoiceReminders: true },
+          { lowStockReorder: true },
+          { staleTicketEscalation: true },
+          { staleLeadCleanup: true },
+        ],
+      },
+    });
+
+    for (const settings of companies) {
+      try {
+        if (settings.overdueInvoiceReminders) await runOverdueInvoiceReminders(settings.companyId);
+        if (settings.lowStockReorder) await runLowStockReorder(settings.companyId);
+        if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId);
+        if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId);
+      } catch (err) {
+        console.error(`[automations] run failed for company ${settings.companyId}:`, err);
+      }
+    }
+
+    return { companiesProcessed: companies.length };
+  } finally {
+    await releaseLock();
+  }
 }
