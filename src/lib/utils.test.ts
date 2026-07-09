@@ -6,6 +6,7 @@ import {
   formatDate,
   toDateInputValue,
   dateInputDaysFromNow,
+  formatFileSize,
 } from "@/lib/utils";
 
 describe("cn", () => {
@@ -53,5 +54,22 @@ describe("dateInputDaysFromNow", () => {
 
     const expected = toDateInputValue(new Date(Date.now() + 5 * 24 * 60 * 60 * 1000));
     expect(dateInputDaysFromNow(5)).toBe(expected);
+  });
+});
+
+describe("formatFileSize", () => {
+  it("formats bytes plainly under 1KB", () => {
+    expect(formatFileSize(0)).toBe("0 B");
+    expect(formatFileSize(512)).toBe("512 B");
+  });
+
+  it("formats kilobytes with one decimal place", () => {
+    expect(formatFileSize(1024)).toBe("1.0 KB");
+    expect(formatFileSize(2560)).toBe("2.5 KB");
+  });
+
+  it("formats megabytes with one decimal place", () => {
+    expect(formatFileSize(1024 * 1024)).toBe("1.0 MB");
+    expect(formatFileSize(8 * 1024 * 1024)).toBe("8.0 MB");
   });
 });

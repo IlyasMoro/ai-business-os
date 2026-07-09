@@ -1,6 +1,8 @@
 import "server-only";
 import { db } from "@/lib/db";
 import { sendEmailForCompany } from "@/lib/email-for-company";
+import { needsReorder, computeReorderQuantity } from "@/lib/automation-rules";
+import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -42,18 +44,18 @@ async function runLowStockReorder(companyId: string) {
     where: { companyId },
     select: { id: true, name: true, cost: true, stockQty: true, reorderLevel: true },
   });
-  const needsReorder = lowStockProducts.filter((p) => p.stockQty <= p.reorderLevel);
-  if (needsReorder.length === 0) return;
+  const lowStock = lowStockProducts.filter((p) => needsReorder(p.stockQty, p.reorderLevel));
+  if (lowStock.length === 0) return;
 
   const alreadyOnOrder = await db.purchaseOrderItem.findMany({
     where: {
-      productId: { in: needsReorder.map((p) => p.id) },
+      productId: { in: lowStock.map((p) => p.id) },
       purchaseOrder: { companyId, status: { in: ["DRAFT", "ORDERED"] } },
     },
     select: { productId: true },
   });
   const alreadyOnOrderIds = new Set(alreadyOnOrder.map((i) => i.productId));
-  const toOrder = needsReorder.filter((p) => !alreadyOnOrderIds.has(p.id));
+  const toOrder = lowStock.filter((p) => !alreadyOnOrderIds.has(p.id));
   if (toOrder.length === 0) return;
 
   const supplier = await db.supplier.findFirst({
@@ -71,7 +73,7 @@ async function runLowStockReorder(companyId: string) {
     data: toOrder.map((p) => ({
       purchaseOrderId: purchaseOrder.id,
       productId: p.id,
-      quantity: Math.max(1, p.reorderLevel * 2 - p.stockQty),
+      quantity: computeReorderQuantity(p.stockQty, p.reorderLevel),
       unitCost: p.cost,
     })),
   });
@@ -80,7 +82,7 @@ async function runLowStockReorder(companyId: string) {
     where: { purchaseOrderId: purchaseOrder.id },
     select: { quantity: true, unitCost: true },
   });
-  const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
+  const totalAmount = computePurchaseOrderTotal(items);
   await db.purchaseOrder.update({ where: { id: purchaseOrder.id }, data: { totalAmount } });
 }
 

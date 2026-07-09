@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import {
   SupplierSchema,
   PurchaseOrderSchema,
@@ -16,7 +17,7 @@ async function recomputePurchaseOrderTotal(purchaseOrderId: string) {
     where: { purchaseOrderId },
     select: { quantity: true, unitCost: true },
   });
-  const totalAmount = items.reduce((sum, item) => sum + item.quantity * item.unitCost, 0);
+  const totalAmount = computePurchaseOrderTotal(items);
   await db.purchaseOrder.update({ where: { id: purchaseOrderId }, data: { totalAmount } });
 }
 
