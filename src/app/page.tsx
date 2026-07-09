@@ -10,7 +10,7 @@ import {
   BarChart3,
   Boxes,
   Receipt,
-  Sparkles,
+  Zap,
   Users,
   Wallet,
 } from "lucide-react";
@@ -21,7 +21,7 @@ const modules = [
   { icon: Receipt, name: "Invoicing", description: "Generate and send professional invoices in seconds." },
   { icon: Wallet, name: "Accounting & Payroll", description: "Keep the books balanced and pay your team on time." },
   { icon: BarChart3, name: "Reports", description: "Understand what's driving or hurting your business." },
-  { icon: Sparkles, name: "AI Copilot", description: "Ask questions, get answers, and approve actions backed by your real data." },
+  { icon: Zap, name: "Automation", description: "Overdue reminders, low stock alerts, and stale leads handled without you lifting a finger." },
 ];
 
 const alsoIncluded = [
@@ -32,7 +32,6 @@ const alsoIncluded = [
   "Projects",
   "Calendar",
   "Support",
-  "Automation",
   "Integrations",
   "Documents",
 ];
