@@ -4,6 +4,7 @@ import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { AiTerminalPreview } from "@/components/landing/ai-terminal-preview";
+import { ProductPreview } from "@/components/landing/product-preview";
 import {
   ArrowRight,
   BarChart3,
@@ -95,6 +96,13 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </section>
+
+        {/* Product screenshot */}
+        <section className="px-6 pb-20">
+          <Reveal>
+            <ProductPreview />
+          </Reveal>
         </section>
 
         {/* AI preview */}
