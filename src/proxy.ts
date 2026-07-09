@@ -23,7 +23,13 @@ export default async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
 
-  return NextResponse.next();
+  // Exposed so Server Components (which don't otherwise know the current
+  // path) can decide whether to apply path-specific logic, e.g. letting the
+  // billing page render even when the rest of the dashboard is blocked for
+  // an expired trial.
+  const res = NextResponse.next();
+  res.headers.set("x-pathname", path);
+  return res;
 }
 
 export const config = {

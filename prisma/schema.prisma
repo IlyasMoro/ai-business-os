@@ -35,6 +35,7 @@ model Company {
   googleIntegration  GoogleIntegration?
   campaigns          Campaign[]
   calendarEvents     CalendarEvent[]
+  subscription       Subscription?
 }
 
 enum UserRole {
@@ -689,6 +690,34 @@ model CalendarEvent {
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([companyId, startAt])
+}
+
+// ---------- Billing ----------
+
+// One flat-rate subscription per company. Single plan for now (see
+// price_1TrKojRxRmfasatIyltWTQit in Stripe) — a Plan model can be added
+// later if multiple tiers are introduced.
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+model Subscription {
+  id                   String             @id @default(cuid())
+  status               SubscriptionStatus @default(TRIALING)
+  trialEndsAt          DateTime?
+  currentPeriodEnd     DateTime?
+  cancelAtPeriodEnd    Boolean            @default(false)
+  stripeCustomerId     String?            @unique
+  stripeSubscriptionId String?            @unique
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
 
 // ---------- Platform settings ----------

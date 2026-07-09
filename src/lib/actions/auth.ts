@@ -57,9 +57,18 @@ export async function register(
 
   const passwordHash = await hashPassword(password);
 
+  const TRIAL_LENGTH_MS = 14 * 24 * 60 * 60 * 1000;
+
   const user = await db.$transaction(async (tx) => {
     const company = await tx.company.create({
       data: { name: companyName },
+    });
+    await tx.subscription.create({
+      data: {
+        companyId: company.id,
+        status: "TRIALING",
+        trialEndsAt: new Date(Date.now() + TRIAL_LENGTH_MS),
+      },
     });
     return tx.user.create({
       data: {

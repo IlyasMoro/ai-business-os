@@ -18,6 +18,7 @@ import {
   Calendar,
   Settings,
   Building2,
+  CreditCard,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -50,6 +51,7 @@ export const navItems: {
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"] },
   { href: "/dashboard/admin", label: "Companies", icon: Building2, platformAdminOnly: true },
   { href: "/dashboard/platform-settings", label: "Platform Settings", icon: Settings, platformAdminOnly: true },
 ];
