@@ -234,7 +234,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         <KpiCard
           label="Revenue (6 months)"
           value={totalRevenue}
-          prefix="R"
+          prefix="$"
           decimals={0}
           icon={Wallet}
           color={VIZ.emerald}

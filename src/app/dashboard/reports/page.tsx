@@ -128,19 +128,19 @@ export default async function ReportsPage() {
         <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Income (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
-            <AnimatedCounter value={totalIncome} prefix="R" decimals={0} />
+            <AnimatedCounter value={totalIncome} prefix="$" decimals={0} />
           </p>
         </div>
         <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Expenses (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-red-400">
-            <AnimatedCounter value={totalExpense} prefix="R" decimals={0} />
+            <AnimatedCounter value={totalExpense} prefix="$" decimals={0} />
           </p>
         </div>
         <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
           <p className="text-sm text-slate-400">Net (6 months)</p>
           <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50" : "text-red-400"}`}>
-            <AnimatedCounter value={net} prefix="R" decimals={0} />
+            <AnimatedCounter value={net} prefix="$" decimals={0} />
           </p>
         </div>
       </div>
