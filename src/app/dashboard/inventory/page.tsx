@@ -62,11 +62,11 @@ export default async function InventoryPage({
     .slice(0, 6);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50">Inventory</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Inventory</h1>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} product{totalCount === 1 ? "" : "s"}
           </p>
         </div>
@@ -78,7 +78,7 @@ export default async function InventoryPage({
               name="q"
               placeholder="Search by name or SKU..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -92,31 +92,31 @@ export default async function InventoryPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
-          <p className="text-sm text-slate-400">Inventory value</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50">
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+          <p className="text-sm text-slate-400 light:text-slate-500">Inventory value</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
-          <p className="text-sm text-slate-400">Low stock items</p>
-          <p className={`mt-2 text-2xl font-semibold ${lowStockCount > 0 ? "text-red-400" : "text-slate-50"}`}>
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+          <p className="text-sm text-slate-400 light:text-slate-500">Low stock items</p>
+          <p className={`mt-2 text-2xl font-semibold ${lowStockCount > 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
             <AnimatedCounter value={lowStockCount} decimals={0} />
           </p>
         </div>
-        <div className="flex items-center justify-center rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
+        <div className="flex items-center justify-center rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
           <RingGauge label="Stock health" pct={healthyRatio} goodIsHigh size={96} strokeWidth={8} />
         </div>
       </div>
 
       {topProductsByValue.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
-          <h2 className="mb-4 text-sm font-semibold text-slate-50">Top products by value</h2>
+        <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+          <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top products by value</h2>
           <HorizontalBarChart data={topProductsByValue} color={VIZ.blue} />
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {products.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q
@@ -126,7 +126,7 @@ export default async function InventoryPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">SKU</th>
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Unit price</th>
@@ -136,16 +136,16 @@ export default async function InventoryPage({
             <tbody>
               {products.map((product) => (
                 <tr key={product.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3 font-mono text-xs text-slate-400">{product.sku}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-slate-400 light:text-slate-500">{product.sku}</td>
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/inventory/${product.id}`}
-                      className="font-medium text-slate-50 hover:text-blue-400"
+                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {product.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300">
+                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(product.unitPrice)}
                   </td>
                   <td className="px-5 py-3">
@@ -154,7 +154,7 @@ export default async function InventoryPage({
                         {product.stockQty} low
                       </span>
                     ) : (
-                      <span className="font-mono tabular-nums text-slate-300">{product.stockQty}</span>
+                      <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">{product.stockQty}</span>
                     )}
                   </td>
                 </tr>
@@ -164,7 +164,7 @@ export default async function InventoryPage({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
+          <div className="flex items-center justify-between border-t border-white/[0.06] light:border-slate-200 px-5 py-3">
             <p className="text-sm text-slate-500">
               Page {page} of {totalPages}
             </p>
@@ -172,13 +172,13 @@ export default async function InventoryPage({
               {page > 1 ? (
                 <Link
                   href={inventoryHref(page - 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </span>
@@ -186,13 +186,13 @@ export default async function InventoryPage({
               {page < totalPages ? (
                 <Link
                   href={inventoryHref(page + 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </span>

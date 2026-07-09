@@ -33,15 +33,15 @@ export default async function CampaignDetailPage({
   const costPerLead = campaign.leads.length > 0 ? campaign.budget / campaign.leads.length : null;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-slate-50">{campaign.name}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{campaign.name}</h1>
               <Badge tone={statusTone[campaign.status]}>{campaign.status}</Badge>
             </div>
-            <p className="mt-1 text-slate-400">
+            <p className="mt-1 text-slate-400 light:text-slate-500">
               {campaign.channel.charAt(0) + campaign.channel.slice(1).toLowerCase()}
               {campaign.startDate && ` · Starts ${campaign.startDate.toLocaleDateString()}`}
               {campaign.endDate && ` · Ends ${campaign.endDate.toLocaleDateString()}`}
@@ -60,19 +60,19 @@ export default async function CampaignDetailPage({
           <CardContent className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Budget</p>
-              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50">
+              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
                 ${campaign.budget.toFixed(2)}
               </p>
             </div>
             <div>
               <p className="text-slate-500">Leads generated</p>
-              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50">
+              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
                 {campaign.leads.length}
               </p>
             </div>
             <div>
               <p className="text-slate-500">Cost per lead</p>
-              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50">
+              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
                 {costPerLead !== null ? `$${costPerLead.toFixed(2)}` : "—"}
               </p>
             </div>
@@ -85,7 +85,7 @@ export default async function CampaignDetailPage({
               <CardTitle>Notes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="whitespace-pre-wrap text-sm text-slate-300">{campaign.notes}</p>
+              <p className="whitespace-pre-wrap text-sm text-slate-300 light:text-slate-600">{campaign.notes}</p>
             </CardContent>
           </Card>
         )}
@@ -101,12 +101,12 @@ export default async function CampaignDetailPage({
                 CRM.
               </p>
             ) : (
-              <ul className="divide-y divide-white/[0.06]">
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
                 {campaign.leads.map((lead) => (
                   <li key={lead.id} className="flex items-center justify-between py-2 text-sm">
                     <Link
                       href={`/dashboard/crm/${lead.id}`}
-                      className="font-medium text-slate-50 hover:text-blue-400"
+                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {lead.name}
                     </Link>
@@ -119,7 +119,7 @@ export default async function CampaignDetailPage({
         </Card>
 
         <p className="mt-6">
-          <Link href="/dashboard/marketing" className="text-sm text-slate-500 hover:text-slate-300">
+          <Link href="/dashboard/marketing" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
             ← Back to campaigns
           </Link>
         </p>

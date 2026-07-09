@@ -37,11 +37,11 @@ export default async function MarketingPage() {
   const totalLeads = campaigns.reduce((s, c) => s + c._count.leads, 0);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50">Marketing</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Marketing</h1>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalAll} campaign{totalAll === 1 ? "" : "s"}
           </p>
         </div>
@@ -55,17 +55,17 @@ export default async function MarketingPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5 lg:col-span-1">
-          <p className="text-sm text-slate-400">Total budget</p>
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5 lg:col-span-1">
+          <p className="text-sm text-slate-400 light:text-slate-500">Total budget</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalBudget} prefix="$" decimals={0} />
           </p>
-          <p className="mt-4 text-sm text-slate-400">Total leads generated</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50">
+          <p className="mt-4 text-sm text-slate-400 light:text-slate-500">Total leads generated</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalLeads} decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-2">
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6 lg:col-span-2">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">
             <DonutChart
               title="Campaigns by status"
@@ -81,7 +81,7 @@ export default async function MarketingPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {campaigns.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No campaigns yet. Create your first one to get started.
@@ -89,7 +89,7 @@ export default async function MarketingPage() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Campaign</th>
                 <th className="px-5 py-3 font-medium">Channel</th>
                 <th className="px-5 py-3 font-medium">Status</th>
@@ -103,12 +103,12 @@ export default async function MarketingPage() {
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/marketing/${campaign.id}`}
-                      className="font-medium text-slate-50 hover:text-blue-400"
+                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {campaign.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-slate-400">
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                     {campaign.channel.charAt(0) + campaign.channel.slice(1).toLowerCase()}
                   </td>
                   <td className="px-5 py-3">
@@ -123,10 +123,10 @@ export default async function MarketingPage() {
                       {campaign.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300">
+                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
                     ${campaign.budget.toFixed(2)}
                   </td>
-                  <td className="px-5 py-3 text-slate-300">{campaign._count.leads}</td>
+                  <td className="px-5 py-3 text-slate-300 light:text-slate-600">{campaign._count.leads}</td>
                 </tr>
               ))}
             </tbody>

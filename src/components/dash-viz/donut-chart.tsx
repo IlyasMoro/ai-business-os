@@ -80,12 +80,12 @@ export function DonutChart({
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-mono text-xl font-semibold tabular-nums text-slate-50">{centerValue}</span>
+          <span className="font-mono text-xl font-semibold tabular-nums text-slate-50 light:text-slate-900">{centerValue}</span>
           <span className="text-[11px] text-slate-500">{centerLabel}</span>
         </div>
       </div>
       <div className="w-full">
-        <p className="mb-2 text-center text-xs font-medium text-slate-400">{title}</p>
+        <p className="mb-2 text-center text-xs font-medium text-slate-400 light:text-slate-500">{title}</p>
         <ul className="space-y-1.5">
           {slices.map((slice, i) => (
             <li
@@ -94,7 +94,7 @@ export function DonutChart({
               onMouseEnter={() => setHovered(i)}
               onMouseLeave={() => setHovered(null)}
             >
-              <span className="flex items-center gap-1.5 text-slate-300">
+              <span className="flex items-center gap-1.5 text-slate-300 light:text-slate-600">
                 <span className="h-2 w-2 rounded-full" style={{ backgroundColor: slice.color }} />
                 {slice.label}
               </span>

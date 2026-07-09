@@ -77,11 +77,11 @@ export default async function ProcurementPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50">Procurement</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Procurement</h1>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} purchase order{totalCount === 1 ? "" : "s"}
           </p>
         </div>
@@ -93,12 +93,12 @@ export default async function ProcurementPage({
               name="q"
               placeholder="Search by supplier..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
             href="/dashboard/procurement/suppliers"
-            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/5"
+            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
           >
             Suppliers
           </Link>
@@ -113,8 +113,8 @@ export default async function ProcurementPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5 lg:col-span-1">
-          <p className="text-sm text-slate-400">Total PO value</p>
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5 lg:col-span-1">
+          <p className="text-sm text-slate-400 light:text-slate-500">Total PO value</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
@@ -124,7 +124,7 @@ export default async function ProcurementPage({
             </div>
           )}
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-2">
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6 lg:col-span-2">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">
             <DonutChart
               title="Purchase orders by status"
@@ -140,7 +140,7 @@ export default async function ProcurementPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {purchaseOrders.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q
@@ -150,7 +150,7 @@ export default async function ProcurementPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Supplier</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium">Total</th>
@@ -163,7 +163,7 @@ export default async function ProcurementPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/procurement/${po.id}`}
-                      className="font-medium text-slate-50 hover:text-blue-400"
+                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {po.supplier.name}
                     </Link>
@@ -180,10 +180,10 @@ export default async function ProcurementPage({
                       {po.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300">
+                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(po.totalAmount)}
                   </td>
-                  <td className="px-5 py-3 text-slate-400">{po.createdAt.toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{po.createdAt.toLocaleDateString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -191,7 +191,7 @@ export default async function ProcurementPage({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
+          <div className="flex items-center justify-between border-t border-white/[0.06] light:border-slate-200 px-5 py-3">
             <p className="text-sm text-slate-500">
               Page {page} of {totalPages}
             </p>
@@ -199,13 +199,13 @@ export default async function ProcurementPage({
               {page > 1 ? (
                 <Link
                   href={procurementHref(page - 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </span>
@@ -213,13 +213,13 @@ export default async function ProcurementPage({
               {page < totalPages ? (
                 <Link
                   href={procurementHref(page + 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </span>

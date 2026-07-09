@@ -57,11 +57,11 @@ export default async function ProjectsPage({
   const now = new Date().getTime();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50">Projects</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Projects</h1>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} project{totalCount === 1 ? "" : "s"}
           </p>
         </div>
@@ -73,7 +73,7 @@ export default async function ProjectsPage({
               name="q"
               placeholder="Search projects..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] bg-[#111111] py-2 pl-9 pr-3 text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
           <Link
@@ -86,7 +86,7 @@ export default async function ProjectsPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
         <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">
           <DonutChart
             title="Projects by status"
@@ -101,7 +101,7 @@ export default async function ProjectsPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {projects.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q ? "No projects match your search." : "No projects yet. Create your first one to get started."}
@@ -109,7 +109,7 @@ export default async function ProjectsPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Customer</th>
                 <th className="px-5 py-3 font-medium">Status</th>
@@ -139,12 +139,12 @@ export default async function ProjectsPage({
                     <td className="px-5 py-3">
                       <Link
                         href={`/dashboard/projects/${project.id}`}
-                        className="font-medium text-slate-50 hover:text-blue-400"
+                        className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
                       >
                         {project.name}
                       </Link>
                     </td>
-                    <td className="px-5 py-3 text-slate-400">{project.customer?.name ?? "—"}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{project.customer?.name ?? "—"}</td>
                     <td className="px-5 py-3">
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: statusColor[project.status] }}>
                         <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[project.status] }} />
@@ -165,7 +165,7 @@ export default async function ProjectsPage({
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-3 text-slate-400">
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                       {project.dueDate ? project.dueDate.toLocaleDateString() : "—"}
                     </td>
                   </tr>
@@ -176,7 +176,7 @@ export default async function ProjectsPage({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
+          <div className="flex items-center justify-between border-t border-white/[0.06] light:border-slate-200 px-5 py-3">
             <p className="text-sm text-slate-500">
               Page {page} of {totalPages}
             </p>
@@ -184,13 +184,13 @@ export default async function ProjectsPage({
               {page > 1 ? (
                 <Link
                   href={projectHref(page - 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </span>
@@ -198,13 +198,13 @@ export default async function ProjectsPage({
               {page < totalPages ? (
                 <Link
                   href={projectHref(page + 1, q)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </span>

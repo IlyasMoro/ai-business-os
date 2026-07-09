@@ -25,7 +25,7 @@ export function HeatBar({
 
   return (
     <li className="flex items-center gap-3">
-      <span className="w-32 shrink-0 truncate text-sm text-slate-300">{label}</span>
+      <span className="w-32 shrink-0 truncate text-sm text-slate-300 light:text-slate-600">{label}</span>
       <div className="relative h-3 flex-1 rounded-full" style={{ backgroundColor: VIZ.border }}>
         <span
           aria-hidden

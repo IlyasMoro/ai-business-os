@@ -72,12 +72,12 @@ export function RingGauge({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="font-mono text-2xl font-semibold tabular-nums text-slate-50">
+          <span className="font-mono text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
             {Math.round(clamped)}%
           </span>
         </div>
       </div>
-      <p className="text-center text-xs text-slate-400">{label}</p>
+      <p className="text-center text-xs text-slate-400 light:text-slate-500">{label}</p>
     </div>
   );
 }

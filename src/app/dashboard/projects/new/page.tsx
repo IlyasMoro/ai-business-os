@@ -13,8 +13,8 @@ export default async function NewProjectPage() {
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50">New project</h1>
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New project</h1>
       <div className="mt-6">
         <ProjectForm action={createProject} customers={customers} submitLabel="Create project" />
       </div>

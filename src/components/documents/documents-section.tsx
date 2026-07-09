@@ -26,14 +26,14 @@ export function DocumentsSection({
       </CardHeader>
       <CardContent>
         {documents.length > 0 && (
-          <ul className="mb-4 divide-y divide-white/[0.06]">
+          <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
             {documents.map((doc) => (
               <li key={doc.id} className="flex items-center justify-between py-2 text-sm">
                 <a
                   href={`/api/documents/${doc.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex min-w-0 items-center gap-2 text-slate-300 transition-colors hover:text-blue-400"
+                  className="flex min-w-0 items-center gap-2 text-slate-300 light:text-slate-600 transition-colors hover:text-blue-400"
                 >
                   <FileText className="h-4 w-4 shrink-0 text-slate-500" />
                   <span className="truncate">{doc.filename}</span>
@@ -53,7 +53,7 @@ export function DocumentsSection({
             type="file"
             name="file"
             required
-            className="block w-full text-sm text-slate-400 file:mr-3 file:rounded-md file:border file:border-white/[0.06] file:bg-[#1a1a1a] file:px-3 file:py-1.5 file:text-sm file:text-slate-300 file:transition-colors hover:file:bg-white/5"
+            className="block w-full text-sm text-slate-400 light:text-slate-500 file:mr-3 file:rounded-md file:border file:border-white/[0.06] light:border-slate-200 file:bg-[#1a1a1a] file:px-3 file:py-1.5 file:text-sm file:text-slate-300 light:text-slate-600 file:transition-colors hover:file:bg-white/5"
           />
           <SubmitButton variant="secondary" pendingText="Uploading...">
             Upload

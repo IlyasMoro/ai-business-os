@@ -10,7 +10,7 @@ export function PurchaseOrderForm({
 }) {
   if (suppliers.length === 0) {
     return (
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-slate-400 light:text-slate-500">
         You need a supplier before creating a purchase order.{" "}
         <Link href="/dashboard/procurement/suppliers" className="text-blue-400 hover:text-blue-300">
           Add one first

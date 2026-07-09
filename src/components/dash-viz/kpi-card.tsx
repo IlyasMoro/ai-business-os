@@ -22,11 +22,11 @@ export function KpiCard({
   trend: number[];
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
+    <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-400">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-50">
+          <p className="text-sm text-slate-400 light:text-slate-500">{label}</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={value} prefix={prefix} suffix={suffix} decimals={decimals} />
           </p>
         </div>

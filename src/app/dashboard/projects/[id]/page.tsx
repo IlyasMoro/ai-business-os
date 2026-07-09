@@ -50,16 +50,16 @@ export default async function ProjectDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-slate-50">{project.name}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{project.name}</h1>
               <Badge tone={statusTone[project.status]}>{project.status}</Badge>
             </div>
             {project.customer && (
-              <p className="mt-1 text-slate-400">For {project.customer.name}</p>
+              <p className="mt-1 text-slate-400 light:text-slate-500">For {project.customer.name}</p>
             )}
             {project.dueDate && (
               <p className="mt-1 text-sm text-slate-500">
@@ -78,7 +78,7 @@ export default async function ProjectDetailPage({
         </div>
 
         {project.description && (
-          <p className="mt-4 text-sm text-slate-400">{project.description}</p>
+          <p className="mt-4 text-sm text-slate-400 light:text-slate-500">{project.description}</p>
         )}
 
         <Card className="mt-6">
@@ -87,11 +87,11 @@ export default async function ProjectDetailPage({
           </CardHeader>
           <CardContent>
             {project.tasks.length > 0 && (
-              <ul className="mb-4 divide-y divide-white/[0.06]">
+              <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
                 {project.tasks.map((task) => (
                   <li key={task.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50">{task.title}</p>
+                      <p className="font-medium text-slate-50 light:text-slate-900">{task.title}</p>
                       <p className="text-slate-500">
                         {task.assignee ? task.assignee.name : "Unassigned"}
                         {task.dueDate ? ` · Due ${task.dueDate.toLocaleDateString()}` : ""}
@@ -121,7 +121,7 @@ export default async function ProjectDetailPage({
         />
 
         <p className="mt-6">
-          <Link href="/dashboard/projects" className="text-sm text-slate-500 hover:text-slate-300">
+          <Link href="/dashboard/projects" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
             ← Back to projects
           </Link>
         </p>

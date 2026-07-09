@@ -43,16 +43,16 @@ export default async function CustomerDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
         <ErrorBanner code={error} />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-slate-50">{customer.name}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{customer.name}</h1>
               <Badge tone={statusTone[customer.status]}>{customer.status}</Badge>
             </div>
-            {customer.company && <p className="mt-1 text-slate-400">{customer.company}</p>}
+            {customer.company && <p className="mt-1 text-slate-400 light:text-slate-500">{customer.company}</p>}
           </div>
           <div className="flex items-center gap-2">
             <LinkButton href={`/dashboard/crm/${customer.id}/edit`} variant="secondary" size="sm">
@@ -70,16 +70,16 @@ export default async function CustomerDetailPage({
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Email</p>
-              <p className="text-slate-50">{customer.email ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{customer.email ?? "—"}</p>
             </div>
             <div>
               <p className="text-slate-500">Phone</p>
-              <p className="text-slate-50">{customer.phone ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{customer.phone ?? "—"}</p>
             </div>
             {customer.notes && (
               <div className="col-span-2">
                 <p className="text-slate-500">Notes</p>
-                <p className="whitespace-pre-wrap text-slate-50">{customer.notes}</p>
+                <p className="whitespace-pre-wrap text-slate-50 light:text-slate-900">{customer.notes}</p>
               </div>
             )}
           </CardContent>
@@ -91,11 +91,11 @@ export default async function CustomerDetailPage({
           </CardHeader>
           <CardContent>
             {customer.contacts.length > 0 && (
-              <ul className="mb-4 divide-y divide-white/[0.06]">
+              <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
                 {customer.contacts.map((contact) => (
                   <li key={contact.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50">
+                      <p className="font-medium text-slate-50 light:text-slate-900">
                         {contact.name}{" "}
                         {contact.role && (
                           <span className="font-normal text-slate-500">— {contact.role}</span>
@@ -126,7 +126,7 @@ export default async function CustomerDetailPage({
         />
 
         <p className="mt-6">
-          <Link href="/dashboard/crm" className="text-sm text-slate-500 hover:text-slate-300">
+          <Link href="/dashboard/crm" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
             ← Back to customers
           </Link>
         </p>

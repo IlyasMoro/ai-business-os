@@ -24,8 +24,8 @@ export function HorizontalBarChart({
       {data.map((d) => (
         <li key={d.label}>
           <div className="mb-1 flex items-center justify-between text-sm">
-            <span className="truncate text-slate-300">{d.label}</span>
-            <span className="ml-2 shrink-0 font-mono tabular-nums text-slate-400">{formatCompactCurrency(d.value)}</span>
+            <span className="truncate text-slate-300 light:text-slate-600">{d.label}</span>
+            <span className="ml-2 shrink-0 font-mono tabular-nums text-slate-400 light:text-slate-500">{formatCompactCurrency(d.value)}</span>
           </div>
           <div className="h-2 rounded-full" style={{ backgroundColor: VIZ.border }}>
             <div

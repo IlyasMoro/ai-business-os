@@ -23,9 +23,9 @@ export default async function PlatformSettingsPage({
   const sendTestAction = sendTestPlatformEmail.bind(null, user.email);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50">Platform settings</h1>
-      <p className="mt-1 text-sm text-slate-400">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Platform settings</h1>
+      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         App-wide configuration, visible only to the platform operator — not exposed to any
         company&apos;s regular users.
       </p>
@@ -44,14 +44,14 @@ export default async function PlatformSettingsPage({
         )}
       </div>
 
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
+      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 text-slate-300">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
             <Mail className="h-5 w-5" />
           </span>
           <div>
-            <p className="font-medium text-slate-50">Transactional email (Resend)</p>
-            <p className="text-sm text-slate-400">
+            <p className="font-medium text-slate-50 light:text-slate-900">Transactional email (Resend)</p>
+            <p className="text-sm text-slate-400 light:text-slate-500">
               {configured
                 ? "Configured. Used for password resets, invoice reminders, and notifications for every company on this platform."
                 : "Not configured — those emails currently fail silently."}
@@ -83,7 +83,7 @@ export default async function PlatformSettingsPage({
         </form>
 
         {configured && (
-          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] pt-4">
+          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
             <form action={sendTestAction}>
               <SubmitButton variant="secondary" pendingText="Sending...">
                 Send test email

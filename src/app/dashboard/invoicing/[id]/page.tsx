@@ -48,15 +48,15 @@ export default async function InvoiceDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-mono text-2xl font-semibold text-slate-50">{invoice.invoiceNumber}</h1>
+              <h1 className="font-mono text-2xl font-semibold text-slate-50 light:text-slate-900">{invoice.invoiceNumber}</h1>
               <Badge tone={statusTone[invoice.status]}>{invoice.status}</Badge>
             </div>
-            <p className="mt-1 text-slate-400">{invoice.customer.name}</p>
+            <p className="mt-1 text-slate-400 light:text-slate-500">{invoice.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
               Issued {invoice.issueDate.toLocaleDateString()} · Due{" "}
               {invoice.dueDate.toLocaleDateString()}
@@ -74,11 +74,11 @@ export default async function InvoiceDetailPage({
           </CardHeader>
           <CardContent>
             {invoice.lineItems.length > 0 && (
-              <ul className="mb-4 divide-y divide-white/[0.06]">
+              <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
                 {invoice.lineItems.map((item) => (
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50">{item.description}</p>
+                      <p className="font-medium text-slate-50 light:text-slate-900">{item.description}</p>
                       <p className="font-mono text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
@@ -108,7 +108,7 @@ export default async function InvoiceDetailPage({
         />
 
         <p className="mt-6">
-          <Link href="/dashboard/invoicing" className="text-sm text-slate-500 hover:text-slate-300">
+          <Link href="/dashboard/invoicing" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
             ← Back to invoices
           </Link>
         </p>

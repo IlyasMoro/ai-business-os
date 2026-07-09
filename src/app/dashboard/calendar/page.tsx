@@ -114,9 +114,9 @@ export default async function CalendarPage({
   }
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50">Calendar</h1>
-      <p className="mt-1 text-sm text-slate-400">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Calendar</h1>
+      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Everything with a date across your business, plus any events you add.
       </p>
 
@@ -124,15 +124,15 @@ export default async function CalendarPage({
         <ErrorBanner code={error} />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
         <EventForm />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {groups.size === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">Nothing scheduled.</p>
         ) : (
-          <div className="divide-y divide-white/[0.06]">
+          <div className="divide-y divide-white/[0.06] light:divide-slate-200">
             {Array.from(groups.entries()).map(([dateKey, dateItems]) => (
               <div key={dateKey} className="px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -150,7 +150,7 @@ export default async function CalendarPage({
                       <div className="flex items-center gap-3">
                         <Icon className="h-4 w-4 shrink-0 text-slate-500" />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-slate-50">{item.title}</p>
+                          <p className="truncate text-sm font-medium text-slate-50 light:text-slate-900">{item.title}</p>
                           <p className="text-xs text-slate-500">
                             {KIND_LABEL[item.kind]}
                             {item.subtitle ? ` · ${item.subtitle}` : ""}

@@ -44,12 +44,12 @@ export default async function AssistantPage() {
   }
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-2xl">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-50">AI Copilot</h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">AI Copilot</h1>
+            <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
               Ask questions about your business, or ask it to take action.
             </p>
           </div>
@@ -71,9 +71,9 @@ export default async function AssistantPage() {
               {pendingActions.map((action) => (
                 <div
                   key={action.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-white/[0.06] px-3 py-2"
+                  className="flex items-center justify-between gap-3 rounded-md border border-white/[0.06] light:border-slate-200 px-3 py-2"
                 >
-                  <p className="text-sm text-slate-50">{action.summary}</p>
+                  <p className="text-sm text-slate-50 light:text-slate-900">{action.summary}</p>
                   {canDecide ? (
                     <div className="flex shrink-0 gap-2">
                       <form action={approveAiAction.bind(null, action.id)}>
@@ -114,7 +114,7 @@ export default async function AssistantPage() {
                       className={
                         message.role === "USER"
                           ? "rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-100"
-                          : "rounded-lg border border-white/[0.06] bg-slate-800/60 px-3 py-2 text-sm text-slate-50"
+                          : "rounded-lg border border-white/[0.06] light:border-slate-200 bg-slate-800/60 px-3 py-2 text-sm text-slate-50 light:text-slate-900"
                       }
                     >
                       {message.content}
@@ -133,7 +133,7 @@ export default async function AssistantPage() {
               })
             )}
           </div>
-          <div className="border-t border-white/[0.06] p-4">
+          <div className="border-t border-white/[0.06] light:border-slate-200 p-4">
             <ChatForm />
           </div>
         </Card>

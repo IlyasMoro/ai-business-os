@@ -26,9 +26,9 @@ export default async function BillingPage({
   const hasStripeCustomer = Boolean(subscription?.stripeCustomerId);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50">Billing</h1>
-      <p className="mt-1 text-sm text-slate-400">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Billing</h1>
+      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Manage your Business OS subscription for {session.name ? "your company" : "this workspace"}.
       </p>
 
@@ -40,21 +40,21 @@ export default async function BillingPage({
           </div>
         )}
         {checkout === "cancelled" && (
-          <div className="rounded-md border border-white/[0.06] bg-white/5 px-4 py-2 text-sm text-slate-300">
+          <div className="rounded-md border border-white/[0.06] light:border-slate-200 bg-white/5 px-4 py-2 text-sm text-slate-300 light:text-slate-600">
             Checkout was cancelled — no changes were made.
           </div>
         )}
       </div>
 
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
+      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 text-slate-300">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
             <CreditCard className="h-5 w-5" />
           </span>
           <div>
-            <p className="font-medium text-slate-50">Business OS — $49/month</p>
+            <p className="font-medium text-slate-50 light:text-slate-900">Business OS — $49/month</p>
             {!subscription && (
-              <p className="text-sm text-slate-400">No subscription yet.</p>
+              <p className="text-sm text-slate-400 light:text-slate-500">No subscription yet.</p>
             )}
             {isTrialing && subscription?.trialEndsAt && (
               <p className="text-sm text-amber-400">
@@ -74,12 +74,12 @@ export default async function BillingPage({
               <p className="text-sm text-red-400">Payment failed — please update your card.</p>
             )}
             {subscription?.status === "CANCELED" && (
-              <p className="text-sm text-slate-400">Canceled.</p>
+              <p className="text-sm text-slate-400 light:text-slate-500">Canceled.</p>
             )}
           </div>
         </div>
 
-        <div className="mt-5 flex items-center gap-2 border-t border-white/[0.06] pt-4">
+        <div className="mt-5 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
           {!isActive && (
             <form action={startCheckout}>
               <SubmitButton pendingText="Redirecting...">Subscribe — $49/month</SubmitButton>

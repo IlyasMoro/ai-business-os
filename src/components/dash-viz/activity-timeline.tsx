@@ -36,7 +36,7 @@ export function ActivityTimeline({ items }: { items: TimelineItem[] }) {
             style={{ backgroundColor: toneColor[item.tone], boxShadow: `0 0 8px ${toneColor[item.tone]}`, "--tw-ring-color": VIZ.bg } as React.CSSProperties}
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm text-slate-200">{item.title}</p>
+            <p className="truncate text-sm text-slate-200 light:text-slate-800">{item.title}</p>
             <p className="mt-0.5 truncate text-xs text-slate-500">{item.meta}</p>
           </div>
           <span className="shrink-0 font-mono text-xs tabular-nums text-slate-500">{item.when}</span>

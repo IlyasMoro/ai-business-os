@@ -39,12 +39,12 @@ export default async function PayrollRunDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-slate-50">
+              <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
                 {payrollRun.periodStart.toLocaleDateString()} –{" "}
                 {payrollRun.periodEnd.toLocaleDateString()}
               </h1>
@@ -68,11 +68,11 @@ export default async function PayrollRunDetailPage({
           </CardHeader>
           <CardContent>
             {payrollRun.items.length > 0 && (
-              <ul className="mb-4 divide-y divide-white/[0.06]">
+              <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
                 {payrollRun.items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50">{item.employee.name}</p>
+                      <p className="font-medium text-slate-50 light:text-slate-900">{item.employee.name}</p>
                       <p className="font-mono text-xs tabular-nums text-slate-500">
                         Gross ${item.grossPay.toFixed(2)} − Deductions ${item.deductions.toFixed(2)} =
                         Net ${item.netPay.toFixed(2)}
@@ -95,7 +95,7 @@ export default async function PayrollRunDetailPage({
         </Card>
 
         <p className="mt-6">
-          <Link href="/dashboard/payroll" className="text-sm text-slate-500 hover:text-slate-300">
+          <Link href="/dashboard/payroll" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
             ← Back to payroll
           </Link>
         </p>

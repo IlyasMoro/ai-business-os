@@ -31,7 +31,7 @@ export function GroupedBarChart({
 
   return (
     <div>
-      <div className="mb-3 flex items-center gap-4 text-xs text-slate-400">
+      <div className="mb-3 flex items-center gap-4 text-xs text-slate-400 light:text-slate-500">
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full" style={{ backgroundColor: VIZ.blue }} />
           {aLabel}

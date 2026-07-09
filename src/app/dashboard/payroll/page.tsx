@@ -62,12 +62,12 @@ export default async function PayrollPage({
   const payrollTrend = recentRuns.map((r) => r.totalAmount).reverse();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <ErrorBanner code={error} />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50">Payroll</h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Payroll</h1>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} payroll run{totalCount === 1 ? "" : "s"}
           </p>
         </div>
@@ -81,8 +81,8 @@ export default async function PayrollPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-5 lg:col-span-1">
-          <p className="text-sm text-slate-400">Total paid</p>
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5 lg:col-span-1">
+          <p className="text-sm text-slate-400 light:text-slate-500">Total paid</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalPaid} prefix="$" decimals={0} />
           </p>
@@ -92,7 +92,7 @@ export default async function PayrollPage({
             </div>
           )}
         </div>
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6 lg:col-span-2">
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6 lg:col-span-2">
           <div className="flex justify-center">
             <DonutChart
               title="Payroll runs by status"
@@ -108,7 +108,7 @@ export default async function PayrollPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111]">
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {payrollRuns.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No payroll runs yet. Create your first one to get started.
@@ -116,7 +116,7 @@ export default async function PayrollPage({
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/[0.06] text-left text-slate-500">
+              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Period</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium">Total</th>
@@ -128,7 +128,7 @@ export default async function PayrollPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/payroll/${run.id}`}
-                      className="font-medium text-slate-50 hover:text-blue-400"
+                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {run.periodStart.toLocaleDateString()} – {run.periodEnd.toLocaleDateString()}
                     </Link>
@@ -142,7 +142,7 @@ export default async function PayrollPage({
                       {run.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300">
+                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(run.totalAmount)}
                   </td>
                 </tr>
@@ -152,7 +152,7 @@ export default async function PayrollPage({
         )}
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-white/[0.06] px-5 py-3">
+          <div className="flex items-center justify-between border-t border-white/[0.06] light:border-slate-200 px-5 py-3">
             <p className="text-sm text-slate-500">
               Page {page} of {totalPages}
             </p>
@@ -160,13 +160,13 @@ export default async function PayrollPage({
               {page > 1 ? (
                 <Link
                   href={payrollHref(page - 1)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   <ChevronLeft className="h-4 w-4" />
                   Previous
                 </span>
@@ -174,13 +174,13 @@ export default async function PayrollPage({
               {page < totalPages ? (
                 <Link
                   href={payrollHref(page + 1)}
-                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                  className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </Link>
               ) : (
-                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700">
+                <span className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-700 light:text-slate-300">
                   Next
                   <ChevronRight className="h-4 w-4" />
                 </span>

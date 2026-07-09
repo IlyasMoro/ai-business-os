@@ -36,18 +36,18 @@ function WidgetsSkeleton() {
     <div className="animate-pulse">
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] bg-[#111111]" />
+          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
         ))}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl border border-white/[0.06] bg-[#111111]" />
+          <div key={i} className="h-20 rounded-xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
         ))}
       </div>
-      <div className="mt-6 h-64 rounded-2xl border border-white/[0.06] bg-[#111111]" />
+      <div className="mt-6 h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#111111]" />
-        <div className="h-64 rounded-2xl border border-white/[0.06] bg-[#111111]" />
+        <div className="h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
+        <div className="h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
       </div>
     </div>
   );
@@ -62,14 +62,14 @@ export default async function DashboardOverviewPage({
   const user = await getCurrentUser();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <ErrorBanner code={error} />
 
       <div>
-        <h1 className="text-2xl font-semibold text-slate-50">
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
           Welcome back, {user.name.split(" ")[0]}
         </h1>
-        <p className="mt-1 text-slate-400">
+        <p className="mt-1 text-slate-400 light:text-slate-500">
           Here&apos;s what&apos;s happening at {user.company.name}.
         </p>
       </div>
@@ -255,19 +255,19 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {secondaryStats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
-            <div className="rounded-xl border border-white/[0.06] bg-[#111111] p-4 transition-colors hover:border-slate-700">
+            <div className="rounded-xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-4 transition-colors hover:border-slate-700">
               <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-400">{stat.label}</p>
+                <p className="text-xs text-slate-400 light:text-slate-500">{stat.label}</p>
                 <stat.icon className={`h-4 w-4 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
               </div>
-              <p className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-slate-50">{stat.value}</p>
+              <p className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-slate-50 light:text-slate-900">{stat.value}</p>
             </div>
           </Link>
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
-        <h2 className="text-sm font-semibold text-slate-50">Performance rings</h2>
+      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
           <RingGauge label="Project completion" pct={completionRatio} goodIsHigh />
           <RingGauge label="Avg. task progress" pct={avgTaskCompletion} goodIsHigh />
@@ -276,8 +276,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
-          <h2 className="text-sm font-semibold text-slate-50">Customers by status</h2>
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Customers by status</h2>
           <ul className="mt-4 space-y-4">
             {customerStatusRows.map((row) => (
               <AllocationBar
@@ -291,8 +291,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] bg-[#111111] p-6">
-          <h2 className="text-sm font-semibold text-slate-50">Recent activity</h2>
+        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
           <div className="mt-4">
             <ActivityTimeline items={timelineItems} />
           </div>

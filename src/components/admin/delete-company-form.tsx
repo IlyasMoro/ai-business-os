@@ -25,8 +25,8 @@ export function DeleteCompanyForm({
 
   return (
     <form action={action} className="space-y-3">
-      <p className="text-sm text-slate-400">
-        Type <span className="font-medium text-slate-200">{companyName}</span> to confirm
+      <p className="text-sm text-slate-400 light:text-slate-500">
+        Type <span className="font-medium text-slate-200 light:text-slate-800">{companyName}</span> to confirm
         permanent deletion of this company and all of its data.
       </p>
       <Input

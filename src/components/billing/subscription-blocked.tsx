@@ -25,13 +25,13 @@ export function SubscriptionBlocked({
   const copy = COPY[reason];
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-      <h1 className="text-xl font-semibold text-slate-50">{copy.title}</h1>
-      <p className="mt-2 max-w-sm text-sm text-slate-400">{copy.body}</p>
+      <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">{copy.title}</h1>
+      <p className="mt-2 max-w-sm text-sm text-slate-400 light:text-slate-500">{copy.body}</p>
       <div className="mt-6">
         <LinkButton href="/dashboard/billing">Go to billing</LinkButton>
       </div>
       <p className="mt-4 text-sm">
-        <Link href="/dashboard/billing" className="text-slate-500 hover:text-slate-300">
+        <Link href="/dashboard/billing" className="text-slate-500 hover:text-slate-300 light:text-slate-600">
           Manage subscription
         </Link>
       </p>

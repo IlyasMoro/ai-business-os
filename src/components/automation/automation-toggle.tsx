@@ -27,8 +27,8 @@ export function AutomationToggle({
   return (
     <form ref={formRef} action={action} className="flex items-center justify-between gap-4 py-4">
       <div>
-        <p className="font-medium text-slate-50">{label}</p>
-        <p className="mt-0.5 text-sm text-slate-400">{description}</p>
+        <p className="font-medium text-slate-50 light:text-slate-900">{label}</p>
+        <p className="mt-0.5 text-sm text-slate-400 light:text-slate-500">{description}</p>
       </div>
       <input ref={hiddenRef} type="hidden" name="enabled" defaultValue={enabled ? "true" : "false"} />
       <label className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full bg-white/10 transition-colors has-[:checked]:bg-emerald-500/80">

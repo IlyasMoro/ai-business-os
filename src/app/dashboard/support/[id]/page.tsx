@@ -46,15 +46,15 @@ export default async function TicketDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-slate-50">{ticket.subject}</h1>
+              <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{ticket.subject}</h1>
               <Badge tone={statusTone[ticket.status]}>{ticket.status}</Badge>
             </div>
-            <p className="mt-1 text-slate-400">For {ticket.customer.name}</p>
+            <p className="mt-1 text-slate-400 light:text-slate-500">For {ticket.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
               Created {ticket.createdAt.toLocaleDateString()}
             </p>
@@ -80,7 +80,7 @@ export default async function TicketDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Description</p>
-              <p className="text-slate-50">{ticket.description ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{ticket.description ?? "—"}</p>
             </div>
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export default async function TicketDetailPage({
         />
 
         <p className="mt-6">
-          <Link href="/dashboard/support" className="text-sm text-slate-500 hover:text-slate-300">
+          <Link href="/dashboard/support" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
             ← Back to support
           </Link>
         </p>

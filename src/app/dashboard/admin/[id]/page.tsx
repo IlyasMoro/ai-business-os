@@ -32,13 +32,13 @@ export default async function AdminCompanyDetailPage({
   const deleteAction = deleteCompany.bind(null, company.id);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
+    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <Link href="/dashboard/admin" className="text-sm text-blue-400 hover:text-blue-300">
         Back to companies
       </Link>
 
-      <h1 className="mt-3 text-2xl font-semibold text-slate-50">{company.name}</h1>
-      <p className="mt-1 text-sm text-slate-400">
+      <h1 className="mt-3 text-2xl font-semibold text-slate-50 light:text-slate-900">{company.name}</h1>
+      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Signed up on {company.createdAt.toLocaleDateString()}
       </p>
 
@@ -46,16 +46,16 @@ export default async function AdminCompanyDetailPage({
         <ErrorBanner code={error} />
       </div>
 
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] bg-[#111111] p-5">
-        <h2 className="font-medium text-slate-50">Users ({company.users.length})</h2>
-        <ul className="mt-3 divide-y divide-white/[0.06]">
+      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <h2 className="font-medium text-slate-50 light:text-slate-900">Users ({company.users.length})</h2>
+        <ul className="mt-3 divide-y divide-white/[0.06] light:divide-slate-200">
           {company.users.map((u) => (
             <li key={u.id} className="flex items-center justify-between py-2 text-sm">
               <div>
-                <p className="text-slate-200">{u.name}</p>
+                <p className="text-slate-200 light:text-slate-800">{u.name}</p>
                 <p className="text-slate-500">{u.email}</p>
               </div>
-              <div className="text-right text-slate-400">
+              <div className="text-right text-slate-400 light:text-slate-500">
                 <p>{u.role}</p>
                 <p className="text-xs text-slate-500">
                   joined {u.createdAt.toLocaleDateString()}
