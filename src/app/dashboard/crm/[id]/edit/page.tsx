@@ -24,12 +24,18 @@ export default async function EditCustomerPage({
 
   const action = updateCustomer.bind(null, customer.id);
 
+  const campaigns = await db.campaign.findMany({
+    where: { companyId: session.companyId },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  });
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50">Edit customer</h1>
       <div className="mt-6 max-w-xl">
         <ErrorBanner code={error} />
-        <CustomerForm action={action} defaultValues={customer} submitLabel="Save changes" />
+        <CustomerForm action={action} defaultValues={customer} campaigns={campaigns} submitLabel="Save changes" />
       </div>
     </div>
   );

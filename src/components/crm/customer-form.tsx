@@ -4,6 +4,7 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 export function CustomerForm({
   action,
   defaultValues,
+  campaigns,
   submitLabel = "Save customer",
 }: {
   action: (formData: FormData) => Promise<void>;
@@ -14,7 +15,9 @@ export function CustomerForm({
     company: string | null;
     status: string;
     notes: string | null;
+    campaignId?: string | null;
   };
+  campaigns?: { id: string; name: string }[];
   submitLabel?: string;
 }) {
   return (
@@ -51,6 +54,20 @@ export function CustomerForm({
         <Label htmlFor="notes">Notes</Label>
         <Textarea id="notes" name="notes" rows={4} defaultValue={defaultValues?.notes ?? ""} />
       </div>
+
+      {campaigns && campaigns.length > 0 && (
+        <div>
+          <Label htmlFor="campaignId">Source campaign (optional)</Label>
+          <Select id="campaignId" name="campaignId" defaultValue={defaultValues?.campaignId ?? ""}>
+            <option value="">None</option>
+            {campaigns.map((campaign) => (
+              <option key={campaign.id} value={campaign.id}>
+                {campaign.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      )}
 
       <SubmitButton pendingText="Saving...">{submitLabel}</SubmitButton>
     </form>

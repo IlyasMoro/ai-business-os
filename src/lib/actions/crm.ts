@@ -16,18 +16,28 @@ export async function createCustomer(formData: FormData) {
     company: formData.get("company"),
     status: formData.get("status"),
     notes: formData.get("notes"),
+    campaignId: formData.get("campaignId"),
   });
 
   if (!validated.success) {
     redirect("/dashboard/crm/new?error=invalid");
   }
 
-  const { email, ...rest } = validated.data;
+  const { email, campaignId, ...rest } = validated.data;
+
+  if (campaignId) {
+    const campaign = await db.campaign.findUnique({
+      where: { id: campaignId, companyId: session.companyId },
+      select: { id: true },
+    });
+    if (!campaign) redirect("/dashboard/crm/new?error=invalid");
+  }
 
   const customer = await db.customer.create({
     data: {
       ...rest,
       email: email || undefined,
+      campaignId: campaignId || undefined,
       companyId: session.companyId,
     },
   });
@@ -46,17 +56,26 @@ export async function updateCustomer(customerId: string, formData: FormData) {
     company: formData.get("company"),
     status: formData.get("status"),
     notes: formData.get("notes"),
+    campaignId: formData.get("campaignId"),
   });
 
   if (!validated.success) {
     redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
   }
 
-  const { email, ...rest } = validated.data;
+  const { email, campaignId, ...rest } = validated.data;
+
+  if (campaignId) {
+    const campaign = await db.campaign.findUnique({
+      where: { id: campaignId, companyId: session.companyId },
+      select: { id: true },
+    });
+    if (!campaign) redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
+  }
 
   await db.customer.update({
     where: { id: customerId, companyId: session.companyId },
-    data: { ...rest, email: email || null },
+    data: { ...rest, email: email || null, campaignId: campaignId || null },
   });
 
   revalidatePath("/dashboard/crm");

@@ -7,6 +7,7 @@ export const CustomerSchema = z.object({
   company: z.string().trim().optional(),
   status: z.enum(["LEAD", "ACTIVE", "INACTIVE"]),
   notes: z.string().trim().optional(),
+  campaignId: z.string().trim().optional(),
 });
 
 export const ContactSchema = z.object({
