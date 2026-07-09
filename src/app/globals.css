@@ -88,12 +88,14 @@
 }
 
 html {
-  color-scheme: light;
-  scroll-behavior: smooth;
-}
-
-html[data-theme="dark"] {
+  /* The app is always-dark now (no light mode / toggle left anywhere), so
+     color-scheme must be a static "dark" from the very first paint — leaving
+     this conditional on the client-set `data-theme` attribute left a window
+     (before that script runs) where the browser assumed a light UI while the
+     page was actually black, which some engines use to mis-render native
+     form control text/caret color. */
   color-scheme: dark;
+  scroll-behavior: smooth;
 }
 
 body {
