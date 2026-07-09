@@ -50,7 +50,7 @@ export default async function IntegrationsPage({
                 <p className="text-sm text-emerald-400">Connected as {integration.email}</p>
               ) : (
                 <p className="text-sm text-slate-400">
-                  Not connected. Emails currently send via the app's default provider.
+                  Not connected. Emails currently send via the app&apos;s default provider.
                 </p>
               )}
             </div>

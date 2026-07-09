@@ -27,7 +27,7 @@ export default async function PlatformSettingsPage({
       <h1 className="text-2xl font-semibold text-slate-50">Platform settings</h1>
       <p className="mt-1 text-sm text-slate-400">
         App-wide configuration, visible only to the platform operator — not exposed to any
-        company's regular users.
+        company&apos;s regular users.
       </p>
 
       <div className="mt-4 max-w-2xl space-y-3">

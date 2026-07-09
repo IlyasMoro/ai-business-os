@@ -39,7 +39,6 @@ export default async function CalendarPage({
 }) {
   const { error } = await searchParams;
   const session = await verifySession();
-  const now = new Date();
 
   const [events, invoices, tasks, projects, payrollRuns] = await Promise.all([
     db.calendarEvent.findMany({

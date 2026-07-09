@@ -16,7 +16,7 @@ export async function createCustomer(formData: FormData) {
     company: formData.get("company"),
     status: formData.get("status"),
     notes: formData.get("notes"),
-    campaignId: formData.get("campaignId"),
+    campaignId: formData.get("campaignId") || undefined,
   });
 
   if (!validated.success) {
@@ -56,7 +56,7 @@ export async function updateCustomer(customerId: string, formData: FormData) {
     company: formData.get("company"),
     status: formData.get("status"),
     notes: formData.get("notes"),
-    campaignId: formData.get("campaignId"),
+    campaignId: formData.get("campaignId") || undefined,
   });
 
   if (!validated.success) {

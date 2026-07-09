@@ -162,7 +162,7 @@ export async function addTask(
 
   const validated = TaskSchema.safeParse({
     title: formData.get("title"),
-    description: formData.get("description"),
+    description: formData.get("description") || undefined,
     assigneeId: formData.get("assigneeId"),
     dueDate: formData.get("dueDate"),
   });
