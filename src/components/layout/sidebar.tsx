@@ -7,10 +7,7 @@ export function Sidebar({ role, isPlatformAdmin = false }: { role: Role; isPlatf
     <aside className="hidden w-60 shrink-0 flex-col border-r border-white/[0.06] bg-black sm:flex light:border-slate-200 light:bg-white">
       <div className="flex h-16 items-center px-5">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-xs font-bold text-amber-400">
-            AI
-          </span>
-          <span className="text-base font-semibold tracking-tight text-slate-50 light:text-slate-900">
+          <span className="flex h-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 px-2 text-xs font-bold tracking-wide text-amber-400">
             AIBOS
           </span>
         </Link>

@@ -34,10 +34,7 @@ export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPla
                 className="flex items-center gap-2"
                 onClick={() => setOpen(false)}
               >
-                <span className="flex h-7 w-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-xs font-bold text-amber-400">
-                  AI
-                </span>
-                <span className="text-base font-semibold tracking-tight text-slate-50 light:text-slate-900">
+                <span className="flex h-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 px-2 text-xs font-bold tracking-wide text-amber-400">
                   AIBOS
                 </span>
               </Link>
