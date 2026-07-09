@@ -12,6 +12,7 @@ import {
   LifeBuoy,
   Sparkles,
   BarChart3,
+  Zap,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -37,4 +38,5 @@ export const navItems: {
   { href: "/dashboard/payroll", label: "Payroll", icon: Banknote, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
+  { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
 ];

@@ -15,22 +15,23 @@ model Company {
   industry  String?
   createdAt DateTime @default(now())
 
-  users          User[]
-  customers      Customer[]
-  products       Product[]
-  suppliers      Supplier[]
-  purchaseOrders PurchaseOrder[]
-  orders         Order[]
-  invoices       Invoice[]
-  transactions   Transaction[]
-  employees      Employee[]
-  payrollRuns    PayrollRun[]
-  projects       Project[]
-  tickets        Ticket[]
-  chatMessages   AiChatMessage[]
-  aiActions      AiAction[]
-  auditLogs      AuditLog[]
-  documents      Document[]
+  users              User[]
+  customers          Customer[]
+  products           Product[]
+  suppliers          Supplier[]
+  purchaseOrders     PurchaseOrder[]
+  orders             Order[]
+  invoices           Invoice[]
+  transactions       Transaction[]
+  employees          Employee[]
+  payrollRuns        PayrollRun[]
+  projects           Project[]
+  tickets            Ticket[]
+  chatMessages       AiChatMessage[]
+  aiActions          AiAction[]
+  auditLogs          AuditLog[]
+  documents          Document[]
+  automationSettings AutomationSettings?
 }
 
 enum UserRole {
@@ -275,13 +276,14 @@ enum InvoiceStatus {
 }
 
 model Invoice {
-  id            String        @id @default(cuid())
-  invoiceNumber String
-  status        InvoiceStatus @default(DRAFT)
-  issueDate     DateTime      @default(now())
-  dueDate       DateTime
-  totalAmount   Float         @default(0)
-  createdAt     DateTime      @default(now())
+  id                 String        @id @default(cuid())
+  invoiceNumber      String
+  status             InvoiceStatus @default(DRAFT)
+  issueDate          DateTime      @default(now())
+  dueDate            DateTime
+  totalAmount        Float         @default(0)
+  createdAt          DateTime      @default(now())
+  lastReminderSentAt DateTime?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -578,4 +580,19 @@ model Document {
   entityId   String
 
   @@index([companyId, entityType, entityId])
+}
+
+// ---------- Automation ----------
+
+model AutomationSettings {
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+
+  overdueInvoiceReminders Boolean @default(false)
+  lowStockReorder         Boolean @default(false)
+  staleTicketEscalation   Boolean @default(false)
+  staleLeadCleanup        Boolean @default(false)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
