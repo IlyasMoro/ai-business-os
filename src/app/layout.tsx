@@ -18,14 +18,33 @@ export const metadata: Metadata = {
   description: "The all-in-one AI-powered platform for running your business.",
 };
 
+const THEME_INIT_SCRIPT = `
+(function () {
+  try {
+    if (localStorage.getItem("theme") === "light") {
+      document.documentElement.classList.add("light");
+    }
+  } catch (e) {}
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${jost.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-black text-white">{children}</body>
+    <html
+      lang="en"
+      className={`${jost.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-black text-white light:bg-white light:text-slate-900">
+        {children}
+      </body>
     </html>
   );
 }

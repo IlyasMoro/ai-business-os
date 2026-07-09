@@ -36,7 +36,7 @@ export function NavLinks({
               "group relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
               active
                 ? "bg-blue-500/10 text-blue-400"
-                : "text-slate-400 hover:bg-white/5 hover:text-slate-50"
+                : "text-slate-400 hover:bg-white/5 hover:text-slate-50 light:text-slate-500 light:hover:bg-slate-100 light:hover:text-slate-900"
             )}
           >
             {active && (
@@ -45,7 +45,7 @@ export function NavLinks({
             <item.icon
               className={cn(
                 "h-4 w-4 shrink-0 transition-colors",
-                active ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300"
+                active ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300 light:text-slate-400 light:group-hover:text-slate-600"
               )}
             />
             {item.label}

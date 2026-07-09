@@ -1,9 +1,18 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* The app is dark by default (unprefixed utility classes = the existing
+   dark styling, unchanged). Light mode is opt-in via a `.light` class on
+   <html>, toggled by ThemeToggle. This is the inverse of Tailwind's usual
+   convention (base = light, dark: = override) on purpose: adding light mode
+   is purely additive (new `light:` classes only), so there's no risk of
+   changing what every element already renders by default while retrofitting
+   this in. It also avoids the bug class from the old theme system, which
+   retargeted shared CSS variables that components assumed fixed meanings
+   for — every `light:` class here sets an explicit color on that element,
+   nothing is proxied through a variable another component might also read. */
+@custom-variant light (&:where(.light, .light *));
 
+:root {
   /* Brand accent retinted from indigo/purple to a neutral black-glass
      graphite family. Unlayered, so it overrides Tailwind's built-in
      indigo-* palette values — every existing indigo-* utility class across
@@ -26,30 +35,22 @@
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: "Century Gothic", CenturyGothic, AppleGothic, var(--font-jost), sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
-  /* The app is always-dark now (no light mode left anywhere), so color-scheme
-     is a static "dark" — some browsers use this to decide how to render
-     native form control text/caret color. */
+  /* Some browsers use this to decide how to render native form control
+     text/caret/scrollbar color — kept in sync with the .light class. */
   color-scheme: dark;
   scroll-behavior: smooth;
 }
 
+html.light {
+  color-scheme: light;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
 }
 
@@ -72,6 +73,19 @@ textarea:-webkit-autofill:focus {
   box-shadow: 0 0 0px 1000px #111111 inset;
   caret-color: #f8fafc;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+.light input:-webkit-autofill,
+.light input:-webkit-autofill:hover,
+.light input:-webkit-autofill:focus,
+.light input:-webkit-autofill:active,
+.light textarea:-webkit-autofill,
+.light textarea:-webkit-autofill:hover,
+.light textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0f172a;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+  box-shadow: 0 0 0px 1000px #ffffff inset;
+  caret-color: #0f172a;
 }
 
 /* Smooth, app-wide theme transition */
@@ -160,4 +174,13 @@ body * {
 select option {
   background-color: #111111;
   color: #f8fafc;
+}
+
+.light select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+.light *::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
 }

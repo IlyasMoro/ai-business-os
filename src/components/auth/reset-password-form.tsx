@@ -21,7 +21,7 @@ export function ResetPasswordForm({ action }: { action: Action }) {
         <FieldError messages={state?.errors?.password} />
       </div>
 
-      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400 light:text-red-600">{state.message}</p>}
 
       <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Resetting..." : "Reset password"}

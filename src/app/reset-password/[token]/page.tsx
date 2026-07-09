@@ -16,21 +16,21 @@ export default async function ResetPasswordPage({
   ) => Promise<ResetPasswordFormState>;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-black px-4 light:bg-slate-50">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
       />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg">
-        <h1 className="text-xl font-semibold text-slate-50">Choose a new password</h1>
-        <p className="mt-1 text-sm text-slate-400">
+      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg light:border-slate-200 light:bg-white">
+        <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">Choose a new password</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Enter a new password for your account.
         </p>
 
         <ResetPasswordForm action={action} />
 
-        <p className="mt-6 text-center text-sm text-slate-400">
-          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300">
+        <p className="mt-6 text-center text-sm text-slate-400 light:text-slate-500">
+          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
             Back to sign in
           </Link>
         </p>

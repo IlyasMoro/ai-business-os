@@ -10,14 +10,14 @@ export default function RegisterPage() {
   const [state, action, pending] = useActionState(register, undefined);
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-black px-4">
+    <div className="relative flex min-h-screen items-center justify-center bg-black px-4 light:bg-slate-50">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
       />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg">
-        <h1 className="text-xl font-semibold text-slate-50">Create your workspace</h1>
-        <p className="mt-1 text-sm text-slate-400">
+      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg light:border-slate-200 light:bg-white">
+        <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">Create your workspace</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Start running your business with an AI powered operating system.
         </p>
 
@@ -44,7 +44,7 @@ export default function RegisterPage() {
           </div>
 
           {state?.message && (
-            <p className="text-sm text-red-400">{state.message}</p>
+            <p className="text-sm text-red-400 light:text-red-600">{state.message}</p>
           )}
 
           <Button type="submit" disabled={pending} className="w-full">
@@ -52,20 +52,20 @@ export default function RegisterPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-slate-400">
+        <p className="mt-6 text-center text-sm text-slate-400 light:text-slate-500">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300">
+          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
             Sign in
           </Link>
         </p>
 
-        <p className="mt-4 text-center text-xs text-slate-500">
+        <p className="mt-4 text-center text-xs text-slate-500 light:text-slate-400">
           By creating an account, you agree to our{" "}
-          <Link href="/terms" className="text-slate-400 hover:text-slate-300">
+          <Link href="/terms" className="text-slate-400 hover:text-slate-300 light:text-slate-500 light:hover:text-slate-700">
             Terms of Service
           </Link>{" "}
           and{" "}
-          <Link href="/privacy" className="text-slate-400 hover:text-slate-300">
+          <Link href="/privacy" className="text-slate-400 hover:text-slate-300 light:text-slate-500 light:hover:text-slate-700">
             Privacy Policy
           </Link>
           .

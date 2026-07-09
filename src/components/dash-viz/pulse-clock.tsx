@@ -24,7 +24,7 @@ export function PulseClock() {
   const now = nowSeconds * 1000;
 
   return (
-    <div className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-[#111111] px-3 py-1.5">
+    <div className="flex items-center gap-2 rounded-full border border-white/[0.06] bg-[#111111] px-3 py-1.5 light:border-slate-200 light:bg-slate-50">
       <span className="relative flex h-2 w-2">
         <span
           className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
@@ -33,7 +33,7 @@ export function PulseClock() {
         <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: VIZ.emerald }} />
       </span>
       <span className="text-xs font-medium uppercase tracking-wide text-emerald-400">Live</span>
-      <span className="font-mono text-xs tabular-nums text-slate-400">
+      <span className="font-mono text-xs tabular-nums text-slate-400 light:text-slate-500">
         {now === 0 ? "--:--:--" : new Date(now).toLocaleTimeString("en-US", { hour12: false })}
       </span>
     </div>

@@ -15,7 +15,7 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
-        className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-50"
+        className="relative flex h-9 w-9 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-50 light:text-slate-500 light:hover:bg-slate-100 light:hover:text-slate-900"
       >
         <Bell className="h-4.5 w-4.5" />
         {count > 0 && (
@@ -26,12 +26,12 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
       {open && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className="absolute right-0 z-50 mt-2 w-80 rounded-xl border border-white/[0.06] bg-[#111111] p-2 shadow-2xl">
-            <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div className="absolute right-0 z-50 mt-2 w-80 rounded-xl border border-white/[0.06] bg-[#111111] p-2 shadow-2xl light:border-slate-200 light:bg-white light:shadow-lg">
+            <div className="px-2 py-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 light:text-slate-400">
               Needs attention
             </div>
             {count === 0 ? (
-              <p className="px-2 py-4 text-center text-sm text-slate-500">You&apos;re all caught up.</p>
+              <p className="px-2 py-4 text-center text-sm text-slate-500 light:text-slate-400">You&apos;re all caught up.</p>
             ) : (
               <ul className="max-h-80 overflow-y-auto">
                 {notifications.map((n) => (
@@ -39,7 +39,7 @@ export function NotificationBell({ notifications }: { notifications: Notificatio
                     <Link
                       href={n.href}
                       onClick={() => setOpen(false)}
-                      className="flex items-start gap-2 rounded-lg px-2 py-2 text-sm text-slate-300 transition-colors hover:bg-white/5"
+                      className="flex items-start gap-2 rounded-lg px-2 py-2 text-sm text-slate-300 transition-colors hover:bg-white/5 light:text-slate-600 light:hover:bg-slate-100"
                     >
                       <span
                         className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${

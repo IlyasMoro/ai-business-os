@@ -2,7 +2,8 @@ import { cn } from "@/lib/utils";
 import type { InputHTMLAttributes, LabelHTMLAttributes, TextareaHTMLAttributes } from "react";
 
 const fieldBase =
-  "block w-full rounded-md border border-white/[0.06] bg-[#111111] px-3 py-2 text-sm text-white caret-white outline-none transition-colors duration-150 placeholder:text-slate-500 hover:border-slate-700 focus:border-blue-500";
+  "block w-full rounded-md border border-white/[0.06] bg-[#111111] px-3 py-2 text-sm text-white caret-white outline-none transition-colors duration-150 placeholder:text-slate-500 hover:border-slate-700 focus:border-blue-500 " +
+  "light:border-slate-300 light:bg-white light:text-slate-900 light:caret-slate-900 light:placeholder:text-slate-400 light:hover:border-slate-400";
 
 export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
   return <input className={cn(fieldBase, className)} {...props} />;
@@ -28,7 +29,7 @@ export function Label({
 }: LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label
-      className={cn("mb-1 block text-sm font-medium text-slate-300", className)}
+      className={cn("mb-1 block text-sm font-medium text-slate-300 light:text-slate-600", className)}
       {...props}
     />
   );
@@ -36,5 +37,5 @@ export function Label({
 
 export function FieldError({ messages }: { messages?: string[] }) {
   if (!messages?.length) return null;
-  return <p className="mt-1 text-sm text-red-400">{messages[0]}</p>;
+  return <p className="mt-1 text-sm text-red-400 light:text-red-600">{messages[0]}</p>;
 }
