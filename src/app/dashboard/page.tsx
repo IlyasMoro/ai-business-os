@@ -5,7 +5,6 @@ import { db } from "@/lib/db";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
-import { PulseClock } from "@/components/dash-viz/pulse-clock";
 import { AllocationBar } from "@/components/dash-viz/allocation-bar";
 import { ActivityTimeline, type TimelineItem } from "@/components/dash-viz/activity-timeline";
 import { VIZ } from "@/components/dash-viz/colors";
@@ -66,16 +65,13 @@ export default async function DashboardOverviewPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-50">
-            Welcome back, {user.name.split(" ")[0]}
-          </h1>
-          <p className="mt-1 text-slate-400">
-            Here&apos;s what&apos;s happening at {user.company.name}.
-          </p>
-        </div>
-        <PulseClock />
+      <div>
+        <h1 className="text-2xl font-semibold text-slate-50">
+          Welcome back, {user.name.split(" ")[0]}
+        </h1>
+        <p className="mt-1 text-slate-400">
+          Here&apos;s what&apos;s happening at {user.company.name}.
+        </p>
       </div>
 
       <Suspense fallback={<WidgetsSkeleton />}>
