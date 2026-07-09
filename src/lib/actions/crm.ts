@@ -4,17 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import {
-  CustomerSchema,
-  ContactSchema,
-  type CustomerFormState,
-  type ContactFormState,
-} from "@/lib/validation/crm";
+import { CustomerSchema, ContactSchema } from "@/lib/validation/crm";
 
-export async function createCustomer(
-  _state: CustomerFormState,
-  formData: FormData
-): Promise<CustomerFormState> {
+export async function createCustomer(formData: FormData) {
   const session = await verifySession();
 
   const validated = CustomerSchema.safeParse({
@@ -27,7 +19,7 @@ export async function createCustomer(
   });
 
   if (!validated.success) {
-    return { errors: validated.error.flatten().fieldErrors };
+    redirect("/dashboard/crm/new?error=invalid");
   }
 
   const { email, ...rest } = validated.data;
@@ -44,11 +36,7 @@ export async function createCustomer(
   redirect(`/dashboard/crm/${customer.id}`);
 }
 
-export async function updateCustomer(
-  customerId: string,
-  _state: CustomerFormState,
-  formData: FormData
-): Promise<CustomerFormState> {
+export async function updateCustomer(customerId: string, formData: FormData) {
   const session = await verifySession();
 
   const validated = CustomerSchema.safeParse({
@@ -61,7 +49,7 @@ export async function updateCustomer(
   });
 
   if (!validated.success) {
-    return { errors: validated.error.flatten().fieldErrors };
+    redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
   }
 
   const { email, ...rest } = validated.data;
@@ -91,11 +79,7 @@ export async function deleteCustomer(customerId: string) {
   redirect("/dashboard/crm");
 }
 
-export async function createContact(
-  customerId: string,
-  _state: ContactFormState,
-  formData: FormData
-): Promise<ContactFormState> {
+export async function createContact(customerId: string, formData: FormData) {
   const session = await verifySession();
 
   const validated = ContactSchema.safeParse({
@@ -106,7 +90,7 @@ export async function createContact(
   });
 
   if (!validated.success) {
-    return { errors: validated.error.flatten().fieldErrors };
+    redirect(`/dashboard/crm/${customerId}?error=invalid`);
   }
 
   const customer = await db.customer.findUnique({
@@ -114,7 +98,7 @@ export async function createContact(
     select: { id: true },
   });
   if (!customer) {
-    return { message: "Customer not found." };
+    redirect(`/dashboard/crm/${customerId}?error=invalid`);
   }
 
   const { email, ...rest } = validated.data;
@@ -124,7 +108,7 @@ export async function createContact(
   });
 
   revalidatePath(`/dashboard/crm/${customerId}`);
-  return undefined;
+  redirect(`/dashboard/crm/${customerId}`);
 }
 
 export async function deleteContact(customerId: string, contactId: string) {
