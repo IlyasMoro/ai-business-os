@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { getSessionPayload, type SessionPayload } from "@/lib/session";
+import { getSessionPayload, deleteSession, type SessionPayload } from "@/lib/session";
 import { db } from "@/lib/db";
 import { hasRole } from "@/lib/roles";
 
@@ -44,6 +44,7 @@ export const getCurrentUser = cache(async () => {
     },
   });
   if (!user) {
+    await deleteSession();
     redirect("/login");
   }
   return user;
