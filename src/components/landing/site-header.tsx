@@ -12,7 +12,7 @@ export function SiteHeader() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/15 bg-white/10 text-xs font-bold text-slate-50 backdrop-blur-md">
             AI
           </span>
-          Business OS
+          AIBOS
         </Link>
         <nav className="flex items-center gap-2">
           <Link

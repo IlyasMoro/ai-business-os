@@ -59,7 +59,7 @@ export default function PricingPage() {
 
         <section className="mx-auto max-w-md px-6 pb-24">
           <Reveal className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 text-center backdrop-blur-xl">
-            <p className="text-sm font-medium text-slate-400">Business OS</p>
+            <p className="text-sm font-medium text-slate-400">AIBOS</p>
             <p className="mt-3 flex items-baseline justify-center gap-1">
               <span className="text-5xl font-semibold tracking-tight">$49</span>
               <span className="text-slate-400">/ month</span>

@@ -18,7 +18,7 @@ export default function TermsPage() {
         <div className="mt-8 space-y-8 text-sm leading-relaxed">
           <section>
             <p>
-              These Terms of Service (&ldquo;Terms&rdquo;) govern access to and use of Business OS
+              These Terms of Service (&ldquo;Terms&rdquo;) govern access to and use of AIBOS
               (the &ldquo;Service&rdquo;), operated by [Company Legal Name] (&ldquo;we,&rdquo;
               &ldquo;us,&rdquo; or &ldquo;the Company&rdquo;). By creating an account or otherwise
               using the Service, you agree to be bound by these Terms. If you do not agree, do not
@@ -29,7 +29,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-semibold text-slate-50">1. The Service</h2>
             <p className="mt-2">
-              Business OS is a multi tenant business management platform that provides tools
+              AIBOS is a multi tenant business management platform that provides tools
               including customer relationship management, sales, inventory, procurement,
               invoicing, accounting, human resources, payroll, project management, a shared
               calendar, support ticketing, marketing campaign tracking, workflow automation, third

@@ -11,7 +11,7 @@ export function Sidebar({ role, isPlatformAdmin = false }: { role: Role; isPlatf
             AI
           </span>
           <span className="text-base font-semibold tracking-tight text-slate-50 light:text-slate-900">
-            Business OS
+            AIBOS
           </span>
         </Link>
       </div>

@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Business Operating System",
-  description: "The all-in-one AI-powered platform for running your business.",
+  title: "AIBOS",
+  description: "The all in one AI powered platform for running your business.",
 };
 
 const THEME_INIT_SCRIPT = `

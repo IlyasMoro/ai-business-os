@@ -29,7 +29,7 @@ export default async function BillingPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Billing</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        Manage your Business OS subscription for {session.name ? "your company" : "this workspace"}.
+        Manage your AIBOS subscription for {session.name ? "your company" : "this workspace"}.
       </p>
 
       <div className="mt-4 max-w-2xl space-y-3">
@@ -52,7 +52,7 @@ export default async function BillingPage({
             <CreditCard className="h-5 w-5" />
           </span>
           <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">Business OS ($49/month)</p>
+            <p className="font-medium text-slate-50 light:text-slate-900">AIBOS ($49/month)</p>
             {!subscription && (
               <p className="text-sm text-slate-400 light:text-slate-500">No subscription yet.</p>
             )}

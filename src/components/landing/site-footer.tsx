@@ -6,9 +6,9 @@ export function SiteFooter() {
           <span className="flex h-6 w-6 items-center justify-center rounded-md border border-white/15 bg-white/10 text-[10px] font-bold text-slate-50">
             AI
           </span>
-          Business OS
+          AIBOS
         </span>
-        <p>© {new Date().getFullYear()} AI Business OS. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} AIBOS. All rights reserved.</p>
       </div>
     </footer>
   );

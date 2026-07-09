@@ -5,7 +5,7 @@ import type { SubscriptionAccess } from "@/lib/subscription-access";
 const COPY: Record<Extract<SubscriptionAccess, { blocked: true }>["reason"], { title: string; body: string }> = {
   trial_expired: {
     title: "Your trial has ended",
-    body: "Subscribe to keep using Business OS for your company. Your data is safe and will be exactly as you left it.",
+    body: "Subscribe to keep using AIBOS for your company. Your data is safe and will be exactly as you left it.",
   },
   past_due: {
     title: "Payment failed",

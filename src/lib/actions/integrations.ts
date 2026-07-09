@@ -22,7 +22,7 @@ export async function sendTestEmail() {
   try {
     await sendEmailForCompany(user.companyId, {
       to: user.email,
-      subject: "Test email from AI Business OS",
+      subject: "Test email from AIBOS",
       html: `<p>Hi ${user.name},</p><p>This is a test email confirming your connected email account is working.</p>`,
     });
   } catch (err) {

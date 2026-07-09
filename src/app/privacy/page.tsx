@@ -20,7 +20,7 @@ export default function PrivacyPage() {
             <p>
               This Privacy Policy explains how [Company Legal Name] (&ldquo;we,&rdquo;
               &ldquo;us,&rdquo; or &ldquo;the Company&rdquo;) collects, uses, and protects
-              information in connection with Business OS (the &ldquo;Service&rdquo;). It applies
+              information in connection with AIBOS (the &ldquo;Service&rdquo;). It applies
               to account holders, the users they invite into their company workspace, and, where
               relevant, individuals whose information is entered into the Service by a customer,
               such as employees or contacts of that customer.

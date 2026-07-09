@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { LinkButton } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
+import { AiTerminalPreview } from "@/components/landing/ai-terminal-preview";
 import {
   ArrowRight,
   BarChart3,
@@ -21,6 +23,19 @@ const modules = [
   { icon: Sparkles, name: "AI Copilot", description: "Ask questions, get answers, and approve actions backed by your real data." },
 ];
 
+const alsoIncluded = [
+  "Marketing",
+  "Procurement",
+  "HR",
+  "Payroll",
+  "Projects",
+  "Calendar",
+  "Support",
+  "Automation",
+  "Integrations",
+  "Documents",
+];
+
 const CTA_CLASS =
   "border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
 
@@ -37,7 +52,7 @@ export default function Home() {
 
       <main className="relative">
         {/* Hero */}
-        <section className="mx-auto max-w-4xl px-6 pt-20 pb-24 text-center sm:pt-28 sm:pb-32">
+        <section className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center sm:pt-28">
           <p className="animate-fade-up animate-fade-up-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
             AI Powered Business Operating System
           </p>
@@ -55,28 +70,38 @@ export default function Home() {
             them once you approve.
           </p>
 
-          <div className="animate-fade-up animate-fade-up-4 mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="animate-fade-up animate-fade-up-4 mt-10 flex flex-col items-center justify-center gap-4">
             <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} group`}>
-              Start free
+              Start free trial
               <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
             </LinkButton>
-            <LinkButton href="/login" variant="glass" size="lg">
-              Sign in
-            </LinkButton>
+            <p className="text-sm text-slate-500">
+              No credit card required.{" "}
+              <Link href="/login" className="font-medium text-slate-300 hover:text-slate-50">
+                Sign in
+              </Link>
+            </p>
           </div>
 
           <div className="animate-fade-up animate-fade-up-4 mx-auto mt-16 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
             {[
-              ["9", "Modules unified"],
-              ["1", "AI assistant"],
+              ["$49/mo", "Flat pricing"],
+              ["14 days", "Free trial"],
               ["24/7", "Always on"],
             ].map(([value, label]) => (
               <div key={label}>
-                <p className="text-2xl font-semibold text-slate-50">{value}</p>
+                <p className="font-mono text-2xl font-semibold text-slate-50">{value}</p>
                 <p className="mt-1 text-xs text-slate-400">{label}</p>
               </div>
             ))}
           </div>
+        </section>
+
+        {/* AI preview */}
+        <section className="px-6 pb-24">
+          <Reveal>
+            <AiTerminalPreview />
+          </Reveal>
         </section>
 
         {/* Feature grid */}
@@ -103,6 +128,18 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
+
+          <Reveal className="mt-8 flex flex-wrap items-center justify-center gap-2 border-t border-white/10 pt-8">
+            <span className="text-sm text-slate-500">Also included:</span>
+            {alsoIncluded.map((name) => (
+              <span
+                key={name}
+                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400"
+              >
+                {name}
+              </span>
+            ))}
+          </Reveal>
         </section>
 
         {/* Closing CTA */}
@@ -113,14 +150,14 @@ export default function Home() {
               className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-[100px]"
             />
             <h2 className="relative text-2xl font-semibold tracking-tight sm:text-3xl">
-              Ready to run your business smarter?
+              One flat price. Every module. No setup fees.
             </h2>
             <p className="relative mx-auto mt-3 max-w-md text-slate-400">
-              Create your workspace in minutes, no credit card required.
+              Create your workspace in minutes and try everything free for 14 days.
             </p>
             <div className="relative mt-8 flex justify-center">
               <LinkButton href="/register" variant="glass" size="lg" className={CTA_CLASS}>
-                Start free
+                Start free trial
                 <ArrowRight className="h-4 w-4" />
               </LinkButton>
             </div>
