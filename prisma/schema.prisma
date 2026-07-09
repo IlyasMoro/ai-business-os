@@ -15,19 +15,21 @@ model Company {
   industry  String?
   createdAt DateTime @default(now())
 
-  users        User[]
-  customers    Customer[]
-  products     Product[]
-  orders       Order[]
-  invoices     Invoice[]
-  transactions Transaction[]
-  employees    Employee[]
-  payrollRuns  PayrollRun[]
-  projects     Project[]
-  tickets      Ticket[]
-  chatMessages AiChatMessage[]
-  aiActions    AiAction[]
-  auditLogs    AuditLog[]
+  users          User[]
+  customers      Customer[]
+  products       Product[]
+  suppliers      Supplier[]
+  purchaseOrders PurchaseOrder[]
+  orders         Order[]
+  invoices       Invoice[]
+  transactions   Transaction[]
+  employees      Employee[]
+  payrollRuns    PayrollRun[]
+  projects       Project[]
+  tickets        Ticket[]
+  chatMessages   AiChatMessage[]
+  aiActions      AiAction[]
+  auditLogs      AuditLog[]
 }
 
 enum UserRole {
@@ -155,11 +157,69 @@ model Product {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  orderItems       OrderItem[]
-  invoiceLineItems InvoiceLineItem[]
+  orderItems         OrderItem[]
+  invoiceLineItems   InvoiceLineItem[]
+  purchaseOrderItems PurchaseOrderItem[]
 
   @@unique([companyId, sku])
   @@index([companyId])
+}
+
+// ---------- Procurement ----------
+
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  purchaseOrders PurchaseOrder[]
+
+  @@index([companyId])
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id          String              @id @default(cuid())
+  status      PurchaseOrderStatus @default(DRAFT)
+  totalAmount Float               @default(0)
+  createdAt   DateTime            @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  items PurchaseOrderItem[]
+
+  @@index([companyId])
+  @@index([supplierId])
+}
+
+model PurchaseOrderItem {
+  id       String @id @default(cuid())
+  quantity Int
+  unitCost Float
+
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([purchaseOrderId])
 }
 
 // ---------- Sales ----------
