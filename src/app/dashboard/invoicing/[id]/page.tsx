@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { InvoiceLineItemForm } from "@/components/invoicing/invoice-line-item-form";
 import { InvoiceStatusForm } from "@/components/invoicing/invoice-status-form";
+import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteInvoice, removeInvoiceLineItem } from "@/lib/actions/invoicing";
 
 const statusTone = {
@@ -38,6 +39,12 @@ export default async function InvoiceDetailPage({
     where: { companyId: session.companyId },
     select: { id: true, name: true, sku: true, unitPrice: true },
     orderBy: { name: "asc" },
+  });
+
+  const documents = await db.document.findMany({
+    where: { companyId: session.companyId, entityType: "INVOICE", entityId: invoice.id },
+    select: { id: true, filename: true, size: true },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -92,6 +99,13 @@ export default async function InvoiceDetailPage({
             </p>
           </CardContent>
         </Card>
+
+        <DocumentsSection
+          entityType="INVOICE"
+          entityId={invoice.id}
+          redirectPath={`/dashboard/invoicing/${invoice.id}`}
+          documents={documents}
+        />
 
         <p className="mt-6">
           <Link href="/dashboard/invoicing" className="text-sm text-slate-500 hover:text-slate-300">

@@ -9,6 +9,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TaskForm } from "@/components/projects/task-form";
 import { TaskStatusForm } from "@/components/projects/task-status-form";
 import { ProjectStatusForm } from "@/components/projects/project-status-form";
+import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteProject, removeTask } from "@/lib/actions/projects";
 import { Pencil } from "lucide-react";
 
@@ -40,6 +41,12 @@ export default async function ProjectDetailPage({
     where: { companyId: session.companyId, status: "ACTIVE" },
     select: { id: true, name: true },
     orderBy: { name: "asc" },
+  });
+
+  const documents = await db.document.findMany({
+    where: { companyId: session.companyId, entityType: "PROJECT", entityId: project.id },
+    select: { id: true, filename: true, size: true },
+    orderBy: { createdAt: "desc" },
   });
 
   return (
@@ -105,6 +112,13 @@ export default async function ProjectDetailPage({
             <TaskForm projectId={project.id} employees={employees} />
           </CardContent>
         </Card>
+
+        <DocumentsSection
+          entityType="PROJECT"
+          entityId={project.id}
+          redirectPath={`/dashboard/projects/${project.id}`}
+          documents={documents}
+        />
 
         <p className="mt-6">
           <Link href="/dashboard/projects" className="text-sm text-slate-500 hover:text-slate-300">

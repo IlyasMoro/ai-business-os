@@ -8,6 +8,7 @@ import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { ContactForm } from "@/components/crm/contact-form";
+import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteCustomer, deleteContact } from "@/lib/actions/crm";
 import { Pencil } from "lucide-react";
 
@@ -34,6 +35,12 @@ export default async function CustomerDetailPage({
   });
 
   if (!customer) notFound();
+
+  const documents = await db.document.findMany({
+    where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
+    select: { id: true, filename: true, size: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
@@ -110,6 +117,13 @@ export default async function CustomerDetailPage({
             <ContactForm customerId={customer.id} />
           </CardContent>
         </Card>
+
+        <DocumentsSection
+          entityType="CUSTOMER"
+          entityId={customer.id}
+          redirectPath={`/dashboard/crm/${customer.id}`}
+          documents={documents}
+        />
 
         <p className="mt-6">
           <Link href="/dashboard/crm" className="text-sm text-slate-500 hover:text-slate-300">

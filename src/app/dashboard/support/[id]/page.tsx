@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TicketStatusForm } from "@/components/support/ticket-status-form";
+import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteTicket } from "@/lib/actions/support";
 import { Pencil } from "lucide-react";
 
@@ -37,6 +38,12 @@ export default async function TicketDetailPage({
   });
 
   if (!ticket) notFound();
+
+  const documents = await db.document.findMany({
+    where: { companyId: session.companyId, entityType: "TICKET", entityId: ticket.id },
+    select: { id: true, filename: true, size: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6">
@@ -77,6 +84,13 @@ export default async function TicketDetailPage({
             </div>
           </CardContent>
         </Card>
+
+        <DocumentsSection
+          entityType="TICKET"
+          entityId={ticket.id}
+          redirectPath={`/dashboard/support/${ticket.id}`}
+          documents={documents}
+        />
 
         <p className="mt-6">
           <Link href="/dashboard/support" className="text-sm text-slate-500 hover:text-slate-300">

@@ -30,6 +30,7 @@ model Company {
   chatMessages   AiChatMessage[]
   aiActions      AiAction[]
   auditLogs      AuditLog[]
+  documents      Document[]
 }
 
 enum UserRole {
@@ -551,4 +552,30 @@ model AiAction {
 
   @@index([companyId])
   @@index([chatMessageId])
+}
+
+// ---------- Documents ----------
+
+enum DocumentEntityType {
+  CUSTOMER
+  INVOICE
+  TICKET
+  PROJECT
+}
+
+model Document {
+  id        String   @id @default(cuid())
+  filename  String
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  entityType DocumentEntityType
+  entityId   String
+
+  @@index([companyId, entityType, entityId])
 }
