@@ -1,17 +1,21 @@
 import { logout } from "@/lib/actions/auth";
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { PulseClock } from "@/components/dash-viz/pulse-clock";
 import type { Role } from "@/components/layout/nav-config";
+import type { Notification } from "@/lib/notifications";
 import { LogOut } from "lucide-react";
 
 export function Topbar({
   companyName,
   userName,
   role,
+  notifications,
 }: {
   companyName: string;
   userName: string;
   role: Role;
+  notifications: Notification[];
 }) {
   const initial = userName.trim().charAt(0).toUpperCase() || "?";
 
@@ -26,6 +30,7 @@ export function Topbar({
           <PulseClock />
         </div>
         <div className="mx-1 hidden h-6 w-px bg-white/[0.06] sm:block" />
+        <NotificationBell notifications={notifications} />
         <div className="hidden items-center gap-2.5 sm:flex">
           <span className="flex h-7 w-7 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/20 text-xs font-semibold text-amber-400">
             {initial}
