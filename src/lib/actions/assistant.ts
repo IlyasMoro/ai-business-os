@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { sendEmailForCompany } from "@/lib/email-for-company";
 import { generateAssistantReply } from "@/lib/ai";
 import { getBusinessSnapshot, formatSnapshotForPrompt } from "@/lib/business-snapshot";
 import { ChatMessageSchema, type ChatMessageFormState } from "@/lib/validation/assistant";
@@ -186,7 +186,7 @@ async function executeAiAction(
         )
         .join("");
 
-      await sendEmail({
+      await sendEmailForCompany(companyId, {
         to: customer.email,
         subject: "Payment reminder: outstanding invoice(s)",
         html: `<p>Hi ${customer.name},</p><p>This is a friendly reminder that the following invoice(s) are outstanding:</p><ul>${lines}</ul><p>Please arrange payment at your earliest convenience.</p>`,

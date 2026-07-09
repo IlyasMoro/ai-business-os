@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { sendEmailForCompany } from "@/lib/email-for-company";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -22,7 +22,7 @@ async function runOverdueInvoiceReminders(companyId: string) {
   for (const invoice of invoices) {
     if (!invoice.customer.email) continue;
     try {
-      await sendEmail({
+      await sendEmailForCompany(companyId, {
         to: invoice.customer.email,
         subject: "Payment reminder: outstanding invoice",
         html: `<p>Hi ${invoice.customer.name},</p><p>This is a friendly automated reminder that invoice ${invoice.invoiceNumber} for $${invoice.totalAmount.toFixed(2)} (due ${invoice.dueDate.toLocaleDateString()}) is still outstanding.</p><p>Please arrange payment at your earliest convenience.</p>`,

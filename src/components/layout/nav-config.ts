@@ -13,6 +13,7 @@ import {
   Sparkles,
   BarChart3,
   Zap,
+  Plug,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -39,4 +40,5 @@ export const navItems: {
   { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
 ];
