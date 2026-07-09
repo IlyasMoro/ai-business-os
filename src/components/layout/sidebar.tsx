@@ -2,7 +2,7 @@ import Link from "next/link";
 import { NavLinks } from "./nav-links";
 import type { Role } from "./nav-config";
 
-export function Sidebar({ role }: { role: Role }) {
+export function Sidebar({ role, isPlatformAdmin = false }: { role: Role; isPlatformAdmin?: boolean }) {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-white/[0.06] bg-black sm:flex">
       <div className="flex h-16 items-center px-5">
@@ -15,7 +15,7 @@ export function Sidebar({ role }: { role: Role }) {
           </span>
         </Link>
       </div>
-      <NavLinks role={role} />
+      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} />
     </aside>
   );
 }

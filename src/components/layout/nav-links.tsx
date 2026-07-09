@@ -7,13 +7,18 @@ import { navItems, type Role } from "./nav-config";
 
 export function NavLinks({
   role,
+  isPlatformAdmin = false,
   onNavigate,
 }: {
   role: Role;
+  isPlatformAdmin?: boolean;
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
-  const items = navItems.filter((item) => !item.roles || item.roles.includes(role));
+  const items = navItems.filter((item) => {
+    if (item.platformAdminOnly) return isPlatformAdmin;
+    return !item.roles || item.roles.includes(role);
+  });
 
   return (
     <nav className="flex-1 space-y-0.5 px-3">

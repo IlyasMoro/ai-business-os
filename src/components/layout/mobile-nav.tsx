@@ -6,7 +6,7 @@ import { Menu, X } from "lucide-react";
 import { NavLinks } from "./nav-links";
 import type { Role } from "./nav-config";
 
-export function MobileNav({ role }: { role: Role }) {
+export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPlatformAdmin?: boolean }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -50,7 +50,7 @@ export function MobileNav({ role }: { role: Role }) {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks role={role} onNavigate={() => setOpen(false)} />
+            <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} onNavigate={() => setOpen(false)} />
           </div>
         </div>
       )}

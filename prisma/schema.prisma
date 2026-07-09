@@ -690,3 +690,18 @@ model CalendarEvent {
 
   @@index([companyId, startAt])
 }
+
+// ---------- Platform settings ----------
+
+// Singleton row (fixed id "platform") for app-wide config that isn't tied to
+// any one tenant company — e.g. the email-sending credential shared by every
+// company's transactional email. Only settable by the platform operator
+// (gated by PLATFORM_ADMIN_EMAIL, not by any company's OWNER role), since a
+// regular tenant should never be able to see or overwrite the credential
+// every other tenant's email depends on.
+model PlatformSettings {
+  id              String   @id
+  resendApiKey    String?
+  resendFromEmail String?
+  updatedAt       DateTime @updatedAt
+}

@@ -16,17 +16,21 @@ import {
   Plug,
   Megaphone,
   Calendar,
+  Settings,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
 
 /** Modules with no `roles` are visible to everyone; HR/Payroll/Accounting
- * are back-office modules restricted to OWNER/ADMIN. */
+ * are back-office modules restricted to OWNER/ADMIN. Items with
+ * `platformAdminOnly` are hidden from every regular company user, including
+ * OWNERs — shown only to the platform operator (see lib/platform-admin.ts). */
 export const navItems: {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
   roles?: Role[];
+  platformAdminOnly?: boolean;
 }[] = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { href: "/dashboard/assistant", label: "AI Copilot", icon: Sparkles },
@@ -45,4 +49,5 @@ export const navItems: {
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/platform-settings", label: "Platform Settings", icon: Settings, platformAdminOnly: true },
 ];

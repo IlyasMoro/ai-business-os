@@ -10,11 +10,13 @@ export function Topbar({
   companyName,
   userName,
   role,
+  isPlatformAdmin = false,
   notifications,
 }: {
   companyName: string;
   userName: string;
   role: Role;
+  isPlatformAdmin?: boolean;
   notifications: Notification[];
 }) {
   const initial = userName.trim().charAt(0).toUpperCase() || "?";
@@ -22,7 +24,7 @@ export function Topbar({
   return (
     <header className="flex h-16 items-center justify-between border-b border-white/[0.06] bg-black px-4 sm:px-6">
       <div className="flex items-center gap-3">
-        <MobileNav role={role} />
+        <MobileNav role={role} isPlatformAdmin={isPlatformAdmin} />
         <p className="text-sm font-semibold text-slate-50">{companyName}</p>
       </div>
       <div className="flex items-center gap-3">

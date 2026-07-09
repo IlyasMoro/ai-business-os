@@ -1,5 +1,13 @@
 import "server-only";
 import { Resend } from "resend";
+import { db } from "@/lib/db";
+
+async function getResendCredentials() {
+  const settings = await db.platformSettings.findUnique({ where: { id: "platform" } });
+  const apiKey = settings?.resendApiKey || process.env.RESEND_API_KEY;
+  const from = settings?.resendFromEmail || process.env.RESEND_FROM_EMAIL;
+  return { apiKey, from };
+}
 
 export async function sendEmail({
   to,
@@ -10,14 +18,13 @@ export async function sendEmail({
   subject: string;
   html: string;
 }) {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error("RESEND_API_KEY environment variable is not set");
-  }
+  const { apiKey, from } = await getResendCredentials();
 
-  const from = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey) {
+    throw new Error("No Resend API key configured (set it on the Platform Settings page, or RESEND_API_KEY).");
+  }
   if (!from) {
-    throw new Error("RESEND_FROM_EMAIL environment variable is not set");
+    throw new Error("No Resend from-address configured (set it on the Platform Settings page, or RESEND_FROM_EMAIL).");
   }
 
   // Constructed lazily (not at module scope): the Resend SDK throws
