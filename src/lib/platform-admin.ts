@@ -1,4 +1,6 @@
 import "server-only";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/dal";
 
 /** Whether this user is the platform operator (you) — distinct from any
  * company's OWNER role. Gated by an env var rather than a database role so
@@ -9,4 +11,12 @@ export function isPlatformAdmin(email: string): boolean {
   const adminEmail = process.env.PLATFORM_ADMIN_EMAIL;
   if (!adminEmail) return false;
   return email.toLowerCase() === adminEmail.toLowerCase();
+}
+
+export async function requirePlatformAdmin() {
+  const user = await getCurrentUser();
+  if (!isPlatformAdmin(user.email)) {
+    redirect("/dashboard?error=forbidden");
+  }
+  return user;
 }

@@ -2,19 +2,10 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { getCurrentUser } from "@/lib/dal";
-import { isPlatformAdmin } from "@/lib/platform-admin";
+import { requirePlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { PlatformEmailSettingsSchema } from "@/lib/validation/platform-settings";
-
-async function requirePlatformAdmin() {
-  const user = await getCurrentUser();
-  if (!isPlatformAdmin(user.email)) {
-    redirect("/dashboard?error=forbidden");
-  }
-  return user;
-}
 
 export async function updateEmailSettings(formData: FormData) {
   await requirePlatformAdmin();

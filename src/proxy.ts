@@ -1,20 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
-const publicRoutes = ["/", "/login", "/register", "/forgot-password"];
+// Routes anyone can view, logged in or not, with no redirect either way.
+const openRoutes = ["/", "/terms", "/privacy"];
+// Routes for signed out visitors only — a logged in user is redirected to
+// the dashboard instead of seeing them.
+const authRoutes = ["/login", "/register", "/forgot-password"];
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const isPublicRoute = publicRoutes.includes(path) || path.startsWith("/reset-password/");
+  const isOpenRoute = openRoutes.includes(path);
+  const isAuthRoute = authRoutes.includes(path) || path.startsWith("/reset-password/");
 
   const cookie = req.cookies.get("session")?.value;
   const session = await decrypt(cookie);
 
-  if (!isPublicRoute && !session?.userId) {
+  if (!isOpenRoute && !isAuthRoute && !session?.userId) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 
-  if (isPublicRoute && path !== "/" && session?.userId) {
+  if (isAuthRoute && session?.userId) {
     return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
 

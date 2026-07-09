@@ -2,6 +2,7 @@ const MESSAGES: Record<string, string> = {
   forbidden: "You don't have permission to perform that action.",
   "in-use": "This record can't be deleted because it's referenced elsewhere.",
   invalid: "Please check the form for errors and try again.",
+  confirm: "The confirmation text didn't match. Nothing was deleted.",
 };
 
 export function ErrorBanner({ code }: { code?: string }) {
