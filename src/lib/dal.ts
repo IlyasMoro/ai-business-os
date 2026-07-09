@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { getSessionPayload, deleteSession, type SessionPayload } from "@/lib/session";
+import { getSessionPayload, type SessionPayload } from "@/lib/session";
 import { db } from "@/lib/db";
 import { hasRole } from "@/lib/roles";
 
@@ -44,8 +44,12 @@ export const getCurrentUser = cache(async () => {
     },
   });
   if (!user) {
-    await deleteSession();
-    redirect("/login");
+    // Session cookie references a user/company that no longer exists (e.g.
+    // it was deleted). Cookies can only be deleted from a Server Function or
+    // Route Handler, not a plain Server Component render, so route through
+    // one to actually clear it — otherwise the proxy keeps treating the
+    // still-valid JWT as authenticated and bounces /login back here forever.
+    redirect("/api/session/clear");
   }
   return user;
 });
