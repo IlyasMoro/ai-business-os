@@ -13,10 +13,10 @@ export function SiteHeader() {
             AIBOS
           </span>
         </Link>
-        <nav className="flex items-center gap-2">
+        <nav className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/pricing"
-            className="hidden px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:text-slate-50 sm:inline-block"
+            className="px-2 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:text-slate-50 sm:px-3"
           >
             Pricing
           </Link>
