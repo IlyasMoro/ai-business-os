@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
 import { Jost, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
-
-const THEME_INIT_SCRIPT = `(function () {
-  try {
-    var stored = localStorage.getItem("theme");
-    var theme = stored === "light" || stored === "dark"
-      ? stored
-      : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    document.documentElement.setAttribute("data-theme", theme);
-  } catch (e) {}
-})();`;
 
 const jost = Jost({
   variable: "--font-jost",
@@ -35,19 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${jost.variable} ${geistMono.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
-      <head>
-        <Script
-          id="theme-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
-        />
-      </head>
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900">{children}</body>
+    <html lang="en" className={`${jost.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-black text-white">{children}</body>
     </html>
   );
 }

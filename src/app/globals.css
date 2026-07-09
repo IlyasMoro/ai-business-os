@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-/* Dark mode is driven by a `data-theme` attribute on <html>, toggled by
-   ThemeToggle and set pre-hydration by the inline init script in layout.tsx —
-   not by `prefers-color-scheme`, so the user's explicit choice always wins. */
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -37,49 +32,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Dark theme: invert the slate ramp and retint the accent/badge colors.
-   Unlayered rules always beat Tailwind's @theme layer, so every existing
-   slate/indigo/badge-tone utility class across the app (bg-, text-, border-)
-   picks this up automatically, with no need to touch every page. */
-:root[data-theme="dark"] {
-  --color-surface: #111a2e;
-  --color-surface-hover: #17223a;
-
-  --color-slate-50: #0a0e1a;
-  --color-slate-100: #141d30;
-  --color-slate-200: #253150;
-  --color-slate-300: #37456a;
-  --color-slate-400: #7c8bab;
-  --color-slate-500: #97a5c2;
-  --color-slate-600: #b3bfd6;
-  --color-slate-700: #cbd5e6;
-  --color-slate-900: #f4f7fc;
-
-  --color-indigo-50: #1c2437;
-  --color-indigo-100: #232d45;
-  --color-indigo-400: #94a3b8;
-  --color-indigo-500: #64748b;
-  --color-indigo-600: #475569;
-  --color-indigo-700: #cbd5e1;
-
-  --color-red-50: #2a1420;
-  --color-red-100: #3a1420;
-  --color-red-600: #f87171;
-  --color-red-700: #fca5a5;
-
-  --color-emerald-100: #103324;
-  --color-emerald-700: #6ee7b7;
-
-  --color-amber-100: #35270c;
-  --color-amber-700: #fcd34d;
-
-  --color-blue-100: #122a4a;
-  --color-blue-700: #93c5fd;
-
-  --color-purple-100: #2a1d43;
-  --color-purple-700: #d8b4fe;
-}
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
@@ -88,12 +40,9 @@
 }
 
 html {
-  /* The app is always-dark now (no light mode / toggle left anywhere), so
-     color-scheme must be a static "dark" from the very first paint — leaving
-     this conditional on the client-set `data-theme` attribute left a window
-     (before that script runs) where the browser assumed a light UI while the
-     page was actually black, which some engines use to mis-render native
-     form control text/caret color. */
+  /* The app is always-dark now (no light mode left anywhere), so color-scheme
+     is a static "dark" — some browsers use this to decide how to render
+     native form control text/caret color. */
   color-scheme: dark;
   scroll-behavior: smooth;
 }
