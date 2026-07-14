@@ -7,6 +7,9 @@ export function SiteFooter() {
             AIBOS
           </span>
         </span>
+        <a href="mailto:hello@aibos.com" className="transition-colors hover:text-slate-50">
+          Email us
+        </a>
         <p>© {new Date().getFullYear()} AIBOS. All rights reserved.</p>
       </div>
     </footer>

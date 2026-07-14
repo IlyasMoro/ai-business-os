@@ -47,8 +47,7 @@ export default function PricingPage() {
 
       <main className="relative">
         <section className="mx-auto max-w-3xl px-6 pt-20 pb-16 text-center sm:pt-28">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">Pricing</p>
-          <h1 className="mx-auto mt-8 max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+          <h1 className="mx-auto max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
             One plan. Every module. No surprises.
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
