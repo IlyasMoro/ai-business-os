@@ -52,11 +52,7 @@ export default function Home() {
       <main className="relative">
         {/* Hero */}
         <section className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center sm:pt-28">
-          <p className="animate-fade-up animate-fade-up-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">
-            AI Powered Business Operating System
-          </p>
-
-          <h1 className="animate-fade-up animate-fade-up-2 mx-auto mt-8 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
+          <h1 className="animate-fade-up animate-fade-up-2 mx-auto max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
             Run your whole business from{" "}
             <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
               one AI powered platform

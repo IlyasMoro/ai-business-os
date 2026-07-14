@@ -20,6 +20,12 @@ export function SiteHeader() {
           <LinkButton href="/login" variant="glass" size="sm" className="border-transparent bg-transparent hover:border-white/15 hover:bg-white/5">
             Sign in
           </LinkButton>
+          <Link
+            href="/register"
+            className="px-2 py-1.5 text-sm font-medium text-blue-400 transition-colors hover:text-blue-300 sm:px-3"
+          >
+            Start free trial
+          </Link>
         </nav>
       </div>
     </header>

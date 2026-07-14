@@ -9,14 +9,15 @@ export function AiTerminalPreview() {
       </div>
       <div className="space-y-3 p-5 font-mono text-sm">
         <p className="text-slate-400">
-          <span className="text-emerald-400">you</span> &gt; Which invoices are overdue this month?
+          <span className="text-emerald-400">you</span> &gt; Draft a follow up email to Nova
+          Fitness Studio
         </p>
         <p className="text-slate-300">
-          <span className="text-blue-400">aibos</span> &gt; 3 invoices totaling $4,280 are overdue.
-          Want me to send reminders?
+          <span className="text-blue-400">aibos</span> &gt; Drafted, referencing their interest
+          from last week. Want me to send it?
         </p>
         <p className="text-slate-400">
-          <span className="text-emerald-400">you</span> &gt; Yes, send them
+          <span className="text-emerald-400">you</span> &gt; Yes, send it
           <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-emerald-400 align-middle" />
         </p>
       </div>

@@ -10,7 +10,7 @@ export function ProductPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
         </div>
         <div className="flex-1 rounded-md bg-white/5 px-3 py-1 text-center font-mono text-xs text-slate-500">
-          app.aibos.com/dashboard
+          app.yourcompany.com/dashboard
         </div>
       </div>
       <Image
