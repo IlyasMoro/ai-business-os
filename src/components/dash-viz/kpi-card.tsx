@@ -66,7 +66,7 @@ function ChangeBadge({ change }: { change: KpiChange }) {
   const { pct, label, goodIsUp = true } = change;
 
   if (pct === null) {
-    return <p className="mt-1 text-xs text-slate-500">New this period · {label}</p>;
+    return <p className="mt-1 text-xs text-slate-500">New this period</p>;
   }
 
   const isUp = pct >= 0;
