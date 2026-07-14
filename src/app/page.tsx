@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { LinkButton } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
@@ -69,19 +68,6 @@ export default function Home() {
             unified, with an AI assistant that looks up real data, proposes actions, and executes
             them once you approve.
           </p>
-
-          <div className="animate-fade-up animate-fade-up-4 mt-10 flex flex-col items-center justify-center gap-4">
-            <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} group`}>
-              Start free trial
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-            </LinkButton>
-            <p className="text-sm text-slate-500">
-              No credit card required.{" "}
-              <Link href="/login" className="font-medium text-slate-300 hover:text-slate-50">
-                Sign in
-              </Link>
-            </p>
-          </div>
 
           <div className="animate-fade-up animate-fade-up-4 mx-auto mt-16 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
             {[
