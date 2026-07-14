@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { LinkButton } from "@/components/ui/button";
 
-const CTA_CLASS =
-  "border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
-
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050b1e]/60 backdrop-blur-xl">
@@ -22,9 +19,6 @@ export function SiteHeader() {
           </Link>
           <LinkButton href="/login" variant="glass" size="sm" className="border-transparent bg-transparent hover:border-white/15 hover:bg-white/5">
             Sign in
-          </LinkButton>
-          <LinkButton href="/register" variant="glass" size="sm" className={CTA_CLASS}>
-            Get started
           </LinkButton>
         </nav>
       </div>
