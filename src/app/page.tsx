@@ -69,13 +69,13 @@ export default function Home() {
             them once you approve.
           </p>
 
-          <div className="animate-fade-up animate-fade-up-4 mx-auto mt-16 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
+          <div className="animate-fade-up animate-fade-up-4 mx-auto mt-24 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-12">
             {[
               ["$49/mo", "Flat pricing"],
               ["14 days", "Free trial"],
               ["24/7", "Always on"],
             ].map(([value, label]) => (
-              <div key={label}>
+              <div key={label} className="px-4 py-5">
                 <p className="font-mono text-2xl font-semibold text-slate-50">{value}</p>
                 <p className="mt-1 text-xs text-slate-400">{label}</p>
               </div>
