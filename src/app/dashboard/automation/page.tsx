@@ -20,7 +20,7 @@ export default async function AutomationPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Automation</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        Rules that run automatically against your data — no approval needed once enabled.
+        Rules that run automatically against your data. No approval needed once enabled.
       </p>
 
       {ran && (

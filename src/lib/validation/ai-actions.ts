@@ -136,7 +136,7 @@ export const TOOL_DEFINITIONS: Groq.Chat.ChatCompletionTool[] = [
     function: {
       name: "forecast_next_month_revenue",
       description:
-        "Estimate next month's revenue using a trailing 3-month average of recorded income. This is a rough trend estimate, not a guarantee — say so when reporting it. Read-only, runs immediately.",
+        "Estimate next month's revenue using a trailing 3-month average of recorded income. This is a rough trend estimate, not a guarantee. Say so when reporting it. Read-only, runs immediately.",
       parameters: { type: "object", properties: {} },
     },
   },

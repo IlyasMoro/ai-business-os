@@ -194,7 +194,7 @@ async function executeAiAction(
       const lines = invoices
         .map(
           (inv) =>
-            `<li>${inv.invoiceNumber} — $${inv.totalAmount.toFixed(2)}, due ${inv.dueDate.toLocaleDateString()}</li>`
+            `<li>${inv.invoiceNumber}: $${inv.totalAmount.toFixed(2)}, due ${inv.dueDate.toLocaleDateString()}</li>`
         )
         .join("");
 

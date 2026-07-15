@@ -147,7 +147,7 @@ export async function forecastNextMonthRevenue(companyId: string) {
   const average = totals.reduce((s, v) => s + v, 0) / totals.length;
 
   return {
-    method: "trailing 3-month average of recorded income transactions — a rough trend estimate, not a guarantee",
+    method: "trailing 3-month average of recorded income transactions (a rough trend estimate, not a guarantee)",
     lastThreeMonthsIncome: totals,
     estimatedNextMonthRevenue: Math.round(average),
   };
