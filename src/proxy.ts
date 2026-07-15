@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
 // Routes anyone can view, logged in or not, with no redirect either way.
-const openRoutes = ["/", "/terms", "/privacy", "/pricing"];
+// apple-icon/opengraph-image are code-generated (no literal file extension in
+// the URL), so they don't match the static-asset exclusion in `config.matcher`
+// below and must be listed explicitly — otherwise unauthenticated requests
+// (social-media link previews, Safari's home-screen icon fetch) get bounced
+// to /login instead of the actual image.
+const openRoutes = ["/", "/terms", "/privacy", "/pricing", "/apple-icon", "/opengraph-image"];
 // Routes for signed out visitors only — a logged in user is redirected to
 // the dashboard instead of seeing them.
 const authRoutes = ["/login", "/register", "/forgot-password"];

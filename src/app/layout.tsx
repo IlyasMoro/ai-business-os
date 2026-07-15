@@ -13,9 +13,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const description = "The all in one AI powered platform for running your business.";
+const baseUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: "AIBOS",
-  description: "The all in one AI powered platform for running your business.",
+  description,
+  openGraph: {
+    title: "AIBOS",
+    description,
+    siteName: "AIBOS",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "AIBOS",
+    description,
+  },
 };
 
 const THEME_INIT_SCRIPT = `
