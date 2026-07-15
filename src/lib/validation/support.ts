@@ -8,6 +8,7 @@ export const TicketSchema = z.object({
   subject: z.string().min(1, { error: "Subject is required." }).trim(),
   description: z.string().trim().optional(),
   priority: z.enum(TicketPriorityValues, { error: "Select a priority." }),
+  assigneeId: z.string().trim().optional(),
 });
 
 export type TicketFormState =
@@ -17,7 +18,19 @@ export type TicketFormState =
         subject?: string[];
         description?: string[];
         priority?: string[];
+        assigneeId?: string[];
       };
+      message?: string;
+    }
+  | undefined;
+
+export const TicketMessageSchema = z.object({
+  content: z.string().min(1, { error: "Message can't be empty." }).trim(),
+});
+
+export type TicketMessageFormState =
+  | {
+      errors?: { content?: string[] };
       message?: string;
     }
   | undefined;

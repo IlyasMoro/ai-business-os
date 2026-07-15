@@ -85,6 +85,17 @@ export async function updateProduct(
   redirect(`/dashboard/inventory/${productId}`);
 }
 
+export async function applyReorderSuggestion(productId: string, suggestedLevel: number) {
+  const session = await verifySession();
+
+  await db.product.update({
+    where: { id: productId, companyId: session.companyId },
+    data: { reorderLevel: Math.round(suggestedLevel) },
+  });
+
+  revalidatePath(`/dashboard/inventory/${productId}`);
+}
+
 export async function deleteProduct(productId: string) {
   const session = await verifySession();
 

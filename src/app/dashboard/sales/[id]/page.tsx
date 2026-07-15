@@ -29,6 +29,7 @@ export default async function OrderDetailPage({
     include: {
       customer: true,
       items: { include: { product: true } },
+      invoice: { select: { id: true, invoiceNumber: true, status: true } },
     },
   });
 
@@ -47,12 +48,23 @@ export default async function OrderDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
-                Order for {order.customer.name}
+                Order for{" "}
+                <Link href={`/dashboard/crm/${order.customer.id}`} className="hover:text-blue-400">
+                  {order.customer.name}
+                </Link>
               </h1>
               <Badge tone={statusTone[order.status]}>{order.status}</Badge>
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {order.createdAt.toLocaleDateString()}
+              {" · "}
+              {order.invoice ? (
+                <Link href={`/dashboard/invoicing/${order.invoice.id}`} className="text-blue-400 hover:text-blue-300">
+                  Invoice {order.invoice.invoiceNumber} ({order.invoice.status})
+                </Link>
+              ) : (
+                <span className="text-slate-500">No invoice generated yet</span>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">

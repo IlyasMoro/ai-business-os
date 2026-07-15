@@ -19,6 +19,12 @@ const statusTone = {
   ON_HOLD: "yellow",
 } as const;
 
+const priorityTone = {
+  LOW: "slate",
+  MEDIUM: "blue",
+  HIGH: "red",
+} as const;
+
 export default async function ProjectDetailPage({
   params,
 }: {
@@ -31,11 +37,20 @@ export default async function ProjectDetailPage({
     where: { id, companyId: session.companyId },
     include: {
       customer: true,
-      tasks: { include: { assignee: true }, orderBy: { createdAt: "asc" } },
+      tasks: { include: { assignee: true, _count: { select: { comments: true } } }, orderBy: { createdAt: "asc" } },
     },
   });
 
   if (!project) notFound();
+
+  const transactionTotals = await db.transaction.groupBy({
+    by: ["type"],
+    where: { projectId: project.id },
+    _sum: { amount: true },
+  });
+  const projectRevenue = transactionTotals.find((t) => t.type === "INCOME")?._sum.amount ?? 0;
+  const projectCosts = transactionTotals.find((t) => t.type === "EXPENSE")?._sum.amount ?? 0;
+  const hasProjectFinancials = transactionTotals.length > 0;
 
   const employees = await db.employee.findMany({
     where: { companyId: session.companyId, status: "ACTIVE" },
@@ -91,10 +106,21 @@ export default async function ProjectDetailPage({
                 {project.tasks.map((task) => (
                   <li key={task.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50 light:text-slate-900">{task.title}</p>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/dashboard/projects/${project.id}/tasks/${task.id}`}
+                          className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                        >
+                          {task.title}
+                        </Link>
+                        <Badge tone={priorityTone[task.priority]}>{task.priority}</Badge>
+                      </div>
                       <p className="text-slate-500">
                         {task.assignee ? task.assignee.name : "Unassigned"}
                         {task.dueDate ? ` · Due ${task.dueDate.toLocaleDateString()}` : ""}
+                        {task._count.comments > 0
+                          ? ` · ${task._count.comments} comment${task._count.comments === 1 ? "" : "s"}`
+                          : ""}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
@@ -112,6 +138,34 @@ export default async function ProjectDetailPage({
             <TaskForm projectId={project.id} employees={employees} />
           </CardContent>
         </Card>
+
+        {hasProjectFinancials && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Profitability</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-3 gap-4 text-sm">
+              <div>
+                <p className="text-slate-500">Revenue</p>
+                <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-emerald-400">
+                  ${projectRevenue.toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-500">Costs</p>
+                <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-red-400">
+                  ${projectCosts.toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-slate-500">Margin</p>
+                <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                  ${(projectRevenue - projectCosts).toFixed(2)}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <DocumentsSection
           entityType="PROJECT"

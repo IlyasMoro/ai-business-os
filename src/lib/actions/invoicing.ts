@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
+import { sendEmailForCompany } from "@/lib/email-for-company";
 import { computeInvoiceTotal } from "@/lib/invoicing-math";
 import {
   InvoiceSchema,
@@ -81,15 +82,89 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
   ) {
     return;
   }
+  const nextStatus = status as (typeof InvoiceStatusValues)[number];
 
-  await db.invoice.update({
+  const current = await db.invoice.findUnique({
     where: { id: invoiceId, companyId: session.companyId },
-    data: { status: status as (typeof InvoiceStatusValues)[number] },
+    select: { status: true, totalAmount: true },
+  });
+  if (!current) return;
+
+  // Marking PAID is what actually books the income — without this, revenue
+  // recorded on the invoice never shows up in Accounting/the P&L.
+  const isNewlyPaid = nextStatus === "PAID" && current.status !== "PAID";
+
+  await db.$transaction(async (tx) => {
+    await tx.invoice.update({
+      where: { id: invoiceId },
+      data: { status: nextStatus },
+    });
+
+    if (isNewlyPaid) {
+      const alreadyLinked = await tx.transaction.findFirst({
+        where: { invoiceId },
+        select: { id: true },
+      });
+      if (!alreadyLinked) {
+        await tx.transaction.create({
+          data: {
+            companyId: session.companyId,
+            type: "INCOME",
+            category: "Invoice payment",
+            amount: current.totalAmount,
+            description: `Payment for invoice ${invoiceId}`,
+            invoiceId,
+          },
+        });
+      }
+    }
   });
 
   await logAudit(session.companyId, session.userId, "invoice.status_changed", "Invoice", invoiceId, {
     status,
   });
+
+  revalidatePath(`/dashboard/invoicing/${invoiceId}`);
+  revalidatePath("/dashboard/invoicing");
+  revalidatePath("/dashboard/accounting");
+}
+
+export async function sendInvoiceEmail(invoiceId: string) {
+  const session = await verifySession();
+
+  const invoice = await db.invoice.findUnique({
+    where: { id: invoiceId, companyId: session.companyId },
+    include: {
+      customer: { select: { name: true, email: true } },
+      companyRef: { select: { name: true } },
+      lineItems: true,
+    },
+  });
+  if (!invoice) redirect("/dashboard/invoicing?error=invalid");
+  if (!invoice.customer.email) redirect(`/dashboard/invoicing/${invoiceId}?error=no-email`);
+
+  const lineItemsHtml = invoice.lineItems
+    .map(
+      (item) =>
+        `<tr><td>${item.description}</td><td>${item.quantity}</td><td>$${item.unitPrice.toFixed(2)}</td><td>$${(item.quantity * item.unitPrice).toFixed(2)}</td></tr>`
+    )
+    .join("");
+
+  await sendEmailForCompany(session.companyId, {
+    to: invoice.customer.email,
+    subject: `Invoice ${invoice.invoiceNumber} from ${invoice.companyRef.name}`,
+    html: `<p>Hi ${invoice.customer.name},</p><p>Please find your invoice ${invoice.invoiceNumber} below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table><p><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p><p>Thank you.</p>`,
+  });
+
+  await db.invoice.update({
+    where: { id: invoiceId },
+    data: {
+      sentAt: new Date(),
+      status: invoice.status === "DRAFT" ? "SENT" : invoice.status,
+    },
+  });
+
+  await logAudit(session.companyId, session.userId, "invoice.sent", "Invoice", invoiceId, {});
 
   revalidatePath(`/dashboard/invoicing/${invoiceId}`);
   revalidatePath("/dashboard/invoicing");

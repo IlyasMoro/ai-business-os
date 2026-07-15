@@ -9,6 +9,8 @@ import { HeatBar } from "@/components/dash-viz/heat-bar";
 import { MonoTrendBadge } from "@/components/dash-viz/mono-badge";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
+import { forecastNextMonthRevenue } from "@/lib/ai-tools";
+import { Sparkles } from "lucide-react";
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
@@ -89,6 +91,8 @@ export default async function ReportsPage() {
     }),
   ]);
 
+  const forecast = await forecastNextMonthRevenue(companyId);
+
   const orderCountByStatus = new Map(orderGroups.map((g) => [g.status, g._count._all]));
   const invoiceCountByStatus = new Map(invoiceGroups.map((g) => [g.status, g._count._all]));
   const totalOrders = orderGroups.reduce((s, g) => s + g._count._all, 0);
@@ -143,6 +147,17 @@ export default async function ReportsPage() {
             <AnimatedCounter value={net} prefix="$" decimals={0} />
           </p>
         </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-5">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-blue-400" />
+          <p className="text-sm font-medium text-slate-200 light:text-slate-700">AI revenue forecast</p>
+        </div>
+        <p className="mt-2 text-2xl font-semibold text-blue-400">
+          <AnimatedCounter value={forecast.estimatedNextMonthRevenue} prefix="$" decimals={0} />
+        </p>
+        <p className="mt-1 text-xs text-slate-500">{forecast.method}</p>
       </div>
 
       <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">

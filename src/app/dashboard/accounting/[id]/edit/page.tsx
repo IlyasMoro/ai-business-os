@@ -14,9 +14,20 @@ export default async function EditTransactionPage({
   const { id } = await params;
   const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const transaction = await db.transaction.findUnique({
-    where: { id, companyId: session.companyId },
-  });
+  const [transaction, existing, projects] = await Promise.all([
+    db.transaction.findUnique({ where: { id, companyId: session.companyId } }),
+    db.transaction.findMany({
+      where: { companyId: session.companyId },
+      select: { category: true },
+      distinct: ["category"],
+      orderBy: { category: "asc" },
+    }),
+    db.project.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   if (!transaction) notFound();
 
@@ -37,7 +48,10 @@ export default async function EditTransactionPage({
             amount: transaction.amount,
             date: toDateInputValue(transaction.date),
             description: transaction.description,
+            projectId: transaction.projectId,
           }}
+          existingCategories={existing.map((t) => t.category)}
+          projects={projects}
           submitLabel="Save changes"
         />
       </div>

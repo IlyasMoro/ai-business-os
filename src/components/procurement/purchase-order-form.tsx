@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Label, Select } from "@/components/ui-dark/input";
+import { Label, Select, Input } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { createPurchaseOrder } from "@/lib/actions/procurement";
 
@@ -34,6 +34,10 @@ export function PurchaseOrderForm({
             </option>
           ))}
         </Select>
+      </div>
+      <div>
+        <Label htmlFor="expectedDate">Expected delivery date (optional)</Label>
+        <Input id="expectedDate" name="expectedDate" type="date" />
       </div>
       <SubmitButton pendingText="Creating...">Create purchase order</SubmitButton>
     </form>

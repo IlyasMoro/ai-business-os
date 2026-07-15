@@ -10,6 +10,7 @@ export const TransactionSchema = z.object({
     .positive({ error: "Amount must be greater than zero." }),
   date: z.string().min(1, { error: "Date is required." }),
   description: z.string().trim().optional(),
+  projectId: z.string().trim().optional(),
 });
 
 export type TransactionFormState =
@@ -20,6 +21,7 @@ export type TransactionFormState =
         amount?: string[];
         date?: string[];
         description?: string[];
+        projectId?: string[];
       };
       message?: string;
     }

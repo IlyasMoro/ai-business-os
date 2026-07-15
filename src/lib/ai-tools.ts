@@ -121,30 +121,36 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
       };
     }
     case "forecast_next_month_revenue": {
-      const months = [2, 1, 0].map((n) => ({
-        start: startOfMonth(subMonths(new Date(), n)),
-        end: endOfMonth(subMonths(new Date(), n)),
-      }));
-      const totals = await Promise.all(
-        months.map(async ({ start, end }) => {
-          const income = await db.transaction.aggregate({
-            where: { companyId, type: "INCOME", date: { gte: start, lte: end } },
-            _sum: { amount: true },
-          });
-          return income._sum.amount ?? 0;
-        })
-      );
-      const average = totals.reduce((s, v) => s + v, 0) / totals.length;
-
-      return {
-        method: "trailing 3-month average of recorded income transactions — a rough trend estimate, not a guarantee",
-        lastThreeMonthsIncome: totals,
-        estimatedNextMonthRevenue: Math.round(average),
-      };
+      return forecastNextMonthRevenue(companyId);
     }
     default:
       return { error: `Unknown read tool: ${name}` };
   }
+}
+
+/** Trailing 3-month average of recorded income — a rough trend estimate, not
+ * a guarantee. Shared by the AI Copilot's forecast tool and the Reports page. */
+export async function forecastNextMonthRevenue(companyId: string) {
+  const months = [2, 1, 0].map((n) => ({
+    start: startOfMonth(subMonths(new Date(), n)),
+    end: endOfMonth(subMonths(new Date(), n)),
+  }));
+  const totals = await Promise.all(
+    months.map(async ({ start, end }) => {
+      const income = await db.transaction.aggregate({
+        where: { companyId, type: "INCOME", date: { gte: start, lte: end } },
+        _sum: { amount: true },
+      });
+      return income._sum.amount ?? 0;
+    })
+  );
+  const average = totals.reduce((s, v) => s + v, 0) / totals.length;
+
+  return {
+    method: "trailing 3-month average of recorded income transactions — a rough trend estimate, not a guarantee",
+    lastThreeMonthsIncome: totals,
+    estimatedNextMonthRevenue: Math.round(average),
+  };
 }
 
 // ---------- Write-tool proposals ----------

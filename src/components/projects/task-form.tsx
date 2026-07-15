@@ -28,7 +28,7 @@ export function TaskForm({
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+    <form ref={formRef} action={formAction} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       <div className="col-span-2">
         <Input name="title" placeholder="Task title" required />
         <FieldError messages={state?.errors?.title} />
@@ -43,6 +43,14 @@ export function TaskForm({
           ))}
         </Select>
         <FieldError messages={state?.errors?.assigneeId} />
+      </div>
+      <div>
+        <Select name="priority" defaultValue="MEDIUM">
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+        </Select>
+        <FieldError messages={state?.errors?.priority} />
       </div>
       <div>
         <Input name="dueDate" type="date" />

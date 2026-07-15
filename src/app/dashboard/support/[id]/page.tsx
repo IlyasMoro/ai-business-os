@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TicketStatusForm } from "@/components/support/ticket-status-form";
+import { TicketMessageForm } from "@/components/support/ticket-message-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
-import { deleteTicket } from "@/lib/actions/support";
+import { deleteTicket, deleteTicketMessage } from "@/lib/actions/support";
+import { formatDistanceToNow } from "date-fns";
 import { Pencil } from "lucide-react";
 
 const statusTone = {
@@ -34,7 +36,11 @@ export default async function TicketDetailPage({
 
   const ticket = await db.ticket.findUnique({
     where: { id, companyId: session.companyId },
-    include: { customer: true },
+    include: {
+      customer: true,
+      assignee: true,
+      messages: { include: { author: { select: { name: true } } }, orderBy: { createdAt: "asc" } },
+    },
   });
 
   if (!ticket) notFound();
@@ -82,6 +88,42 @@ export default async function TicketDetailPage({
               <p className="text-slate-500">Description</p>
               <p className="text-slate-50 light:text-slate-900">{ticket.description ?? "—"}</p>
             </div>
+            <div>
+              <p className="text-slate-500">Assignee</p>
+              <p className="text-slate-50 light:text-slate-900">{ticket.assignee?.name ?? "Unassigned"}</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Conversation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {ticket.messages.length === 0 ? (
+              <p className="mb-4 text-sm text-slate-500">No replies yet.</p>
+            ) : (
+              <ul className="mb-4 space-y-3">
+                {ticket.messages.map((message) => (
+                  <li key={message.id} className="flex items-start justify-between gap-3 text-sm">
+                    <div>
+                      <p className="text-slate-50 light:text-slate-900">{message.content}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {message.authorType === "STAFF" ? message.author?.name ?? "Staff" : ticket.customer.name}
+                        {" · "}
+                        {formatDistanceToNow(message.createdAt, { addSuffix: true })}
+                      </p>
+                    </div>
+                    <DeleteButton
+                      action={deleteTicketMessage.bind(null, ticket.id, message.id)}
+                      confirmMessage="Delete this message?"
+                      label=""
+                    />
+                  </li>
+                ))}
+              </ul>
+            )}
+            <TicketMessageForm ticketId={ticket.id} />
           </CardContent>
         </Card>
 

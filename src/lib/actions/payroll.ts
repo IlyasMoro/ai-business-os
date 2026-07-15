@@ -77,6 +77,48 @@ export async function updatePayrollRunStatus(payrollRunId: string, formData: For
   revalidatePath("/dashboard/payroll");
 }
 
+export async function duplicatePayrollRun(payrollRunId: string, formData: FormData) {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+
+  const validated = PayrollRunSchema.safeParse({
+    periodStart: formData.get("periodStart"),
+    periodEnd: formData.get("periodEnd"),
+  });
+  if (!validated.success) {
+    redirect(`/dashboard/payroll/${payrollRunId}?error=invalid`);
+  }
+
+  const source = await db.payrollRun.findUnique({
+    where: { id: payrollRunId, companyId: session.companyId },
+    include: { items: true },
+  });
+  if (!source) redirect("/dashboard/payroll?error=invalid");
+
+  const newRun = await db.payrollRun.create({
+    data: {
+      companyId: session.companyId,
+      periodStart: new Date(validated.data.periodStart),
+      periodEnd: new Date(validated.data.periodEnd),
+      totalAmount: source.totalAmount,
+    },
+  });
+
+  if (source.items.length > 0) {
+    await db.payrollItem.createMany({
+      data: source.items.map((item) => ({
+        payrollRunId: newRun.id,
+        employeeId: item.employeeId,
+        grossPay: item.grossPay,
+        deductions: item.deductions,
+        netPay: item.netPay,
+      })),
+    });
+  }
+
+  revalidatePath("/dashboard/payroll");
+  redirect(`/dashboard/payroll/${newRun.id}`);
+}
+
 export async function deletePayrollRun(payrollRunId: string) {
   const session = await requireRole(["OWNER", "ADMIN"]);
 

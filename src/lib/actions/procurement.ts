@@ -65,6 +65,7 @@ export async function createPurchaseOrder(formData: FormData) {
 
   const validated = PurchaseOrderSchema.safeParse({
     supplierId: formData.get("supplierId"),
+    expectedDate: formData.get("expectedDate"),
   });
 
   if (!validated.success) {
@@ -80,7 +81,11 @@ export async function createPurchaseOrder(formData: FormData) {
   }
 
   const purchaseOrder = await db.purchaseOrder.create({
-    data: { supplierId: supplier.id, companyId: session.companyId },
+    data: {
+      supplierId: supplier.id,
+      companyId: session.companyId,
+      expectedDate: validated.data.expectedDate ? new Date(validated.data.expectedDate) : undefined,
+    },
   });
 
   revalidatePath("/dashboard/procurement");
@@ -97,14 +102,40 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
   ) {
     return;
   }
+  const nextStatus = status as (typeof PurchaseOrderStatusValues)[number];
 
-  await db.purchaseOrder.update({
+  const current = await db.purchaseOrder.findUnique({
     where: { id: purchaseOrderId, companyId: session.companyId },
-    data: { status: status as (typeof PurchaseOrderStatusValues)[number] },
+    select: { status: true, items: { select: { productId: true, quantity: true } } },
+  });
+  if (!current) return;
+
+  // Receiving a PO is what actually puts the ordered stock into Inventory —
+  // without this, stock levels silently drift from what's really on hand.
+  const isNewlyReceived = nextStatus === "RECEIVED" && current.status !== "RECEIVED";
+
+  await db.$transaction(async (tx) => {
+    await tx.purchaseOrder.update({
+      where: { id: purchaseOrderId },
+      data: {
+        status: nextStatus,
+        receivedAt: isNewlyReceived ? new Date() : undefined,
+      },
+    });
+
+    if (isNewlyReceived) {
+      for (const item of current.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stockQty: { increment: item.quantity } },
+        });
+      }
+    }
   });
 
   revalidatePath(`/dashboard/procurement/${purchaseOrderId}`);
   revalidatePath("/dashboard/procurement");
+  revalidatePath("/dashboard/inventory");
 }
 
 export async function deletePurchaseOrder(purchaseOrderId: string) {

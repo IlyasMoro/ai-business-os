@@ -22,6 +22,10 @@ async function verifyEntityOwnership(
       return !!(await db.ticket.findUnique({ where: { id: entityId, companyId }, select: { id: true } }));
     case "PROJECT":
       return !!(await db.project.findUnique({ where: { id: entityId, companyId }, select: { id: true } }));
+    case "CAMPAIGN":
+      return !!(await db.campaign.findUnique({ where: { id: entityId, companyId }, select: { id: true } }));
+    case "EMPLOYEE":
+      return !!(await db.employee.findUnique({ where: { id: entityId, companyId }, select: { id: true } }));
   }
 }
 

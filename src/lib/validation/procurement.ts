@@ -11,6 +11,7 @@ export const SupplierSchema = z.object({
 
 export const PurchaseOrderSchema = z.object({
   supplierId: z.string().min(1, { error: "Select a supplier." }),
+  expectedDate: z.union([z.iso.date(), z.literal("")]).optional(),
 });
 
 export const PurchaseOrderItemSchema = z.object({

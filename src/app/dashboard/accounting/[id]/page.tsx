@@ -24,9 +24,24 @@ export default async function TransactionDetailPage({
 
   const transaction = await db.transaction.findUnique({
     where: { id, companyId: session.companyId },
+    include: { invoice: { select: { id: true, invoiceNumber: true } } },
   });
 
   if (!transaction) notFound();
+
+  const sameCategory = await db.transaction.findMany({
+    where: {
+      companyId: session.companyId,
+      category: transaction.category,
+      type: transaction.type,
+      id: { not: transaction.id },
+    },
+    select: { amount: true },
+    take: 50,
+  });
+  const avgAmount =
+    sameCategory.length > 0 ? sameCategory.reduce((s, t) => s + t.amount, 0) / sameCategory.length : null;
+  const isAnomalous = avgAmount !== null && avgAmount > 0 && transaction.amount > avgAmount * 2.5;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
@@ -36,8 +51,28 @@ export default async function TransactionDetailPage({
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{transaction.category}</h1>
               <Badge tone={typeTone[transaction.type]}>{transaction.type}</Badge>
+              {isAnomalous && (
+                <span
+                  title={`More than 2.5x the average ${transaction.category} ${transaction.type.toLowerCase()} of $${avgAmount!.toFixed(2)}`}
+                >
+                  <Badge tone="yellow">Unusual amount</Badge>
+                </span>
+              )}
             </div>
-            <p className="mt-1 text-slate-400 light:text-slate-500">{transaction.date.toLocaleDateString()}</p>
+            <p className="mt-1 text-slate-400 light:text-slate-500">
+              {transaction.date.toLocaleDateString()}
+              {transaction.invoice && (
+                <>
+                  {" · "}
+                  <Link
+                    href={`/dashboard/invoicing/${transaction.invoice.id}`}
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    Invoice {transaction.invoice.invoiceNumber}
+                  </Link>
+                </>
+              )}
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <LinkButton

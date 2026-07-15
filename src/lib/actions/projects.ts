@@ -9,8 +9,10 @@ import {
   ProjectStatusValues,
   TaskSchema,
   TaskStatusValues,
+  TaskCommentSchema,
   type ProjectFormState,
   type TaskFormState,
+  type TaskCommentFormState,
 } from "@/lib/validation/projects";
 
 function parseOptionalDate(value: string | undefined) {
@@ -165,6 +167,7 @@ export async function addTask(
     description: formData.get("description") || undefined,
     assigneeId: formData.get("assigneeId"),
     dueDate: formData.get("dueDate"),
+    priority: formData.get("priority") || undefined,
   });
 
   if (!validated.success) {
@@ -179,7 +182,7 @@ export async function addTask(
     return { message: "Project not found." };
   }
 
-  const { title, description, assigneeId, dueDate } = validated.data;
+  const { title, description, assigneeId, dueDate, priority } = validated.data;
 
   const parsedDueDate = parseOptionalDate(dueDate);
   if (!parsedDueDate.ok) {
@@ -203,6 +206,7 @@ export async function addTask(
       description: description || undefined,
       assigneeId: assigneeId || undefined,
       dueDate: parsedDueDate.date,
+      priority: priority || undefined,
     },
   });
 
@@ -237,4 +241,49 @@ export async function removeTask(projectId: string, taskId: string) {
   });
 
   revalidatePath(`/dashboard/projects/${projectId}`);
+}
+
+export async function addTaskComment(
+  projectId: string,
+  taskId: string,
+  _state: TaskCommentFormState,
+  formData: FormData
+): Promise<TaskCommentFormState> {
+  const session = await verifySession();
+
+  const validated = TaskCommentSchema.safeParse({
+    content: formData.get("content"),
+  });
+  if (!validated.success) {
+    return { errors: validated.error.flatten().fieldErrors };
+  }
+
+  const task = await db.task.findUnique({
+    where: { id: taskId, project: { companyId: session.companyId } },
+    select: { id: true },
+  });
+  if (!task) {
+    return { message: "Task not found." };
+  }
+
+  await db.taskComment.create({
+    data: {
+      taskId,
+      content: validated.data.content,
+      authorId: session.userId,
+    },
+  });
+
+  revalidatePath(`/dashboard/projects/${projectId}/tasks/${taskId}`);
+  return undefined;
+}
+
+export async function deleteTaskComment(projectId: string, taskId: string, commentId: string) {
+  const session = await verifySession();
+
+  await db.taskComment.delete({
+    where: { id: commentId, task: { project: { companyId: session.companyId } } },
+  });
+
+  revalidatePath(`/dashboard/projects/${projectId}/tasks/${taskId}`);
 }

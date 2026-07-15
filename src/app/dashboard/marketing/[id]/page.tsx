@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/c
 import { Badge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { CampaignStatusForm } from "@/components/marketing/campaign-status-form";
+import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteCampaign } from "@/lib/actions/marketing";
 
 const statusTone = {
@@ -31,6 +32,12 @@ export default async function CampaignDetailPage({
   if (!campaign) notFound();
 
   const costPerLead = campaign.leads.length > 0 ? campaign.budget / campaign.leads.length : null;
+
+  const documents = await db.document.findMany({
+    where: { companyId: session.companyId, entityType: "CAMPAIGN", entityId: campaign.id },
+    select: { id: true, filename: true, size: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
@@ -117,6 +124,13 @@ export default async function CampaignDetailPage({
             )}
           </CardContent>
         </Card>
+
+        <DocumentsSection
+          entityType="CAMPAIGN"
+          entityId={campaign.id}
+          redirectPath={`/dashboard/marketing/${campaign.id}`}
+          documents={documents}
+        />
 
         <p className="mt-6">
           <Link href="/dashboard/marketing" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">

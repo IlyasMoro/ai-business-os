@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/c
 import { Badge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
+import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteEmployee } from "@/lib/actions/hr";
 import { Pencil } from "lucide-react";
 
@@ -25,9 +26,26 @@ export default async function EmployeeDetailPage({
   const { error } = await searchParams;
   const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const employee = await db.employee.findUnique({
-    where: { id, companyId: session.companyId },
-  });
+  const [employee, documents, tasks, payrollItems] = await Promise.all([
+    db.employee.findUnique({ where: { id, companyId: session.companyId } }),
+    db.document.findMany({
+      where: { companyId: session.companyId, entityType: "EMPLOYEE", entityId: id },
+      select: { id: true, filename: true, size: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.task.findMany({
+      where: { assigneeId: id, project: { companyId: session.companyId } },
+      include: { project: { select: { id: true, name: true } } },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    db.payrollItem.findMany({
+      where: { employeeId: id, payrollRun: { companyId: session.companyId } },
+      include: { payrollRun: { select: { id: true, periodStart: true, periodEnd: true, status: true } } },
+      orderBy: { payrollRun: { periodEnd: "desc" } },
+      take: 10,
+    }),
+  ]);
 
   if (!employee) notFound();
 
@@ -79,6 +97,64 @@ export default async function EmployeeDetailPage({
             </div>
           </CardContent>
         </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Assigned tasks</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {tasks.length === 0 ? (
+              <p className="text-sm text-slate-500">No tasks assigned.</p>
+            ) : (
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                {tasks.map((task) => (
+                  <li key={task.id} className="flex items-center justify-between py-2 text-sm">
+                    <Link
+                      href={`/dashboard/projects/${task.project.id}`}
+                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                    >
+                      {task.title} · {task.project.name}
+                    </Link>
+                    <span className="text-slate-500">{task.status}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Payroll history</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {payrollItems.length === 0 ? (
+              <p className="text-sm text-slate-500">No payroll history yet.</p>
+            ) : (
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                {payrollItems.map((item) => (
+                  <li key={item.id} className="flex items-center justify-between py-2 text-sm">
+                    <Link
+                      href={`/dashboard/payroll/${item.payrollRun.id}`}
+                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                    >
+                      {item.payrollRun.periodStart.toLocaleDateString()} –{" "}
+                      {item.payrollRun.periodEnd.toLocaleDateString()}
+                    </Link>
+                    <span className="font-mono tabular-nums text-slate-500">${item.netPay.toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <DocumentsSection
+          entityType="EMPLOYEE"
+          entityId={employee.id}
+          redirectPath={`/dashboard/hr/${employee.id}`}
+          documents={documents}
+        />
 
         <p className="mt-6">
           <Link href="/dashboard/hr" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">

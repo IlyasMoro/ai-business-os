@@ -3,6 +3,7 @@ const MESSAGES: Record<string, string> = {
   "in-use": "This record can't be deleted because it's referenced elsewhere.",
   invalid: "Please check the form for errors and try again.",
   confirm: "The confirmation text didn't match. Nothing was deleted.",
+  "no-email": "This customer doesn't have an email address on file, so the invoice couldn't be sent.",
 };
 
 export function ErrorBanner({ code }: { code?: string }) {

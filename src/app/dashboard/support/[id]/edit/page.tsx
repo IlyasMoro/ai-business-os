@@ -19,11 +19,18 @@ export default async function EditTicketPage({
 
   if (!ticket) notFound();
 
-  const customers = await db.customer.findMany({
-    where: { companyId: session.companyId },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const [customers, employees] = await Promise.all([
+    db.customer.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    db.employee.findMany({
+      where: { companyId: session.companyId, status: "ACTIVE" },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
 
   const action = updateTicket.bind(null, ticket.id) as (
     state: TicketFormState,
@@ -37,11 +44,13 @@ export default async function EditTicketPage({
         <TicketForm
           action={action}
           customers={customers}
+          employees={employees}
           defaultValues={{
             customerId: ticket.customerId,
             subject: ticket.subject,
             description: ticket.description,
             priority: ticket.priority,
+            assigneeId: ticket.assigneeId,
           }}
           submitLabel="Save changes"
         />

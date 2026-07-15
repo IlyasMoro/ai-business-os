@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 const statusOrder = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -14,12 +15,22 @@ const statusColor: Record<(typeof statusOrder)[number], string> = {
   COMPLETED: VIZ.blue,
 };
 
-export default async function MarketingPage() {
+export default async function MarketingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q } = await searchParams;
   const session = await verifySession();
+
+  const where: Prisma.CampaignWhereInput = {
+    companyId: session.companyId,
+    ...(q ? { name: { contains: q } } : {}),
+  };
 
   const [campaigns, statusGroups] = await Promise.all([
     db.campaign.findMany({
-      where: { companyId: session.companyId },
+      where,
       include: { _count: { select: { leads: true } } },
       orderBy: { createdAt: "desc" },
     }),
@@ -45,13 +56,25 @@ export default async function MarketingPage() {
             {totalAll} campaign{totalAll === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
-          href="/dashboard/marketing/new"
-          className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
-        >
-          <Plus className="h-4 w-4" />
-          New campaign
-        </Link>
+        <div className="flex items-center gap-3">
+          <form method="GET" className="relative w-full max-w-xs">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <input
+              type="search"
+              name="q"
+              placeholder="Search campaigns..."
+              defaultValue={q}
+              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+            />
+          </form>
+          <Link
+            href="/dashboard/marketing/new"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+          >
+            <Plus className="h-4 w-4" />
+            New campaign
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -84,7 +107,7 @@ export default async function MarketingPage() {
       <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
         {campaigns.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
-            No campaigns yet. Create your first one to get started.
+            {q ? "No campaigns match your search." : "No campaigns yet. Create your first one to get started."}
           </p>
         ) : (
           <table className="w-full text-sm">

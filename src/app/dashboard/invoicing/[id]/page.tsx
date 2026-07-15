@@ -4,11 +4,14 @@ import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { Badge } from "@/components/ui-dark/badge";
+import { Button, LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
+import { ErrorBanner } from "@/components/ui/error-banner";
 import { InvoiceLineItemForm } from "@/components/invoicing/invoice-line-item-form";
 import { InvoiceStatusForm } from "@/components/invoicing/invoice-status-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
-import { deleteInvoice, removeInvoiceLineItem } from "@/lib/actions/invoicing";
+import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail } from "@/lib/actions/invoicing";
+import { Download, Send } from "lucide-react";
 
 const statusTone = {
   DRAFT: "slate",
@@ -19,10 +22,13 @@ const statusTone = {
 
 export default async function InvoiceDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const session = await verifySession();
 
   const invoice = await db.invoice.findUnique({
@@ -60,13 +66,26 @@ export default async function InvoiceDetailPage({
             <p className="mt-1 text-sm text-slate-500">
               Issued {invoice.issueDate.toLocaleDateString()} · Due{" "}
               {invoice.dueDate.toLocaleDateString()}
+              {invoice.sentAt && <> · Emailed {invoice.sentAt.toLocaleDateString()}</>}
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <form action={sendInvoiceEmail.bind(null, invoice.id)}>
+              <Button type="submit" variant="secondary" size="sm">
+                <Send className="h-4 w-4" />
+                {invoice.sentAt ? "Resend" : "Send invoice"}
+              </Button>
+            </form>
+            <LinkButton href={`/api/invoices/${invoice.id}/pdf`} variant="secondary" size="sm">
+              <Download className="h-4 w-4" />
+              PDF
+            </LinkButton>
             <InvoiceStatusForm invoiceId={invoice.id} status={invoice.status} />
             <DeleteButton action={deleteInvoice.bind(null, invoice.id)} />
           </div>
         </div>
+
+        <ErrorBanner code={error} />
 
         <Card className="mt-6">
           <CardHeader>

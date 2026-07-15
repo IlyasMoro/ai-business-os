@@ -59,6 +59,26 @@ export default async function CrmPage({
   const statusMap = new Map(statusGroups.map((g) => [g.status, g._count._all]));
   const totalAll = statusGroups.reduce((s, g) => s + g._count._all, 0);
 
+  const AT_RISK_DAYS = 60;
+  const activeCustomerIds = customers.filter((c) => c.status === "ACTIVE").map((c) => c.id);
+  const [lastOrders, lastInvoices] = await Promise.all([
+    db.order.groupBy({ by: ["customerId"], where: { customerId: { in: activeCustomerIds } }, _max: { createdAt: true } }),
+    db.invoice.groupBy({ by: ["customerId"], where: { customerId: { in: activeCustomerIds } }, _max: { createdAt: true } }),
+  ]);
+  const lastActivityMap = new Map<string, Date>();
+  for (const row of [...lastOrders, ...lastInvoices]) {
+    const at = row._max.createdAt;
+    if (!at) continue;
+    const existing = lastActivityMap.get(row.customerId);
+    if (!existing || at > existing) lastActivityMap.set(row.customerId, at);
+  }
+  const atRiskCutoff = new Date(new Date().getTime() - AT_RISK_DAYS * 24 * 60 * 60 * 1000);
+  const atRiskCustomerIds = new Set(
+    Array.from(lastActivityMap.entries())
+      .filter(([, lastAt]) => lastAt < atRiskCutoff)
+      .map(([customerId]) => customerId)
+  );
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -135,13 +155,23 @@ export default async function CrmPage({
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.company ?? "—"}</td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.email ?? "—"}</td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: statusColor[customer.status] }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[customer.status] }} />
-                      {customer.status}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-flex items-center gap-1.5 text-xs font-medium"
+                        style={{ color: statusColor[customer.status] }}
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[customer.status] }} />
+                        {customer.status}
+                      </span>
+                      {atRiskCustomerIds.has(customer.id) && (
+                        <span
+                          className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"
+                          title={`No orders or invoices in the last ${AT_RISK_DAYS} days`}
+                        >
+                          At risk
+                        </span>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}

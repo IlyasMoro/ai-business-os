@@ -62,6 +62,8 @@ model User {
   decidedAiActions    AiAction[]           @relation("AiActionDecidedBy")
   passwordResetTokens PasswordResetToken[]
   auditLogs           AuditLog[]
+  taskComments        TaskComment[]
+  ticketMessages      TicketMessage[]
 
   @@index([companyId])
 }
@@ -201,10 +203,12 @@ enum PurchaseOrderStatus {
 }
 
 model PurchaseOrder {
-  id          String              @id @default(cuid())
-  status      PurchaseOrderStatus @default(DRAFT)
-  totalAmount Float               @default(0)
-  createdAt   DateTime            @default(now())
+  id           String              @id @default(cuid())
+  status       PurchaseOrderStatus @default(DRAFT)
+  totalAmount  Float               @default(0)
+  createdAt    DateTime            @default(now())
+  expectedDate DateTime?
+  receivedAt   DateTime?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -292,6 +296,7 @@ model Invoice {
   totalAmount        Float         @default(0)
   createdAt          DateTime      @default(now())
   lastReminderSentAt DateTime?
+  sentAt             DateTime?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -345,7 +350,11 @@ model Transaction {
   invoiceId String?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
 
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
   @@index([companyId])
+  @@index([projectId])
 }
 
 // ---------- HR & Payroll ----------
@@ -370,6 +379,7 @@ model Employee {
 
   payrollItems PayrollItem[]
   tasks        Task[]
+  tickets      Ticket[]
 
   @@index([companyId])
 }
@@ -433,7 +443,8 @@ model Project {
   customerId String?
   customer   Customer? @relation(fields: [customerId], references: [id])
 
-  tasks Task[]
+  tasks        Task[]
+  transactions Transaction[]
 
   @@index([companyId])
 }
@@ -444,13 +455,20 @@ enum TaskStatus {
   DONE
 }
 
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model Task {
-  id          String     @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
   description String?
-  status      TaskStatus @default(TODO)
+  status      TaskStatus   @default(TODO)
+  priority    TaskPriority @default(MEDIUM)
   dueDate     DateTime?
-  createdAt   DateTime   @default(now())
+  createdAt   DateTime     @default(now())
 
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -458,7 +476,23 @@ model Task {
   assigneeId String?
   assignee   Employee? @relation(fields: [assigneeId], references: [id])
 
+  comments TaskComment[]
+
   @@index([projectId])
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
 }
 
 // ---------- Customer Support ----------
@@ -490,7 +524,32 @@ model Ticket {
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
+  assigneeId String?
+  assignee   Employee? @relation(fields: [assigneeId], references: [id])
+
+  messages TicketMessage[]
+
   @@index([companyId])
+}
+
+enum TicketMessageAuthor {
+  STAFF
+  CUSTOMER
+}
+
+model TicketMessage {
+  id         String              @id @default(cuid())
+  content    String
+  authorType TicketMessageAuthor
+  createdAt  DateTime            @default(now())
+
+  ticketId String
+  ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId String?
+  author   User?   @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId])
 }
 
 // ---------- AI Assistant ----------
@@ -571,6 +630,8 @@ enum DocumentEntityType {
   INVOICE
   TICKET
   PROJECT
+  CAMPAIGN
+  EMPLOYEE
 }
 
 model Document {

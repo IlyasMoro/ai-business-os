@@ -18,6 +18,27 @@ const statusTone = {
   INACTIVE: "slate",
 } as const;
 
+const orderStatusTone = {
+  PENDING: "yellow",
+  CONFIRMED: "blue",
+  FULFILLED: "green",
+  CANCELLED: "red",
+} as const;
+
+const invoiceStatusTone = {
+  DRAFT: "slate",
+  SENT: "blue",
+  PAID: "green",
+  OVERDUE: "red",
+} as const;
+
+const ticketStatusTone = {
+  OPEN: "blue",
+  IN_PROGRESS: "purple",
+  RESOLVED: "green",
+  CLOSED: "slate",
+} as const;
+
 export default async function CustomerDetailPage({
   params,
   searchParams,
@@ -36,11 +57,28 @@ export default async function CustomerDetailPage({
 
   if (!customer) notFound();
 
-  const documents = await db.document.findMany({
-    where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
-    select: { id: true, filename: true, size: true },
-    orderBy: { createdAt: "desc" },
-  });
+  const [documents, orders, invoices, tickets] = await Promise.all([
+    db.document.findMany({
+      where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
+      select: { id: true, filename: true, size: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    db.order.findMany({
+      where: { customerId: customer.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    db.invoice.findMany({
+      where: { customerId: customer.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+    db.ticket.findMany({
+      where: { customerId: customer.id },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    }),
+  ]);
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
@@ -115,6 +153,87 @@ export default async function CustomerDetailPage({
               </ul>
             )}
             <ContactForm customerId={customer.id} />
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Orders ({orders.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {orders.length === 0 ? (
+              <p className="text-sm text-slate-500">No orders yet.</p>
+            ) : (
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                {orders.map((order) => (
+                  <li key={order.id} className="flex items-center justify-between py-2 text-sm">
+                    <Link
+                      href={`/dashboard/sales/${order.id}`}
+                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                    >
+                      {order.createdAt.toLocaleDateString()}
+                    </Link>
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono tabular-nums text-slate-500">${order.totalAmount.toFixed(2)}</span>
+                      <Badge tone={orderStatusTone[order.status]}>{order.status}</Badge>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Invoices ({invoices.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {invoices.length === 0 ? (
+              <p className="text-sm text-slate-500">No invoices yet.</p>
+            ) : (
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                {invoices.map((invoice) => (
+                  <li key={invoice.id} className="flex items-center justify-between py-2 text-sm">
+                    <Link
+                      href={`/dashboard/invoicing/${invoice.id}`}
+                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                    >
+                      {invoice.invoiceNumber}
+                    </Link>
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono tabular-nums text-slate-500">${invoice.totalAmount.toFixed(2)}</span>
+                      <Badge tone={invoiceStatusTone[invoice.status]}>{invoice.status}</Badge>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Tickets ({tickets.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {tickets.length === 0 ? (
+              <p className="text-sm text-slate-500">No tickets yet.</p>
+            ) : (
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                {tickets.map((ticket) => (
+                  <li key={ticket.id} className="flex items-center justify-between py-2 text-sm">
+                    <Link
+                      href={`/dashboard/support/${ticket.id}`}
+                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                    >
+                      {ticket.subject}
+                    </Link>
+                    <Badge tone={ticketStatusTone[ticket.status]}>{ticket.status}</Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
           </CardContent>
         </Card>
 

@@ -1,25 +1,19 @@
 import { cn } from "@/lib/utils";
-import type { InputHTMLAttributes, LabelHTMLAttributes, TextareaHTMLAttributes } from "react";
+import type { ComponentPropsWithRef, LabelHTMLAttributes } from "react";
 
 const fieldBase =
   "block w-full rounded-md border border-white/[0.06] bg-[#111111] px-3 py-2 text-sm text-white caret-white outline-none transition-colors duration-150 placeholder:text-slate-500 hover:border-slate-700 focus:border-blue-500 " +
   "light:border-slate-300 light:bg-white light:text-slate-900 light:caret-slate-900 light:placeholder:text-slate-400 light:hover:border-slate-400";
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
+export function Input({ className, ...props }: ComponentPropsWithRef<"input">) {
   return <input className={cn(fieldBase, className)} {...props} />;
 }
 
-export function Textarea({
-  className,
-  ...props
-}: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Textarea({ className, ...props }: ComponentPropsWithRef<"textarea">) {
   return <textarea className={cn(fieldBase, className)} {...props} />;
 }
 
-export function Select({
-  className,
-  ...props
-}: React.SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({ className, ...props }: ComponentPropsWithRef<"select">) {
   return <select className={cn(fieldBase, className)} {...props} />;
 }
 

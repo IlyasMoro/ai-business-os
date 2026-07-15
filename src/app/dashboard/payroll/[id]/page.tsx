@@ -4,10 +4,15 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { Badge } from "@/components/ui-dark/badge";
+import { Button, LinkButton } from "@/components/ui-dark/button";
+import { Input, Label } from "@/components/ui-dark/input";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { PayrollItemForm } from "@/components/payroll/payroll-item-form";
 import { PayrollRunStatusForm } from "@/components/payroll/payroll-run-status-form";
-import { deletePayrollRun, removePayrollItem } from "@/lib/actions/payroll";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { deletePayrollRun, removePayrollItem, duplicatePayrollRun } from "@/lib/actions/payroll";
+import { toDateInputValue } from "@/lib/utils";
+import { Download } from "lucide-react";
 
 const statusTone = {
   DRAFT: "slate",
@@ -17,10 +22,13 @@ const statusTone = {
 
 export default async function PayrollRunDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const payrollRun = await db.payrollRun.findUnique({
@@ -38,9 +46,14 @@ export default async function PayrollRunDetailPage({
     orderBy: { name: "asc" },
   });
 
+  const periodDurationMs = payrollRun.periodEnd.getTime() - payrollRun.periodStart.getTime();
+  const nextPeriodStart = new Date(payrollRun.periodEnd.getTime() + 24 * 60 * 60 * 1000);
+  const nextPeriodEnd = new Date(nextPeriodStart.getTime() + periodDurationMs);
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
+        <ErrorBanner code={error} />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -78,11 +91,17 @@ export default async function PayrollRunDetailPage({
                         Net ${item.netPay.toFixed(2)}
                       </p>
                     </div>
-                    <DeleteButton
-                      action={removePayrollItem.bind(null, payrollRun.id, item.id)}
-                      confirmMessage="Remove this payroll item?"
-                      label=""
-                    />
+                    <div className="flex items-center gap-1">
+                      <LinkButton href={`/api/payroll-items/${item.id}/payslip`} variant="ghost" size="sm">
+                        <Download className="h-4 w-4" />
+                        Payslip
+                      </LinkButton>
+                      <DeleteButton
+                        action={removePayrollItem.bind(null, payrollRun.id, item.id)}
+                        confirmMessage="Remove this payroll item?"
+                        label=""
+                      />
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -93,6 +112,48 @@ export default async function PayrollRunDetailPage({
             </p>
           </CardContent>
         </Card>
+
+        {payrollRun.items.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Start next period</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="mb-4 text-sm text-slate-400 light:text-slate-500">
+                Copy this run&apos;s {payrollRun.items.length} line item{payrollRun.items.length === 1 ? "" : "s"} into
+                a new draft period.
+              </p>
+              <form
+                action={duplicatePayrollRun.bind(null, payrollRun.id)}
+                className="flex flex-wrap items-end gap-4"
+              >
+                <div>
+                  <Label htmlFor="periodStart">Period start</Label>
+                  <Input
+                    id="periodStart"
+                    name="periodStart"
+                    type="date"
+                    defaultValue={toDateInputValue(nextPeriodStart)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="periodEnd">Period end</Label>
+                  <Input
+                    id="periodEnd"
+                    name="periodEnd"
+                    type="date"
+                    defaultValue={toDateInputValue(nextPeriodEnd)}
+                    required
+                  />
+                </div>
+                <Button type="submit" variant="secondary">
+                  Copy to new run
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
 
         <p className="mt-6">
           <Link href="/dashboard/payroll" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
