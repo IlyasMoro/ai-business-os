@@ -21,6 +21,7 @@ export function ChatForm() {
       <div className="flex-1">
         <Input name="content" placeholder="Ask a question..." autoComplete="off" required />
         <FieldError messages={state?.errors?.content} />
+        {state?.message && <p className="mt-1 text-sm text-red-400">{state.message}</p>}
       </div>
       <Button type="submit" disabled={pending}>
         {pending ? "Sending..." : "Send"}

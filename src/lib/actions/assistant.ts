@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { sendEmailForCompany } from "@/lib/email-for-company";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { generateAssistantReply } from "@/lib/ai";
 import { getBusinessSnapshot, formatSnapshotForPrompt } from "@/lib/business-snapshot";
 import { ChatMessageSchema, type ChatMessageFormState } from "@/lib/validation/assistant";
@@ -23,6 +24,17 @@ export async function sendChatMessage(
 
   if (!validated.success) {
     return { errors: validated.error.flatten().fieldErrors };
+  }
+
+  // Each message triggers a paid Groq call, so this is a real cost/abuse
+  // control, not just a UX nicety — a runaway client or bad actor could
+  // otherwise generate unbounded LLM spend.
+  const allowed = await checkRateLimit(`ai-chat:${session.userId}`, {
+    max: 30,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!allowed) {
+    return { message: "You've sent a lot of messages in the last hour. Please try again later." };
   }
 
   const { content } = validated.data;

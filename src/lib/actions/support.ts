@@ -12,11 +12,18 @@ import {
   type TicketMessageFormState,
 } from "@/lib/validation/support";
 import { suggestTicketPriority } from "@/lib/ai-categorize";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function suggestPriority(subject: string, description: string) {
-  await verifySession();
+  const session = await verifySession();
 
   if (!subject.trim() && !description.trim()) return null;
+
+  const allowed = await checkRateLimit(`ai-suggest:${session.userId}`, {
+    max: 40,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!allowed) return null;
 
   try {
     return await suggestTicketPriority(subject, description);

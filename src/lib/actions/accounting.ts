@@ -6,11 +6,18 @@ import { requireRole, verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { TransactionSchema, type TransactionFormState } from "@/lib/validation/accounting";
 import { suggestTransactionCategory } from "@/lib/ai-categorize";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export async function suggestCategory(description: string, type: "INCOME" | "EXPENSE") {
   const session = await verifySession();
 
   if (!description.trim()) return null;
+
+  const allowed = await checkRateLimit(`ai-suggest:${session.userId}`, {
+    max: 40,
+    windowMs: 60 * 60 * 1000,
+  });
+  if (!allowed) return null;
 
   const existing = await db.transaction.findMany({
     where: { companyId: session.companyId },
