@@ -24,8 +24,8 @@ export function Topbar({
     <header className="flex h-16 items-center justify-between border-b border-white/[0.06] bg-black px-4 sm:px-6 light:border-slate-200 light:bg-white">
       <div className="flex items-center gap-3">
         <MobileNav role={role} isPlatformAdmin={isPlatformAdmin} />
-        <div className="flex items-center gap-2.5">
-          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 text-xs font-semibold text-amber-400">
+        <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70">
+          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/10 text-xs font-semibold text-slate-200 light:bg-white light:text-slate-700">
             {companyInitial}
           </span>
           <p className="text-sm font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
