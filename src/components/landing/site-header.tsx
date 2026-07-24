@@ -6,7 +6,7 @@ export function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050b1e]/60 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center">
-          <span className="bg-gradient-to-br from-amber-400 to-amber-600 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
+          <span className="rounded-lg border border-blue-400/30 bg-blue-500/10 px-3.5 py-1.5 text-2xl font-extrabold tracking-tight text-blue-300 backdrop-blur-md">
             AIBOS
           </span>
         </Link>

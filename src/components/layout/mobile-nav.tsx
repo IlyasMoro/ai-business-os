@@ -34,7 +34,7 @@ export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPla
                 className="flex items-center"
                 onClick={() => setOpen(false)}
               >
-                <span className="bg-gradient-to-br from-amber-400 to-amber-600 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
+                <span className="rounded-lg border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xl font-extrabold tracking-tight text-blue-300 backdrop-blur-md light:border-blue-500/30 light:bg-blue-500/10 light:text-blue-600">
                   AIBOS
                 </span>
               </Link>
