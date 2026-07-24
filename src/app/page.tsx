@@ -65,7 +65,7 @@ export default function Home() {
             them once you approve.
           </p>
 
-          <div className="animate-fade-up animate-fade-up-4 mx-auto mt-24 grid max-w-2xl grid-cols-3 gap-12 border-t border-white/10 pt-12">
+          <div className="animate-fade-up animate-fade-up-4 mt-24 flex w-full items-start justify-between border-t border-white/10 pt-12">
             {[
               ["$49/mo", "Flat pricing"],
               ["14 days", "Free trial"],
