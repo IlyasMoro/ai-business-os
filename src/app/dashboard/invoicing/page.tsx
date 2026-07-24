@@ -88,7 +88,7 @@ export default async function InvoicingPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Invoicing</h1>
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Invoices</h1>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} invoice{totalCount === 1 ? "" : "s"}
           </p>

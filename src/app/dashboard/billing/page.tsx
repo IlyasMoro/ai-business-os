@@ -27,7 +27,7 @@ export default async function BillingPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Billing</h1>
+      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Subscription</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Manage your AIBOS subscription for {session.name ? "your company" : "this workspace"}.
       </p>

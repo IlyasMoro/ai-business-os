@@ -66,7 +66,7 @@ export default async function PayrollPage({
       <ErrorBanner code={error} />
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Payroll</h1>
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Payroll runs</h1>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} payroll run{totalCount === 1 ? "" : "s"}
           </p>
