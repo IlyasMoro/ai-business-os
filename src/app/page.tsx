@@ -66,11 +66,11 @@ export default function Home() {
           </p>
 
           <div className="animate-fade-up animate-fade-up-4 mt-8 flex flex-wrap items-center justify-center gap-3">
-            <LinkButton href="/register" variant="glass" size="lg" className={CTA_CLASS}>
+            <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} rounded-full`}>
               Start free trial
               <ArrowRight className="h-4 w-4" />
             </LinkButton>
-            <LinkButton href="/pricing" variant="glass" size="lg">
+            <LinkButton href="/pricing" variant="glass" size="lg" className="rounded-full">
               View pricing
             </LinkButton>
           </div>
