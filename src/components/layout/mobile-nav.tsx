@@ -31,10 +31,10 @@ export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPla
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-2"
+                className="flex items-center"
                 onClick={() => setOpen(false)}
               >
-                <span className="flex h-7 items-center justify-center rounded-md border border-amber-500/40 bg-amber-500/20 px-2 text-xs font-bold tracking-wide text-amber-400">
+                <span className="bg-gradient-to-br from-amber-400 to-amber-600 bg-clip-text text-xl font-extrabold tracking-tight text-transparent">
                   AIBOS
                 </span>
               </Link>
