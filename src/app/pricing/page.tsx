@@ -37,7 +37,7 @@ const FAQ = [
 
 export default function PricingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050b1e] via-[#060a18] to-[#03050d] text-slate-50">
+    <div className="relative min-h-screen overflow-hidden bg-black text-slate-50">
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
         <div className="absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-blue-700/10 blur-[140px]" />

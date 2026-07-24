@@ -40,7 +40,7 @@ const CTA_CLASS =
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#050b1e] via-[#060a18] to-[#03050d] text-slate-50">
+    <div className="relative min-h-screen overflow-hidden bg-black text-slate-50">
       {/* Ambient background: a single, static, understated glow for depth */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
@@ -129,7 +129,7 @@ export default function Home() {
             {alsoIncluded.map((name) => (
               <span
                 key={name}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400"
+                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400 backdrop-blur-md"
               >
                 {name}
               </span>
