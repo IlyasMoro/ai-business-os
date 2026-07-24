@@ -65,7 +65,17 @@ export default function Home() {
             them once you approve.
           </p>
 
-          <div className="animate-fade-up animate-fade-up-4 mt-24 flex w-full items-start justify-between border-t border-white/10 pt-12">
+          <div className="animate-fade-up animate-fade-up-4 mt-8 flex flex-wrap items-center justify-center gap-3">
+            <LinkButton href="/register" variant="glass" size="lg" className={CTA_CLASS}>
+              Start free trial
+              <ArrowRight className="h-4 w-4" />
+            </LinkButton>
+            <LinkButton href="/pricing" variant="glass" size="lg">
+              View pricing
+            </LinkButton>
+          </div>
+
+          <div className="animate-fade-up animate-fade-up-5 mt-16 flex w-full items-start justify-between border-t border-white/10 pt-12">
             {[
               ["$49/mo", "Flat pricing"],
               ["14 days", "Free trial"],
@@ -79,17 +89,13 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product screenshot */}
-        <section className="px-6 pb-20">
-          <Reveal>
+        {/* Product screenshot, with the AI Copilot shown as a live widget on top of it */}
+        <section className="px-6 pb-24 sm:pb-32">
+          <Reveal className="relative mx-auto max-w-4xl">
             <ProductPreview />
-          </Reveal>
-        </section>
-
-        {/* AI preview */}
-        <section className="px-6 pb-24">
-          <Reveal>
-            <AiTerminalPreview />
+            <div className="relative mt-6 sm:absolute sm:-bottom-10 sm:-right-6 sm:mt-0 sm:w-72 md:-bottom-14 md:-right-10 md:w-80">
+              <AiTerminalPreview />
+            </div>
           </Reveal>
         </section>
 

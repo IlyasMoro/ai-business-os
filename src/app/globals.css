@@ -153,6 +153,9 @@ body * {
 .animate-fade-up-4 {
   animation-delay: 0.35s;
 }
+.animate-fade-up-5 {
+  animation-delay: 0.45s;
+}
 
 /* Respect reduced-motion preferences across all the effects above */
 @media (prefers-reduced-motion: reduce) {
