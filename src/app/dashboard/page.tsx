@@ -101,15 +101,6 @@ export default async function DashboardOverviewPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <ErrorBanner code={error} />
 
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
-          Welcome back, {user.name.split(" ")[0]}
-        </h1>
-        <p className="mt-1 text-slate-400 light:text-slate-500">
-          Here&apos;s what&apos;s happening at {user.company.name}.
-        </p>
-      </div>
-
       <Suspense fallback={<WidgetsSkeleton />}>
         <DashboardWidgets companyId={user.companyId} />
       </Suspense>

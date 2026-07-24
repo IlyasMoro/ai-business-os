@@ -150,11 +150,16 @@ export async function sendInvoiceEmail(invoiceId: string) {
     )
     .join("");
 
-  await sendEmailForCompany(session.companyId, {
-    to: invoice.customer.email,
-    subject: `Invoice ${invoice.invoiceNumber} from ${invoice.companyRef.name}`,
-    html: `<p>Hi ${invoice.customer.name},</p><p>Please find your invoice ${invoice.invoiceNumber} below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table><p><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p><p>Thank you.</p>`,
-  });
+  try {
+    await sendEmailForCompany(session.companyId, {
+      to: invoice.customer.email,
+      subject: `Invoice ${invoice.invoiceNumber} from ${invoice.companyRef.name}`,
+      html: `<p>Hi ${invoice.customer.name},</p><p>Please find your invoice ${invoice.invoiceNumber} below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table><p><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p><p>Thank you.</p>`,
+    });
+  } catch (err) {
+    console.error(`[invoicing] send failed for invoice ${invoiceId}:`, err);
+    redirect(`/dashboard/invoicing/${invoiceId}?error=send-failed`);
+  }
 
   await db.invoice.update({
     where: { id: invoiceId },

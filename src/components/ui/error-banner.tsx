@@ -4,6 +4,7 @@ const MESSAGES: Record<string, string> = {
   invalid: "Please check the form for errors and try again.",
   confirm: "The confirmation text didn't match. Nothing was deleted.",
   "no-email": "This customer doesn't have an email address on file, so the invoice couldn't be sent.",
+  "send-failed": "The invoice couldn't be sent. Check your email configuration and try again.",
 };
 
 export function ErrorBanner({ code }: { code?: string }) {

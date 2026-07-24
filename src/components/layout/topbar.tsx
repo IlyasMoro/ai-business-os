@@ -2,7 +2,6 @@ import { logout } from "@/lib/actions/auth";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { PulseClock } from "@/components/dash-viz/pulse-clock";
 import type { Role } from "@/components/layout/nav-config";
 import type { Notification } from "@/lib/notifications";
 import { LogOut } from "lucide-react";
@@ -29,10 +28,6 @@ export function Topbar({
         <p className="text-sm font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
       </div>
       <div className="flex items-center gap-3">
-        <div className="hidden sm:block">
-          <PulseClock />
-        </div>
-        <div className="mx-1 hidden h-6 w-px bg-white/[0.06] sm:block light:bg-slate-200" />
         <ThemeToggle />
         <NotificationBell notifications={notifications} />
         <div className="hidden items-center gap-2.5 sm:flex">
