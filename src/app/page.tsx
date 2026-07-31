@@ -147,12 +147,6 @@ export default function Home() {
             <p className="relative mx-auto mt-3 max-w-md text-slate-400">
               Create your workspace in minutes and try everything free for 14 days.
             </p>
-            <div className="relative mt-8 flex justify-center">
-              <LinkButton href="/register" variant="glass" size="lg" className={CTA_CLASS}>
-                Start free trial
-                <ArrowRight className="h-4 w-4" />
-              </LinkButton>
-            </div>
           </Reveal>
         </section>
       </main>
