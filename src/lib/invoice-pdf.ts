@@ -1,11 +1,13 @@
 import "server-only";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 
 type InvoicePdfData = {
   invoiceNumber: string;
   status: string;
   issueDate: Date;
   dueDate: Date;
+  taxRate: number;
   totalAmount: number;
   companyName: string;
   customerName: string;
@@ -66,7 +68,20 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   y -= 10;
   page.drawLine({ start: { x: 340, y }, end: { x: 545, y }, thickness: 0.5, color: gray });
-  y -= 20;
+  y -= 18;
+
+  const subtotal = computeInvoiceSubtotal(invoice.lineItems);
+  const taxAmount = computeInvoiceTax(subtotal, invoice.taxRate);
+
+  if (invoice.taxRate > 0) {
+    text("Subtotal", 400, 10, font, gray);
+    text(`$${subtotal.toFixed(2)}`, 490, 10, font, gray);
+    y -= 16;
+    text(`Tax (${invoice.taxRate}%)`, 400, 10, font, gray);
+    text(`$${taxAmount.toFixed(2)}`, 490, 10, font, gray);
+    y -= 20;
+  }
+
   text("Total", 400, 12, bold);
   text(`$${invoice.totalAmount.toFixed(2)}`, 490, 12, bold);
 

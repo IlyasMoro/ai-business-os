@@ -5,6 +5,10 @@ export const InvoiceStatusValues = ["DRAFT", "SENT", "PAID", "OVERDUE"] as const
 export const InvoiceSchema = z.object({
   customerId: z.string().min(1, { error: "Select a customer." }),
   dueDate: z.string().min(1, { error: "Due date is required." }),
+  taxRate: z.coerce
+    .number({ error: "Enter a valid tax rate." })
+    .min(0, { error: "Tax rate cannot be negative." })
+    .default(0),
 });
 
 export type InvoiceFormState =
@@ -12,6 +16,7 @@ export type InvoiceFormState =
       errors?: {
         customerId?: string[];
         dueDate?: string[];
+        taxRate?: string[];
       };
       message?: string;
     }

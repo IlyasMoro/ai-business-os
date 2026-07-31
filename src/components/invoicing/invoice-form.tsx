@@ -14,11 +14,13 @@ export function InvoiceForm({
   action,
   customers,
   defaultDueDate,
+  defaultTaxRate = 0,
   submitLabel = "Create invoice",
 }: {
   action: Action;
   customers: { id: string; name: string }[];
   defaultDueDate: string;
+  defaultTaxRate?: number;
   submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -43,6 +45,19 @@ export function InvoiceForm({
         <Label htmlFor="dueDate">Due date</Label>
         <Input id="dueDate" name="dueDate" type="date" defaultValue={defaultDueDate} required />
         <FieldError messages={state?.errors?.dueDate} />
+      </div>
+      <div>
+        <Label htmlFor="taxRate">Tax rate (%)</Label>
+        <Input
+          id="taxRate"
+          name="taxRate"
+          type="number"
+          step="0.01"
+          min="0"
+          defaultValue={defaultTaxRate}
+          required
+        />
+        <FieldError messages={state?.errors?.taxRate} />
       </div>
 
       {state?.message && <p className="text-sm text-red-400">{state.message}</p>}

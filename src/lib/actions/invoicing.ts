@@ -2,11 +2,11 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession, hasRole } from "@/lib/dal";
+import { verifySession, hasRole, requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 import { sendEmailForCompany } from "@/lib/email-for-company";
-import { computeInvoiceTotal } from "@/lib/invoicing-math";
+import { computeInvoiceTotal, computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import {
   InvoiceSchema,
   InvoiceLineItemSchema,
@@ -16,11 +16,14 @@ import {
 } from "@/lib/validation/invoicing";
 
 async function recomputeInvoiceTotal(invoiceId: string) {
+  const invoice = await db.invoice.findUnique({ where: { id: invoiceId }, select: { taxRate: true } });
+  if (!invoice) return;
+
   const items = await db.invoiceLineItem.findMany({
     where: { invoiceId },
     select: { quantity: true, unitPrice: true },
   });
-  const totalAmount = computeInvoiceTotal(items);
+  const totalAmount = computeInvoiceTotal(items, invoice.taxRate);
   await db.invoice.update({ where: { id: invoiceId }, data: { totalAmount } });
 }
 
@@ -38,6 +41,7 @@ export async function createInvoice(
   const validated = InvoiceSchema.safeParse({
     customerId: formData.get("customerId"),
     dueDate: formData.get("dueDate"),
+    taxRate: formData.get("taxRate"),
   });
 
   if (!validated.success) {
@@ -65,6 +69,7 @@ export async function createInvoice(
       customerId: customer.id,
       companyId: session.companyId,
       dueDate,
+      taxRate: validated.data.taxRate,
     },
   });
 
@@ -150,11 +155,18 @@ export async function sendInvoiceEmail(invoiceId: string) {
     )
     .join("");
 
+  const subtotal = computeInvoiceSubtotal(invoice.lineItems);
+  const taxAmount = computeInvoiceTax(subtotal, invoice.taxRate);
+  const totalsHtml =
+    invoice.taxRate > 0
+      ? `<p>Subtotal: $${subtotal.toFixed(2)}<br/>Tax (${invoice.taxRate}%): $${taxAmount.toFixed(2)}<br/><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p>`
+      : `<p><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p>`;
+
   try {
     await sendEmailForCompany(session.companyId, {
       to: invoice.customer.email,
       subject: `Invoice ${invoice.invoiceNumber} from ${invoice.companyRef.name}`,
-      html: `<p>Hi ${invoice.customer.name},</p><p>Please find your invoice ${invoice.invoiceNumber} below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table><p><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p><p>Thank you.</p>`,
+      html: `<p>Hi ${invoice.customer.name},</p><p>Please find your invoice ${invoice.invoiceNumber} below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table>${totalsHtml}<p>Thank you.</p>`,
     });
   } catch (err) {
     console.error(`[invoicing] send failed for invoice ${invoiceId}:`, err);
@@ -248,4 +260,18 @@ export async function removeInvoiceLineItem(invoiceId: string, itemId: string) {
   await recomputeInvoiceTotal(invoiceId);
 
   revalidatePath(`/dashboard/invoicing/${invoiceId}`);
+}
+
+export async function updateDefaultTaxRate(formData: FormData) {
+  const session = await requireRole(["OWNER"]);
+
+  const taxRate = Number(formData.get("defaultTaxRate"));
+  if (!Number.isFinite(taxRate) || taxRate < 0) {
+    redirect("/dashboard/billing?error=invalid");
+  }
+
+  await db.company.update({ where: { id: session.companyId }, data: { defaultTaxRate: taxRate } });
+
+  revalidatePath("/dashboard/billing");
+  redirect("/dashboard/billing?tax=updated");
 }

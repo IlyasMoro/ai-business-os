@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Company" ADD COLUMN     "defaultTaxRate" DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+-- AlterTable
+ALTER TABLE "Invoice" ADD COLUMN     "taxRate" DOUBLE PRECISION NOT NULL DEFAULT 0;

@@ -7,11 +7,14 @@ import { dateInputDaysFromNow } from "@/lib/utils";
 export default async function NewInvoicePage() {
   const session = await verifySession();
 
-  const customers = await db.customer.findMany({
-    where: { companyId: session.companyId },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  const [customers, company] = await Promise.all([
+    db.customer.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    db.company.findUnique({ where: { id: session.companyId }, select: { defaultTaxRate: true } }),
+  ]);
 
   const defaultDueDate = dateInputDaysFromNow(30);
 
@@ -23,6 +26,7 @@ export default async function NewInvoicePage() {
           action={createInvoice}
           customers={customers}
           defaultDueDate={defaultDueDate}
+          defaultTaxRate={company?.defaultTaxRate ?? 0}
           submitLabel="Create invoice"
         />
       </div>

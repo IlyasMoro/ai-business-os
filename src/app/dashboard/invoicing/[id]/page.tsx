@@ -11,6 +11,7 @@ import { InvoiceLineItemForm } from "@/components/invoicing/invoice-line-item-fo
 import { InvoiceStatusForm } from "@/components/invoicing/invoice-status-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail } from "@/lib/actions/invoicing";
+import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import { Download, Send } from "lucide-react";
 
 const statusTone = {
@@ -40,6 +41,9 @@ export default async function InvoiceDetailPage({
   });
 
   if (!invoice) notFound();
+
+  const subtotal = computeInvoiceSubtotal(invoice.lineItems);
+  const taxAmount = computeInvoiceTax(subtotal, invoice.taxRate);
 
   const products = await db.product.findMany({
     where: { companyId: session.companyId },
@@ -113,9 +117,15 @@ export default async function InvoiceDetailPage({
               </ul>
             )}
             <InvoiceLineItemForm invoiceId={invoice.id} products={products} />
-            <p className="mt-4 text-right font-mono text-sm font-semibold tabular-nums text-amber-400">
-              Total: ${invoice.totalAmount.toFixed(2)}
-            </p>
+            <div className="mt-4 space-y-1 text-right font-mono text-sm tabular-nums">
+              <p className="text-slate-400 light:text-slate-500">Subtotal: ${subtotal.toFixed(2)}</p>
+              {invoice.taxRate > 0 && (
+                <p className="text-slate-400 light:text-slate-500">
+                  Tax ({invoice.taxRate}%): ${taxAmount.toFixed(2)}
+                </p>
+              )}
+              <p className="font-semibold text-amber-400">Total: ${invoice.totalAmount.toFixed(2)}</p>
+            </div>
           </CardContent>
         </Card>
 

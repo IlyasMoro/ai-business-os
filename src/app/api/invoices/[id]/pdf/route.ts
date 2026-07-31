@@ -28,6 +28,7 @@ export async function GET(
     status: invoice.status,
     issueDate: invoice.issueDate,
     dueDate: invoice.dueDate,
+    taxRate: invoice.taxRate,
     totalAmount: invoice.totalAmount,
     companyName: invoice.companyRef.name,
     customerName: invoice.customer.name,

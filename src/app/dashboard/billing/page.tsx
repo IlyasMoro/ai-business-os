@@ -1,9 +1,11 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { startCheckout, openBillingPortal } from "@/lib/actions/billing";
+import { updateDefaultTaxRate } from "@/lib/actions/invoicing";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { Input, Label } from "@/components/ui-dark/input";
 import { ErrorBanner } from "@/components/ui/error-banner";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Percent } from "lucide-react";
 
 function daysLeft(date: Date): number {
   return Math.max(0, Math.ceil((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
@@ -12,12 +14,15 @@ function daysLeft(date: Date): number {
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ checkout?: string; error?: string }>;
+  searchParams: Promise<{ checkout?: string; error?: string; tax?: string }>;
 }) {
   const session = await requireRole(["OWNER"]);
-  const { checkout, error } = await searchParams;
+  const { checkout, error, tax } = await searchParams;
 
-  const subscription = await db.subscription.findUnique({ where: { companyId: session.companyId } });
+  const [subscription, company] = await Promise.all([
+    db.subscription.findUnique({ where: { companyId: session.companyId } }),
+    db.company.findUnique({ where: { id: session.companyId }, select: { defaultTaxRate: true } }),
+  ]);
 
   const isActive = subscription?.status === "ACTIVE";
   const isTrialing =
@@ -42,6 +47,11 @@ export default async function BillingPage({
         {checkout === "cancelled" && (
           <div className="rounded-md border border-white/[0.06] light:border-slate-200 bg-white/5 px-4 py-2 text-sm text-slate-300 light:text-slate-600">
             Checkout was cancelled. No changes were made.
+          </div>
+        )}
+        {tax === "updated" && (
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            Default tax rate updated.
           </div>
         )}
       </div>
@@ -93,6 +103,37 @@ export default async function BillingPage({
             </form>
           )}
         </div>
+      </div>
+
+      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+            <Percent className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="font-medium text-slate-50 light:text-slate-900">Default tax rate</p>
+            <p className="text-sm text-slate-400 light:text-slate-500">
+              Applied automatically to new invoices. Editable per invoice.
+            </p>
+          </div>
+        </div>
+
+        <form action={updateDefaultTaxRate} className="mt-5 flex items-end gap-3 border-t border-white/[0.06] light:border-slate-200 pt-4">
+          <div>
+            <Label htmlFor="defaultTaxRate">Tax rate (%)</Label>
+            <Input
+              id="defaultTaxRate"
+              name="defaultTaxRate"
+              type="number"
+              step="0.01"
+              min="0"
+              defaultValue={company?.defaultTaxRate ?? 0}
+              className="w-32"
+              required
+            />
+          </div>
+          <SubmitButton pendingText="Saving...">Save</SubmitButton>
+        </form>
       </div>
     </div>
   );
