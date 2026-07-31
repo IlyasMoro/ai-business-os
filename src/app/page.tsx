@@ -70,9 +70,6 @@ export default function Home() {
               Start free trial
               <ArrowRight className="h-4 w-4" />
             </LinkButton>
-            <LinkButton href="/pricing" variant="glass" size="lg" className="rounded-full">
-              View pricing
-            </LinkButton>
           </div>
 
           <div className="animate-fade-up animate-fade-up-5 mt-16 flex w-full items-start justify-between border-t border-white/10 pt-12">
