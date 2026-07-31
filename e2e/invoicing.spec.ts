@@ -29,7 +29,7 @@ test("invoice PDF download works and marking Paid books an Accounting transactio
   await page.fill('input[name="quantity"]', "1");
   await page.fill('input[name="unitPrice"]', "321");
   await page.getByRole("button", { name: "Add item" }).click();
-  await expect(page.getByText("Total: $321.00")).toBeVisible({ timeout: 45000 });
+  await expect(page.getByText("Total: $321.00", { exact: true })).toBeVisible({ timeout: 45000 });
 
   const pdfResponse = await page.request.get(`/api/invoices/${invoiceId}/pdf`);
   expect(pdfResponse.status()).toBe(200);
