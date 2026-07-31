@@ -90,7 +90,7 @@ export default function Home() {
         <section className="px-6 pb-24 sm:pb-32">
           <Reveal className="relative mx-auto max-w-4xl">
             <ProductPreview />
-            <div className="relative mt-6 sm:absolute sm:-bottom-10 sm:-right-6 sm:mt-0 sm:w-72 md:-bottom-14 md:-right-10 md:w-80">
+            <div className="relative mt-6 sm:absolute sm:-bottom-12 sm:-right-6 sm:mt-0 sm:w-80 md:-bottom-16 md:-right-10 md:w-[26rem]">
               <AiTerminalPreview />
             </div>
           </Reveal>
