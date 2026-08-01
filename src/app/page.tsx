@@ -133,22 +133,6 @@ export default function Home() {
             ))}
           </Reveal>
         </section>
-
-        {/* Closing CTA */}
-        <section className="mx-auto max-w-6xl px-6 pb-24">
-          <Reveal className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] px-8 py-16 text-center backdrop-blur-xl">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-blue-500/10 blur-[100px]"
-            />
-            <h2 className="relative text-2xl font-semibold tracking-tight sm:text-3xl">
-              One flat price. Every module. No setup fees.
-            </h2>
-            <p className="relative mx-auto mt-3 max-w-md text-slate-400">
-              Create your workspace in minutes and try everything free for 14 days.
-            </p>
-          </Reveal>
-        </section>
       </main>
 
       <SiteFooter />
