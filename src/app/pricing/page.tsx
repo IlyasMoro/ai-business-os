@@ -69,7 +69,7 @@ export default function PricingPage() {
               href="/register"
               variant="glass"
               size="lg"
-              className="mt-8 w-full border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl"
+              className="mt-8 w-full rounded-full border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl"
             >
               Start your free trial
             </LinkButton>
