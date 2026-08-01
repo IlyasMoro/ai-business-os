@@ -35,6 +35,12 @@ export default async function InvitePage({
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
       />
       <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg light:border-slate-200 light:bg-white">
+        <Link
+          href="/"
+          className="mb-6 inline-flex items-center rounded-lg border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xl font-extrabold tracking-tight text-blue-300 backdrop-blur-md light:border-blue-500/30 light:bg-blue-500/10 light:text-blue-600"
+        >
+          AIBOS
+        </Link>
         {isValid ? (
           <>
             <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">
