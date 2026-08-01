@@ -37,6 +37,7 @@ model Company {
   campaigns          Campaign[]
   calendarEvents     CalendarEvent[]
   subscription       Subscription?
+  teamInvites        TeamInvite[]
 }
 
 enum UserRole {
@@ -65,7 +66,27 @@ model User {
   auditLogs           AuditLog[]
   taskComments        TaskComment[]
   ticketMessages      TicketMessage[]
+  sentInvites         TeamInvite[]
 
+  @@index([companyId])
+}
+
+model TeamInvite {
+  id         String    @id @default(cuid())
+  email      String
+  role       UserRole  @default(EMPLOYEE)
+  tokenHash  String    @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  invitedByUserId String
+  invitedBy       User   @relation(fields: [invitedByUserId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, email])
   @@index([companyId])
 }
 

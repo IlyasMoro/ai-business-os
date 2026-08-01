@@ -15,7 +15,8 @@ const authRoutes = ["/login", "/register", "/forgot-password"];
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const isOpenRoute = openRoutes.includes(path);
-  const isAuthRoute = authRoutes.includes(path) || path.startsWith("/reset-password/");
+  const isAuthRoute =
+    authRoutes.includes(path) || path.startsWith("/reset-password/") || path.startsWith("/invite/");
 
   const cookie = req.cookies.get("session")?.value;
   const session = await decrypt(cookie);
