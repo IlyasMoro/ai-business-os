@@ -79,29 +79,29 @@ function CompanyStatusCard({
   if (!isTrialing && !isActive && !isPastDue) return null;
 
   return (
-    <div className="mx-auto mt-4 w-full max-w-sm rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5 text-center shadow-lg">
-      <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-blue-400/30 bg-blue-500/10 text-blue-300">
-        <Building2 className="h-5 w-5" />
+    <div className="mx-auto mt-4 flex w-full max-w-xs items-center gap-2.5 rounded-xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-3 py-2 shadow-md">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500/10 text-blue-300">
+        <Building2 className="h-3.5 w-3.5" />
       </span>
-      <p className="mt-3 font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
-      {isTrialing && subscription?.trialEndsAt && (
-        <p className="mt-1 text-sm text-amber-400">
-          {daysLeft(subscription.trialEndsAt)} day{daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left in
-          trial
-        </p>
-      )}
-      {isActive && (
-        <p className="mt-1 text-sm text-emerald-400">
-          AIBOS ($49/month) &middot; Active
-          {subscription?.cancelAtPeriodEnd && " (cancels at period end)"}
-        </p>
-      )}
-      {isPastDue && <p className="mt-1 text-sm text-red-400">Payment failed &mdash; update your card</p>}
+      <div className="min-w-0 flex-1 text-left">
+        <p className="truncate text-xs font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
+        {isTrialing && subscription?.trialEndsAt && (
+          <p className="text-[11px] text-amber-400">
+            {daysLeft(subscription.trialEndsAt)} day{daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left
+          </p>
+        )}
+        {isActive && (
+          <p className="text-[11px] text-emerald-400">
+            Active{subscription?.cancelAtPeriodEnd && " (cancels soon)"}
+          </p>
+        )}
+        {isPastDue && <p className="text-[11px] text-red-400">Payment failed</p>}
+      </div>
       <Link
         href="/dashboard/billing"
-        className="mt-3 inline-block text-sm font-medium text-blue-400 underline hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700"
+        className="shrink-0 text-[11px] font-medium text-blue-400 underline hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700"
       >
-        Manage billing
+        Manage
       </Link>
     </div>
   );

@@ -125,7 +125,7 @@ export default function Home() {
             {alsoIncluded.map((name) => (
               <span
                 key={name}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400 backdrop-blur-md"
+                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10 hover:text-slate-50 hover:shadow-[0_0_18px_rgba(255,255,255,0.25)]"
               >
                 {name}
               </span>
