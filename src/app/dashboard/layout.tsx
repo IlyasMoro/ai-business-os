@@ -23,7 +23,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen bg-black light:bg-slate-50">
-      <Sidebar role={user.role} isPlatformAdmin={platformAdmin} />
+      <Sidebar role={user.role} userName={user.name} isPlatformAdmin={platformAdmin} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           companyName={user.company.name}

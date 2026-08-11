@@ -24,7 +24,7 @@ export default async function ResetPasswordPage({
       <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg light:border-slate-200 light:bg-white">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center rounded-lg border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xl font-extrabold tracking-tight text-blue-300 backdrop-blur-md light:border-blue-500/30 light:bg-blue-500/10 light:text-blue-600"
+          className="mb-6 inline-flex items-center text-xl font-extrabold tracking-tight text-blue-300 light:text-blue-600"
         >
           AIBOS
         </Link>

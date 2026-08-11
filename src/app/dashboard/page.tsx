@@ -27,6 +27,7 @@ import {
   FileText,
   CheckSquare,
   Banknote,
+  Building2,
 } from "lucide-react";
 
 function monthBuckets(count: number) {
@@ -51,6 +52,59 @@ function pctChange(current: number, previous: number): number | null {
 
 function daysLeft(date: Date): number {
   return Math.max(0, Math.ceil((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
+}
+
+/** Centered mini card summarizing the signed-in company and its
+ * subscription — a logo placeholder (no real per-company logo upload
+ * exists yet, see Company model), the brand name, and either the trial
+ * countdown or the paid package status, whichever applies. Mirrors the
+ * fuller card on /dashboard/billing but condensed for the overview page. */
+function CompanyStatusCard({
+  companyName,
+  subscription,
+}: {
+  companyName: string;
+  subscription: {
+    status: string;
+    trialEndsAt: Date | null;
+    currentPeriodEnd: Date | null;
+    cancelAtPeriodEnd: boolean;
+  } | null;
+}) {
+  const isTrialing =
+    subscription?.status === "TRIALING" && (!subscription.trialEndsAt || subscription.trialEndsAt > new Date());
+  const isActive = subscription?.status === "ACTIVE";
+  const isPastDue = subscription?.status === "PAST_DUE";
+
+  if (!isTrialing && !isActive && !isPastDue) return null;
+
+  return (
+    <div className="mx-auto mt-4 w-full max-w-sm rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5 text-center shadow-lg">
+      <span className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg border border-blue-400/30 bg-blue-500/10 text-blue-300">
+        <Building2 className="h-5 w-5" />
+      </span>
+      <p className="mt-3 font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
+      {isTrialing && subscription?.trialEndsAt && (
+        <p className="mt-1 text-sm text-amber-400">
+          {daysLeft(subscription.trialEndsAt)} day{daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left in
+          trial
+        </p>
+      )}
+      {isActive && (
+        <p className="mt-1 text-sm text-emerald-400">
+          AIBOS ($49/month) &middot; Active
+          {subscription?.cancelAtPeriodEnd && " (cancels at period end)"}
+        </p>
+      )}
+      {isPastDue && <p className="mt-1 text-sm text-red-400">Payment failed &mdash; update your card</p>}
+      <Link
+        href="/dashboard/billing"
+        className="mt-3 inline-block text-sm font-medium text-blue-400 underline hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700"
+      >
+        Manage billing
+      </Link>
+    </div>
+  );
 }
 
 const AGENDA_ICON = {
@@ -102,13 +156,13 @@ export default async function DashboardOverviewPage({
       <ErrorBanner code={error} />
 
       <Suspense fallback={<WidgetsSkeleton />}>
-        <DashboardWidgets companyId={user.companyId} />
+        <DashboardWidgets companyId={user.companyId} companyName={user.company.name} />
       </Suspense>
     </div>
   );
 }
 
-async function DashboardWidgets({ companyId }: { companyId: string }) {
+async function DashboardWidgets({ companyId, companyName }: { companyId: string; companyName: string }) {
   const now = new Date();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
   const months = monthBuckets(6);
@@ -340,22 +394,9 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     { label: "Employees", value: employeeCount, href: "/dashboard/hr", icon: UserSquare2, alert: false },
   ];
 
-  const isTrialing =
-    subscription?.status === "TRIALING" && (!subscription.trialEndsAt || subscription.trialEndsAt > new Date());
-
   return (
     <>
-      {isTrialing && subscription?.trialEndsAt && (
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
-          <span>
-            {daysLeft(subscription.trialEndsAt)} day{daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left in
-            your trial.
-          </span>
-          <Link href="/dashboard/billing" className="font-medium underline hover:text-amber-200">
-            Manage billing
-          </Link>
-        </div>
-      )}
+      <CompanyStatusCard companyName={companyName} subscription={subscription} />
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard

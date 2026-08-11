@@ -4,9 +4,18 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { NavLinks } from "./nav-links";
+import { UserMenu } from "./user-menu";
 import type { Role } from "./nav-config";
 
-export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPlatformAdmin?: boolean }) {
+export function MobileNav({
+  role,
+  userName,
+  isPlatformAdmin = false,
+}: {
+  role: Role;
+  userName: string;
+  isPlatformAdmin?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -34,7 +43,7 @@ export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPla
                 className="flex items-center"
                 onClick={() => setOpen(false)}
               >
-                <span className="rounded-lg border border-blue-400/30 bg-blue-500/10 px-3 py-1 text-xl font-extrabold tracking-tight text-blue-300 backdrop-blur-md light:border-blue-500/30 light:bg-blue-500/10 light:text-blue-600">
+                <span className="text-xl font-extrabold tracking-tight text-blue-300 light:text-blue-600">
                   AIBOS
                 </span>
               </Link>
@@ -48,6 +57,9 @@ export function MobileNav({ role, isPlatformAdmin = false }: { role: Role; isPla
               </button>
             </div>
             <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} onNavigate={() => setOpen(false)} />
+            <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
+              <UserMenu userName={userName} />
+            </div>
           </div>
         </div>
       )}

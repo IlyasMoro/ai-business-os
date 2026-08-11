@@ -15,19 +15,18 @@ import {
 } from "lucide-react";
 
 const modules = [
-  { icon: Users, name: "CRM & Sales", description: "Track customers, leads, and deals in one place." },
-  { icon: Boxes, name: "Inventory", description: "Stay on top of stock levels and reorder points." },
-  { icon: Receipt, name: "Invoicing", description: "Generate and send professional invoices in seconds." },
-  { icon: Wallet, name: "Accounting & Payroll", description: "Keep the books balanced and pay your team on time." },
-  { icon: BarChart3, name: "Reports", description: "Understand what's driving or hurting your business." },
-  { icon: Zap, name: "Automation", description: "Overdue reminders, low stock alerts, and stale leads handled without you lifting a finger." },
+  { icon: Users, name: "CRM & Sales", description: "Every lead, quote, and customer conversation in one pipeline, from first contact to signed deal." },
+  { icon: Boxes, name: "Inventory", description: "Set a reorder point once. Get flagged the moment stock dips below it, before you run out." },
+  { icon: Receipt, name: "Invoicing", description: "Line items, tax, and totals calculated automatically. Send a professional invoice in one click." },
+  { icon: Wallet, name: "Accounting & Payroll", description: "Income and expenses linked back to the invoice or project that created them, so the books reconcile themselves." },
+  { icon: BarChart3, name: "Reports", description: "Six-month trends and at-risk numbers, plus an AI summary of what actually needs your attention this week." },
+  { icon: Zap, name: "Automation", description: "Overdue invoice reminders, low-stock reorders, stale-ticket escalation, and dead-lead cleanup, running every day without you lifting a finger." },
 ];
 
 const alsoIncluded = [
   "Marketing",
   "Procurement",
   "HR",
-  "Payroll",
   "Projects",
   "Calendar",
   "Support",
@@ -53,9 +52,9 @@ export default function Home() {
         {/* Hero */}
         <section className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center sm:pt-28">
           <h1 className="animate-fade-up animate-fade-up-2 mx-auto max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
-            Run your whole business from{" "}
+            Run your business. Let AI handle the busywork,{" "}
             <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-              one AI powered platform
+              with your approval on everything that matters.
             </span>
           </h1>
 
@@ -122,7 +121,7 @@ export default function Home() {
           </div>
 
           <Reveal className="mt-8 flex flex-wrap items-center justify-center gap-2 border-t border-white/10 pt-8">
-            <span className="text-sm text-slate-500">Also included:</span>
+            <span className="text-sm text-slate-500">Plus every other department:</span>
             {alsoIncluded.map((name) => (
               <span
                 key={name}
