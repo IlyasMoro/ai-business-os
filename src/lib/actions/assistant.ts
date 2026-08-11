@@ -120,6 +120,12 @@ async function executeAiAction(
 
   switch (type) {
     case "CREATE_TASK": {
+      const project = await db.project.findUnique({
+        where: { id: args.projectId, companyId },
+        select: { id: true },
+      });
+      if (!project) return { error: "projectId does not belong to this company." };
+
       const task = await db.task.create({
         data: {
           title: args.title,

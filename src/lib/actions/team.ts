@@ -127,7 +127,7 @@ export async function removeTeamMember(userId: string) {
     }
   }
 
-  await db.user.delete({ where: { id: userId } });
+  await db.user.delete({ where: { id: userId, companyId: session.companyId } });
 
   await logAudit(session.companyId, session.userId, "team.member_removed", "User", userId, {});
 
