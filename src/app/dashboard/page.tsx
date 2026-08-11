@@ -27,7 +27,6 @@ import {
   FileText,
   CheckSquare,
   Banknote,
-  Building2,
 } from "lucide-react";
 
 function monthBuckets(count: number) {
@@ -48,63 +47,6 @@ function runningTotals(monthlyCounts: number[], startingBase: number): number[] 
 function pctChange(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null;
   return ((current - previous) / previous) * 100;
-}
-
-function daysLeft(date: Date): number {
-  return Math.max(0, Math.ceil((date.getTime() - Date.now()) / (24 * 60 * 60 * 1000)));
-}
-
-/** Centered mini card summarizing the signed-in company and its
- * subscription — a logo placeholder (no real per-company logo upload
- * exists yet, see Company model), the brand name, and either the trial
- * countdown or the paid package status, whichever applies. Mirrors the
- * fuller card on /dashboard/billing but condensed for the overview page. */
-function CompanyStatusCard({
-  companyName,
-  subscription,
-}: {
-  companyName: string;
-  subscription: {
-    status: string;
-    trialEndsAt: Date | null;
-    currentPeriodEnd: Date | null;
-    cancelAtPeriodEnd: boolean;
-  } | null;
-}) {
-  const isTrialing =
-    subscription?.status === "TRIALING" && (!subscription.trialEndsAt || subscription.trialEndsAt > new Date());
-  const isActive = subscription?.status === "ACTIVE";
-  const isPastDue = subscription?.status === "PAST_DUE";
-
-  if (!isTrialing && !isActive && !isPastDue) return null;
-
-  return (
-    <div className="mx-auto mt-4 flex w-full max-w-xs items-center gap-2.5 rounded-xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-3 py-2 shadow-md">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500/10 text-blue-300">
-        <Building2 className="h-3.5 w-3.5" />
-      </span>
-      <div className="min-w-0 flex-1 text-left">
-        <p className="truncate text-xs font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
-        {isTrialing && subscription?.trialEndsAt && (
-          <p className="text-[11px] text-amber-400">
-            {daysLeft(subscription.trialEndsAt)} day{daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left
-          </p>
-        )}
-        {isActive && (
-          <p className="text-[11px] text-emerald-400">
-            Active{subscription?.cancelAtPeriodEnd && " (cancels soon)"}
-          </p>
-        )}
-        {isPastDue && <p className="text-[11px] text-red-400">Payment failed</p>}
-      </div>
-      <Link
-        href="/dashboard/billing"
-        className="shrink-0 text-[11px] font-medium text-blue-400 underline hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700"
-      >
-        Manage
-      </Link>
-    </div>
-  );
 }
 
 const AGENDA_ICON = {
@@ -156,13 +98,13 @@ export default async function DashboardOverviewPage({
       <ErrorBanner code={error} />
 
       <Suspense fallback={<WidgetsSkeleton />}>
-        <DashboardWidgets companyId={user.companyId} companyName={user.company.name} />
+        <DashboardWidgets companyId={user.companyId} />
       </Suspense>
     </div>
   );
 }
 
-async function DashboardWidgets({ companyId, companyName }: { companyId: string; companyName: string }) {
+async function DashboardWidgets({ companyId }: { companyId: string }) {
   const now = new Date();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
   const months = monthBuckets(6);
@@ -191,7 +133,6 @@ async function DashboardWidgets({ companyId, companyName }: { companyId: string;
     customerStatusGroups,
     recentAiActions,
     recentAuditLogs,
-    subscription,
     agendaItems,
   ] = await Promise.all([
     db.customer.count({ where: { companyId } }),
@@ -242,7 +183,6 @@ async function DashboardWidgets({ companyId, companyName }: { companyId: string;
       take: 6,
       select: { id: true, action: true, createdAt: true, user: { select: { name: true } } },
     }),
-    db.subscription.findUnique({ where: { companyId } }),
     getAgendaItems(companyId),
   ]);
 
@@ -396,8 +336,6 @@ async function DashboardWidgets({ companyId, companyName }: { companyId: string;
 
   return (
     <>
-      <CompanyStatusCard companyName={companyName} subscription={subscription} />
-
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <KpiCard
           label="Revenue (6 months)"

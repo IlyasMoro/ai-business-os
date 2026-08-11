@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { getCurrentUser } from "@/lib/dal";
+import { db } from "@/lib/db";
 import { getNotifications } from "@/lib/notifications";
 import { isPlatformAdmin } from "@/lib/platform-admin";
 import { checkSubscriptionAccess } from "@/lib/subscription-access";
@@ -13,7 +14,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  const notifications = await getNotifications(user.companyId);
+  const [notifications, subscription] = await Promise.all([
+    getNotifications(user.companyId),
+    db.subscription.findUnique({ where: { companyId: user.companyId } }),
+  ]);
   const platformAdmin = isPlatformAdmin(user.email);
 
   const headersList = await headers();
@@ -31,6 +35,7 @@ export default async function DashboardLayout({
           role={user.role}
           isPlatformAdmin={platformAdmin}
           notifications={notifications}
+          subscription={subscription}
         />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           {access.blocked ? <SubscriptionBlocked reason={access.reason} /> : children}
