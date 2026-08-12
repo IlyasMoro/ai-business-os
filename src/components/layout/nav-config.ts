@@ -17,6 +17,7 @@ import {
   Megaphone,
   Calendar,
   Settings,
+  SlidersHorizontal,
   Building2,
   CreditCard,
   UserPlus,
@@ -54,6 +55,7 @@ export const navItems: {
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/team", label: "Team", icon: UserPlus, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"] },
+  { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/admin", label: "Companies", icon: Building2, platformAdminOnly: true },
   { href: "/dashboard/platform-settings", label: "Platform Settings", icon: Settings, platformAdminOnly: true },
 ];

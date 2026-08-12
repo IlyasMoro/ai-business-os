@@ -1,8 +1,7 @@
 import "server-only";
-import Groq from "groq-sdk";
+import type Groq from "groq-sdk";
 import { TOOL_DEFINITIONS, isKnownTool, isReadTool, runReadTool, proposeAiAction } from "@/lib/ai-tools";
-
-const groq = new Groq();
+import { getGroqClient } from "@/lib/groq-client";
 
 const MODEL = "llama-3.3-70b-versatile";
 const MAX_TOOL_ITERATIONS = 4;
@@ -36,6 +35,8 @@ If asked about something not covered by the snapshot or tools, say you don't hav
       content: message.content,
     })),
   ];
+
+  const groq = await getGroqClient();
 
   for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
     let completion;

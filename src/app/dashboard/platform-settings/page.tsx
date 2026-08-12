@@ -5,21 +5,29 @@ import { db } from "@/lib/db";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { Input, Label } from "@/components/ui-dark/input";
-import { updateEmailSettings, clearEmailSettings, sendTestPlatformEmail } from "@/lib/actions/platform-settings";
-import { Mail } from "lucide-react";
+import {
+  updateEmailSettings,
+  clearEmailSettings,
+  sendTestPlatformEmail,
+  updateGroqSettings,
+  clearGroqSettings,
+  testGroqConnection,
+} from "@/lib/actions/platform-settings";
+import { Mail, Sparkles } from "lucide-react";
 
 export default async function PlatformSettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; saved?: string; testsent?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; testsent?: string; groqtested?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!isPlatformAdmin(user.email)) notFound();
 
-  const { error, saved, testsent } = await searchParams;
+  const { error, saved, testsent, groqtested } = await searchParams;
 
   const settings = await db.platformSettings.findUnique({ where: { id: "platform" } });
   const configured = Boolean(settings?.resendApiKey && settings?.resendFromEmail);
+  const groqConfigured = Boolean(settings?.groqApiKey);
   const sendTestAction = sendTestPlatformEmail.bind(null, user.email);
 
   return (
@@ -40,6 +48,11 @@ export default async function PlatformSettingsPage({
         {testsent && (
           <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
             Test email sent to {user.email}. Check your inbox.
+          </div>
+        )}
+        {groqtested && (
+          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            Groq connection successful.
           </div>
         )}
       </div>
@@ -90,6 +103,51 @@ export default async function PlatformSettingsPage({
               </SubmitButton>
             </form>
             <form action={clearEmailSettings}>
+              <SubmitButton variant="ghost" pendingText="Clearing...">
+                Clear
+              </SubmitButton>
+            </form>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+            <Sparkles className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot (Groq)</p>
+            <p className="text-sm text-slate-400 light:text-slate-500">
+              {groqConfigured
+                ? "Configured. Used by every company's AI Copilot chat and by automatic transaction/ticket categorization."
+                : "Not configured here — falling back to the GROQ_API_KEY environment variable, if set."}
+            </p>
+          </div>
+        </div>
+
+        <form action={updateGroqSettings} className="mt-5 space-y-4">
+          <div>
+            <Label htmlFor="groqApiKey">Groq API key</Label>
+            <Input
+              id="groqApiKey"
+              name="groqApiKey"
+              type="password"
+              placeholder={settings?.groqApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "gsk_..."}
+              autoComplete="off"
+            />
+          </div>
+          <SubmitButton pendingText="Saving...">Save</SubmitButton>
+        </form>
+
+        {groqConfigured && (
+          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
+            <form action={testGroqConnection}>
+              <SubmitButton variant="secondary" pendingText="Testing...">
+                Test connection
+              </SubmitButton>
+            </form>
+            <form action={clearGroqSettings}>
               <SubmitButton variant="ghost" pendingText="Clearing...">
                 Clear
               </SubmitButton>

@@ -829,5 +829,6 @@ model PlatformSettings {
   id              String   @id
   resendApiKey    String?
   resendFromEmail String?
+  groqApiKey      String?
   updatedAt       DateTime @updatedAt
 }

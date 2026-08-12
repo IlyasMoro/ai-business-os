@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
-import { PlatformEmailSettingsSchema } from "@/lib/validation/platform-settings";
+import { getGroqClient } from "@/lib/groq-client";
+import { PlatformEmailSettingsSchema, PlatformGroqSettingsSchema } from "@/lib/validation/platform-settings";
 
 export async function updateEmailSettings(formData: FormData) {
   await requirePlatformAdmin();
@@ -53,6 +54,65 @@ export async function clearEmailSettings() {
   });
 
   revalidatePath("/dashboard/platform-settings");
+}
+
+export async function updateGroqSettings(formData: FormData) {
+  await requirePlatformAdmin();
+
+  const validated = PlatformGroqSettingsSchema.safeParse({
+    groqApiKey: formData.get("groqApiKey"),
+  });
+
+  if (!validated.success) {
+    redirect("/dashboard/platform-settings?error=invalid");
+  }
+
+  const { groqApiKey } = validated.data;
+
+  const existing = await db.platformSettings.findUnique({ where: { id: "platform" } });
+
+  await db.platformSettings.upsert({
+    where: { id: "platform" },
+    create: {
+      id: "platform",
+      groqApiKey: groqApiKey || undefined,
+    },
+    update: {
+      groqApiKey: groqApiKey || existing?.groqApiKey,
+    },
+  });
+
+  revalidatePath("/dashboard/platform-settings");
+  redirect("/dashboard/platform-settings?saved=1");
+}
+
+export async function clearGroqSettings() {
+  await requirePlatformAdmin();
+
+  await db.platformSettings.upsert({
+    where: { id: "platform" },
+    create: { id: "platform", groqApiKey: null },
+    update: { groqApiKey: null },
+  });
+
+  revalidatePath("/dashboard/platform-settings");
+}
+
+export async function testGroqConnection() {
+  await requirePlatformAdmin();
+
+  try {
+    const groq = await getGroqClient();
+    await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: "Reply with only the word OK." }],
+      max_tokens: 5,
+    });
+    redirect("/dashboard/platform-settings?groqtested=1");
+  } catch (err) {
+    console.error("[platform-settings] Groq test call failed:", err);
+    redirect("/dashboard/platform-settings?error=invalid");
+  }
 }
 
 export async function sendTestPlatformEmail(toEmail: string) {
