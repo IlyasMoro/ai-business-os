@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { CalendarEventSchema } from "@/lib/validation/calendar";
 
@@ -42,6 +42,10 @@ export async function createCalendarEvent(formData: FormData) {
 
 export async function deleteCalendarEvent(eventId: string) {
   const session = await verifySession();
+
+  if (!hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect("/dashboard/calendar?error=forbidden");
+  }
 
   await db.calendarEvent.delete({
     where: { id: eventId, companyId: session.companyId },
