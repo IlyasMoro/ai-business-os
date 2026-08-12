@@ -70,6 +70,25 @@ export default async function AutomationPage({
           Run automations now
         </SubmitButton>
       </form>
+
+      {session.role === "OWNER" && (
+        <div className="mt-8 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Data backup</h2>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+            Download every business record your company owns (customers, orders, invoices,
+            transactions, employees, payroll, projects, tickets, campaigns, calendar, and AI
+            activity) as a single JSON file. Login credentials and connected Google tokens are
+            never included. This is a copy you control yourself, separate from whatever backup
+            add-on is or is not enabled on the underlying Railway Postgres database.
+          </p>
+          <a
+            href="/api/export/backup"
+            className="mt-4 inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+          >
+            Download full backup (JSON)
+          </a>
+        </div>
+      )}
     </div>
   );
 }
