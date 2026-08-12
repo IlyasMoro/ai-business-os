@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { NavLinks } from "./nav-links";
 import { UserMenu } from "./user-menu";
@@ -40,9 +41,10 @@ export function MobileNav({
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"
-                className="flex items-center"
+                className="flex items-center gap-2"
                 onClick={() => setOpen(false)}
               >
+                <Image src="/logo-mark.png" alt="" width={24} height={24} className="shrink-0" />
                 <span className="text-xl font-extrabold tracking-tight text-blue-300 light:text-blue-600">
                   AIBOS
                 </span>

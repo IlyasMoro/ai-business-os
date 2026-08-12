@@ -1,11 +1,13 @@
 import Link from "next/link";
+import Image from "next/image";
 import { LinkButton } from "@/components/ui/button";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+        <Link href="/" className="flex items-center gap-2 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+          <Image src="/logo-mark.png" alt="" width={28} height={28} className="shrink-0" />
           <span className="text-2xl font-extrabold tracking-tight text-blue-400">
             AIBOS
           </span>
