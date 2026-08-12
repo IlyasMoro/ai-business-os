@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { needsReorder, computeReorderQuantity } from "@/lib/automation-rules";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
+import { getBusinessReportData } from "@/lib/business-report-data";
+import { generateBusinessReportPdf } from "@/lib/report-pdf";
+import { isReportDue } from "@/lib/report-schedule";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -122,6 +125,41 @@ async function runStaleLeadCleanup(companyId: string) {
   });
 }
 
+/** Emails the same PDF business report the Reports page can generate
+ * on demand (src/app/api/reports/pdf) to every Owner/Admin at the company,
+ * then stamps lastReportSentAt so the next due check starts a fresh
+ * interval — same notify-once-per-period convention as the reminder/
+ * escalation rules above. */
+async function sendScheduledReport(companyId: string) {
+  const [company, recipients] = await Promise.all([
+    db.company.findUnique({ where: { id: companyId }, select: { name: true } }),
+    db.user.findMany({
+      where: { companyId, role: { in: ["OWNER", "ADMIN"] } },
+      select: { email: true, name: true },
+    }),
+  ]);
+  if (!company || recipients.length === 0) return;
+
+  const data = await getBusinessReportData(companyId, company.name);
+  const pdfBytes = await generateBusinessReportPdf(data);
+  const attachment = { filename: `business-report-${new Date().toISOString().slice(0, 10)}.pdf`, content: Buffer.from(pdfBytes) };
+
+  for (const recipient of recipients) {
+    try {
+      await sendEmailForCompany(companyId, {
+        to: recipient.email,
+        subject: `${company.name}: scheduled business report`,
+        html: `<p>Hi ${recipient.name},</p><p>Attached is your scheduled business report: revenue, expenses, and order/invoice status for the trailing 6 months.</p>`,
+        attachments: [attachment],
+      });
+    } catch (err) {
+      console.error(`[automations] scheduled report email failed for ${recipient.email}:`, err);
+    }
+  }
+
+  await db.automationSettings.update({ where: { companyId }, data: { lastReportSentAt: new Date() } });
+}
+
 async function acquireLock(): Promise<boolean> {
   const now = new Date();
   const leaseUntil = new Date(now.getTime() + LOCK_LEASE_MS);
@@ -167,6 +205,7 @@ export async function runAutomations() {
           { lowStockReorder: true },
           { staleTicketEscalation: true },
           { staleLeadCleanup: true },
+          { reportFrequency: { not: "OFF" } },
         ],
       },
     });
@@ -177,6 +216,9 @@ export async function runAutomations() {
         if (settings.lowStockReorder) await runLowStockReorder(settings.companyId);
         if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId);
         if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId);
+        if (isReportDue(settings.reportFrequency, settings.lastReportSentAt)) {
+          await sendScheduledReport(settings.companyId);
+        }
       } catch (err) {
         console.error(`[automations] run failed for company ${settings.companyId}:`, err);
       }

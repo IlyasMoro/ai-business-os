@@ -1,0 +1,25 @@
+name: Run automations
+
+on:
+  schedule:
+    # Every 15 minutes. Covers overdue reminders, low-stock reorder,
+    # stale-ticket escalation, stale-lead cleanup, and (once due) scheduled
+    # PDF business reports — all four toggles plus the report cadence share
+    # this one trigger, see src/lib/automations.ts.
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the automations cron endpoint
+        run: |
+          status=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://web-production-61735.up.railway.app/api/cron/automations")
+          cat /tmp/response.txt
+          if [ "$status" -ge 300 ]; then
+            echo "Request failed with status $status"
+            exit 1
+          fi

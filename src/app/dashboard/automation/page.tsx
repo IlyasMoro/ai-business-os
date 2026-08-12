@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { AutomationToggle } from "@/components/automation/automation-toggle";
+import { ReportFrequencySelect } from "@/components/automation/report-frequency-select";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { runAutomationsNow } from "@/lib/actions/automation";
 
@@ -55,8 +56,14 @@ export default async function AutomationPage({
             label="Stale lead cleanup"
             description="Mark a CRM lead inactive if it's been open 30+ days with no orders."
           />
+          <ReportFrequencySelect value={settings?.reportFrequency ?? "OFF"} />
         </div>
       </div>
+
+      <p className="mt-4 max-w-2xl text-xs text-slate-500">
+        These rules and the scheduled report run automatically every 15 minutes via a GitHub Actions
+        schedule, independent of anyone visiting this page.
+      </p>
 
       <form action={runAutomationsNow} className="mt-6 max-w-2xl">
         <SubmitButton variant="secondary" pendingText="Running...">

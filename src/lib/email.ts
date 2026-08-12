@@ -9,14 +9,18 @@ async function getResendCredentials() {
   return { apiKey, from };
 }
 
+export type EmailAttachment = { filename: string; content: Buffer };
+
 export async function sendEmail({
   to,
   subject,
   html,
+  attachments,
 }: {
   to: string;
   subject: string;
   html: string;
+  attachments?: EmailAttachment[];
 }) {
   const { apiKey, from } = await getResendCredentials();
 
@@ -33,7 +37,13 @@ export async function sendEmail({
   // that never send an email — the moment it's loaded.
   const resend = new Resend(apiKey);
 
-  const { error } = await resend.emails.send({ from, to, subject, html });
+  const { error } = await resend.emails.send({
+    from,
+    to,
+    subject,
+    html,
+    attachments: attachments?.map((a) => ({ filename: a.filename, content: a.content })),
+  });
   if (error) {
     throw new Error(`Failed to send email: ${error.message}`);
   }

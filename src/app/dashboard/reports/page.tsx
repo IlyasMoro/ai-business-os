@@ -10,7 +10,7 @@ import { MonoTrendBadge } from "@/components/dash-viz/mono-badge";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { forecastNextMonthRevenue } from "@/lib/ai-tools";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Download } from "lucide-react";
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
@@ -125,8 +125,19 @@ export default async function ReportsPage() {
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Reports</h1>
-      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">A snapshot of revenue, sales, and invoicing over the last 6 months.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Reports</h1>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">A snapshot of revenue, sales, and invoicing over the last 6 months.</p>
+        </div>
+        <a
+          href="/api/reports/pdf"
+          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+        >
+          <Download className="h-4 w-4" />
+          Download PDF
+        </a>
+      </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">

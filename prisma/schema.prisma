@@ -676,6 +676,13 @@ model Document {
 
 // ---------- Automation ----------
 
+enum ReportFrequency {
+  OFF
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+}
+
 model AutomationSettings {
   id        String   @id @default(cuid())
   updatedAt DateTime @updatedAt
@@ -684,6 +691,12 @@ model AutomationSettings {
   lowStockReorder         Boolean @default(false)
   staleTicketEscalation   Boolean @default(false)
   staleLeadCleanup        Boolean @default(false)
+
+  // Emails a PDF business report (KPIs + charts) to the company on the
+  // chosen cadence. lastReportSentAt drives the due check the same way
+  // Invoice.lastReminderSentAt does for overdue reminders.
+  reportFrequency  ReportFrequency @default(OFF)
+  lastReportSentAt DateTime?
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)

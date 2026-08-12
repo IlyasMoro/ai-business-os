@@ -5,6 +5,9 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { runAutomations } from "@/lib/automations";
+import type { ReportFrequency } from "@/generated/prisma/client";
+
+const REPORT_FREQUENCIES = ["OFF", "WEEKLY", "MONTHLY", "QUARTERLY"] as const;
 
 const TOGGLE_KEYS = [
   "overdueInvoiceReminders",
@@ -28,6 +31,23 @@ export async function toggleAutomation(key: ToggleKey, formData: FormData) {
     where: { companyId: session.companyId },
     create: { companyId: session.companyId, [key]: enabled },
     update: { [key]: enabled },
+  });
+
+  revalidatePath("/dashboard/automation");
+}
+
+export async function updateReportFrequency(formData: FormData) {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+
+  const frequency = formData.get("reportFrequency");
+  if (typeof frequency !== "string" || !REPORT_FREQUENCIES.includes(frequency as ReportFrequency)) {
+    redirect("/dashboard/automation?error=invalid");
+  }
+
+  await db.automationSettings.upsert({
+    where: { companyId: session.companyId },
+    create: { companyId: session.companyId, reportFrequency: frequency as ReportFrequency },
+    update: { reportFrequency: frequency as ReportFrequency },
   });
 
   revalidatePath("/dashboard/automation");

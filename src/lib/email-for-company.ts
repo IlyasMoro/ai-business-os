@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
-import { sendEmail } from "@/lib/email";
+import { sendEmail, type EmailAttachment } from "@/lib/email";
 import { sendGmailMessage } from "@/lib/google-mail";
 import { refreshAccessToken } from "@/lib/google-oauth";
 
@@ -8,12 +8,12 @@ const TOKEN_REFRESH_MARGIN_MS = 60 * 1000;
 
 export async function sendEmailForCompany(
   companyId: string,
-  { to, subject, html }: { to: string; subject: string; html: string }
+  { to, subject, html, attachments }: { to: string; subject: string; html: string; attachments?: EmailAttachment[] }
 ) {
   const integration = await db.googleIntegration.findUnique({ where: { companyId } });
 
   if (!integration) {
-    return sendEmail({ to, subject, html });
+    return sendEmail({ to, subject, html, attachments });
   }
 
   let accessToken = integration.accessToken;
@@ -30,5 +30,5 @@ export async function sendEmailForCompany(
     });
   }
 
-  await sendGmailMessage({ accessToken, from: integration.email, to, subject, html });
+  await sendGmailMessage({ accessToken, from: integration.email, to, subject, html, attachments });
 }
