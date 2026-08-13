@@ -46,6 +46,8 @@ export type BusinessReportData = {
   monthly: ReportMonth[];
   orderStatusSlices: ReportSlice[];
   invoiceStatusSlices: ReportSlice[];
+  logoData?: Uint8Array;
+  logoMimeType?: string | null;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
@@ -64,6 +66,15 @@ export async function generateBusinessReportPdf(data: BusinessReportData): Promi
   }
 
   // ---- Header ----
+  if (data.logoData && data.logoMimeType) {
+    const image =
+      data.logoMimeType === "image/png" ? await doc.embedPng(data.logoData) : await doc.embedJpg(data.logoData);
+    const height = 36;
+    const width = Math.min((image.width / image.height) * height, 140);
+    page.drawImage(image, { x: margin, y: y - height + 8, width, height });
+    y -= height + 14;
+  }
+
   text(data.companyName, margin, 20, bold);
   text("Business Report", 400, 20, bold);
   y -= 22;

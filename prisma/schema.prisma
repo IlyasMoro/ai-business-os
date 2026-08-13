@@ -16,6 +16,12 @@ model Company {
   defaultTaxRate Float    @default(0)
   createdAt      DateTime @default(now())
 
+  // Custom logo shown on invoices, payslips, business reports, and
+  // customer-facing emails in place of the default AIBOS wordmark. PNG/JPEG
+  // only (pdf-lib's embedPng/embedJpg support nothing else).
+  logoData     Bytes?
+  logoMimeType String?
+
   users              User[]
   customers          Customer[]
   products           Product[]
@@ -691,6 +697,11 @@ model AutomationSettings {
   lowStockReorder         Boolean @default(false)
   staleTicketEscalation   Boolean @default(false)
   staleLeadCleanup        Boolean @default(false)
+
+  // A single outgoing webhook URL (Slack Incoming Webhook, Zapier "Catch
+  // Hook", or any custom JSON endpoint). Fires on the four automation events
+  // above (only when each is itself enabled) plus every new support ticket.
+  webhookUrl String?
 
   // Emails a PDF business report (KPIs + charts) to the company on the
   // chosen cadence. lastReportSentAt drives the due check the same way

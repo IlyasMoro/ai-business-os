@@ -14,7 +14,13 @@ export async function GET(
     where: { id, payrollRun: { companyId: session.companyId } },
     include: {
       employee: { select: { name: true, position: true } },
-      payrollRun: { select: { periodStart: true, periodEnd: true, companyRef: { select: { name: true } } } },
+      payrollRun: {
+        select: {
+          periodStart: true,
+          periodEnd: true,
+          companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
+        },
+      },
     },
   });
 
@@ -31,6 +37,8 @@ export async function GET(
     grossPay: item.grossPay,
     deductions: item.deductions,
     netPay: item.netPay,
+    logoData: item.payrollRun.companyRef.logoData ? new Uint8Array(item.payrollRun.companyRef.logoData) : undefined,
+    logoMimeType: item.payrollRun.companyRef.logoMimeType,
   });
 
   return new NextResponse(new Uint8Array(pdfBytes), {

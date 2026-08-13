@@ -14,7 +14,7 @@ export async function GET(
     where: { id, companyId: session.companyId },
     include: {
       customer: { select: { name: true, email: true } },
-      companyRef: { select: { name: true } },
+      companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
       lineItems: { select: { description: true, quantity: true, unitPrice: true } },
     },
   });
@@ -34,6 +34,8 @@ export async function GET(
     customerName: invoice.customer.name,
     customerEmail: invoice.customer.email,
     lineItems: invoice.lineItems,
+    logoData: invoice.companyRef.logoData ? new Uint8Array(invoice.companyRef.logoData) : undefined,
+    logoMimeType: invoice.companyRef.logoMimeType,
   });
 
   return new NextResponse(new Uint8Array(pdfBytes), {

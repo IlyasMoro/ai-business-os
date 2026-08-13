@@ -13,6 +13,8 @@ type InvoicePdfData = {
   customerName: string;
   customerEmail: string | null;
   lineItems: { description: string; quantity: number; unitPrice: number }[];
+  logoData?: Uint8Array;
+  logoMimeType?: string | null;
 };
 
 export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8Array> {
@@ -28,6 +30,17 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   function text(content: string, x: number, size: number, useFont = font, color = black) {
     page.drawText(content, { x, y, size, font: useFont, color });
+  }
+
+  if (invoice.logoData && invoice.logoMimeType) {
+    const image =
+      invoice.logoMimeType === "image/png"
+        ? await doc.embedPng(invoice.logoData)
+        : await doc.embedJpg(invoice.logoData);
+    const height = 36;
+    const width = Math.min((image.width / image.height) * height, 140);
+    page.drawImage(image, { x: margin, y: y - height + 8, width, height });
+    y -= height + 14;
   }
 
   text(invoice.companyName, margin, 20, bold);

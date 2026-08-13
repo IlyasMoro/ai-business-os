@@ -10,6 +10,8 @@ type PayslipData = {
   grossPay: number;
   deductions: number;
   netPay: number;
+  logoData?: Uint8Array;
+  logoMimeType?: string | null;
 };
 
 export async function generatePayslipPdf(data: PayslipData): Promise<Uint8Array> {
@@ -25,6 +27,15 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Uint8Array>
 
   function text(content: string, x: number, size: number, useFont = font, color = black) {
     page.drawText(content, { x, y, size, font: useFont, color });
+  }
+
+  if (data.logoData && data.logoMimeType) {
+    const image =
+      data.logoMimeType === "image/png" ? await doc.embedPng(data.logoData) : await doc.embedJpg(data.logoData);
+    const height = 30;
+    const width = Math.min((image.width / image.height) * height, 120);
+    page.drawImage(image, { x: margin, y: y - height + 6, width, height });
+    y -= height + 12;
   }
 
   text(data.companyName, margin, 18, bold);

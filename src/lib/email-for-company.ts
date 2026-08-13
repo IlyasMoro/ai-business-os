@@ -6,10 +6,27 @@ import { refreshAccessToken } from "@/lib/google-oauth";
 
 const TOKEN_REFRESH_MARGIN_MS = 60 * 1000;
 
+/** Prepends the company's custom logo (if one is configured) to outgoing
+ * email HTML, so white-labeling covers what a customer/employee actually
+ * sees in their inbox, not just downloaded PDFs. Silently no-ops without
+ * APP_BASE_URL — an email client needs an absolute image URL, and branding
+ * is a nice-to-have that must never block a send. */
+async function withLogoHeader(companyId: string, html: string): Promise<string> {
+  const base = process.env.APP_BASE_URL;
+  if (!base) return html;
+
+  const company = await db.company.findUnique({ where: { id: companyId }, select: { logoMimeType: true } });
+  if (!company?.logoMimeType) return html;
+
+  return `<img src="${base}/api/company-logo/${companyId}" alt="" style="height:40px;margin-bottom:16px;display:block;" />${html}`;
+}
+
 export async function sendEmailForCompany(
   companyId: string,
   { to, subject, html, attachments }: { to: string; subject: string; html: string; attachments?: EmailAttachment[] }
 ) {
+  html = await withLogoHeader(companyId, html);
+
   const integration = await db.googleIntegration.findUnique({ where: { companyId } });
 
   if (!integration) {

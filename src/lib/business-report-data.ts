@@ -33,13 +33,14 @@ const invoiceStatusColor: Record<(typeof invoiceStatusOrder)[number], string> = 
 export async function getBusinessReportData(companyId: string, companyName: string): Promise<BusinessReportData> {
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
 
-  const [orderGroups, invoiceGroups, transactions] = await Promise.all([
+  const [orderGroups, invoiceGroups, transactions, company] = await Promise.all([
     db.order.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
     db.invoice.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
     db.transaction.findMany({
       where: { companyId, date: { gte: sixMonthsAgo } },
       select: { type: true, amount: true, date: true },
     }),
+    db.company.findUnique({ where: { id: companyId }, select: { logoData: true, logoMimeType: true } }),
   ]);
 
   const orderCountByStatus = new Map(orderGroups.map((g) => [g.status, g._count._all]));
@@ -72,5 +73,7 @@ export async function getBusinessReportData(companyId: string, companyName: stri
     monthly,
     orderStatusSlices: toSlices(orderStatusOrder, orderStatusColor, orderCountByStatus),
     invoiceStatusSlices: toSlices(invoiceStatusOrder, invoiceStatusColor, invoiceCountByStatus),
+    logoData: company?.logoData ? new Uint8Array(company.logoData) : undefined,
+    logoMimeType: company?.logoMimeType,
   };
 }
