@@ -8,7 +8,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 const statusOrder = ["DRAFT", "PROCESSED", "PAID"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -71,13 +71,22 @@ export default async function PayrollPage({
             {totalCount} payroll run{totalCount === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
-          href="/dashboard/payroll/new"
-          className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
-        >
-          <Plus className="h-4 w-4" />
-          New payroll run
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href="/api/export/payroll"
+            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
+          <Link
+            href="/dashboard/payroll/new"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+          >
+            <Plus className="h-4 w-4" />
+            New payroll run
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

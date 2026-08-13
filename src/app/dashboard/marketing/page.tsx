@@ -5,7 +5,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Download } from "lucide-react";
 
 const statusOrder = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -67,6 +67,13 @@ export default async function MarketingPage({
               className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
+          <a
+            href="/api/export/campaigns"
+            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
           <Link
             href="/dashboard/marketing/new"
             className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"

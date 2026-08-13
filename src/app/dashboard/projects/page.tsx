@@ -6,7 +6,7 @@ import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { DualProgressBar } from "@/components/dash-viz/dual-progress-bar";
 import { VIZ } from "@/components/dash-viz/colors";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
 const statusColor = {
   ACTIVE: VIZ.blue,
@@ -76,6 +76,13 @@ export default async function ProjectsPage({
               className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
             />
           </form>
+          <a
+            href="/api/export/projects"
+            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
           <Link
             href="/dashboard/projects/new"
             className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
