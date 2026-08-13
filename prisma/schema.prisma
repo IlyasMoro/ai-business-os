@@ -830,5 +830,6 @@ model PlatformSettings {
   resendApiKey    String?
   resendFromEmail String?
   groqApiKey      String?
+  openaiApiKey    String?
   updatedAt       DateTime @updatedAt
 }

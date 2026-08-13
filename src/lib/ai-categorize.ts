@@ -1,5 +1,5 @@
 import "server-only";
-import { getGroqClient } from "@/lib/groq-client";
+import { createChatCompletion } from "@/lib/ai-provider";
 
 const MODEL = "llama-3.3-70b-versatile";
 
@@ -13,8 +13,7 @@ export async function suggestTransactionCategory(
       ? ` Prefer reusing one of these existing categories if it genuinely fits: ${existingCategories.join(", ")}.`
       : "";
 
-  const groq = await getGroqClient();
-  const completion = await groq.chat.completions.create({
+  const completion = await createChatCompletion({
     model: MODEL,
     messages: [
       {
@@ -33,8 +32,7 @@ export async function suggestTicketPriority(
   subject: string,
   description: string
 ): Promise<"LOW" | "MEDIUM" | "HIGH" | null> {
-  const groq = await getGroqClient();
-  const completion = await groq.chat.completions.create({
+  const completion = await createChatCompletion({
     model: MODEL,
     messages: [
       {

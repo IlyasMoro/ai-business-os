@@ -6,7 +6,11 @@ import { requirePlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { getGroqClient } from "@/lib/groq-client";
-import { PlatformEmailSettingsSchema, PlatformGroqSettingsSchema } from "@/lib/validation/platform-settings";
+import {
+  PlatformEmailSettingsSchema,
+  PlatformGroqSettingsSchema,
+  PlatformOpenAiSettingsSchema,
+} from "@/lib/validation/platform-settings";
 
 export async function updateEmailSettings(formData: FormData) {
   await requirePlatformAdmin();
@@ -113,6 +117,48 @@ export async function testGroqConnection() {
     console.error("[platform-settings] Groq test call failed:", err);
     redirect("/dashboard/platform-settings?error=invalid");
   }
+}
+
+export async function updateOpenAiSettings(formData: FormData) {
+  await requirePlatformAdmin();
+
+  const validated = PlatformOpenAiSettingsSchema.safeParse({
+    openaiApiKey: formData.get("openaiApiKey"),
+  });
+
+  if (!validated.success) {
+    redirect("/dashboard/platform-settings?error=invalid");
+  }
+
+  const { openaiApiKey } = validated.data;
+
+  const existing = await db.platformSettings.findUnique({ where: { id: "platform" } });
+
+  await db.platformSettings.upsert({
+    where: { id: "platform" },
+    create: {
+      id: "platform",
+      openaiApiKey: openaiApiKey || undefined,
+    },
+    update: {
+      openaiApiKey: openaiApiKey || existing?.openaiApiKey,
+    },
+  });
+
+  revalidatePath("/dashboard/platform-settings");
+  redirect("/dashboard/platform-settings?saved=1");
+}
+
+export async function clearOpenAiSettings() {
+  await requirePlatformAdmin();
+
+  await db.platformSettings.upsert({
+    where: { id: "platform" },
+    create: { id: "platform", openaiApiKey: null },
+    update: { openaiApiKey: null },
+  });
+
+  revalidatePath("/dashboard/platform-settings");
 }
 
 export async function sendTestPlatformEmail(toEmail: string) {

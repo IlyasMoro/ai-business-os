@@ -8,3 +8,7 @@ export const PlatformEmailSettingsSchema = z.object({
 export const PlatformGroqSettingsSchema = z.object({
   groqApiKey: z.string().trim().optional(),
 });
+
+export const PlatformOpenAiSettingsSchema = z.object({
+  openaiApiKey: z.string().trim().optional(),
+});

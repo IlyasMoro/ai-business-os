@@ -1,7 +1,7 @@
 import "server-only";
 import type Groq from "groq-sdk";
 import { TOOL_DEFINITIONS, isKnownTool, isReadTool, runReadTool, proposeAiAction } from "@/lib/ai-tools";
-import { getGroqClient } from "@/lib/groq-client";
+import { createChatCompletion } from "@/lib/ai-provider";
 
 const MODEL = "llama-3.3-70b-versatile";
 const MAX_TOOL_ITERATIONS = 4;
@@ -36,12 +36,10 @@ If asked about something not covered by the snapshot or tools, say you don't hav
     })),
   ];
 
-  const groq = await getGroqClient();
-
   for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
     let completion;
     try {
-      completion = await groq.chat.completions.create({
+      completion = await createChatCompletion({
         model: MODEL,
         messages,
         tools: TOOL_DEFINITIONS,
@@ -52,7 +50,7 @@ If asked about something not covered by the snapshot or tools, say you don't hav
       // tool_use_failed) instead of returning it for us to handle. Fall back
       // to a plain answer using whatever tool results we already gathered,
       // rather than failing the whole turn.
-      const fallback = await groq.chat.completions.create({ model: MODEL, messages });
+      const fallback = await createChatCompletion({ model: MODEL, messages });
       return fallback.choices[0]?.message?.content ?? "";
     }
 

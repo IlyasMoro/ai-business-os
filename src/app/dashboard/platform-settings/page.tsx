@@ -12,8 +12,10 @@ import {
   updateGroqSettings,
   clearGroqSettings,
   testGroqConnection,
+  updateOpenAiSettings,
+  clearOpenAiSettings,
 } from "@/lib/actions/platform-settings";
-import { Mail, Sparkles } from "lucide-react";
+import { Mail, Sparkles, ShieldCheck } from "lucide-react";
 
 export default async function PlatformSettingsPage({
   searchParams,
@@ -28,6 +30,7 @@ export default async function PlatformSettingsPage({
   const settings = await db.platformSettings.findUnique({ where: { id: "platform" } });
   const configured = Boolean(settings?.resendApiKey && settings?.resendFromEmail);
   const groqConfigured = Boolean(settings?.groqApiKey);
+  const openaiConfigured = Boolean(settings?.openaiApiKey);
   const sendTestAction = sendTestPlatformEmail.bind(null, user.email);
 
   return (
@@ -148,6 +151,46 @@ export default async function PlatformSettingsPage({
               </SubmitButton>
             </form>
             <form action={clearGroqSettings}>
+              <SubmitButton variant="ghost" pendingText="Clearing...">
+                Clear
+              </SubmitButton>
+            </form>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-4 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+            <ShieldCheck className="h-5 w-5" />
+          </span>
+          <div>
+            <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot fallback (OpenAI)</p>
+            <p className="text-sm text-slate-400 light:text-slate-500">
+              {openaiConfigured
+                ? "Configured. If a Groq request fails (e.g. an outage), it automatically retries once against OpenAI (gpt-4o-mini) instead of failing outright."
+                : "Not configured. If Groq is unreachable, the AI Copilot and automatic categorization simply fail until Groq recovers."}
+            </p>
+          </div>
+        </div>
+
+        <form action={updateOpenAiSettings} className="mt-5 space-y-4">
+          <div>
+            <Label htmlFor="openaiApiKey">OpenAI API key</Label>
+            <Input
+              id="openaiApiKey"
+              name="openaiApiKey"
+              type="password"
+              placeholder={settings?.openaiApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "sk-..."}
+              autoComplete="off"
+            />
+          </div>
+          <SubmitButton pendingText="Saving...">Save</SubmitButton>
+        </form>
+
+        {openaiConfigured && (
+          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
+            <form action={clearOpenAiSettings}>
               <SubmitButton variant="ghost" pendingText="Clearing...">
                 Clear
               </SubmitButton>
