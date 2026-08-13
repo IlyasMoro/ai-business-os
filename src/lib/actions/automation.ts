@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { runAutomations } from "@/lib/automations";
+import { sendWebhookNotification } from "@/lib/webhook";
+import { WebhookUrlSchema } from "@/lib/validation/webhook";
 import type { ReportFrequency } from "@/generated/prisma/client";
 
 const REPORT_FREQUENCIES = ["OFF", "WEEKLY", "MONTHLY", "QUARTERLY"] as const;
@@ -51,6 +53,55 @@ export async function updateReportFrequency(formData: FormData) {
   });
 
   revalidatePath("/dashboard/automation");
+}
+
+export async function updateWebhookUrl(formData: FormData) {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+
+  const validated = WebhookUrlSchema.safeParse({ webhookUrl: formData.get("webhookUrl") });
+  if (!validated.success) {
+    redirect("/dashboard/automation?error=invalid");
+  }
+
+  // A blank submission means "leave the existing URL alone" (the form never
+  // re-displays the real value), matching the Resend/Groq/OpenAI key cards.
+  if (validated.data.webhookUrl) {
+    await db.automationSettings.upsert({
+      where: { companyId: session.companyId },
+      create: { companyId: session.companyId, webhookUrl: validated.data.webhookUrl },
+      update: { webhookUrl: validated.data.webhookUrl },
+    });
+  }
+
+  revalidatePath("/dashboard/automation");
+  redirect("/dashboard/automation?saved=1");
+}
+
+export async function clearWebhookUrl() {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+
+  await db.automationSettings.upsert({
+    where: { companyId: session.companyId },
+    create: { companyId: session.companyId, webhookUrl: null },
+    update: { webhookUrl: null },
+  });
+
+  revalidatePath("/dashboard/automation");
+}
+
+export async function sendTestWebhook() {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+
+  const settings = await db.automationSettings.findUnique({ where: { companyId: session.companyId } });
+  if (!settings?.webhookUrl) {
+    redirect("/dashboard/automation?error=invalid");
+  }
+
+  await sendWebhookNotification(settings.webhookUrl, "Test notification from AIBOS automation webhooks.", {
+    event: "test",
+  });
+
+  redirect("/dashboard/automation?webhooktested=1");
 }
 
 export async function runAutomationsNow() {

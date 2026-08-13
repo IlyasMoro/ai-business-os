@@ -6,6 +6,7 @@ import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import { getBusinessReportData } from "@/lib/business-report-data";
 import { generateBusinessReportPdf } from "@/lib/report-pdf";
 import { isReportDue } from "@/lib/report-schedule";
+import { sendWebhookNotification } from "@/lib/webhook";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -13,7 +14,7 @@ const STALE_LEAD_MS = 30 * 24 * 60 * 60 * 1000;
 const LOCK_ID = "automations";
 const LOCK_LEASE_MS = 10 * 60 * 1000;
 
-async function runOverdueInvoiceReminders(companyId: string) {
+async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string | null) {
   const now = new Date();
   const cooldownCutoff = new Date(now.getTime() - REMINDER_COOLDOWN_MS);
 
@@ -38,13 +39,18 @@ async function runOverdueInvoiceReminders(companyId: string) {
         where: { id: invoice.id },
         data: { lastReminderSentAt: now },
       });
+      await sendWebhookNotification(
+        webhookUrl,
+        `Payment reminder sent to ${invoice.customer.name} for invoice ${invoice.invoiceNumber} ($${invoice.totalAmount.toFixed(2)})`,
+        { event: "overdue_invoice_reminder", invoiceNumber: invoice.invoiceNumber, customer: invoice.customer.name, amount: invoice.totalAmount }
+      );
     } catch (err) {
       console.error(`[automations] overdue reminder failed for invoice ${invoice.id}:`, err);
     }
   }
 }
 
-async function runLowStockReorder(companyId: string) {
+async function runLowStockReorder(companyId: string, webhookUrl: string | null) {
   const lowStockProducts = await db.product.findMany({
     where: { companyId },
     select: { id: true, name: true, cost: true, stockQty: true, reorderLevel: true },
@@ -89,23 +95,43 @@ async function runLowStockReorder(companyId: string) {
   });
   const totalAmount = computePurchaseOrderTotal(items);
   await db.purchaseOrder.update({ where: { id: purchaseOrder.id }, data: { totalAmount } });
+
+  await sendWebhookNotification(
+    webhookUrl,
+    `Reorder created for ${toOrder.length} low-stock product${toOrder.length === 1 ? "" : "s"}: ${toOrder.map((p) => p.name).join(", ")}`,
+    { event: "low_stock_reorder", products: toOrder.map((p) => p.name), purchaseOrderId: purchaseOrder.id, totalAmount }
+  );
 }
 
-async function runStaleTicketEscalation(companyId: string) {
+async function runStaleTicketEscalation(companyId: string, webhookUrl: string | null) {
   const cutoff = new Date(Date.now() - STALE_TICKET_MS);
 
-  await db.ticket.updateMany({
+  const staleTickets = await db.ticket.findMany({
     where: {
       companyId,
       status: { in: ["OPEN", "IN_PROGRESS"] },
       priority: { not: "HIGH" },
       createdAt: { lt: cutoff },
     },
+    select: { id: true, subject: true },
+  });
+  if (staleTickets.length === 0) return;
+
+  await db.ticket.updateMany({
+    where: { id: { in: staleTickets.map((t) => t.id) } },
     data: { priority: "HIGH" },
   });
+
+  for (const ticket of staleTickets) {
+    await sendWebhookNotification(webhookUrl, `Ticket escalated to HIGH priority: "${ticket.subject}"`, {
+      event: "ticket_escalated",
+      subject: ticket.subject,
+      ticketId: ticket.id,
+    });
+  }
 }
 
-async function runStaleLeadCleanup(companyId: string) {
+async function runStaleLeadCleanup(companyId: string, webhookUrl: string | null) {
   const cutoff = new Date(Date.now() - STALE_LEAD_MS);
 
   const staleLeads = await db.customer.findMany({
@@ -115,7 +141,7 @@ async function runStaleLeadCleanup(companyId: string) {
       createdAt: { lt: cutoff },
       orders: { none: {} },
     },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (staleLeads.length === 0) return;
 
@@ -123,6 +149,12 @@ async function runStaleLeadCleanup(companyId: string) {
     where: { id: { in: staleLeads.map((c) => c.id) } },
     data: { status: "INACTIVE" },
   });
+
+  await sendWebhookNotification(
+    webhookUrl,
+    `${staleLeads.length} stale lead${staleLeads.length === 1 ? "" : "s"} marked inactive: ${staleLeads.map((c) => c.name).join(", ")}`,
+    { event: "stale_leads_cleaned", count: staleLeads.length, leads: staleLeads.map((c) => c.name) }
+  );
 }
 
 /** Emails the same PDF business report the Reports page can generate
@@ -212,10 +244,10 @@ export async function runAutomations() {
 
     for (const settings of companies) {
       try {
-        if (settings.overdueInvoiceReminders) await runOverdueInvoiceReminders(settings.companyId);
-        if (settings.lowStockReorder) await runLowStockReorder(settings.companyId);
-        if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId);
-        if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId);
+        if (settings.overdueInvoiceReminders) await runOverdueInvoiceReminders(settings.companyId, settings.webhookUrl);
+        if (settings.lowStockReorder) await runLowStockReorder(settings.companyId, settings.webhookUrl);
+        if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId, settings.webhookUrl);
+        if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId, settings.webhookUrl);
         if (isReportDue(settings.reportFrequency, settings.lastReportSentAt)) {
           await sendScheduledReport(settings.companyId);
         }

@@ -13,6 +13,7 @@ import {
 } from "@/lib/validation/support";
 import { suggestTicketPriority } from "@/lib/ai-categorize";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendWebhookNotification } from "@/lib/webhook";
 
 export async function suggestPriority(subject: string, description: string) {
   const session = await verifySession();
@@ -54,7 +55,7 @@ export async function createTicket(
 
   const customer = await db.customer.findUnique({
     where: { id: customerId, companyId: session.companyId },
-    select: { id: true },
+    select: { id: true, name: true },
   });
   if (!customer) {
     return { errors: { customerId: ["Select a valid customer."] } };
@@ -80,6 +81,16 @@ export async function createTicket(
       companyId: session.companyId,
     },
   });
+
+  const automationSettings = await db.automationSettings.findUnique({
+    where: { companyId: session.companyId },
+    select: { webhookUrl: true },
+  });
+  await sendWebhookNotification(
+    automationSettings?.webhookUrl,
+    `New ${priority.toLowerCase()} priority ticket from ${customer.name}: "${subject}"`,
+    { event: "ticket_created", subject, priority, customer: customer.name, ticketId: ticket.id }
+  );
 
   revalidatePath("/dashboard/support");
   redirect(`/dashboard/support/${ticket.id}`);
