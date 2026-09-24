@@ -16,6 +16,7 @@ export function CustomerForm({
     status: string;
     notes: string | null;
     campaignId?: string | null;
+    creditLimit?: number | null;
   };
   campaigns?: { id: string; name: string }[];
   submitLabel?: string;
@@ -49,6 +50,22 @@ export function CustomerForm({
             <option value="INACTIVE">Inactive</option>
           </Select>
         </div>
+      </div>
+      <div>
+        <Label htmlFor="creditLimit">Credit limit (optional)</Label>
+        <Input
+          id="creditLimit"
+          name="creditLimit"
+          type="number"
+          min="0"
+          step="0.01"
+          placeholder="No limit enforced"
+          defaultValue={defaultValues?.creditLimit ?? ""}
+        />
+        <p className="mt-1 text-xs text-slate-500">
+          Orders that would push this customer&apos;s unpaid balance over this amount get blocked at
+          confirmation. Leave blank for no limit.
+        </p>
       </div>
       <div>
         <Label htmlFor="notes">Notes</Label>

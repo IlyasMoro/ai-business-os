@@ -10,6 +10,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { ContactForm } from "@/components/crm/contact-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteCustomer, deleteContact } from "@/lib/actions/crm";
+import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { Pencil } from "lucide-react";
 
 const statusTone = {
@@ -57,7 +58,7 @@ export default async function CustomerDetailPage({
 
   if (!customer) notFound();
 
-  const [documents, orders, invoices, tickets] = await Promise.all([
+  const [documents, orders, invoices, tickets, outstandingBalance] = await Promise.all([
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
       select: { id: true, filename: true, size: true },
@@ -78,7 +79,10 @@ export default async function CustomerDetailPage({
       orderBy: { createdAt: "desc" },
       take: 10,
     }),
+    getCustomerOutstandingBalance(customer.id),
   ]);
+
+  const overLimit = customer.creditLimit != null && outstandingBalance > customer.creditLimit;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
@@ -113,6 +117,23 @@ export default async function CustomerDetailPage({
             <div>
               <p className="text-slate-500">Phone</p>
               <p className="text-slate-50 light:text-slate-900">{customer.phone ?? "—"}</p>
+            </div>
+            <div>
+              <p className="text-slate-500">Outstanding balance</p>
+              <p className={overLimit ? "font-mono tabular-nums text-red-400" : "font-mono tabular-nums text-slate-50 light:text-slate-900"}>
+                ${outstandingBalance.toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-500">Credit limit</p>
+              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">
+                {customer.creditLimit != null ? `$${customer.creditLimit.toFixed(2)}` : "No limit"}
+              </p>
+              {overLimit && (
+                <Badge tone="red" className="mt-1">
+                  Over limit
+                </Badge>
+              )}
             </div>
             {customer.notes && (
               <div className="col-span-2">
