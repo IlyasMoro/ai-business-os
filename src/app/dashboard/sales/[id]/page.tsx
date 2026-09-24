@@ -37,7 +37,7 @@ export default async function OrderDetailPage({
 
   const products = await db.product.findMany({
     where: { companyId: session.companyId },
-    select: { id: true, name: true, sku: true, unitPrice: true },
+    select: { id: true, name: true, sku: true, unitPrice: true, stockQty: true },
     orderBy: { name: "asc" },
   });
 

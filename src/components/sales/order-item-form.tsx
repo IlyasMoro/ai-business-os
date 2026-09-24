@@ -11,7 +11,7 @@ export function OrderItemForm({
   products,
 }: {
   orderId: string;
-  products: { id: string; name: string; sku: string; unitPrice: number }[];
+  products: { id: string; name: string; sku: string; unitPrice: number; stockQty: number }[];
 }) {
   const action = addOrderItem.bind(null, orderId) as (
     state: OrderItemFormState,
@@ -36,7 +36,7 @@ export function OrderItemForm({
           </option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
-              {product.name} ({product.sku}) — ${product.unitPrice.toFixed(2)}
+              {product.name} ({product.sku}), ${product.unitPrice.toFixed(2)}, {product.stockQty} in stock
             </option>
           ))}
         </Select>

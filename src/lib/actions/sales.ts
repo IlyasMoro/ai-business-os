@@ -6,6 +6,7 @@ import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { evaluateCreditCheck } from "@/lib/credit-math";
+import { findStockShortfalls } from "@/lib/stock-math";
 import {
   OrderSchema,
   OrderItemSchema,
@@ -74,6 +75,12 @@ export async function updateOrderStatus(
       totalAmount: true,
       customerId: true,
       customer: { select: { name: true, creditLimit: true } },
+      items: {
+        select: {
+          quantity: true,
+          product: { select: { id: true, name: true, stockQty: true } },
+        },
+      },
     },
   });
   if (!order) {
@@ -97,6 +104,54 @@ export async function updateOrderStatus(
         message: `Cannot confirm: ${order.customer.name}'s balance would be $${check.projectedBalance.toFixed(2)}, which is $${check.amountOverLimit.toFixed(2)} over their $${order.customer.creditLimit!.toFixed(2)} credit limit. Raise the limit, collect payment first, or reduce this order.`,
       };
     }
+
+    // Available to Promise check: confirm every line item is actually
+    // covered by stock on hand before promising the order to the customer.
+    const shortfalls = findStockShortfalls(
+      order.items.map((item) => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        quantity: item.quantity,
+        stockQty: item.product.stockQty,
+      }))
+    );
+    if (shortfalls.length > 0) {
+      const summary = shortfalls.map((s) => `${s.productName} (${s.available} in stock, ${s.requested} requested)`).join(", ");
+      return { message: `Cannot confirm: not enough stock for ${summary}. Receive more stock or reduce the order.` };
+    }
+  }
+
+  // Stock is only actually consumed once the order is fulfilled, the point
+  // where goods physically leave, matching the course's "delivery" step.
+  // Re-check availability here too, in case stock moved since confirmation.
+  if (nextStatus === "FULFILLED" && order.status === "CONFIRMED") {
+    const shortfalls = findStockShortfalls(
+      order.items.map((item) => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        quantity: item.quantity,
+        stockQty: item.product.stockQty,
+      }))
+    );
+    if (shortfalls.length > 0) {
+      const summary = shortfalls.map((s) => `${s.productName} (${s.available} in stock, ${s.requested} requested)`).join(", ");
+      return { message: `Cannot fulfil: not enough stock for ${summary}. Receive more stock or reduce the order.` };
+    }
+
+    await db.$transaction([
+      ...order.items.map((item) =>
+        db.product.update({
+          where: { id: item.product.id },
+          data: { stockQty: { decrement: item.quantity } },
+        })
+      ),
+      db.order.update({ where: { id: orderId, companyId: session.companyId }, data: { status: nextStatus } }),
+    ]);
+
+    revalidatePath(`/dashboard/sales/${orderId}`);
+    revalidatePath("/dashboard/sales");
+    revalidatePath("/dashboard/inventory");
+    return undefined;
   }
 
   await db.order.update({
