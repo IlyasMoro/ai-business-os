@@ -17,13 +17,14 @@ export async function createCustomer(formData: FormData) {
     status: formData.get("status"),
     notes: formData.get("notes"),
     campaignId: formData.get("campaignId") || undefined,
+    creditLimit: formData.get("creditLimit") || undefined,
   });
 
   if (!validated.success) {
     redirect("/dashboard/crm/new?error=invalid");
   }
 
-  const { email, campaignId, ...rest } = validated.data;
+  const { email, campaignId, creditLimit, ...rest } = validated.data;
 
   if (campaignId) {
     const campaign = await db.campaign.findUnique({
@@ -38,6 +39,7 @@ export async function createCustomer(formData: FormData) {
       ...rest,
       email: email || undefined,
       campaignId: campaignId || undefined,
+      creditLimit: creditLimit === "" || creditLimit === undefined ? undefined : creditLimit,
       companyId: session.companyId,
     },
   });
@@ -57,13 +59,14 @@ export async function updateCustomer(customerId: string, formData: FormData) {
     status: formData.get("status"),
     notes: formData.get("notes"),
     campaignId: formData.get("campaignId") || undefined,
+    creditLimit: formData.get("creditLimit") || undefined,
   });
 
   if (!validated.success) {
     redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
   }
 
-  const { email, campaignId, ...rest } = validated.data;
+  const { email, campaignId, creditLimit, ...rest } = validated.data;
 
   if (campaignId) {
     const campaign = await db.campaign.findUnique({
@@ -75,7 +78,12 @@ export async function updateCustomer(customerId: string, formData: FormData) {
 
   await db.customer.update({
     where: { id: customerId, companyId: session.companyId },
-    data: { ...rest, email: email || null, campaignId: campaignId || null },
+    data: {
+      ...rest,
+      email: email || null,
+      campaignId: campaignId || null,
+      creditLimit: creditLimit === "" || creditLimit === undefined ? null : creditLimit,
+    },
   });
 
   revalidatePath("/dashboard/crm");

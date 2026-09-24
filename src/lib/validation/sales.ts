@@ -32,3 +32,9 @@ export type OrderItemFormState =
       message?: string;
     }
   | undefined;
+
+export type OrderStatusFormState =
+  | {
+      message?: string;
+    }
+  | undefined;

@@ -143,14 +143,15 @@ enum CustomerStatus {
 }
 
 model Customer {
-  id        String         @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  company   String?
-  status    CustomerStatus @default(LEAD)
-  notes     String?
-  createdAt DateTime       @default(now())
+  id           String         @id @default(cuid())
+  name         String
+  email        String?
+  phone        String?
+  company      String?
+  status       CustomerStatus @default(LEAD)
+  notes        String?
+  creditLimit  Float?
+  createdAt    DateTime       @default(now())
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)

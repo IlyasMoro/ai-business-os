@@ -4,12 +4,15 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
+import { evaluateCreditCheck } from "@/lib/credit-math";
 import {
   OrderSchema,
   OrderItemSchema,
   OrderStatusValues,
   type OrderFormState,
   type OrderItemFormState,
+  type OrderStatusFormState,
 } from "@/lib/validation/sales";
 
 async function recomputeOrderTotal(orderId: string) {
@@ -51,21 +54,59 @@ export async function createOrder(
   redirect(`/dashboard/sales/${order.id}`);
 }
 
-export async function updateOrderStatus(orderId: string, formData: FormData) {
+export async function updateOrderStatus(
+  orderId: string,
+  _state: OrderStatusFormState,
+  formData: FormData
+): Promise<OrderStatusFormState> {
   const session = await verifySession();
 
   const status = formData.get("status");
   if (typeof status !== "string" || !OrderStatusValues.includes(status as (typeof OrderStatusValues)[number])) {
-    return;
+    return undefined;
+  }
+  const nextStatus = status as (typeof OrderStatusValues)[number];
+
+  const order = await db.order.findUnique({
+    where: { id: orderId, companyId: session.companyId },
+    select: {
+      status: true,
+      totalAmount: true,
+      customerId: true,
+      customer: { select: { name: true, creditLimit: true } },
+    },
+  });
+  if (!order) {
+    return { message: "Order not found." };
+  }
+
+  // Credit check runs at the moment an order moves from pending to
+  // confirmed, matching the course's ERP credit management scenario: check
+  // outstanding balance plus this order against the customer's limit
+  // before letting the order through.
+  if (nextStatus === "CONFIRMED" && order.status === "PENDING") {
+    const outstandingBalance = await getCustomerOutstandingBalance(order.customerId);
+    const check = evaluateCreditCheck({
+      outstandingBalance,
+      creditLimit: order.customer.creditLimit,
+      orderTotal: order.totalAmount,
+    });
+
+    if (!check.withinLimit) {
+      return {
+        message: `Cannot confirm: ${order.customer.name}'s balance would be $${check.projectedBalance.toFixed(2)}, which is $${check.amountOverLimit.toFixed(2)} over their $${order.customer.creditLimit!.toFixed(2)} credit limit. Raise the limit, collect payment first, or reduce this order.`,
+      };
+    }
   }
 
   await db.order.update({
     where: { id: orderId, companyId: session.companyId },
-    data: { status: status as (typeof OrderStatusValues)[number] },
+    data: { status: nextStatus },
   });
 
   revalidatePath(`/dashboard/sales/${orderId}`);
   revalidatePath("/dashboard/sales");
+  return undefined;
 }
 
 export async function deleteOrder(orderId: string) {

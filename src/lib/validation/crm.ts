@@ -8,6 +8,10 @@ export const CustomerSchema = z.object({
   status: z.enum(["LEAD", "ACTIVE", "INACTIVE"]),
   notes: z.string().trim().optional(),
   campaignId: z.string().trim().optional(),
+  creditLimit: z.union([
+    z.coerce.number({ error: "Enter a valid credit limit." }).min(0, { error: "Credit limit cannot be negative." }),
+    z.literal(""),
+  ]).optional(),
 });
 
 export const ContactSchema = z.object({
