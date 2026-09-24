@@ -20,13 +20,14 @@ export function OrderStatusForm({
   ) => Promise<OrderStatusFormState>;
   const [state, formAction, pending] = useActionState(action, undefined);
 
-  // The status change (e.g. a failed credit check) was rejected server
-  // side, so snap the dropdown back to the status that's actually saved.
+  // Keep the dropdown in sync with the status that's actually saved: after
+  // a successful change status has moved on, after a rejected one (e.g. a
+  // failed credit or stock check) it hasn't, either way this is the truth.
   useEffect(() => {
-    if (state?.message && selectRef.current) {
+    if (selectRef.current) {
       selectRef.current.value = status;
     }
-  }, [state, status]);
+  }, [status, state]);
 
   return (
     <div className="flex flex-col items-end gap-1">
