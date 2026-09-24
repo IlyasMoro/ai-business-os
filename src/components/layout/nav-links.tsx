@@ -8,14 +8,18 @@ import { navItems, type Role } from "./nav-config";
 export function NavLinks({
   role,
   isPlatformAdmin = false,
+  hiddenHrefs = [],
   onNavigate,
 }: {
   role: Role;
   isPlatformAdmin?: boolean;
+  /** Modules this company has switched off, e.g. Returns for a service business. */
+  hiddenHrefs?: string[];
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
   const items = navItems.filter((item) => {
+    if (hiddenHrefs.includes(item.href)) return false;
     if (item.platformAdminOnly) return isPlatformAdmin;
     return !item.roles || item.roles.includes(role);
   });

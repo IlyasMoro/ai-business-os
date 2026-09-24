@@ -6,6 +6,12 @@ const MESSAGES: Record<string, string> = {
   "no-email": "This customer doesn't have an email address on file, so the invoice couldn't be sent.",
   "send-failed": "The invoice couldn't be sent. Check your email configuration and try again.",
   "last-owner": "You can't remove the last owner of a company.",
+  "returns-disabled": "Returns are turned off for this company. Turn them on in the return policy.",
+  "not-returnable": "Only fulfilled orders can be returned.",
+  "return-window": "This order is outside the return window set in your return policy.",
+  "return-qty": "That quantity is more than can still be returned for this item.",
+  "return-locked": "This return can no longer be changed because the goods have already been received.",
+  "return-empty": "Add at least one item before moving this return forward.",
 };
 
 export function ErrorBanner({ code }: { code?: string }) {

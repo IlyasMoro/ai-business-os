@@ -12,10 +12,12 @@ export function MobileNav({
   role,
   userName,
   isPlatformAdmin = false,
+  hiddenHrefs,
 }: {
   role: Role;
   userName: string;
   isPlatformAdmin?: boolean;
+  hiddenHrefs?: string[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -58,7 +60,7 @@ export function MobileNav({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} onNavigate={() => setOpen(false)} />
+            <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} onNavigate={() => setOpen(false)} />
             <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
               <UserMenu userName={userName} />
             </div>

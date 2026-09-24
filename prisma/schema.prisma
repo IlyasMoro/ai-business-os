@@ -28,6 +28,8 @@ model Company {
   suppliers          Supplier[]
   purchaseOrders     PurchaseOrder[]
   orders             Order[]
+  returns            ReturnAuthorization[]
+  returnPolicy       ReturnPolicy?
   invoices           Invoice[]
   transactions       Transaction[]
   employees          Employee[]
@@ -143,16 +145,16 @@ enum CustomerStatus {
 }
 
 model Customer {
-  id           String         @id @default(cuid())
-  name         String
-  email        String?
-  phone        String?
-  company      String?
-  status       CustomerStatus @default(LEAD)
-  notes        String?
-  creditLimit  Float?
+  id                  String         @id @default(cuid())
+  name                String
+  email               String?
+  phone               String?
+  company             String?
+  status              CustomerStatus @default(LEAD)
+  notes               String?
+  creditLimit         Float?
   creditWarningSentAt DateTime?
-  createdAt    DateTime       @default(now())
+  createdAt           DateTime       @default(now())
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -202,6 +204,7 @@ model Product {
   orderItems         OrderItem[]
   invoiceLineItems   InvoiceLineItem[]
   purchaseOrderItems PurchaseOrderItem[]
+  returnItems        ReturnItem[]
 
   @@unique([companyId, sku])
   @@index([companyId])
@@ -280,6 +283,8 @@ model Order {
   status      OrderStatus @default(PENDING)
   totalAmount Float       @default(0)
   createdAt   DateTime    @default(now())
+  // When goods left the business; the return window counts from here.
+  fulfilledAt DateTime?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -289,6 +294,7 @@ model Order {
 
   items   OrderItem[]
   invoice Invoice?
+  returns ReturnAuthorization[]
 
   @@index([companyId])
   @@index([customerId])
@@ -305,7 +311,89 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
+  returnItems ReturnItem[]
+
   @@index([orderId])
+}
+
+// ---------- Returns (RMA) ----------
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  RECEIVED
+  REFUNDED
+  REJECTED
+}
+
+// Only resellable goods go back into stock when a return is received;
+// damaged goods are refunded but written off.
+enum ReturnCondition {
+  RESELLABLE
+  DAMAGED
+}
+
+model ReturnAuthorization {
+  id                   String       @id @default(cuid())
+  rmaNumber            String
+  status               ReturnStatus @default(REQUESTED)
+  reason               String
+  notes                String?
+  // Copied from the policy when the return is opened, so later policy
+  // edits never change the refund on a return already in progress.
+  restockingFeePercent Float        @default(0)
+  refundAmount         Float        @default(0)
+  createdAt            DateTime     @default(now())
+  receivedAt           DateTime?
+  refundedAt           DateTime?
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  items ReturnItem[]
+
+  @@unique([companyId, rmaNumber])
+  @@index([companyId])
+  @@index([orderId])
+}
+
+// Per company return rules, so a clothing store, an electronics reseller
+// and a wholesaler can each run returns their own way. A company with no
+// row uses the defaults in lib/returns-policy.ts.
+model ReturnPolicy {
+  id                   String  @id @default(cuid())
+  enabled              Boolean @default(true)
+  windowDays           Int     @default(30)
+  requireApproval      Boolean @default(true)
+  restockingFeePercent Float   @default(0)
+  restockDamaged       Boolean @default(false)
+  // One reason per line; shown as the reason choices on a new return.
+  reasons              String
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model ReturnItem {
+  id        String          @id @default(cuid())
+  quantity  Int
+  unitPrice Float
+  condition ReturnCondition @default(RESELLABLE)
+
+  returnId String
+  rma      ReturnAuthorization @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([returnId])
+  @@index([orderItemId])
 }
 
 // ---------- Invoicing ----------

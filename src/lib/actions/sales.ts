@@ -145,7 +145,10 @@ export async function updateOrderStatus(
           data: { stockQty: { decrement: item.quantity } },
         })
       ),
-      db.order.update({ where: { id: orderId, companyId: session.companyId }, data: { status: nextStatus } }),
+      db.order.update({
+        where: { id: orderId, companyId: session.companyId },
+        data: { status: nextStatus, fulfilledAt: new Date() },
+      }),
     ]);
 
     revalidatePath(`/dashboard/sales/${orderId}`);

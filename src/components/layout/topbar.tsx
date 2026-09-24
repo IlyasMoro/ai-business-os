@@ -10,6 +10,7 @@ export function Topbar({
   userName,
   role,
   isPlatformAdmin = false,
+  hiddenHrefs,
   notifications,
   subscription,
 }: {
@@ -17,13 +18,14 @@ export function Topbar({
   userName: string;
   role: Role;
   isPlatformAdmin?: boolean;
+  hiddenHrefs?: string[];
   notifications: Notification[];
   subscription: { status: string; trialEndsAt: Date | null; cancelAtPeriodEnd: boolean } | null;
 }) {
   return (
     <header className="flex h-16 items-center justify-between border-b border-white/[0.06] bg-black px-4 sm:px-6 light:border-slate-200 light:bg-white">
       <div className="flex items-center gap-3">
-        <MobileNav role={role} userName={userName} isPlatformAdmin={isPlatformAdmin} />
+        <MobileNav role={role} userName={userName} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} />
         <CompanyStatusBadge companyName={companyName} subscription={subscription} />
       </div>
       <div className="flex items-center gap-3">

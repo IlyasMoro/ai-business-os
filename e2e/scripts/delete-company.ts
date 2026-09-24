@@ -20,6 +20,7 @@ const name = process.argv[2];
   await db.taskComment.deleteMany({ where: { task: { project: { companyId: { in: companyIds } } } } });
   await db.ticketMessage.deleteMany({ where: { ticket: { companyId: { in: companyIds } } } });
   await db.purchaseOrderItem.deleteMany({ where: { purchaseOrder: { companyId: { in: companyIds } } } });
+  await db.returnItem.deleteMany({ where: { rma: { companyId: { in: companyIds } } } });
   await db.orderItem.deleteMany({ where: { order: { companyId: { in: companyIds } } } });
   await db.invoiceLineItem.deleteMany({ where: { invoice: { companyId: { in: companyIds } } } });
   await db.payrollItem.deleteMany({ where: { payrollRun: { companyId: { in: companyIds } } } });
