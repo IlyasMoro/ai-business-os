@@ -2,38 +2,24 @@ import { Input, Label, Textarea } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { updateReturnPolicy } from "@/lib/actions/returns";
 import type { ReturnPolicyValues } from "@/lib/returns-policy-presets";
-
-function Toggle({ name, label, description, defaultChecked }: { name: string; label: string; description: string; defaultChecked: boolean }) {
-  return (
-    <label className="flex cursor-pointer items-start justify-between gap-4">
-      <span>
-        <span className="block font-medium text-slate-50 light:text-slate-900">{label}</span>
-        <span className="mt-0.5 block text-sm text-slate-400 light:text-slate-500">{description}</span>
-      </span>
-      <span className="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-white/10 transition-colors has-[:checked]:bg-emerald-500/80 light:bg-slate-200">
-        <input type="checkbox" name={name} defaultChecked={defaultChecked} className="peer sr-only" />
-        <span className="absolute left-1 h-4 w-4 rounded-full bg-slate-300 transition-transform peer-checked:translate-x-5 peer-checked:bg-white" />
-      </span>
-    </label>
-  );
-}
+import { SettingToggle } from "@/components/ui-dark/setting-toggle";
 
 export function ReturnPolicyForm({ policy }: { policy: ReturnPolicyValues }) {
   return (
     <form action={updateReturnPolicy} className="space-y-5">
-      <Toggle
+      <SettingToggle
         name="enabled"
         label="Accept returns"
         description="Turn this off if your business doesn't sell physical goods. The Returns page is hidden while it's off."
         defaultChecked={policy.enabled}
       />
-      <Toggle
+      <SettingToggle
         name="requireApproval"
         label="Require approval"
         description="When on, new returns wait for someone to approve them. When off, they start already approved."
         defaultChecked={policy.requireApproval}
       />
-      <Toggle
+      <SettingToggle
         name="restockDamaged"
         label="Restock damaged goods"
         description="When off, only items marked resellable go back into inventory when a return is received."

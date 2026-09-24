@@ -5,6 +5,7 @@ import { getNotifications } from "@/lib/notifications";
 import { isPlatformAdmin } from "@/lib/platform-admin";
 import { checkSubscriptionAccess } from "@/lib/subscription-access";
 import { getReturnPolicy } from "@/lib/returns-policy";
+import { getMrpSettings } from "@/lib/mrp";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { SubscriptionBlocked } from "@/components/billing/subscription-blocked";
@@ -15,12 +16,16 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  const [notifications, subscription, returnPolicy] = await Promise.all([
+  const [notifications, subscription, returnPolicy, mrpSettings] = await Promise.all([
     getNotifications(user.companyId),
     db.subscription.findUnique({ where: { companyId: user.companyId } }),
     getReturnPolicy(user.companyId),
+    getMrpSettings(user.companyId),
   ]);
-  const hiddenHrefs = returnPolicy.enabled ? [] : ["/dashboard/returns"];
+  const hiddenHrefs = [
+    ...(returnPolicy.enabled ? [] : ["/dashboard/returns"]),
+    ...(mrpSettings.enabled ? [] : ["/dashboard/mrp"]),
+  ];
   const platformAdmin = isPlatformAdmin(user.email);
 
   const headersList = await headers();

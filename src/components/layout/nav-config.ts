@@ -22,6 +22,7 @@ import {
   CreditCard,
   UserPlus,
   Undo2,
+  Factory,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -45,6 +46,7 @@ export const navItems: {
   { href: "/dashboard/returns", label: "Returns", icon: Undo2 },
   { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
   { href: "/dashboard/procurement", label: "Procurement", icon: Truck },
+  { href: "/dashboard/mrp", label: "Planning", icon: Factory },
   { href: "/dashboard/invoicing", label: "Invoicing", icon: Receipt },
   { href: "/dashboard/accounting", label: "Accounting", icon: Wallet, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },

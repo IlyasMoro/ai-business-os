@@ -7,6 +7,11 @@ import { Badge } from "@/components/ui-dark/badge";
 import { LinkButton, Button } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { deleteProduct, applyReorderSuggestion } from "@/lib/actions/inventory";
+import { removeBomLine } from "@/lib/actions/mrp";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { BomLineForm } from "@/components/mrp/bom-line-form";
+import { PlanningFieldsForm } from "@/components/mrp/planning-fields-form";
+import { getMrpSettings } from "@/lib/mrp";
 import { Pencil } from "lucide-react";
 
 const SALES_LOOKBACK_DAYS = 90;
@@ -18,17 +23,41 @@ export default async function ProductDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, saved } = await searchParams;
   const session = await verifySession();
 
   const product = await db.product.findUnique({
     where: { id, companyId: session.companyId },
+    include: {
+      bomComponents: {
+        include: { component: { select: { id: true, name: true, sku: true, cost: true, stockQty: true } } },
+        orderBy: { component: { name: "asc" } },
+      },
+      usedInBoms: { include: { parent: { select: { id: true, name: true } } } },
+    },
   });
 
   if (!product) notFound();
+
+  const mrpSettings = await getMrpSettings(session.companyId);
+  const [otherProducts, suppliers] = mrpSettings.enabled
+    ? await Promise.all([
+        db.product.findMany({
+          where: { companyId: session.companyId, id: { not: product.id } },
+          select: { id: true, name: true, sku: true },
+          orderBy: { name: "asc" },
+        }),
+        db.supplier.findMany({
+          where: { companyId: session.companyId },
+          select: { id: true, name: true },
+          orderBy: { name: "asc" },
+        }),
+      ])
+    : [[], []];
+  const rolledUpCost = product.bomComponents.reduce((sum, line) => sum + line.quantity * line.component.cost, 0);
 
   const since = new Date(new Date().getTime() - SALES_LOOKBACK_DAYS * 24 * 60 * 60 * 1000);
 
@@ -67,7 +96,9 @@ export default async function ProductDetailPage({
             ),
           0
         ) / receivedPurchases.length
-      : DEFAULT_LEAD_TIME_DAYS;
+      : product.leadTimeDays > 0
+        ? product.leadTimeDays
+        : DEFAULT_LEAD_TIME_DAYS;
 
   const suggestedReorderLevel =
     dailyVelocity > 0 ? Math.max(1, Math.ceil(dailyVelocity * avgLeadTimeDays * SAFETY_FACTOR)) : null;
@@ -75,9 +106,16 @@ export default async function ProductDetailPage({
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
       <div className="max-w-3xl">
-        {error === "in-use" && (
+        {error === "in-use" ? (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-            This product can&apos;t be deleted because it&apos;s used in an existing order.
+            This product can&apos;t be deleted because it&apos;s used in an order, a bill of materials, or a work order.
+          </p>
+        ) : (
+          <ErrorBanner code={error} />
+        )}
+        {saved && (
+          <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            Saved.
           </p>
         )}
         <div className="flex items-start justify-between">
@@ -134,7 +172,7 @@ export default async function ProductDetailPage({
             <CardContent className="flex items-center justify-between gap-4 pt-5">
               <p className="text-sm text-slate-300 light:text-slate-600">
                 Based on {unitsSoldRecently} units sold in the last {SALES_LOOKBACK_DAYS} days (
-                {dailyVelocity.toFixed(2)}/day) and an average {avgLeadTimeDays.toFixed(0)}-day supplier lead
+                {dailyVelocity.toFixed(2)}/day) and an average {avgLeadTimeDays.toFixed(0)} day supplier lead
                 time, a reorder level of{" "}
                 <span className="font-mono font-semibold text-amber-400">{suggestedReorderLevel}</span> would
                 keep you covered.
@@ -146,6 +184,83 @@ export default async function ProductDetailPage({
               </form>
             </CardContent>
           </Card>
+        )}
+
+        {mrpSettings.enabled && (
+          <>
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle>Planning</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PlanningFieldsForm
+                  productId={product.id}
+                  leadTimeDays={product.leadTimeDays}
+                  lotSize={product.lotSize}
+                  preferredSupplierId={product.preferredSupplierId}
+                  suppliers={suppliers}
+                />
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Bill of materials</CardTitle>
+                <Badge tone={product.bomComponents.length > 0 ? "purple" : "slate"}>
+                  {product.bomComponents.length > 0 ? "Made in house" : "Bought in"}
+                </Badge>
+              </CardHeader>
+              <CardContent>
+                {product.bomComponents.length > 0 ? (
+                  <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
+                    {product.bomComponents.map((line) => (
+                      <li key={line.id} className="flex items-center justify-between py-2 text-sm">
+                        <div>
+                          <Link
+                            href={`/dashboard/inventory/${line.component.id}`}
+                            className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                          >
+                            {line.component.name}
+                          </Link>
+                          <p className="font-mono text-xs tabular-nums text-slate-500">
+                            {line.quantity} per unit × ${line.component.cost.toFixed(2)} · {line.component.stockQty} in stock
+                          </p>
+                        </div>
+                        <DeleteButton
+                          action={removeBomLine.bind(null, product.id, line.id)}
+                          confirmMessage="Remove this component?"
+                          label=""
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mb-4 text-sm text-slate-500">
+                    No components. Add some to make this product in house with work orders.
+                  </p>
+                )}
+                <BomLineForm productId={product.id} components={otherProducts} />
+                {product.bomComponents.length > 0 && (
+                  <p className="mt-4 text-right font-mono text-sm tabular-nums text-slate-400 light:text-slate-500">
+                    Component cost per unit: <span className="font-semibold text-amber-400">${rolledUpCost.toFixed(2)}</span>
+                  </p>
+                )}
+                {product.usedInBoms.length > 0 && (
+                  <p className="mt-3 text-xs text-slate-500">
+                    Used in:{" "}
+                    {product.usedInBoms.map((line, i) => (
+                      <span key={line.id}>
+                        {i > 0 && ", "}
+                        <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-blue-400 hover:text-blue-300">
+                          {line.parent.name}
+                        </Link>
+                      </span>
+                    ))}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </>
         )}
 
         <Card className="mt-6">

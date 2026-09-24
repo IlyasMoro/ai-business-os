@@ -30,6 +30,9 @@ model Company {
   orders             Order[]
   returns            ReturnAuthorization[]
   returnPolicy       ReturnPolicy?
+  bomLines           BomLine[]
+  workOrders         WorkOrder[]
+  mrpSettings        MrpSettings?
   invoices           Invoice[]
   transactions       Transaction[]
   employees          Employee[]
@@ -198,6 +201,13 @@ model Product {
   reorderLevel Int      @default(5)
   createdAt    DateTime @default(now())
 
+  // MRP planning inputs. Lead time is how long it takes to buy (or make)
+  // one batch; lot size rounds planned quantities up to whole batches.
+  leadTimeDays        Int       @default(0)
+  lotSize             Int       @default(1)
+  preferredSupplierId String?
+  preferredSupplier   Supplier? @relation(fields: [preferredSupplierId], references: [id], onDelete: SetNull)
+
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -205,6 +215,9 @@ model Product {
   invoiceLineItems   InvoiceLineItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        ReturnItem[]
+  bomComponents      BomLine[]           @relation("BomParent")
+  usedInBoms         BomLine[]           @relation("BomComponent")
+  workOrders         WorkOrder[]
 
   @@unique([companyId, sku])
   @@index([companyId])
@@ -223,7 +236,8 @@ model Supplier {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  purchaseOrders PurchaseOrder[]
+  purchaseOrders    PurchaseOrder[]
+  preferredProducts Product[]
 
   @@index([companyId])
 }
@@ -935,4 +949,73 @@ model PlatformSettings {
   groqApiKey      String?
   openaiApiKey    String?
   updatedAt       DateTime @updatedAt
+}
+
+// ---------- Manufacturing & MRP ----------
+
+// One line of a bill of materials: making one unit of `parent` uses
+// `quantity` units of `component`. A product with BOM lines is made in
+// house; one without is bought.
+model BomLine {
+  id       String @id @default(cuid())
+  quantity Float
+
+  parentId String
+  parent   Product @relation("BomParent", fields: [parentId], references: [id], onDelete: Cascade)
+
+  componentId String
+  component   Product @relation("BomComponent", fields: [componentId], references: [id])
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, componentId])
+  @@index([companyId])
+  @@index([componentId])
+}
+
+enum WorkOrderStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model WorkOrder {
+  id          String          @id @default(cuid())
+  woNumber    String
+  status      WorkOrderStatus @default(PLANNED)
+  quantity    Int
+  notes       String?
+  dueDate     DateTime?
+  createdAt   DateTime        @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, woNumber])
+  @@index([companyId])
+  @@index([productId])
+}
+
+// Per company MRP rules. A company with no row uses the defaults in
+// lib/mrp-settings-presets.ts.
+model MrpSettings {
+  id                   String  @id @default(cuid())
+  enabled              Boolean @default(true)
+  // Count PENDING sales orders as demand, not just CONFIRMED ones.
+  includePendingOrders Boolean @default(false)
+  // Treat each product's reorder level as safety stock to keep on hand.
+  useSafetyStock       Boolean @default(true)
+  // Allow a work order to complete even when components are short
+  // (stock can go negative until the paperwork catches up).
+  allowNegativeStock   Boolean @default(false)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
