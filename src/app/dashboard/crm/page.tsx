@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
@@ -163,13 +164,7 @@ export default async function CrmPage({
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.email ?? "—"}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
-                      <span
-                        className="inline-flex items-center gap-1.5 text-xs font-medium"
-                        style={{ color: statusColor[customer.status] }}
-                      >
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[customer.status] }} />
-                        {customer.status}
-                      </span>
+                      <StatusBadge status={customer.status} color={statusColor[customer.status]} />
                       {atRiskCustomerIds.has(customer.id) && (
                         <span
                           className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-400"

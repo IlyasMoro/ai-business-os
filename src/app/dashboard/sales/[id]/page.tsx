@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { OrderItemForm } from "@/components/sales/order-item-form";
 import { OrderStatusForm } from "@/components/sales/order-status-form";
@@ -53,7 +53,7 @@ export default async function OrderDetailPage({
                   {order.customer.name}
                 </Link>
               </h1>
-              <Badge tone={statusTone[order.status]}>{order.status}</Badge>
+              <StatusBadge status={order.status} tone={statusTone[order.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {order.createdAt.toLocaleDateString()}

@@ -7,6 +7,7 @@ import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
@@ -179,16 +180,7 @@ export default async function AccountingPage({
                     </Link>
                   </td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: transaction.type === "INCOME" ? VIZ.emerald : VIZ.red }}
-                    >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: transaction.type === "INCOME" ? VIZ.emerald : VIZ.red }}
-                      />
-                      {transaction.type}
-                    </span>
+                    <StatusBadge status={transaction.type} color={transaction.type === "INCOME" ? VIZ.emerald : VIZ.red} />
                   </td>
                   <td
                     className={`px-5 py-3 font-mono tabular-nums ${

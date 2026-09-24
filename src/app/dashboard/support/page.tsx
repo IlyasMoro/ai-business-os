@@ -5,6 +5,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AllocationBar } from "@/components/dash-viz/allocation-bar";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
@@ -168,13 +169,7 @@ export default async function SupportPage({
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{ticket.customer.name}</td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: statusColor[ticket.status] }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[ticket.status] }} />
-                      {ticket.status}
-                    </span>
+                    <StatusBadge status={ticket.status} color={statusColor[ticket.status]} />
                   </td>
                   <td className="px-5 py-3">
                     <span

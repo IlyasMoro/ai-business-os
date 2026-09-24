@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { deleteTransaction } from "@/lib/actions/accounting";
@@ -50,7 +50,7 @@ export default async function TransactionDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{transaction.category}</h1>
-              <Badge tone={typeTone[transaction.type]}>{transaction.type}</Badge>
+              <StatusBadge status={transaction.type} tone={typeTone[transaction.type]} />
               {isAnomalous && (
                 <span
                   title={`More than 2.5x the average ${transaction.category} ${transaction.type.toLowerCase()} of $${avgAmount!.toFixed(2)}`}

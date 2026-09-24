@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { Button, LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -64,7 +64,7 @@ export default async function InvoiceDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="font-mono text-2xl font-semibold text-slate-50 light:text-slate-900">{invoice.invoiceNumber}</h1>
-              <Badge tone={statusTone[invoice.status]}>{invoice.status}</Badge>
+              <StatusBadge status={invoice.status} tone={statusTone[invoice.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">{invoice.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">

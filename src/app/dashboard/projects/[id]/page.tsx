@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TaskForm } from "@/components/projects/task-form";
@@ -71,7 +71,7 @@ export default async function ProjectDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{project.name}</h1>
-              <Badge tone={statusTone[project.status]}>{project.status}</Badge>
+              <StatusBadge status={project.status} tone={statusTone[project.status]} />
             </div>
             {project.customer && (
               <p className="mt-1 text-slate-400 light:text-slate-500">For {project.customer.name}</p>
@@ -113,7 +113,7 @@ export default async function ProjectDetailPage({
                         >
                           {task.title}
                         </Link>
-                        <Badge tone={priorityTone[task.priority]}>{task.priority}</Badge>
+                        <StatusBadge status={task.priority} tone={priorityTone[task.priority]} />
                       </div>
                       <p className="text-slate-500">
                         {task.assignee ? task.assignee.name : "Unassigned"}

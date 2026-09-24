@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { PurchaseOrderItemForm } from "@/components/procurement/purchase-order-item-form";
@@ -53,7 +53,7 @@ export default async function PurchaseOrderDetailPage({
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
                 Purchase order for {purchaseOrder.supplier.name}
               </h1>
-              <Badge tone={statusTone[purchaseOrder.status]}>{purchaseOrder.status}</Badge>
+              <StatusBadge status={purchaseOrder.status} tone={statusTone[purchaseOrder.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {purchaseOrder.createdAt.toLocaleDateString()}
