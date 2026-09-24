@@ -151,6 +151,7 @@ model Customer {
   status       CustomerStatus @default(LEAD)
   notes        String?
   creditLimit  Float?
+  creditWarningSentAt DateTime?
   createdAt    DateTime       @default(now())
 
   companyId  String
@@ -698,10 +699,12 @@ model AutomationSettings {
   lowStockReorder         Boolean @default(false)
   staleTicketEscalation   Boolean @default(false)
   staleLeadCleanup        Boolean @default(false)
+  creditLimitWarnings     Boolean @default(false)
 
   // A single outgoing webhook URL (Slack Incoming Webhook, Zapier "Catch
-  // Hook", or any custom JSON endpoint). Fires on the four automation events
-  // above (only when each is itself enabled) plus every new support ticket.
+  // Hook", or any custom JSON endpoint). Fires on the five automation
+  // events above (only when each is itself enabled) plus every new support
+  // ticket.
   webhookUrl String?
 
   // Emails a PDF business report (KPIs + charts) to the company on the

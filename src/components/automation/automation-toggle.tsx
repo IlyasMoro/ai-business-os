@@ -7,7 +7,8 @@ type ToggleKey =
   | "overdueInvoiceReminders"
   | "lowStockReorder"
   | "staleTicketEscalation"
-  | "staleLeadCleanup";
+  | "staleLeadCleanup"
+  | "creditLimitWarnings";
 
 export function AutomationToggle({
   toggleKey,
