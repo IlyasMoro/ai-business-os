@@ -63,7 +63,9 @@ test("availability control warns by default", async ({ page }) => {
   await expect(page.getByText(`Saved, but this expense puts cost center ${cc.sales} $100.00 over its budget.`)).toBeVisible();
   await shot(page, "co-01-warning");
 
-  await page.goto("/dashboard/controlling");
+  // Over budget for this month, though well within the yearly plan.
+  const month = today.slice(0, 7);
+  await page.goto(`/dashboard/controlling?fy=${today.slice(0, 4)}&m=${month}`);
   await expect(page.getByRole("row", { name: new RegExp(`${cc.sales} Sales`) }).getByText("Over budget")).toBeVisible();
   await expect(page.getByText("by $100.00")).toBeVisible();
   await shot(page, "co-02-overview");

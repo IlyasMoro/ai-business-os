@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { ControllingTabs, PeriodPicker, money } from "@/components/controlling/controlling-parts";
+import { ControllingTabs, PeriodPicker, money, percent } from "@/components/controlling/controlling-parts";
 import { getControllingSettings } from "@/lib/controlling";
 import { contributionMargin, periodRange, resolvePeriods, type MarginLine } from "@/lib/controlling-math";
 
@@ -34,7 +34,7 @@ function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnTyp
                 <td className="px-5 py-2 text-right text-slate-300 light:text-slate-600">{money(r.revenue)}</td>
                 <td className="px-5 py-2 text-right text-slate-400">{money(r.cost)}</td>
                 <td className={`px-5 py-2 text-right font-semibold ${r.margin < 0 ? "text-red-400" : "text-emerald-400"}`}>{money(r.margin)}</td>
-                <td className="px-5 py-2 text-right text-slate-400">{r.marginPercent === null ? "" : `${r.marginPercent}%`}</td>
+                <td className="px-5 py-2 text-right text-slate-400">{r.marginPercent === null ? "" : percent(r.marginPercent)}</td>
               </tr>
             ))}
             <tr className="border-t border-white/[0.1] font-semibold light:border-slate-300">
@@ -42,7 +42,7 @@ function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnTyp
               <td className="px-5 py-2 text-right text-slate-300 light:text-slate-700">{money(total.revenue)}</td>
               <td className="px-5 py-2 text-right text-slate-400">{money(total.cost)}</td>
               <td className={`px-5 py-2 text-right ${total.margin < 0 ? "text-red-400" : "text-emerald-400"}`}>{money(total.margin)}</td>
-              <td className="px-5 py-2 text-right text-slate-400">{total.revenue > 0 ? `${Math.round((total.margin / total.revenue) * 1000) / 10}%` : ""}</td>
+              <td className="px-5 py-2 text-right text-slate-400">{total.revenue > 0 ? percent(Math.round((total.margin / total.revenue) * 1000) / 10) : ""}</td>
             </tr>
           </tbody>
         </table>

@@ -104,3 +104,6 @@ export function PeriodPicker({
 
 export const money = (n: number) =>
   `${n < 0 ? "−" : ""}$${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** Percentages with a true minus sign, never a hyphen. */
+export const percent = (n: number) => `${n < 0 ? "\u2212" : ""}${Math.abs(n)}%`;

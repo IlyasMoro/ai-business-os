@@ -6,7 +6,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { ControllingTabs, money } from "@/components/controlling/controlling-parts";
 import { getControllingSettings } from "@/lib/controlling";
-import { fiscalYearMonths, fiscalYearOf, monthLabel, periodKey } from "@/lib/controlling-math";
+import { fiscalYearMonths, fiscalYearOf, monthLabel, periodKey, periodOf } from "@/lib/controlling-math";
 import { createAllocation, deleteAllocation, reverseAllocationRun, runAllocation } from "@/lib/actions/controlling";
 
 const RECEIVER_ROWS = 4;
@@ -31,7 +31,11 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
 
   // Offer this fiscal year's and last fiscal year's months, most recent first.
   const fy = fiscalYearOf(new Date(), settings.fiscalYearStartMonth);
-  const months = [...fiscalYearMonths(fy - 1, settings.fiscalYearStartMonth), ...fiscalYearMonths(fy, settings.fiscalYearStartMonth)].reverse();
+  // Only months that have started can be allocated; default to this month.
+  const thisMonth = periodKey(periodOf(new Date()));
+  const months = [...fiscalYearMonths(fy - 1, settings.fiscalYearStartMonth), ...fiscalYearMonths(fy, settings.fiscalYearStartMonth)]
+    .filter((p) => periodKey(p) <= thisMonth)
+    .reverse();
   const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white";
   const selectCls =
     "rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-3 py-2 text-sm text-slate-50 light:text-slate-900";
@@ -70,7 +74,7 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
               <DeleteButton action={deleteAllocation.bind(null, a.id)} confirmMessage={`Delete ${a.name} and reverse all its runs?`} label="" />
             </div>
             <form action={runAllocation.bind(null, a.id)} className="mt-4 flex flex-wrap items-center gap-2">
-              <select name="period" className={selectCls} aria-label="Month to allocate">
+              <select name="period" defaultValue={thisMonth} className={selectCls} aria-label="Month to allocate">
                 {months.map((p) => (
                   <option key={periodKey(p)} value={periodKey(p)}>
                     {monthLabel(p)}

@@ -78,7 +78,8 @@ export async function createTransaction(
     amount: formData.get("amount"),
     date: formData.get("date"),
     description: formData.get("description"),
-    projectId: formData.get("projectId"),
+    // The project picker only renders when projects exist, so the field can be absent.
+    projectId: formData.get("projectId") || undefined,
   });
 
   if (!validated.success) {
@@ -135,7 +136,8 @@ export async function updateTransaction(
     amount: formData.get("amount"),
     date: formData.get("date"),
     description: formData.get("description"),
-    projectId: formData.get("projectId"),
+    // The project picker only renders when projects exist, so the field can be absent.
+    projectId: formData.get("projectId") || undefined,
   });
 
   if (!validated.success) {

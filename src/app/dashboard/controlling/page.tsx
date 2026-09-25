@@ -3,7 +3,7 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { GroupedBarChart } from "@/components/dash-viz/grouped-bar-chart";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { ControllingTabs, PeriodPicker, UsageBar, VarianceBadge, money } from "@/components/controlling/controlling-parts";
+import { ControllingTabs, PeriodPicker, UsageBar, VarianceBadge, money, percent } from "@/components/controlling/controlling-parts";
 import { costCenterPlanActual, getControllingSettings, sumBy, loadCostLines } from "@/lib/controlling";
 import { fiscalYearMonths, monthLabel, periodKey, periodOf, resolvePeriods, variance } from "@/lib/controlling-math";
 import { TriangleAlert } from "lucide-react";
@@ -168,7 +168,7 @@ export default async function ControllingPage({
                     <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
                     <td className={`px-5 py-3 text-right font-mono tabular-nums ${v.variance > 0 ? "text-red-400" : "text-emerald-400"}`}>
                       {money(v.variance)}
-                      {v.variancePercent !== null && <span className="ml-1 text-xs text-slate-500">({v.variancePercent}%)</span>}
+                      {v.variancePercent !== null && <span className="ml-1 text-xs text-slate-500">({percent(v.variancePercent)})</span>}
                     </td>
                     <td className="px-5 py-3">
                       <UsageBar used={v.used} status={v.status} />
