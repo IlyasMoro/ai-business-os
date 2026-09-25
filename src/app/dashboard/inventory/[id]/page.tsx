@@ -12,6 +12,12 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { BomLineForm } from "@/components/mrp/bom-line-form";
 import { PlanningFieldsForm } from "@/components/mrp/planning-fields-form";
 import { getMrpSettings } from "@/lib/mrp";
+import { getInventorySettings } from "@/lib/lots";
+import { isExpired, isExpiringSoon } from "@/lib/lot-math";
+import { setProductTracking } from "@/lib/actions/lots";
+import { Select, Label } from "@/components/ui-dark/input";
+import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { SettingToggle } from "@/components/ui-dark/setting-toggle";
 import { Pencil } from "lucide-react";
 
 const SALES_LOOKBACK_DAYS = 90;
@@ -23,10 +29,10 @@ export default async function ProductDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; why?: string }>;
 }) {
   const { id } = await params;
-  const { error, saved } = await searchParams;
+  const { error, saved, why } = await searchParams;
   const session = await verifySession();
 
   const product = await db.product.findUnique({
@@ -43,6 +49,15 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const mrpSettings = await getMrpSettings(session.companyId);
+  const inventory = await getInventorySettings(session.companyId);
+  const lots =
+    product.trackingMode === "NONE"
+      ? []
+      : await db.stockLot.findMany({
+          where: { productId: product.id, quantity: { gt: 0 } },
+          orderBy: [{ expiresAt: { sort: "asc", nulls: "last" } }, { receivedAt: "asc" }],
+          take: 200,
+        });
   const [otherProducts, suppliers] = mrpSettings.enabled
     ? await Promise.all([
         db.product.findMany({
@@ -113,6 +128,9 @@ export default async function ProductDetailPage({
         ) : (
           <ErrorBanner code={error} />
         )}
+        {why && (
+          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>
+        )}
         {saved && (
           <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
             Saved.
@@ -182,6 +200,80 @@ export default async function ProductDetailPage({
                   Apply
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Tracking</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form action={setProductTracking.bind(null, product.id)} className="grid items-end gap-4 sm:grid-cols-3">
+              <div>
+                <Label htmlFor="trackingMode">Track this product by</Label>
+                <Select id="trackingMode" name="trackingMode" defaultValue={product.trackingMode}>
+                  <option value="NONE">Quantity only</option>
+                  <option value="LOT">Lot number</option>
+                  <option value="SERIAL">Serial number (one per unit)</option>
+                </Select>
+              </div>
+              <div className="sm:col-span-2">
+                <SettingToggle
+                  name="tracksExpiry"
+                  label="Track expiry dates"
+                  description="Ask for an expiry date when receiving, and pick by it if your rule is first expiring first out."
+                  defaultChecked={product.tracksExpiry}
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <SubmitButton variant="secondary" pendingText="Saving...">
+                  Save tracking
+                </SubmitButton>
+                <p className="mt-2 text-xs text-slate-500">
+                  Stock already on hand becomes an opening lot when tracking starts.
+                </p>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {product.trackingMode !== "NONE" && (
+          <Card className="mt-6">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>{product.trackingMode === "SERIAL" ? "Serials on hand" : "Lots on hand"}</CardTitle>
+              <span className="text-xs text-slate-500">
+                Picked {inventory.pickingRule === "FEFO" ? "first expiring first" : "oldest first"}
+              </span>
+            </CardHeader>
+            <CardContent>
+              {lots.length === 0 ? (
+                <p className="text-sm text-slate-500">Nothing on hand.</p>
+              ) : (
+                <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                  {lots.map((lot) => (
+                    <li key={lot.id} className="flex items-center justify-between py-2 text-sm">
+                      <Link
+                        href={`/dashboard/inventory/trace?q=${encodeURIComponent(lot.lotNumber)}`}
+                        className="font-mono text-slate-50 hover:text-blue-400 light:text-slate-900"
+                      >
+                        {lot.lotNumber}
+                      </Link>
+                      <span className="flex items-center gap-3">
+                        {lot.expiresAt && (
+                          <span className="text-xs text-slate-400">Expires {lot.expiresAt.toLocaleDateString()}</span>
+                        )}
+                        {isExpired(lot) ? (
+                          <Badge tone="red">Expired</Badge>
+                        ) : isExpiringSoon(lot, inventory.expiryWarningDays) ? (
+                          <Badge tone="yellow">Expires soon</Badge>
+                        ) : null}
+                        <span className="font-mono tabular-nums text-slate-300">{lot.quantity}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         )}

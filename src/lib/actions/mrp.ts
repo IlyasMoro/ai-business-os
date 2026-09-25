@@ -9,6 +9,8 @@ import { buildMrpPlan, getMrpSettings } from "@/lib/mrp";
 import { MRP_PRESETS, isMrpPreset } from "@/lib/mrp-settings-presets";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import { findStockShortfalls } from "@/lib/stock-math";
+import { LotShortageError, getInventorySettings, putIntoLot, takeFromLots } from "@/lib/lots";
+import { generateSerials } from "@/lib/lot-math";
 import {
   WorkOrderStatusValues,
   canTransitionWorkOrder,
@@ -171,13 +173,19 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
     where: { id: workOrderId, companyId: session.companyId },
     select: {
       id: true,
+      woNumber: true,
       status: true,
       quantity: true,
       productId: true,
       product: {
         select: {
+          trackingMode: true,
           bomComponents: {
-            select: { componentId: true, quantity: true, component: { select: { name: true, stockQty: true } } },
+            select: {
+              componentId: true,
+              quantity: true,
+              component: { select: { name: true, stockQty: true, trackingMode: true } },
+            },
           },
         },
       },
@@ -210,13 +218,56 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
 
     // Completing a work order is the point the build physically happens:
     // components leave stock and finished units arrive, all or nothing.
-    await db.$transaction([
-      ...requirements.map((req) =>
-        db.product.update({ where: { id: req.componentId }, data: { stockQty: { decrement: req.required } } })
-      ),
-      db.product.update({ where: { id: wo.productId }, data: { stockQty: { increment: wo.quantity } } }),
-      db.workOrder.update({ where: { id: wo.id }, data: { status: nextStatus, completedAt: now } }),
-    ]);
+    // Tracked components come out of specific lots; tracked output goes
+    // into a lot named after the work order, or one serial per unit.
+    const inventory = await getInventorySettings(session.companyId);
+    try {
+      await db.$transaction(async (tx) => {
+        for (const req of requirements) {
+          const line = lines.find((l) => l.componentId === req.componentId)!;
+          await tx.product.update({ where: { id: req.componentId }, data: { stockQty: { decrement: req.required } } });
+          if (line.component.trackingMode !== "NONE") {
+            await takeFromLots(tx, {
+              companyId: session.companyId,
+              productId: req.componentId,
+              productName: line.component.name,
+              quantity: req.required,
+              kind: "CONSUMPTION",
+              settings: inventory,
+              links: { workOrderId: wo.id },
+            });
+          }
+        }
+        await tx.product.update({ where: { id: wo.productId }, data: { stockQty: { increment: wo.quantity } } });
+        if (wo.product.trackingMode === "LOT") {
+          await putIntoLot(tx, {
+            companyId: session.companyId,
+            productId: wo.productId,
+            lotNumber: wo.woNumber,
+            quantity: wo.quantity,
+            source: "WO",
+            kind: "PRODUCTION",
+            links: { workOrderId: wo.id },
+          });
+        } else if (wo.product.trackingMode === "SERIAL") {
+          for (const serial of generateSerials(wo.woNumber, wo.quantity)) {
+            await putIntoLot(tx, {
+              companyId: session.companyId,
+              productId: wo.productId,
+              lotNumber: serial,
+              quantity: 1,
+              source: "WO",
+              kind: "PRODUCTION",
+              links: { workOrderId: wo.id },
+            });
+          }
+        }
+        await tx.workOrder.update({ where: { id: wo.id }, data: { status: nextStatus, completedAt: now } });
+      });
+    } catch (e) {
+      if (e instanceof LotShortageError) redirect(`${back}?error=lot-short`);
+      throw e;
+    }
   } else {
     await db.workOrder.update({
       where: { id: wo.id },

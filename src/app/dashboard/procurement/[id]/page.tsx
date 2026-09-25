@@ -77,6 +77,16 @@ export default async function PurchaseOrderDetailPage({
           </div>
           <div className="flex items-center gap-2">
             <EdiSendButton docType="850" recordId={purchaseOrder.id} supplierId={purchaseOrder.supplierId} />
+            {purchaseOrder.status !== "RECEIVED" &&
+              purchaseOrder.status !== "CANCELLED" &&
+              purchaseOrder.items.some((i) => i.product.trackingMode !== "NONE") && (
+                <Link
+                  href={`/dashboard/procurement/${purchaseOrder.id}/receive`}
+                  className="whitespace-nowrap rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-500/20"
+                >
+                  Receive with lots
+                </Link>
+              )}
             <PurchaseOrderStatusForm purchaseOrderId={purchaseOrder.id} status={purchaseOrder.status} />
             <DeleteButton action={deletePurchaseOrder.bind(null, purchaseOrder.id)} />
           </div>

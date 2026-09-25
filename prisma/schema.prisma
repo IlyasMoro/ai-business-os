@@ -41,6 +41,9 @@ model Company {
   coAllocations       CoAllocation[]
   coPostings          CoPosting[]
   controllingSettings ControllingSettings?
+  stockLots           StockLot[]
+  lotMovements        LotMovement[]
+  inventorySettings   InventorySettings?
   invoices            Invoice[]
   transactions        Transaction[]
   employees           Employee[]
@@ -216,6 +219,12 @@ model Product {
   lotSize             Int       @default(1)
   preferredSupplierId String?
   preferredSupplier   Supplier? @relation(fields: [preferredSupplierId], references: [id], onDelete: SetNull)
+
+  // Lot and serial tracking. Lot and serial products keep stockQty equal
+  // to the sum of their lots' quantities.
+  trackingMode TrackingMode @default(NONE)
+  tracksExpiry Boolean      @default(false)
+  lots         StockLot[]
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1307,6 +1316,91 @@ model ControllingSettings {
   tolerancePercent     Float            @default(0)
   includePayroll       Boolean          @default(true)
   requireCostCenter    Boolean          @default(false)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Lot & serial tracking ----------
+
+enum TrackingMode {
+  NONE
+  LOT
+  SERIAL
+}
+
+enum PickingRule {
+  FIFO
+  FEFO
+}
+
+// One lot (or, for serial products, one unit) of a product on hand.
+model StockLot {
+  id         String    @id @default(cuid())
+  lotNumber  String
+  quantity   Int
+  expiresAt  DateTime?
+  receivedAt DateTime  @default(now())
+  // Where it came from: PO, WO, OPENING or RETURN.
+  source     String
+
+  purchaseOrderId String?
+  workOrderId     String?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  movements LotMovement[]
+
+  @@unique([productId, lotNumber])
+  @@index([companyId])
+  @@index([companyId, expiresAt])
+}
+
+enum LotMovementKind {
+  RECEIPT
+  SALE
+  CONSUMPTION
+  PRODUCTION
+  RETURN
+  OPENING
+}
+
+// Every change to a lot's quantity, so any lot or serial can be traced
+// forward to the customers who got it and back to where it came from.
+model LotMovement {
+  id        String          @id @default(cuid())
+  kind      LotMovementKind
+  // Positive adds to the lot, negative takes from it.
+  quantity  Int
+  createdAt DateTime        @default(now())
+
+  lotId String
+  lot   StockLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+
+  orderId         String?
+  purchaseOrderId String?
+  workOrderId     String?
+  returnId        String?
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([lotId])
+  @@index([companyId])
+  @@index([orderId])
+}
+
+// Per company picking and expiry rules. A company with no row uses the
+// defaults in lib/inventory-settings.ts.
+model InventorySettings {
+  id                String      @id @default(cuid())
+  pickingRule       PickingRule @default(FIFO)
+  blockExpired      Boolean     @default(true)
+  expiryWarningDays Int         @default(30)
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)

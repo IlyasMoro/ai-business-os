@@ -106,13 +106,16 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
 
   const current = await db.purchaseOrder.findUnique({
     where: { id: purchaseOrderId, companyId: session.companyId },
-    select: { status: true, items: { select: { productId: true, quantity: true } } },
+    select: { status: true, items: { select: { productId: true, quantity: true, product: { select: { trackingMode: true } } } } },
   });
   if (!current) return;
 
   // Receiving a PO is what actually puts the ordered stock into Inventory —
   // without this, stock levels silently drift from what's really on hand.
   const isNewlyReceived = nextStatus === "RECEIVED" && current.status !== "RECEIVED";
+  if (isNewlyReceived && current.items.some((i) => i.product.trackingMode !== "NONE")) {
+    redirect(`/dashboard/procurement/${purchaseOrderId}/receive?error=lots-needed`);
+  }
 
   await db.$transaction(async (tx) => {
     await tx.purchaseOrder.update({

@@ -6,6 +6,7 @@ import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 import { getReturnPolicy } from "@/lib/returns-policy";
+import { returnToLots } from "@/lib/lots";
 import { RETURN_POLICY_PRESETS, isReturnPolicyPreset } from "@/lib/returns-policy-presets";
 import {
   ReturnStatusValues,
@@ -167,7 +168,7 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
       status: true,
       refundAmount: true,
       orderId: true,
-      items: { select: { productId: true, quantity: true, condition: true } },
+      items: { select: { productId: true, quantity: true, condition: true, product: { select: { trackingMode: true } } } },
     },
   });
   if (!rma) return;
@@ -199,6 +200,16 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
           where: { id: item.productId },
           data: { stockQty: { increment: item.quantity } },
         });
+        if (item.product.trackingMode !== "NONE") {
+          await returnToLots(tx, {
+            companyId: session.companyId,
+            orderId: rma.orderId,
+            productId: item.productId,
+            quantity: item.quantity,
+            returnId: rma.id,
+            returnNumber: rma.rmaNumber,
+          });
+        }
       }
     }
 

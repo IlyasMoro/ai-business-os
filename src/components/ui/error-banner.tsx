@@ -32,6 +32,8 @@ const MESSAGES: Record<string, string> = {
   "co-no-receiver": "Choose a cost center to settle to before settling this order.",
   "co-shares": "Receivers must be different from the sender, each listed once, with shares adding up to 100%.",
   "co-already-run": "This allocation has already run for that month. Reverse that run first to run it again.",
+  "lots-needed": "This order has lot or serial tracked products. Enter their lot numbers or serials to receive it.",
+  "lot-short": "Not enough usable lots of a tracked component to complete this. Expired lots may be blocked in inventory settings.",
   "co-nothing": "The sender cost center has no cost in that month, so there is nothing to allocate.",
 };
 

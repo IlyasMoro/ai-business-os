@@ -55,6 +55,10 @@ export default async function OrderDetailPage({
   if (!order) notFound();
 
   const returnPolicy = await getReturnPolicy(session.companyId);
+  const shipped = await db.lotMovement.findMany({
+    where: { orderId: order.id, companyId: session.companyId, kind: "SALE" },
+    select: { quantity: true, lot: { select: { lotNumber: true, productId: true } } },
+  });
   const fulfilledAt = order.fulfilledAt ?? order.createdAt;
   const deadline = returnDeadline(fulfilledAt, returnPolicy.windowDays);
   const canOpenReturn =
@@ -125,6 +129,25 @@ export default async function OrderDetailPage({
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
+                      {shipped.some((m) => m.lot.productId === item.productId) && (
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Shipped from{" "}
+                          {shipped
+                            .filter((m) => m.lot.productId === item.productId)
+                            .map((m, i) => (
+                              <span key={i}>
+                                {i > 0 && ", "}
+                                <Link
+                                  href={`/dashboard/inventory/trace?q=${encodeURIComponent(m.lot.lotNumber)}`}
+                                  className="font-mono text-blue-400 hover:text-blue-300"
+                                >
+                                  {m.lot.lotNumber}
+                                </Link>
+                                {-m.quantity > 1 && ` (${-m.quantity})`}
+                              </span>
+                            ))}
+                        </p>
+                      )}
                     </div>
                     <DeleteButton
                       action={removeOrderItem.bind(null, order.id, item.id)}

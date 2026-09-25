@@ -75,6 +75,18 @@ export async function updateProduct(
     return { errors: { sku: ["A product with this SKU already exists."] } };
   }
 
+  const current = await db.product.findUnique({
+    where: { id: productId, companyId: session.companyId },
+    select: { stockQty: true, trackingMode: true },
+  });
+  if (current && current.trackingMode !== "NONE" && current.stockQty !== rest.stockQty) {
+    return {
+      errors: {
+        stockQty: ["This product is lot or serial tracked, so its stock only changes by receiving, shipping or building."],
+      },
+    };
+  }
+
   await db.product.update({
     where: { id: productId, companyId: session.companyId },
     data: { ...rest, description: description || null },
