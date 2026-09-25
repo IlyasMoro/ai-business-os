@@ -82,6 +82,18 @@ export default async function InventoryPage({
             />
           </form>
           <Link
+            href="/dashboard/inventory/trace"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
+          >
+            Lot trace
+          </Link>
+          <Link
+            href="/dashboard/inventory/settings"
+            className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
+          >
+            Settings
+          </Link>
+          <Link
             href="/dashboard/inventory/new"
             className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
           >

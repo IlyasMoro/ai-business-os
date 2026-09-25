@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { Button, LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -13,6 +13,7 @@ import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail } from "@/lib/actions/invoicing";
 import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import { Download, Send } from "lucide-react";
+import { EdiSendButton } from "@/components/edi/edi-send-button";
 
 const statusTone = {
   DRAFT: "slate",
@@ -64,7 +65,7 @@ export default async function InvoiceDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="font-mono text-2xl font-semibold text-slate-50 light:text-slate-900">{invoice.invoiceNumber}</h1>
-              <Badge tone={statusTone[invoice.status]}>{invoice.status}</Badge>
+              <StatusBadge status={invoice.status} tone={statusTone[invoice.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">{invoice.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
@@ -84,6 +85,7 @@ export default async function InvoiceDetailPage({
               <Download className="h-4 w-4" />
               PDF
             </LinkButton>
+            <EdiSendButton docType="810" recordId={invoice.id} customerId={invoice.customerId} />
             <InvoiceStatusForm invoiceId={invoice.id} status={invoice.status} />
             <DeleteButton action={deleteInvoice.bind(null, invoice.id)} />
           </div>

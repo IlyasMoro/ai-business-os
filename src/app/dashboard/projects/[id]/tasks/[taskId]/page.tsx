@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TaskCommentForm } from "@/components/projects/task-comment-form";
 import { deleteTaskComment } from "@/lib/actions/projects";
@@ -39,7 +39,7 @@ export default async function TaskDetailPage({
       <div className="max-w-3xl">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{task.title}</h1>
-          <Badge tone={priorityTone[task.priority]}>{task.priority}</Badge>
+          <StatusBadge status={task.priority} tone={priorityTone[task.priority]} />
         </div>
         <p className="mt-1 text-sm text-slate-500">
           {task.project.name} · {task.assignee ? task.assignee.name : "Unassigned"}

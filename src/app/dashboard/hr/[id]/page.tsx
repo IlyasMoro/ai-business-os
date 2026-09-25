@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { DocumentsSection } from "@/components/documents/documents-section";
@@ -61,7 +61,7 @@ export default async function EmployeeDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{employee.name}</h1>
-              <Badge tone={statusTone[employee.status]}>{employee.status}</Badge>
+              <StatusBadge status={employee.status} tone={statusTone[employee.status]} />
             </div>
             {employee.position && <p className="mt-1 text-slate-400 light:text-slate-500">{employee.position}</p>}
           </div>

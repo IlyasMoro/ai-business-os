@@ -7,6 +7,13 @@ import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
 import { EmployeeSchema, type EmployeeFormState } from "@/lib/validation/hr";
 
+/** A cost center id from the form, only if it belongs to this company. */
+async function ownCostCenter(companyId: string, value: FormDataEntryValue | null): Promise<string | null | "invalid"> {
+  if (typeof value !== "string" || !value) return null;
+  const cc = await db.costCenter.findUnique({ where: { id: value, companyId }, select: { id: true } });
+  return cc ? cc.id : "invalid";
+}
+
 export async function createEmployee(
   _state: EmployeeFormState,
   formData: FormData
@@ -33,9 +40,13 @@ export async function createEmployee(
     return { errors: { hireDate: ["Enter a valid date."] } };
   }
 
+  const costCenterId = await ownCostCenter(session.companyId, formData.get("costCenterId"));
+  if (costCenterId === "invalid") return { message: "Select a valid cost center." };
+
   const employee = await db.employee.create({
     data: {
       ...rest,
+      costCenterId,
       email: email || undefined,
       hireDate: parsedHireDate,
       companyId: session.companyId,
@@ -77,9 +88,12 @@ export async function updateEmployee(
     return { errors: { hireDate: ["Enter a valid date."] } };
   }
 
+  const costCenterId = await ownCostCenter(session.companyId, formData.get("costCenterId"));
+  if (costCenterId === "invalid") return { message: "Select a valid cost center." };
+
   await db.employee.update({
     where: { id: employeeId, companyId: session.companyId },
-    data: { ...rest, email: email || null, hireDate: parsedHireDate },
+    data: { ...rest, email: email || null, hireDate: parsedHireDate, costCenterId },
   });
 
   await logAudit(session.companyId, session.userId, "employee.updated", "Employee", employeeId, {

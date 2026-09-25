@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TicketStatusForm } from "@/components/support/ticket-status-form";
@@ -58,7 +58,7 @@ export default async function TicketDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{ticket.subject}</h1>
-              <Badge tone={statusTone[ticket.status]}>{ticket.status}</Badge>
+              <StatusBadge status={ticket.status} tone={statusTone[ticket.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">For {ticket.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
@@ -82,7 +82,7 @@ export default async function TicketDetailPage({
           <CardContent className="space-y-4 text-sm">
             <div>
               <p className="text-slate-500">Priority</p>
-              <Badge tone={priorityTone[ticket.priority]}>{ticket.priority}</Badge>
+              <StatusBadge status={ticket.priority} tone={priorityTone[ticket.priority]} />
             </div>
             <div>
               <p className="text-slate-500">Description</p>

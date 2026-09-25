@@ -1,12 +1,16 @@
 "use client";
 
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
 
 export type DonutSlice = {
   label: string;
   value: number;
   color: string;
 };
+
+function prefersReducedMotion() {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 export function DonutChart({
   title,
@@ -28,6 +32,18 @@ export function DonutChart({
   const total = slices.reduce((s, sl) => s + sl.value, 0) || 1;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
+
+  // Sequential draw in on mount: each arc grows from 0 to its share, one
+  // after another, same transition based technique RingGauge uses rather
+  // than a new one, staggered per slice so the composition visibly builds
+  // instead of just appearing.
+  const [drawn, setDrawn] = useState(() => prefersReducedMotion());
+  useEffect(() => {
+    if (drawn) return;
+    const raf = requestAnimationFrame(() => setDrawn(true));
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const arcs = slices.reduce<{ slice: DonutSlice; fraction: number; offset: number; cumulative: number }[]>(
     (acc, slice) => {
@@ -53,7 +69,8 @@ export function DonutChart({
             </filter>
           </defs>
           {arcs.map(({ slice, fraction, offset }, i) => {
-            const dash = fraction * circumference;
+            const targetDash = fraction * circumference;
+            const dash = drawn ? targetDash : 0;
             const gap = circumference - dash;
             const isHovered = hovered === i;
             return (
@@ -70,7 +87,9 @@ export function DonutChart({
                 strokeLinecap="butt"
                 filter={isHovered ? `url(#${filterId})` : undefined}
                 opacity={hovered === null || isHovered ? 1 : 0.45}
-                style={{ transition: "stroke-width 0.2s ease, opacity 0.2s ease" }}
+                style={{
+                  transition: `stroke-dasharray 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 90}ms, stroke-width 0.2s ease, opacity 0.2s ease`,
+                }}
                 onMouseEnter={() => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
               >

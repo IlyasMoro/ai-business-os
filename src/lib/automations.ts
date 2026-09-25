@@ -7,6 +7,8 @@ import { getBusinessReportData } from "@/lib/business-report-data";
 import { generateBusinessReportPdf } from "@/lib/report-pdf";
 import { isReportDue } from "@/lib/report-schedule";
 import { sendWebhookNotification } from "@/lib/webhook";
+import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
+import { isApproachingCreditLimit } from "@/lib/credit-math";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -157,6 +159,60 @@ async function runStaleLeadCleanup(companyId: string, webhookUrl: string | null)
   );
 }
 
+/** Proactive counterpart to the credit check in src/lib/actions/sales.ts.
+ * That check only blocks an order at the moment someone tries to confirm
+ * it, so without this a business only finds out a customer is over their
+ * limit when a real order gets rejected. This warns Owners and Admins
+ * once a customer's outstanding balance reaches CREDIT_WARNING_THRESHOLD
+ * of their limit, same cooldown convention as the overdue reminder above,
+ * so it will not fire again for the same customer within 24 hours. */
+async function runCreditLimitWarnings(companyId: string, webhookUrl: string | null) {
+  const now = new Date();
+  const cooldownCutoff = new Date(now.getTime() - REMINDER_COOLDOWN_MS);
+
+  const candidates = await db.customer.findMany({
+    where: {
+      companyId,
+      creditLimit: { not: null },
+      OR: [{ creditWarningSentAt: null }, { creditWarningSentAt: { lt: cooldownCutoff } }],
+    },
+    select: { id: true, name: true, creditLimit: true },
+  });
+  if (candidates.length === 0) return;
+
+  const recipients = await db.user.findMany({
+    where: { companyId, role: { in: ["OWNER", "ADMIN"] } },
+    select: { email: true, name: true },
+  });
+
+  for (const customer of candidates) {
+    const outstandingBalance = await getCustomerOutstandingBalance(customer.id);
+    if (!isApproachingCreditLimit(outstandingBalance, customer.creditLimit)) continue;
+
+    const percent = Math.round((outstandingBalance / customer.creditLimit!) * 100);
+
+    for (const recipient of recipients) {
+      try {
+        await sendEmailForCompany(companyId, {
+          to: recipient.email,
+          subject: `Credit limit alert: ${customer.name}`,
+          html: `<p>Hi ${recipient.name},</p><p>${customer.name} now owes $${outstandingBalance.toFixed(2)} against a credit limit of $${customer.creditLimit!.toFixed(2)}, ${percent}% of their limit. The next order that would push them over will be blocked automatically until this is resolved.</p><p>Consider following up for payment, or raising their limit if that fits the relationship.</p>`,
+        });
+      } catch (err) {
+        console.error(`[automations] credit limit warning email failed for ${recipient.email}:`, err);
+      }
+    }
+
+    await db.customer.update({ where: { id: customer.id }, data: { creditWarningSentAt: now } });
+
+    await sendWebhookNotification(
+      webhookUrl,
+      `Credit limit alert: ${customer.name} is at ${percent}% of their $${customer.creditLimit!.toFixed(2)} limit ($${outstandingBalance.toFixed(2)} owed)`,
+      { event: "credit_limit_warning", customer: customer.name, outstandingBalance, creditLimit: customer.creditLimit, percent }
+    );
+  }
+}
+
 /** Emails the same PDF business report the Reports page can generate
  * on demand (src/app/api/reports/pdf) to every Owner/Admin at the company,
  * then stamps lastReportSentAt so the next due check starts a fresh
@@ -237,6 +293,7 @@ export async function runAutomations() {
           { lowStockReorder: true },
           { staleTicketEscalation: true },
           { staleLeadCleanup: true },
+          { creditLimitWarnings: true },
           { reportFrequency: { not: "OFF" } },
         ],
       },
@@ -248,6 +305,7 @@ export async function runAutomations() {
         if (settings.lowStockReorder) await runLowStockReorder(settings.companyId, settings.webhookUrl);
         if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId, settings.webhookUrl);
         if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId, settings.webhookUrl);
+        if (settings.creditLimitWarnings) await runCreditLimitWarnings(settings.companyId, settings.webhookUrl);
         if (isReportDue(settings.reportFrequency, settings.lastReportSentAt)) {
           await sendScheduledReport(settings.companyId);
         }

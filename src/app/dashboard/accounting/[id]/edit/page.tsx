@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { costObjectValue, loadCostObjectOptions } from "@/lib/controlling";
 import { TransactionForm } from "@/components/accounting/transaction-form";
 import { updateTransaction } from "@/lib/actions/accounting";
 import type { TransactionFormState } from "@/lib/validation/accounting";
@@ -30,6 +31,7 @@ export default async function EditTransactionPage({
   ]);
 
   if (!transaction) notFound();
+  const costObjects = await loadCostObjectOptions(session.companyId, transaction);
 
   const action = updateTransaction.bind(null, transaction.id) as (
     state: TransactionFormState,
@@ -49,9 +51,11 @@ export default async function EditTransactionPage({
             date: toDateInputValue(transaction.date),
             description: transaction.description,
             projectId: transaction.projectId,
+            costObject: costObjectValue(transaction),
           }}
           existingCategories={existing.map((t) => t.category)}
           projects={projects}
+          costObjects={costObjects}
           submitLabel="Save changes"
         />
       </div>

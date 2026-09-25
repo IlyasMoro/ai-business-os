@@ -5,6 +5,7 @@ import { Button } from "@/components/ui-dark/button";
 import { Input, Label, Select, Textarea, FieldError } from "@/components/ui-dark/input";
 import { suggestCategory } from "@/lib/actions/accounting";
 import type { TransactionFormState } from "@/lib/validation/accounting";
+import type { CostObjectOptions } from "@/lib/controlling";
 import { Sparkles } from "lucide-react";
 
 type Action = (
@@ -17,6 +18,7 @@ export function TransactionForm({
   defaultValues,
   existingCategories = [],
   projects = [],
+  costObjects = null,
   submitLabel = "Save transaction",
 }: {
   action: Action;
@@ -27,9 +29,11 @@ export function TransactionForm({
     date: string;
     description: string | null;
     projectId?: string | null;
+    costObject?: string;
   };
   existingCategories?: string[];
   projects?: { id: string; name: string }[];
+  costObjects?: CostObjectOptions;
   submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -131,6 +135,34 @@ export function TransactionForm({
             ))}
           </Select>
           <FieldError messages={state?.errors?.projectId} />
+        </div>
+      )}
+
+      {costObjects && (costObjects.centers.length > 0 || costObjects.orders.length > 0) && (
+        <div>
+          <Label htmlFor="costObject">Cost object</Label>
+          <Select id="costObject" name="costObject" defaultValue={defaultValues?.costObject ?? ""}>
+            <option value="">None</option>
+            {costObjects.centers.length > 0 && (
+              <optgroup label="Cost centers">
+                {costObjects.centers.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {costObjects.orders.length > 0 && (
+              <optgroup label="Internal orders">
+                {costObjects.orders.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </Select>
+          <p className="mt-1 text-xs text-slate-500">Where this expense is controlled. Budgets are checked when you save.</p>
         </div>
       )}
 

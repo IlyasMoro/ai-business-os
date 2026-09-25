@@ -3,11 +3,12 @@ import { createTransaction } from "@/lib/actions/accounting";
 import { dateInputDaysFromNow } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { loadCostObjectOptions } from "@/lib/controlling";
 
 export default async function NewTransactionPage() {
   const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const [existing, projects] = await Promise.all([
+  const [existing, projects, costObjects] = await Promise.all([
     db.transaction.findMany({
       where: { companyId: session.companyId },
       select: { category: true },
@@ -19,6 +20,7 @@ export default async function NewTransactionPage() {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    loadCostObjectOptions(session.companyId),
   ]);
 
   return (
@@ -36,6 +38,7 @@ export default async function NewTransactionPage() {
           }}
           existingCategories={existing.map((t) => t.category)}
           projects={projects}
+          costObjects={costObjects}
           submitLabel="Create transaction"
         />
       </div>

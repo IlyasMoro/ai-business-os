@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { Button, LinkButton } from "@/components/ui-dark/button";
 import { Input, Label } from "@/components/ui-dark/input";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
@@ -61,7 +61,7 @@ export default async function PayrollRunDetailPage({
                 {payrollRun.periodStart.toLocaleDateString()} –{" "}
                 {payrollRun.periodEnd.toLocaleDateString()}
               </h1>
-              <Badge tone={statusTone[payrollRun.status]}>{payrollRun.status}</Badge>
+              <StatusBadge status={payrollRun.status} tone={statusTone[payrollRun.status]} />
             </div>
             {payrollRun.processedAt && (
               <p className="mt-1 text-sm text-slate-500">

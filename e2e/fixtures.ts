@@ -39,3 +39,34 @@ export async function createCustomer(page: Page, name: string): Promise<void> {
   await page.getByRole("button", { name: "Create customer" }).click();
   await page.waitForURL(/\/dashboard\/crm\/(?!new$)[^/]+$/, { timeout: 45000 });
 }
+
+/**
+ * Changes an auto submitting <select> and waits for its server action to
+ * finish. Waits for React to hydrate the select first: changing it before
+ * then fires no onChange, so nothing is saved.
+ */
+export async function selectAndSave(page: Page, selector: string, value: string): Promise<void> {
+  await page.waitForFunction(
+    (sel) => {
+      const el = document.querySelector(sel);
+      return !!el && Object.keys(el).some((k) => k.startsWith("__reactProps"));
+    },
+    selector
+  );
+  const saved = page.waitForResponse((r) => r.request().method() === "POST" && !!r.request().headers()["next-action"]);
+  await page.selectOption(selector, value);
+  await saved;
+  await page.waitForFunction((sel) => !(document.querySelector(sel) as HTMLSelectElement | null)?.disabled, selector);
+}
+
+/** Waits until React has hydrated the element, so typing and submitting reach its handlers. */
+export async function waitForHydration(page: Page, selector: string): Promise<void> {
+  await page.waitForFunction(
+    (sel) => {
+      const el = document.querySelector(sel);
+      return !!el && Object.keys(el).some((k) => k.startsWith("__reactProps"));
+    },
+    selector,
+    { timeout: 45000 }
+  );
+}

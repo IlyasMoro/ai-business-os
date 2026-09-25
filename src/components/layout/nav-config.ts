@@ -21,6 +21,10 @@ import {
   Building2,
   CreditCard,
   UserPlus,
+  Undo2,
+  Factory,
+  ArrowLeftRight,
+  Target,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -41,10 +45,13 @@ export const navItems: {
   { href: "/dashboard/crm", label: "CRM", icon: Users },
   { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone },
   { href: "/dashboard/sales", label: "Sales", icon: ShoppingCart },
+  { href: "/dashboard/returns", label: "Returns", icon: Undo2 },
   { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
   { href: "/dashboard/procurement", label: "Procurement", icon: Truck },
+  { href: "/dashboard/mrp", label: "Planning", icon: Factory },
   { href: "/dashboard/invoicing", label: "Invoicing", icon: Receipt },
   { href: "/dashboard/accounting", label: "Accounting", icon: Wallet, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/controlling", label: "Controlling", icon: Target, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/hr", label: "HR", icon: UserSquare2, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/payroll", label: "Payroll", icon: Banknote, roles: ["OWNER", "ADMIN"] },
@@ -53,6 +60,7 @@ export const navItems: {
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/edi", label: "EDI", icon: ArrowLeftRight, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/team", label: "Team", icon: UserPlus, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"] },
   { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"] },

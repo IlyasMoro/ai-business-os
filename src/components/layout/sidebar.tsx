@@ -8,10 +8,12 @@ export function Sidebar({
   role,
   userName,
   isPlatformAdmin = false,
+  hiddenHrefs,
 }: {
   role: Role;
   userName: string;
   isPlatformAdmin?: boolean;
+  hiddenHrefs?: string[];
 }) {
   return (
     <aside className="hidden w-60 shrink-0 flex-col border-r border-white/[0.06] bg-black sm:flex light:border-slate-200 light:bg-white">
@@ -23,7 +25,7 @@ export function Sidebar({
           </span>
         </Link>
       </div>
-      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} />
+      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} />
       <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
         <UserMenu userName={userName} />
       </div>

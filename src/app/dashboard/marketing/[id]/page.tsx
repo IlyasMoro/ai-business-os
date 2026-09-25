@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { CampaignStatusForm } from "@/components/marketing/campaign-status-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
@@ -46,7 +46,7 @@ export default async function CampaignDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{campaign.name}</h1>
-              <Badge tone={statusTone[campaign.status]}>{campaign.status}</Badge>
+              <StatusBadge status={campaign.status} tone={statusTone[campaign.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               {campaign.channel.charAt(0) + campaign.channel.slice(1).toLowerCase()}

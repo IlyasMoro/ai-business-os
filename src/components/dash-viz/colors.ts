@@ -21,3 +21,26 @@ export function thresholdColor(pct: number, goodIsHigh: boolean) {
   if (p >= 40) return VIZ.amber;
   return VIZ.red;
 }
+
+/**
+ * Maps a VIZ color, the same one already used to color a donut chart slice
+ * or a status dot, to the matching Badge tone. Every list page already
+ * defines a status to VIZ color lookup for its chart; this lets the status
+ * cell in the table reuse that exact lookup to render a real Badge pill
+ * instead of a small colored dot, so status stays immediately readable in
+ * both places without keeping two separate color maps in sync.
+ */
+export function toneForVizColor(color: string): "slate" | "green" | "yellow" | "red" | "blue" {
+  switch (color) {
+    case VIZ.emerald:
+      return "green";
+    case VIZ.amber:
+      return "yellow";
+    case VIZ.red:
+      return "red";
+    case VIZ.blue:
+      return "blue";
+    default:
+      return "slate";
+  }
+}

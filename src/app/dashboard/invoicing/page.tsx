@@ -6,6 +6,7 @@ import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
@@ -175,13 +176,7 @@ export default async function InvoicingPage({
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{invoice.customer.name}</td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: statusColor[invoice.status] }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[invoice.status] }} />
-                      {invoice.status}
-                    </span>
+                    <StatusBadge status={invoice.status} color={statusColor[invoice.status]} />
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                     {invoice.dueDate.toLocaleDateString()}

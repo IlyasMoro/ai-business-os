@@ -72,6 +72,12 @@ export default async function AutomationPage({
             label="Stale lead cleanup"
             description="Mark a CRM lead inactive if it's been open 30+ days with no orders."
           />
+          <AutomationToggle
+            toggleKey="creditLimitWarnings"
+            enabled={settings?.creditLimitWarnings ?? false}
+            label="Credit limit warnings"
+            description="Email every Owner and Admin once a customer's outstanding balance reaches 90% of their credit limit, before an order actually gets blocked."
+          />
           <ReportFrequencySelect value={settings?.reportFrequency ?? "OFF"} />
         </div>
       </div>

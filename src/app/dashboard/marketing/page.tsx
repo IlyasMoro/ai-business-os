@@ -5,6 +5,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { Plus, Search, Download } from "lucide-react";
 
 const statusOrder = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
@@ -142,16 +143,7 @@ export default async function MarketingPage({
                     {campaign.channel.charAt(0) + campaign.channel.slice(1).toLowerCase()}
                   </td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: statusColor[campaign.status] }}
-                    >
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: statusColor[campaign.status] }}
-                      />
-                      {campaign.status}
-                    </span>
+                    <StatusBadge status={campaign.status} color={statusColor[campaign.status]} />
                   </td>
                   <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
                     ${campaign.budget.toFixed(2)}

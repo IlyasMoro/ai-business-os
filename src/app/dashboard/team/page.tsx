@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { InviteForm } from "@/components/team/invite-form";
@@ -62,7 +62,7 @@ export default async function TeamPage({
                   <li key={invite.id} className="flex items-center justify-between py-2.5 text-sm">
                     <div className="flex items-center gap-2.5">
                       <span className="text-slate-50 light:text-slate-900">{invite.email}</span>
-                      <Badge tone={roleTone[invite.role]}>{invite.role}</Badge>
+                      <StatusBadge status={invite.role} tone={roleTone[invite.role]} />
                       {expired && <Badge tone="red">Expired</Badge>}
                     </div>
                     <DeleteButton
@@ -89,7 +89,7 @@ export default async function TeamPage({
                 <div>
                   <div className="flex items-center gap-2.5">
                     <span className="font-medium text-slate-50 light:text-slate-900">{member.name}</span>
-                    <Badge tone={roleTone[member.role]}>{member.role}</Badge>
+                    <StatusBadge status={member.role} tone={roleTone[member.role]} />
                   </div>
                   <p className="text-slate-400 light:text-slate-500">{member.email}</p>
                 </div>

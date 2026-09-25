@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { evaluateCreditCheck } from "@/lib/credit-math";
 import { findStockShortfalls } from "@/lib/stock-math";
+import { LotShortageError, getInventorySettings, takeFromLots } from "@/lib/lots";
 import {
   OrderSchema,
   OrderItemSchema,
@@ -78,7 +79,7 @@ export async function updateOrderStatus(
       items: {
         select: {
           quantity: true,
-          product: { select: { id: true, name: true, stockQty: true } },
+          product: { select: { id: true, name: true, stockQty: true, trackingMode: true } },
         },
       },
     },
@@ -138,15 +139,41 @@ export async function updateOrderStatus(
       return { message: `Cannot fulfil: not enough stock for ${summary}. Receive more stock or reduce the order.` };
     }
 
-    await db.$transaction([
-      ...order.items.map((item) =>
-        db.product.update({
-          where: { id: item.product.id },
-          data: { stockQty: { decrement: item.quantity } },
-        })
-      ),
-      db.order.update({ where: { id: orderId, companyId: session.companyId }, data: { status: nextStatus } }),
-    ]);
+    // Lot and serial products also ship from specific lots, picked by the
+    // company's rule, so every unit can be traced to this order.
+    const inventory = await getInventorySettings(session.companyId);
+    try {
+      await db.$transaction(async (tx) => {
+        for (const item of order.items) {
+          await tx.product.update({
+            where: { id: item.product.id },
+            data: { stockQty: { decrement: item.quantity } },
+          });
+          if (item.product.trackingMode !== "NONE") {
+            await takeFromLots(tx, {
+              companyId: session.companyId,
+              productId: item.product.id,
+              productName: item.product.name,
+              quantity: item.quantity,
+              kind: "SALE",
+              settings: inventory,
+              links: { orderId },
+            });
+          }
+        }
+        await tx.order.update({
+          where: { id: orderId, companyId: session.companyId },
+          data: { status: nextStatus, fulfilledAt: new Date() },
+        });
+      });
+    } catch (e) {
+      if (e instanceof LotShortageError) {
+        return {
+          message: `Cannot fulfil: ${e.message}${inventory.blockExpired ? " Expired lots can't be shipped." : ""}`,
+        };
+      }
+      throw e;
+    }
 
     revalidatePath(`/dashboard/sales/${orderId}`);
     revalidatePath("/dashboard/sales");

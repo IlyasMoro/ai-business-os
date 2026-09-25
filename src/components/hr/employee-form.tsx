@@ -13,6 +13,7 @@ type Action = (
 export function EmployeeForm({
   action,
   defaultValues,
+  costCenters = [],
   submitLabel = "Save employee",
 }: {
   action: Action;
@@ -24,7 +25,9 @@ export function EmployeeForm({
     salary: number;
     hireDate: string;
     status: string;
+    costCenterId?: string | null;
   };
+  costCenters?: { id: string; label: string }[];
   submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -89,6 +92,21 @@ export function EmployeeForm({
         </Select>
         <FieldError messages={state?.errors?.status} />
       </div>
+
+      {costCenters.length > 0 && (
+        <div>
+          <Label htmlFor="costCenterId">Cost center</Label>
+          <Select id="costCenterId" name="costCenterId" defaultValue={defaultValues?.costCenterId ?? ""}>
+            <option value="">None</option>
+            {costCenters.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label}
+              </option>
+            ))}
+          </Select>
+          <p className="mt-1 text-xs text-slate-500">Paid payroll for this employee counts as cost here.</p>
+        </div>
+      )}
 
       {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 

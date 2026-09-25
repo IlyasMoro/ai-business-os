@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -92,7 +92,7 @@ export default async function CustomerDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{customer.name}</h1>
-              <Badge tone={statusTone[customer.status]}>{customer.status}</Badge>
+              <StatusBadge status={customer.status} tone={statusTone[customer.status]} />
             </div>
             {customer.company && <p className="mt-1 text-slate-400 light:text-slate-500">{customer.company}</p>}
           </div>
@@ -196,7 +196,7 @@ export default async function CustomerDetailPage({
                     </Link>
                     <div className="flex items-center gap-3">
                       <span className="font-mono tabular-nums text-slate-500">${order.totalAmount.toFixed(2)}</span>
-                      <Badge tone={orderStatusTone[order.status]}>{order.status}</Badge>
+                      <StatusBadge status={order.status} tone={orderStatusTone[order.status]} />
                     </div>
                   </li>
                 ))}
@@ -224,7 +224,7 @@ export default async function CustomerDetailPage({
                     </Link>
                     <div className="flex items-center gap-3">
                       <span className="font-mono tabular-nums text-slate-500">${invoice.totalAmount.toFixed(2)}</span>
-                      <Badge tone={invoiceStatusTone[invoice.status]}>{invoice.status}</Badge>
+                      <StatusBadge status={invoice.status} tone={invoiceStatusTone[invoice.status]} />
                     </div>
                   </li>
                 ))}
@@ -250,7 +250,7 @@ export default async function CustomerDetailPage({
                     >
                       {ticket.subject}
                     </Link>
-                    <Badge tone={ticketStatusTone[ticket.status]}>{ticket.status}</Badge>
+                    <StatusBadge status={ticket.status} tone={ticketStatusTone[ticket.status]} />
                   </li>
                 ))}
               </ul>

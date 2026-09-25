@@ -5,6 +5,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { DualProgressBar } from "@/components/dash-viz/dual-progress-bar";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
@@ -153,10 +154,7 @@ export default async function ProjectsPage({
                     </td>
                     <td className="px-5 py-3 text-slate-400 light:text-slate-500">{project.customer?.name ?? "—"}</td>
                     <td className="px-5 py-3">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: statusColor[project.status] }}>
-                        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[project.status] }} />
-                        {project.status}
-                      </span>
+                      <StatusBadge status={project.status} color={statusColor[project.status]} />
                     </td>
                     <td className="px-5 py-3">
                       {project.dueDate ? (

@@ -75,6 +75,18 @@ export async function updateProduct(
     return { errors: { sku: ["A product with this SKU already exists."] } };
   }
 
+  const current = await db.product.findUnique({
+    where: { id: productId, companyId: session.companyId },
+    select: { stockQty: true, trackingMode: true },
+  });
+  if (current && current.trackingMode !== "NONE" && current.stockQty !== rest.stockQty) {
+    return {
+      errors: {
+        stockQty: ["This product is lot or serial tracked, so its stock only changes by receiving, shipping or building."],
+      },
+    };
+  }
+
   await db.product.update({
     where: { id: productId, companyId: session.companyId },
     data: { ...rest, description: description || null },
@@ -103,11 +115,13 @@ export async function deleteProduct(productId: string) {
     redirect("/dashboard/inventory?error=forbidden");
   }
 
-  const inUse = await db.orderItem.findFirst({
-    where: { productId, product: { companyId: session.companyId } },
-    select: { id: true },
-  });
-  if (inUse) {
+  const [inOrder, inBom, inWorkOrder] = await Promise.all([
+    db.orderItem.findFirst({ where: { productId, product: { companyId: session.companyId } }, select: { id: true } }),
+    // Components are protected; a product's own BOM lines go with it.
+    db.bomLine.findFirst({ where: { componentId: productId, companyId: session.companyId }, select: { id: true } }),
+    db.workOrder.findFirst({ where: { productId, companyId: session.companyId }, select: { id: true } }),
+  ]);
+  if (inOrder || inBom || inWorkOrder) {
     redirect(`/dashboard/inventory/${productId}?error=in-use`);
   }
 

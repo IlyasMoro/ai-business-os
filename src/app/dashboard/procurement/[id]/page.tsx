@@ -3,12 +3,13 @@ import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { PurchaseOrderItemForm } from "@/components/procurement/purchase-order-item-form";
 import { PurchaseOrderStatusForm } from "@/components/procurement/purchase-order-status-form";
 import { deletePurchaseOrder, removePurchaseOrderItem } from "@/lib/actions/procurement";
+import { EdiSendButton } from "@/components/edi/edi-send-button";
 
 const statusTone = {
   DRAFT: "slate",
@@ -53,7 +54,7 @@ export default async function PurchaseOrderDetailPage({
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
                 Purchase order for {purchaseOrder.supplier.name}
               </h1>
-              <Badge tone={statusTone[purchaseOrder.status]}>{purchaseOrder.status}</Badge>
+              <StatusBadge status={purchaseOrder.status} tone={statusTone[purchaseOrder.status]} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {purchaseOrder.createdAt.toLocaleDateString()}
@@ -75,6 +76,17 @@ export default async function PurchaseOrderDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <EdiSendButton docType="850" recordId={purchaseOrder.id} supplierId={purchaseOrder.supplierId} />
+            {purchaseOrder.status !== "RECEIVED" &&
+              purchaseOrder.status !== "CANCELLED" &&
+              purchaseOrder.items.some((i) => i.product.trackingMode !== "NONE") && (
+                <Link
+                  href={`/dashboard/procurement/${purchaseOrder.id}/receive`}
+                  className="whitespace-nowrap rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-500/20"
+                >
+                  Receive with lots
+                </Link>
+              )}
             <PurchaseOrderStatusForm purchaseOrderId={purchaseOrder.id} status={purchaseOrder.status} />
             <DeleteButton action={deletePurchaseOrder.bind(null, purchaseOrder.id)} />
           </div>

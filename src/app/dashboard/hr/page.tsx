@@ -6,6 +6,7 @@ import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AllocationBar } from "@/components/dash-viz/allocation-bar";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
 
@@ -173,13 +174,7 @@ export default async function HrPage({
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.position ?? "—"}</td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.department ?? "—"}</td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: statusColor[employee.status] }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[employee.status] }} />
-                      {employee.status}
-                    </span>
+                    <StatusBadge status={employee.status} color={statusColor[employee.status]} />
                   </td>
                 </tr>
               ))}

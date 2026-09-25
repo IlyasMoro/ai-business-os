@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
-import { Badge } from "@/components/ui-dark/badge";
+import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { deleteTransaction } from "@/lib/actions/accounting";
@@ -16,15 +16,22 @@ const typeTone = {
 
 export default async function TransactionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ warning?: string; over?: string }>;
 }) {
   const { id } = await params;
+  const { warning, over } = await searchParams;
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const transaction = await db.transaction.findUnique({
     where: { id, companyId: session.companyId },
-    include: { invoice: { select: { id: true, invoiceNumber: true } } },
+    include: {
+      invoice: { select: { id: true, invoiceNumber: true } },
+      costCenter: { select: { id: true, code: true, name: true } },
+      internalOrder: { select: { id: true, orderNumber: true, name: true } },
+    },
   });
 
   if (!transaction) notFound();
@@ -50,7 +57,7 @@ export default async function TransactionDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{transaction.category}</h1>
-              <Badge tone={typeTone[transaction.type]}>{transaction.type}</Badge>
+              <StatusBadge status={transaction.type} tone={typeTone[transaction.type]} />
               {isAnomalous && (
                 <span
                   title={`More than 2.5x the average ${transaction.category} ${transaction.type.toLowerCase()} of $${avgAmount!.toFixed(2)}`}
@@ -87,6 +94,13 @@ export default async function TransactionDetailPage({
           </div>
         </div>
 
+        {warning === "budget" && (
+          <p className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+            Saved, but this expense puts {transaction.internalOrder ? `internal order ${transaction.internalOrder.orderNumber}` : `cost center ${transaction.costCenter?.code ?? ""}`}{" "}
+            ${Number(over ?? 0).toFixed(2)} over its budget.
+          </p>
+        )}
+
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Details</CardTitle>
@@ -106,6 +120,20 @@ export default async function TransactionDetailPage({
               <p className="text-slate-500">Category</p>
               <p className="text-slate-50 light:text-slate-900">{transaction.category}</p>
             </div>
+            {(transaction.costCenter || transaction.internalOrder) && (
+              <div>
+                <p className="text-slate-500">Cost object</p>
+                {transaction.internalOrder ? (
+                  <Link href={`/dashboard/controlling/orders/${transaction.internalOrder.id}`} className="text-blue-400 hover:text-blue-300">
+                    {transaction.internalOrder.orderNumber} {transaction.internalOrder.name}
+                  </Link>
+                ) : (
+                  <Link href={`/dashboard/controlling/cost-centers/${transaction.costCenter!.id}`} className="text-blue-400 hover:text-blue-300">
+                    {transaction.costCenter!.code} {transaction.costCenter!.name}
+                  </Link>
+                )}
+              </div>
+            )}
             {transaction.description && (
               <div className="col-span-2">
                 <p className="text-slate-500">Description</p>

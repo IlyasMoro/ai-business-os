@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { evaluateCreditCheck } from "@/lib/credit-math";
+import { evaluateCreditCheck, isApproachingCreditLimit } from "@/lib/credit-math";
 
 describe("evaluateCreditCheck", () => {
   it("is always within limit when no credit limit is set", () => {
@@ -32,5 +32,28 @@ describe("evaluateCreditCheck", () => {
     const result = evaluateCreditCheck({ outstandingBalance: 0, creditLimit: 0, orderTotal: 1 });
     expect(result.withinLimit).toBe(false);
     expect(result.amountOverLimit).toBe(1);
+  });
+});
+
+describe("isApproachingCreditLimit", () => {
+  it("never warns when no credit limit is set", () => {
+    expect(isApproachingCreditLimit(19_000, null)).toBe(false);
+    expect(isApproachingCreditLimit(19_000, undefined)).toBe(false);
+  });
+
+  it("does not warn well under the threshold", () => {
+    expect(isApproachingCreditLimit(10_000, 20_000)).toBe(false);
+  });
+
+  it("warns right at the 90% threshold", () => {
+    expect(isApproachingCreditLimit(18_000, 20_000)).toBe(true);
+  });
+
+  it("warns once the limit is already exceeded", () => {
+    expect(isApproachingCreditLimit(21_500, 20_000)).toBe(true);
+  });
+
+  it("never warns for a zero or negative credit limit", () => {
+    expect(isApproachingCreditLimit(100, 0)).toBe(false);
   });
 });

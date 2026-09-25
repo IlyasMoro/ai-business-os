@@ -6,6 +6,7 @@ import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { Sparkline } from "@/components/dash-viz/sparkline";
 import { VIZ } from "@/components/dash-viz/colors";
+import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
@@ -163,13 +164,7 @@ export default async function SalesPage({
                     </Link>
                   </td>
                   <td className="px-5 py-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-medium"
-                      style={{ color: statusColor[order.status] }}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: statusColor[order.status] }} />
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} color={statusColor[order.status]} />
                   </td>
                   <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(order.totalAmount)}

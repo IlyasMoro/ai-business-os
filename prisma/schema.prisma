@@ -22,28 +22,44 @@ model Company {
   logoData     Bytes?
   logoMimeType String?
 
-  users              User[]
-  customers          Customer[]
-  products           Product[]
-  suppliers          Supplier[]
-  purchaseOrders     PurchaseOrder[]
-  orders             Order[]
-  invoices           Invoice[]
-  transactions       Transaction[]
-  employees          Employee[]
-  payrollRuns        PayrollRun[]
-  projects           Project[]
-  tickets            Ticket[]
-  chatMessages       AiChatMessage[]
-  aiActions          AiAction[]
-  auditLogs          AuditLog[]
-  documents          Document[]
-  automationSettings AutomationSettings?
-  googleIntegration  GoogleIntegration?
-  campaigns          Campaign[]
-  calendarEvents     CalendarEvent[]
-  subscription       Subscription?
-  teamInvites        TeamInvite[]
+  users               User[]
+  customers           Customer[]
+  products            Product[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
+  orders              Order[]
+  returns             ReturnAuthorization[]
+  returnPolicy        ReturnPolicy?
+  bomLines            BomLine[]
+  workOrders          WorkOrder[]
+  mrpSettings         MrpSettings?
+  ediSettings         EdiSettings?
+  ediPartners         EdiPartner[]
+  ediDocuments        EdiDocument[]
+  costCenters         CostCenter[]
+  internalOrders      InternalOrder[]
+  coAllocations       CoAllocation[]
+  coPostings          CoPosting[]
+  controllingSettings ControllingSettings?
+  stockLots           StockLot[]
+  lotMovements        LotMovement[]
+  inventorySettings   InventorySettings?
+  invoices            Invoice[]
+  transactions        Transaction[]
+  employees           Employee[]
+  payrollRuns         PayrollRun[]
+  projects            Project[]
+  tickets             Ticket[]
+  chatMessages        AiChatMessage[]
+  aiActions           AiAction[]
+  auditLogs           AuditLog[]
+  documents           Document[]
+  automationSettings  AutomationSettings?
+  googleIntegration   GoogleIntegration?
+  campaigns           Campaign[]
+  calendarEvents      CalendarEvent[]
+  subscription        Subscription?
+  teamInvites         TeamInvite[]
 }
 
 enum UserRole {
@@ -143,15 +159,16 @@ enum CustomerStatus {
 }
 
 model Customer {
-  id           String         @id @default(cuid())
-  name         String
-  email        String?
-  phone        String?
-  company      String?
-  status       CustomerStatus @default(LEAD)
-  notes        String?
-  creditLimit  Float?
-  createdAt    DateTime       @default(now())
+  id                  String         @id @default(cuid())
+  name                String
+  email               String?
+  phone               String?
+  company             String?
+  status              CustomerStatus @default(LEAD)
+  notes               String?
+  creditLimit         Float?
+  creditWarningSentAt DateTime?
+  createdAt           DateTime       @default(now())
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -159,11 +176,12 @@ model Customer {
   campaignId String?
   campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
-  contacts Contact[]
-  orders   Order[]
-  invoices Invoice[]
-  tickets  Ticket[]
-  projects Project[]
+  contacts    Contact[]
+  orders      Order[]
+  invoices    Invoice[]
+  tickets     Ticket[]
+  projects    Project[]
+  ediPartners EdiPartner[]
 
   @@index([companyId])
   @@index([campaignId])
@@ -195,12 +213,29 @@ model Product {
   reorderLevel Int      @default(5)
   createdAt    DateTime @default(now())
 
+  // MRP planning inputs. Lead time is how long it takes to buy (or make)
+  // one batch; lot size rounds planned quantities up to whole batches.
+  leadTimeDays        Int       @default(0)
+  lotSize             Int       @default(1)
+  preferredSupplierId String?
+  preferredSupplier   Supplier? @relation(fields: [preferredSupplierId], references: [id], onDelete: SetNull)
+
+  // Lot and serial tracking. Lot and serial products keep stockQty equal
+  // to the sum of their lots' quantities.
+  trackingMode TrackingMode @default(NONE)
+  tracksExpiry Boolean      @default(false)
+  lots         StockLot[]
+
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   orderItems         OrderItem[]
   invoiceLineItems   InvoiceLineItem[]
   purchaseOrderItems PurchaseOrderItem[]
+  returnItems        ReturnItem[]
+  bomComponents      BomLine[]           @relation("BomParent")
+  usedInBoms         BomLine[]           @relation("BomComponent")
+  workOrders         WorkOrder[]
 
   @@unique([companyId, sku])
   @@index([companyId])
@@ -219,7 +254,9 @@ model Supplier {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
-  purchaseOrders PurchaseOrder[]
+  purchaseOrders    PurchaseOrder[]
+  preferredProducts Product[]
+  ediPartners       EdiPartner[]
 
   @@index([companyId])
 }
@@ -275,10 +312,14 @@ enum OrderStatus {
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  status      OrderStatus @default(PENDING)
-  totalAmount Float       @default(0)
-  createdAt   DateTime    @default(now())
+  id               String      @id @default(cuid())
+  status           OrderStatus @default(PENDING)
+  totalAmount      Float       @default(0)
+  createdAt        DateTime    @default(now())
+  // When goods left the business; the return window counts from here.
+  fulfilledAt      DateTime?
+  // The customer's own PO number, e.g. from an inbound EDI 850.
+  customerPoNumber String?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -288,6 +329,7 @@ model Order {
 
   items   OrderItem[]
   invoice Invoice?
+  returns ReturnAuthorization[]
 
   @@index([companyId])
   @@index([customerId])
@@ -304,7 +346,89 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
+  returnItems ReturnItem[]
+
   @@index([orderId])
+}
+
+// ---------- Returns (RMA) ----------
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  RECEIVED
+  REFUNDED
+  REJECTED
+}
+
+// Only resellable goods go back into stock when a return is received;
+// damaged goods are refunded but written off.
+enum ReturnCondition {
+  RESELLABLE
+  DAMAGED
+}
+
+model ReturnAuthorization {
+  id                   String       @id @default(cuid())
+  rmaNumber            String
+  status               ReturnStatus @default(REQUESTED)
+  reason               String
+  notes                String?
+  // Copied from the policy when the return is opened, so later policy
+  // edits never change the refund on a return already in progress.
+  restockingFeePercent Float        @default(0)
+  refundAmount         Float        @default(0)
+  createdAt            DateTime     @default(now())
+  receivedAt           DateTime?
+  refundedAt           DateTime?
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  items ReturnItem[]
+
+  @@unique([companyId, rmaNumber])
+  @@index([companyId])
+  @@index([orderId])
+}
+
+// Per company return rules, so a clothing store, an electronics reseller
+// and a wholesaler can each run returns their own way. A company with no
+// row uses the defaults in lib/returns-policy.ts.
+model ReturnPolicy {
+  id                   String  @id @default(cuid())
+  enabled              Boolean @default(true)
+  windowDays           Int     @default(30)
+  requireApproval      Boolean @default(true)
+  restockingFeePercent Float   @default(0)
+  restockDamaged       Boolean @default(false)
+  // One reason per line; shown as the reason choices on a new return.
+  reasons              String
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model ReturnItem {
+  id        String          @id @default(cuid())
+  quantity  Int
+  unitPrice Float
+  condition ReturnCondition @default(RESELLABLE)
+
+  returnId String
+  rma      ReturnAuthorization @relation(fields: [returnId], references: [id], onDelete: Cascade)
+
+  orderItemId String
+  orderItem   OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([returnId])
+  @@index([orderItemId])
 }
 
 // ---------- Invoicing ----------
@@ -383,8 +507,16 @@ model Transaction {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
+  // Controlling: which cost center or internal order carries this cost.
+  costCenterId    String?
+  costCenter      CostCenter?    @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  internalOrderId String?
+  internalOrder   InternalOrder? @relation(fields: [internalOrderId], references: [id], onDelete: SetNull)
+
   @@index([companyId])
   @@index([projectId])
+  @@index([costCenterId])
+  @@index([internalOrderId])
 }
 
 // ---------- HR & Payroll ----------
@@ -403,6 +535,10 @@ model Employee {
   salary     Float          @default(0)
   hireDate   DateTime       @default(now())
   status     EmployeeStatus @default(ACTIVE)
+
+  // Paid payroll for this employee counts as cost on this cost center.
+  costCenterId String?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -698,10 +834,12 @@ model AutomationSettings {
   lowStockReorder         Boolean @default(false)
   staleTicketEscalation   Boolean @default(false)
   staleLeadCleanup        Boolean @default(false)
+  creditLimitWarnings     Boolean @default(false)
 
   // A single outgoing webhook URL (Slack Incoming Webhook, Zapier "Catch
-  // Hook", or any custom JSON endpoint). Fires on the four automation events
-  // above (only when each is itself enabled) plus every new support ticket.
+  // Hook", or any custom JSON endpoint). Fires on the five automation
+  // events above (only when each is itself enabled) plus every new support
+  // ticket.
   webhookUrl String?
 
   // Emails a PDF business report (KPIs + charts) to the company on the
@@ -844,4 +982,426 @@ model PlatformSettings {
   groqApiKey      String?
   openaiApiKey    String?
   updatedAt       DateTime @updatedAt
+}
+
+// ---------- Manufacturing & MRP ----------
+
+// One line of a bill of materials: making one unit of `parent` uses
+// `quantity` units of `component`. A product with BOM lines is made in
+// house; one without is bought.
+model BomLine {
+  id       String @id @default(cuid())
+  quantity Float
+
+  parentId String
+  parent   Product @relation("BomParent", fields: [parentId], references: [id], onDelete: Cascade)
+
+  componentId String
+  component   Product @relation("BomComponent", fields: [componentId], references: [id])
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([parentId, componentId])
+  @@index([companyId])
+  @@index([componentId])
+}
+
+enum WorkOrderStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model WorkOrder {
+  id          String          @id @default(cuid())
+  woNumber    String
+  status      WorkOrderStatus @default(PLANNED)
+  quantity    Int
+  notes       String?
+  dueDate     DateTime?
+  createdAt   DateTime        @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, woNumber])
+  @@index([companyId])
+  @@index([productId])
+}
+
+// Per company MRP rules. A company with no row uses the defaults in
+// lib/mrp-settings-presets.ts.
+model MrpSettings {
+  id                   String  @id @default(cuid())
+  enabled              Boolean @default(true)
+  // Count PENDING sales orders as demand, not just CONFIRMED ones.
+  includePendingOrders Boolean @default(false)
+  // Treat each product's reorder level as safety stock to keep on hand.
+  useSafetyStock       Boolean @default(true)
+  // Allow a work order to complete even when components are short
+  // (stock can go negative until the paperwork catches up).
+  allowNegativeStock   Boolean @default(false)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ---------- EDI (ANSI X12) ----------
+
+// This company's own EDI identity and file format. A company with no row
+// has EDI switched off until it's set up.
+model EdiSettings {
+  id                  String  @id @default(cuid())
+  enabled             Boolean @default(true)
+  isaQualifier        String  @default("ZZ")
+  isaId               String
+  gsId                String
+  // "004010" or "005010".
+  version             String  @default("004010")
+  // T = test, P = production (ISA15).
+  usageIndicator      String  @default("T")
+  elementSeparator    String  @default("*")
+  subElementSeparator String  @default(">")
+  segmentTerminator   String  @default("~")
+  nextControlNumber   Int     @default(1)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// A customer or supplier this company exchanges EDI files with.
+model EdiPartner {
+  id           String   @id @default(cuid())
+  name         String
+  isaQualifier String   @default("ZZ")
+  isaId        String
+  gsId         String
+  enabled      Boolean  @default(true)
+  // Which documents are exchanged with this partner.
+  receive850   Boolean  @default(true)
+  send810      Boolean  @default(true)
+  send856      Boolean  @default(true)
+  send850      Boolean  @default(true)
+  // Inbound orders: take the partner's prices, or use our own list price.
+  useEdiPrices Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  documents EdiDocument[]
+
+  @@unique([companyId, isaQualifier, isaId])
+  @@index([companyId])
+}
+
+enum EdiDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum EdiStatus {
+  GENERATED
+  PROCESSED
+  REJECTED
+}
+
+// Every X12 file generated or received, kept as sent so it can be
+// downloaded again or audited.
+model EdiDocument {
+  id            String       @id @default(cuid())
+  direction     EdiDirection
+  docType       String
+  status        EdiStatus
+  controlNumber Int
+  reference     String?
+  error         String?
+  content       String
+  createdAt     DateTime     @default(now())
+
+  partnerId String?
+  partner   EdiPartner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
+  // What the document is about, when it maps to a record here.
+  orderId         String?
+  purchaseOrderId String?
+  invoiceId       String?
+  // An inbound document's 997 acknowledgment, and vice versa.
+  acknowledgesId  String?
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([partnerId])
+  @@index([orderId])
+}
+
+// ---------- Controlling (CO) ----------
+
+model CostCenter {
+  id          String   @id @default(cuid())
+  code        String
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  transactions     Transaction[]
+  employees        Employee[]
+  budgets          CostBudget[]
+  postings         CoPosting[]
+  settlingOrders   InternalOrder[]        @relation("SettlementReceiver")
+  allocationsSent  CoAllocation[]         @relation("AllocationSender")
+  allocationShares CoAllocationReceiver[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+// Planned cost for one cost center in one calendar month.
+model CostBudget {
+  id     String @id @default(cuid())
+  year   Int
+  month  Int
+  amount Float
+
+  costCenterId String
+  costCenter   CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+
+  @@unique([costCenterId, year, month])
+}
+
+enum InternalOrderStatus {
+  OPEN
+  CLOSED
+  SETTLED
+}
+
+// A temporary cost collector (a trade fair, a campaign, a repair) with its
+// own budget, settled onto a cost center when it's done.
+model InternalOrder {
+  id          String              @id @default(cuid())
+  orderNumber String
+  name        String
+  description String?
+  budget      Float               @default(0)
+  status      InternalOrderStatus @default(OPEN)
+  createdAt   DateTime            @default(now())
+  closedAt    DateTime?
+  settledAt   DateTime?
+
+  settleToId String?
+  settleTo   CostCenter? @relation("SettlementReceiver", fields: [settleToId], references: [id], onDelete: SetNull)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+  postings     CoPosting[]
+
+  @@unique([companyId, orderNumber])
+  @@index([companyId])
+}
+
+// A cost allocation cycle: shares one sender cost center's cost out to
+// receivers by fixed percentages.
+model CoAllocation {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  senderId String
+  sender   CostCenter @relation("AllocationSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  receivers CoAllocationReceiver[]
+  runs      CoAllocationRun[]
+
+  @@index([companyId])
+}
+
+model CoAllocationReceiver {
+  id      String @id @default(cuid())
+  percent Float
+
+  allocationId String
+  allocation   CoAllocation @relation(fields: [allocationId], references: [id], onDelete: Cascade)
+
+  costCenterId String
+  costCenter   CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+
+  @@unique([allocationId, costCenterId])
+}
+
+model CoAllocationRun {
+  id        String   @id @default(cuid())
+  year      Int
+  month     Int
+  amount    Float
+  createdAt DateTime @default(now())
+
+  allocationId String
+  allocation   CoAllocation @relation(fields: [allocationId], references: [id], onDelete: Cascade)
+
+  postings CoPosting[]
+
+  @@unique([allocationId, year, month])
+}
+
+enum CoPostingKind {
+  ALLOCATION
+  SETTLEMENT
+}
+
+// Secondary cost postings that exist only inside Controlling: they move
+// cost between cost centers and orders without touching the books.
+// Positive amounts add cost, negative amounts credit it away.
+model CoPosting {
+  id        String        @id @default(cuid())
+  kind      CoPostingKind
+  date      DateTime
+  amount    Float
+  reference String
+  createdAt DateTime      @default(now())
+
+  costCenterId    String?
+  costCenter      CostCenter?      @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+  internalOrderId String?
+  internalOrder   InternalOrder?   @relation(fields: [internalOrderId], references: [id], onDelete: Cascade)
+  runId           String?
+  run             CoAllocationRun? @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([costCenterId])
+  @@index([internalOrderId])
+}
+
+enum OverBudgetAction {
+  NONE
+  WARN
+  BLOCK
+}
+
+// Per company Controlling rules. A company with no row uses the defaults
+// in lib/controlling-presets.ts.
+model ControllingSettings {
+  id                   String           @id @default(cuid())
+  enabled              Boolean          @default(true)
+  // 1 = January. A July to June business would use 7.
+  fiscalYearStartMonth Int              @default(1)
+  overBudgetAction     OverBudgetAction @default(WARN)
+  // How far over budget is still allowed before the action kicks in.
+  tolerancePercent     Float            @default(0)
+  includePayroll       Boolean          @default(true)
+  requireCostCenter    Boolean          @default(false)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ---------- Lot & serial tracking ----------
+
+enum TrackingMode {
+  NONE
+  LOT
+  SERIAL
+}
+
+enum PickingRule {
+  FIFO
+  FEFO
+}
+
+// One lot (or, for serial products, one unit) of a product on hand.
+model StockLot {
+  id         String    @id @default(cuid())
+  lotNumber  String
+  quantity   Int
+  expiresAt  DateTime?
+  receivedAt DateTime  @default(now())
+  // Where it came from: PO, WO, OPENING or RETURN.
+  source     String
+
+  purchaseOrderId String?
+  workOrderId     String?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  movements LotMovement[]
+
+  @@unique([productId, lotNumber])
+  @@index([companyId])
+  @@index([companyId, expiresAt])
+}
+
+enum LotMovementKind {
+  RECEIPT
+  SALE
+  CONSUMPTION
+  PRODUCTION
+  RETURN
+  OPENING
+}
+
+// Every change to a lot's quantity, so any lot or serial can be traced
+// forward to the customers who got it and back to where it came from.
+model LotMovement {
+  id        String          @id @default(cuid())
+  kind      LotMovementKind
+  // Positive adds to the lot, negative takes from it.
+  quantity  Int
+  createdAt DateTime        @default(now())
+
+  lotId String
+  lot   StockLot @relation(fields: [lotId], references: [id], onDelete: Cascade)
+
+  orderId         String?
+  purchaseOrderId String?
+  workOrderId     String?
+  returnId        String?
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([lotId])
+  @@index([companyId])
+  @@index([orderId])
+}
+
+// Per company picking and expiry rules. A company with no row uses the
+// defaults in lib/inventory-settings.ts.
+model InventorySettings {
+  id                String      @id @default(cuid())
+  pickingRule       PickingRule @default(FIFO)
+  blockExpired      Boolean     @default(true)
+  expiryWarningDays Int         @default(30)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }
