@@ -20,6 +20,12 @@ export default async function EditEmployeePage({
 
   if (!employee) notFound();
 
+  const costCenters = await db.costCenter.findMany({
+    where: { companyId: session.companyId, OR: [{ active: true }, ...(employee.costCenterId ? [{ id: employee.costCenterId }] : [])] },
+    select: { id: true, code: true, name: true },
+    orderBy: { code: "asc" },
+  });
+
   const action = updateEmployee.bind(null, employee.id) as (
     state: EmployeeFormState,
     formData: FormData
@@ -39,7 +45,9 @@ export default async function EditEmployeePage({
             salary: employee.salary,
             hireDate: toDateInputValue(employee.hireDate),
             status: employee.status,
+            costCenterId: employee.costCenterId,
           }}
+          costCenters={costCenters.map((c) => ({ id: c.id, label: `${c.code} ${c.name}` }))}
           submitLabel="Save changes"
         />
       </div>

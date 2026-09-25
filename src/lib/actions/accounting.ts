@@ -7,6 +7,39 @@ import { db } from "@/lib/db";
 import { TransactionSchema, type TransactionFormState } from "@/lib/validation/accounting";
 import { suggestTransactionCategory } from "@/lib/ai-categorize";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { checkCostObject, getControllingSettings } from "@/lib/controlling";
+
+/** Cost object and budget check shared by create and update. */
+async function controlCost(
+  companyId: string,
+  data: { type: "INCOME" | "EXPENSE"; amount: number },
+  date: Date,
+  costObject: FormDataEntryValue | null,
+  excludeTransactionId?: string
+) {
+  const settings = await getControllingSettings(companyId);
+  const check = await checkCostObject({
+    companyId,
+    settings,
+    type: data.type,
+    costObject: typeof costObject === "string" && costObject ? costObject : undefined,
+    amount: data.amount,
+    date,
+    excludeTransactionId,
+  });
+  if (!check.ok) return { error: check.message } as const;
+  const a = check.availability;
+  if (a?.result === "BLOCK") {
+    return {
+      error: `Blocked by budget control: this would put ${check.objectLabel} $${a.overBy.toFixed(2)} over budget ($${Math.max(0, a.available).toFixed(2)} still available).`,
+    } as const;
+  }
+  return {
+    costCenterId: check.costCenterId,
+    internalOrderId: check.internalOrderId,
+    warning: a?.result === "WARN" ? `?warning=budget&over=${a.overBy.toFixed(2)}` : "",
+  } as const;
+}
 
 export async function suggestCategory(description: string, type: "INCOME" | "EXPENSE") {
   const session = await verifySession();
@@ -68,19 +101,25 @@ export async function createTransaction(
     }
   }
 
+  const control = await controlCost(session.companyId, rest, parsedDate, formData.get("costObject"));
+  if ("error" in control) return { message: control.error };
+
   const transaction = await db.transaction.create({
     data: {
       ...rest,
       date: parsedDate,
       description: description || undefined,
       projectId: projectId || undefined,
+      costCenterId: control.costCenterId,
+      internalOrderId: control.internalOrderId,
       companyId: session.companyId,
     },
   });
 
   revalidatePath("/dashboard/accounting");
+  revalidatePath("/dashboard/controlling");
   if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
-  redirect(`/dashboard/accounting/${transaction.id}`);
+  redirect(`/dashboard/accounting/${transaction.id}${control.warning}`);
 }
 
 export async function updateTransaction(
@@ -119,15 +158,26 @@ export async function updateTransaction(
     }
   }
 
+  const control = await controlCost(session.companyId, rest, parsedDate, formData.get("costObject"), transactionId);
+  if ("error" in control) return { message: control.error };
+
   await db.transaction.update({
     where: { id: transactionId, companyId: session.companyId },
-    data: { ...rest, date: parsedDate, description: description || null, projectId: projectId || null },
+    data: {
+      ...rest,
+      date: parsedDate,
+      description: description || null,
+      projectId: projectId || null,
+      costCenterId: control.costCenterId,
+      internalOrderId: control.internalOrderId,
+    },
   });
 
   revalidatePath("/dashboard/accounting");
   revalidatePath(`/dashboard/accounting/${transactionId}`);
+  revalidatePath("/dashboard/controlling");
   if (projectId) revalidatePath(`/dashboard/projects/${projectId}`);
-  redirect(`/dashboard/accounting/${transactionId}`);
+  redirect(`/dashboard/accounting/${transactionId}${control.warning}`);
 }
 
 export async function deleteTransaction(transactionId: string) {

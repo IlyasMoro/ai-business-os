@@ -26,6 +26,13 @@ const MESSAGES: Record<string, string> = {
   "edi-empty": "Add at least one line before generating an EDI document.",
   "edi-not-shipped": "A ship notice can only be sent once the order is fulfilled.",
   "edi-too-large": "EDI files can be at most 1MB.",
+  "co-duplicate": "A cost center with that code already exists.",
+  "co-in-use": "This cost center has carried costs or employees, so it can't be deleted. Mark it inactive instead.",
+  "co-settled": "This internal order is already settled and can't be changed.",
+  "co-no-receiver": "Choose a cost center to settle to before settling this order.",
+  "co-shares": "Receivers must be different from the sender, each listed once, with shares adding up to 100%.",
+  "co-already-run": "This allocation has already run for that month. Reverse that run first to run it again.",
+  "co-nothing": "The sender cost center has no cost in that month, so there is nothing to allocate.",
 };
 
 export function ErrorBanner({ code }: { code?: string }) {

@@ -58,3 +58,15 @@ export async function selectAndSave(page: Page, selector: string, value: string)
   await saved;
   await page.waitForFunction((sel) => !(document.querySelector(sel) as HTMLSelectElement | null)?.disabled, selector);
 }
+
+/** Waits until React has hydrated the element, so typing and submitting reach its handlers. */
+export async function waitForHydration(page: Page, selector: string): Promise<void> {
+  await page.waitForFunction(
+    (sel) => {
+      const el = document.querySelector(sel);
+      return !!el && Object.keys(el).some((k) => k.startsWith("__reactProps"));
+    },
+    selector,
+    { timeout: 45000 }
+  );
+}

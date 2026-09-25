@@ -24,6 +24,7 @@ import {
   Undo2,
   Factory,
   ArrowLeftRight,
+  Target,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -50,6 +51,7 @@ export const navItems: {
   { href: "/dashboard/mrp", label: "Planning", icon: Factory },
   { href: "/dashboard/invoicing", label: "Invoicing", icon: Receipt },
   { href: "/dashboard/accounting", label: "Accounting", icon: Wallet, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/controlling", label: "Controlling", icon: Target, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/hr", label: "HR", icon: UserSquare2, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/payroll", label: "Payroll", icon: Banknote, roles: ["OWNER", "ADMIN"] },

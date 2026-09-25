@@ -22,36 +22,41 @@ model Company {
   logoData     Bytes?
   logoMimeType String?
 
-  users              User[]
-  customers          Customer[]
-  products           Product[]
-  suppliers          Supplier[]
-  purchaseOrders     PurchaseOrder[]
-  orders             Order[]
-  returns            ReturnAuthorization[]
-  returnPolicy       ReturnPolicy?
-  bomLines           BomLine[]
-  workOrders         WorkOrder[]
-  mrpSettings        MrpSettings?
-  ediSettings        EdiSettings?
-  ediPartners        EdiPartner[]
-  ediDocuments       EdiDocument[]
-  invoices           Invoice[]
-  transactions       Transaction[]
-  employees          Employee[]
-  payrollRuns        PayrollRun[]
-  projects           Project[]
-  tickets            Ticket[]
-  chatMessages       AiChatMessage[]
-  aiActions          AiAction[]
-  auditLogs          AuditLog[]
-  documents          Document[]
-  automationSettings AutomationSettings?
-  googleIntegration  GoogleIntegration?
-  campaigns          Campaign[]
-  calendarEvents     CalendarEvent[]
-  subscription       Subscription?
-  teamInvites        TeamInvite[]
+  users               User[]
+  customers           Customer[]
+  products            Product[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
+  orders              Order[]
+  returns             ReturnAuthorization[]
+  returnPolicy        ReturnPolicy?
+  bomLines            BomLine[]
+  workOrders          WorkOrder[]
+  mrpSettings         MrpSettings?
+  ediSettings         EdiSettings?
+  ediPartners         EdiPartner[]
+  ediDocuments        EdiDocument[]
+  costCenters         CostCenter[]
+  internalOrders      InternalOrder[]
+  coAllocations       CoAllocation[]
+  coPostings          CoPosting[]
+  controllingSettings ControllingSettings?
+  invoices            Invoice[]
+  transactions        Transaction[]
+  employees           Employee[]
+  payrollRuns         PayrollRun[]
+  projects            Project[]
+  tickets             Ticket[]
+  chatMessages        AiChatMessage[]
+  aiActions           AiAction[]
+  auditLogs           AuditLog[]
+  documents           Document[]
+  automationSettings  AutomationSettings?
+  googleIntegration   GoogleIntegration?
+  campaigns           Campaign[]
+  calendarEvents      CalendarEvent[]
+  subscription        Subscription?
+  teamInvites         TeamInvite[]
 }
 
 enum UserRole {
@@ -493,8 +498,16 @@ model Transaction {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
+  // Controlling: which cost center or internal order carries this cost.
+  costCenterId    String?
+  costCenter      CostCenter?    @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
+  internalOrderId String?
+  internalOrder   InternalOrder? @relation(fields: [internalOrderId], references: [id], onDelete: SetNull)
+
   @@index([companyId])
   @@index([projectId])
+  @@index([costCenterId])
+  @@index([internalOrderId])
 }
 
 // ---------- HR & Payroll ----------
@@ -513,6 +526,10 @@ model Employee {
   salary     Float          @default(0)
   hireDate   DateTime       @default(now())
   status     EmployeeStatus @default(ACTIVE)
+
+  // Paid payroll for this employee counts as cost on this cost center.
+  costCenterId String?
+  costCenter   CostCenter? @relation(fields: [costCenterId], references: [id], onDelete: SetNull)
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1122,4 +1139,175 @@ model EdiDocument {
   @@index([companyId])
   @@index([partnerId])
   @@index([orderId])
+}
+
+// ---------- Controlling (CO) ----------
+
+model CostCenter {
+  id          String   @id @default(cuid())
+  code        String
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  transactions     Transaction[]
+  employees        Employee[]
+  budgets          CostBudget[]
+  postings         CoPosting[]
+  settlingOrders   InternalOrder[]        @relation("SettlementReceiver")
+  allocationsSent  CoAllocation[]         @relation("AllocationSender")
+  allocationShares CoAllocationReceiver[]
+
+  @@unique([companyId, code])
+  @@index([companyId])
+}
+
+// Planned cost for one cost center in one calendar month.
+model CostBudget {
+  id     String @id @default(cuid())
+  year   Int
+  month  Int
+  amount Float
+
+  costCenterId String
+  costCenter   CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+
+  @@unique([costCenterId, year, month])
+}
+
+enum InternalOrderStatus {
+  OPEN
+  CLOSED
+  SETTLED
+}
+
+// A temporary cost collector (a trade fair, a campaign, a repair) with its
+// own budget, settled onto a cost center when it's done.
+model InternalOrder {
+  id          String              @id @default(cuid())
+  orderNumber String
+  name        String
+  description String?
+  budget      Float               @default(0)
+  status      InternalOrderStatus @default(OPEN)
+  createdAt   DateTime            @default(now())
+  closedAt    DateTime?
+  settledAt   DateTime?
+
+  settleToId String?
+  settleTo   CostCenter? @relation("SettlementReceiver", fields: [settleToId], references: [id], onDelete: SetNull)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+  postings     CoPosting[]
+
+  @@unique([companyId, orderNumber])
+  @@index([companyId])
+}
+
+// A cost allocation cycle: shares one sender cost center's cost out to
+// receivers by fixed percentages.
+model CoAllocation {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  senderId String
+  sender   CostCenter @relation("AllocationSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  receivers CoAllocationReceiver[]
+  runs      CoAllocationRun[]
+
+  @@index([companyId])
+}
+
+model CoAllocationReceiver {
+  id      String @id @default(cuid())
+  percent Float
+
+  allocationId String
+  allocation   CoAllocation @relation(fields: [allocationId], references: [id], onDelete: Cascade)
+
+  costCenterId String
+  costCenter   CostCenter @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+
+  @@unique([allocationId, costCenterId])
+}
+
+model CoAllocationRun {
+  id        String   @id @default(cuid())
+  year      Int
+  month     Int
+  amount    Float
+  createdAt DateTime @default(now())
+
+  allocationId String
+  allocation   CoAllocation @relation(fields: [allocationId], references: [id], onDelete: Cascade)
+
+  postings CoPosting[]
+
+  @@unique([allocationId, year, month])
+}
+
+enum CoPostingKind {
+  ALLOCATION
+  SETTLEMENT
+}
+
+// Secondary cost postings that exist only inside Controlling: they move
+// cost between cost centers and orders without touching the books.
+// Positive amounts add cost, negative amounts credit it away.
+model CoPosting {
+  id        String        @id @default(cuid())
+  kind      CoPostingKind
+  date      DateTime
+  amount    Float
+  reference String
+  createdAt DateTime      @default(now())
+
+  costCenterId    String?
+  costCenter      CostCenter?      @relation(fields: [costCenterId], references: [id], onDelete: Cascade)
+  internalOrderId String?
+  internalOrder   InternalOrder?   @relation(fields: [internalOrderId], references: [id], onDelete: Cascade)
+  runId           String?
+  run             CoAllocationRun? @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([costCenterId])
+  @@index([internalOrderId])
+}
+
+enum OverBudgetAction {
+  NONE
+  WARN
+  BLOCK
+}
+
+// Per company Controlling rules. A company with no row uses the defaults
+// in lib/controlling-presets.ts.
+model ControllingSettings {
+  id                   String           @id @default(cuid())
+  enabled              Boolean          @default(true)
+  // 1 = January. A July to June business would use 7.
+  fiscalYearStartMonth Int              @default(1)
+  overBudgetAction     OverBudgetAction @default(WARN)
+  // How far over budget is still allowed before the action kicks in.
+  tolerancePercent     Float            @default(0)
+  includePayroll       Boolean          @default(true)
+  requireCostCenter    Boolean          @default(false)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 }

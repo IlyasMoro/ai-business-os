@@ -7,6 +7,7 @@ import { checkSubscriptionAccess } from "@/lib/subscription-access";
 import { getReturnPolicy } from "@/lib/returns-policy";
 import { getMrpSettings } from "@/lib/mrp";
 import { getEdiSettings } from "@/lib/edi/settings";
+import { getControllingSettings } from "@/lib/controlling";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { SubscriptionBlocked } from "@/components/billing/subscription-blocked";
@@ -17,18 +18,20 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  const [notifications, subscription, returnPolicy, mrpSettings, ediSettings] = await Promise.all([
+  const [notifications, subscription, returnPolicy, mrpSettings, ediSettings, controlling] = await Promise.all([
     getNotifications(user.companyId),
     db.subscription.findUnique({ where: { companyId: user.companyId } }),
     getReturnPolicy(user.companyId),
     getMrpSettings(user.companyId),
     getEdiSettings(user.companyId),
+    getControllingSettings(user.companyId),
   ]);
   const hiddenHrefs = [
     ...(returnPolicy.enabled ? [] : ["/dashboard/returns"]),
     ...(mrpSettings.enabled ? [] : ["/dashboard/mrp"]),
     // Unset EDI stays visible so it can be set up; only an explicit off hides it.
     ...(ediSettings && !ediSettings.enabled ? ["/dashboard/edi"] : []),
+    ...(controlling.enabled ? [] : ["/dashboard/controlling"]),
   ];
   const platformAdmin = isPlatformAdmin(user.email);
 
