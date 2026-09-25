@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
-import { createCustomer, randomSuffix } from "./fixtures";
+import { createCustomer, randomSuffix, selectAndSave } from "./fixtures";
 
 // Every test here shares one company and changes its planning settings,
 // so they have to run one after another.
@@ -148,9 +148,7 @@ test("buy suggestions become purchase orders; make suggestions become work order
 
   // Receive the spokes, then the wheels can be built.
   await page.goto(poUrl);
-  const received = page.waitForResponse((r) => r.request().method() === "POST");
-  await page.selectOption('select[name="status"]', "RECEIVED");
-  await received;
+  await selectAndSave(page, 'select[name="status"]', "RECEIVED");
   expect(await stockOf(page, urls.spoke)).toBe(210);
 
   await page.goto(wheelWo);

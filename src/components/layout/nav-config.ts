@@ -23,6 +23,7 @@ import {
   UserPlus,
   Undo2,
   Factory,
+  ArrowLeftRight,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -57,6 +58,7 @@ export const navItems: {
   { href: "/dashboard/support", label: "Support", icon: LifeBuoy },
   { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/edi", label: "EDI", icon: ArrowLeftRight, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/team", label: "Team", icon: UserPlus, roles: ["OWNER", "ADMIN"] },
   { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"] },
   { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"] },

@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import path from "node:path";
-import { createCustomer, randomSuffix } from "./fixtures";
+import { createCustomer, randomSuffix, selectAndSave } from "./fixtures";
 
 // Every test here shares one company and changes its return policy, so
 // they have to run one after another.
@@ -51,10 +51,7 @@ async function sellAndFulfil(page: Page, qty: number) {
   // Each status change is a server action; wait for it to land before the
   // next one, or the second change is dropped while the select is disabled.
   for (const status of ["CONFIRMED", "FULFILLED"]) {
-    const done = page.waitForResponse((r) => r.request().method() === "POST" && r.url().includes("/dashboard/sales/"));
-    await page.selectOption('select[name="status"]', status);
-    await done;
-    await expect(page.locator('select[name="status"]')).toBeEnabled();
+    await selectAndSave(page, 'select[name="status"]', status);
   }
   await page.reload();
   await expect(page.locator('select[name="status"]')).toHaveValue("FULFILLED");

@@ -33,6 +33,9 @@ model Company {
   bomLines           BomLine[]
   workOrders         WorkOrder[]
   mrpSettings        MrpSettings?
+  ediSettings        EdiSettings?
+  ediPartners        EdiPartner[]
+  ediDocuments       EdiDocument[]
   invoices           Invoice[]
   transactions       Transaction[]
   employees          Employee[]
@@ -165,11 +168,12 @@ model Customer {
   campaignId String?
   campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
 
-  contacts Contact[]
-  orders   Order[]
-  invoices Invoice[]
-  tickets  Ticket[]
-  projects Project[]
+  contacts    Contact[]
+  orders      Order[]
+  invoices    Invoice[]
+  tickets     Ticket[]
+  projects    Project[]
+  ediPartners EdiPartner[]
 
   @@index([companyId])
   @@index([campaignId])
@@ -238,6 +242,7 @@ model Supplier {
 
   purchaseOrders    PurchaseOrder[]
   preferredProducts Product[]
+  ediPartners       EdiPartner[]
 
   @@index([companyId])
 }
@@ -293,12 +298,14 @@ enum OrderStatus {
 }
 
 model Order {
-  id          String      @id @default(cuid())
-  status      OrderStatus @default(PENDING)
-  totalAmount Float       @default(0)
-  createdAt   DateTime    @default(now())
+  id               String      @id @default(cuid())
+  status           OrderStatus @default(PENDING)
+  totalAmount      Float       @default(0)
+  createdAt        DateTime    @default(now())
   // When goods left the business; the return window counts from here.
-  fulfilledAt DateTime?
+  fulfilledAt      DateTime?
+  // The customer's own PO number, e.g. from an inbound EDI 850.
+  customerPoNumber String?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1018,4 +1025,101 @@ model MrpSettings {
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ---------- EDI (ANSI X12) ----------
+
+// This company's own EDI identity and file format. A company with no row
+// has EDI switched off until it's set up.
+model EdiSettings {
+  id                  String  @id @default(cuid())
+  enabled             Boolean @default(true)
+  isaQualifier        String  @default("ZZ")
+  isaId               String
+  gsId                String
+  // "004010" or "005010".
+  version             String  @default("004010")
+  // T = test, P = production (ISA15).
+  usageIndicator      String  @default("T")
+  elementSeparator    String  @default("*")
+  subElementSeparator String  @default(">")
+  segmentTerminator   String  @default("~")
+  nextControlNumber   Int     @default(1)
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// A customer or supplier this company exchanges EDI files with.
+model EdiPartner {
+  id           String   @id @default(cuid())
+  name         String
+  isaQualifier String   @default("ZZ")
+  isaId        String
+  gsId         String
+  enabled      Boolean  @default(true)
+  // Which documents are exchanged with this partner.
+  receive850   Boolean  @default(true)
+  send810      Boolean  @default(true)
+  send856      Boolean  @default(true)
+  send850      Boolean  @default(true)
+  // Inbound orders: take the partner's prices, or use our own list price.
+  useEdiPrices Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  documents EdiDocument[]
+
+  @@unique([companyId, isaQualifier, isaId])
+  @@index([companyId])
+}
+
+enum EdiDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum EdiStatus {
+  GENERATED
+  PROCESSED
+  REJECTED
+}
+
+// Every X12 file generated or received, kept as sent so it can be
+// downloaded again or audited.
+model EdiDocument {
+  id            String       @id @default(cuid())
+  direction     EdiDirection
+  docType       String
+  status        EdiStatus
+  controlNumber Int
+  reference     String?
+  error         String?
+  content       String
+  createdAt     DateTime     @default(now())
+
+  partnerId String?
+  partner   EdiPartner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
+  // What the document is about, when it maps to a record here.
+  orderId         String?
+  purchaseOrderId String?
+  invoiceId       String?
+  // An inbound document's 997 acknowledgment, and vice versa.
+  acknowledgesId  String?
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([partnerId])
+  @@index([orderId])
 }

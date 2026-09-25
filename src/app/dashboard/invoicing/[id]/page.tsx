@@ -13,6 +13,7 @@ import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail } from "@/lib/actions/invoicing";
 import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import { Download, Send } from "lucide-react";
+import { EdiSendButton } from "@/components/edi/edi-send-button";
 
 const statusTone = {
   DRAFT: "slate",
@@ -84,6 +85,7 @@ export default async function InvoiceDetailPage({
               <Download className="h-4 w-4" />
               PDF
             </LinkButton>
+            <EdiSendButton docType="810" recordId={invoice.id} customerId={invoice.customerId} />
             <InvoiceStatusForm invoiceId={invoice.id} status={invoice.status} />
             <DeleteButton action={deleteInvoice.bind(null, invoice.id)} />
           </div>

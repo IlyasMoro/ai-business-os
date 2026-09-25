@@ -8,6 +8,8 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { OrderItemForm } from "@/components/sales/order-item-form";
 import { OrderStatusForm } from "@/components/sales/order-status-form";
 import { deleteOrder, removeOrderItem } from "@/lib/actions/sales";
+import { EdiSendButton } from "@/components/edi/edi-send-button";
+import { ErrorBanner } from "@/components/ui/error-banner";
 import { getReturnPolicy } from "@/lib/returns-policy";
 import { isWithinReturnWindow, returnDeadline } from "@/lib/returns-math";
 
@@ -28,10 +30,13 @@ const returnStatusTone = {
 
 export default async function OrderDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { id } = await params;
+  const { error } = await searchParams;
   const session = await verifySession();
 
   const order = await db.order.findUnique({
@@ -77,6 +82,11 @@ export default async function OrderDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {order.createdAt.toLocaleDateString()}
+              {order.customerPoNumber && (
+                <>
+                  {" · "}Customer PO <span className="font-mono">{order.customerPoNumber}</span>
+                </>
+              )}
               {" · "}
               {order.invoice ? (
                 <Link href={`/dashboard/invoicing/${order.invoice.id}`} className="text-blue-400 hover:text-blue-300">
@@ -88,12 +98,19 @@ export default async function OrderDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {order.status === "FULFILLED" && (
+              <EdiSendButton docType="856" recordId={order.id} customerId={order.customer.id} />
+            )}
             <OrderStatusForm orderId={order.id} status={order.status} />
             <DeleteButton action={deleteOrder.bind(null, order.id)} />
           </div>
         </div>
 
-        <Card className="mt-6">
+        <div className="mt-4">
+          <ErrorBanner code={error} />
+        </div>
+
+        <Card className="mt-2">
           <CardHeader>
             <CardTitle>Items</CardTitle>
           </CardHeader>

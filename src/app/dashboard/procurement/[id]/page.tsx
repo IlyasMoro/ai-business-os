@@ -9,6 +9,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { PurchaseOrderItemForm } from "@/components/procurement/purchase-order-item-form";
 import { PurchaseOrderStatusForm } from "@/components/procurement/purchase-order-status-form";
 import { deletePurchaseOrder, removePurchaseOrderItem } from "@/lib/actions/procurement";
+import { EdiSendButton } from "@/components/edi/edi-send-button";
 
 const statusTone = {
   DRAFT: "slate",
@@ -75,6 +76,7 @@ export default async function PurchaseOrderDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <EdiSendButton docType="850" recordId={purchaseOrder.id} supplierId={purchaseOrder.supplierId} />
             <PurchaseOrderStatusForm purchaseOrderId={purchaseOrder.id} status={purchaseOrder.status} />
             <DeleteButton action={deletePurchaseOrder.bind(null, purchaseOrder.id)} />
           </div>

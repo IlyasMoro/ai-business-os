@@ -19,6 +19,13 @@ const MESSAGES: Record<string, string> = {
   "work-order-locked": "A completed work order can't be deleted because it has already moved stock.",
   "plan-changed": "The plan changed since this page loaded. Here is the latest version.",
   "no-supplier": "Set a preferred supplier on the product before creating a purchase order for it.",
+  "edi-setup": "Set up your EDI identity in the EDI settings first.",
+  "edi-no-partner": "No enabled trading partner is set up to receive this document.",
+  "edi-separators": "Separators must each be one symbol, all different, and not a letter, digit or space.",
+  "edi-duplicate-partner": "A trading partner with that qualifier and ID already exists.",
+  "edi-empty": "Add at least one line before generating an EDI document.",
+  "edi-not-shipped": "A ship notice can only be sent once the order is fulfilled.",
+  "edi-too-large": "EDI files can be at most 1MB.",
 };
 
 export function ErrorBanner({ code }: { code?: string }) {
