@@ -41,7 +41,7 @@ export default async function SuppliersPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Suppliers</h1>
@@ -57,12 +57,12 @@ export default async function SuppliersPage({
         </Link>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
         <ErrorBanner code={error} />
         <SupplierForm />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {suppliers.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No suppliers yet. Add your first one above.

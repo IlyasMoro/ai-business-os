@@ -25,7 +25,7 @@ export function ReportFrequencySelect({ value }: { value: string }) {
         name="reportFrequency"
         defaultValue={value}
         onChange={() => formRef.current?.requestSubmit()}
-        className="shrink-0 rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-3 py-2 text-sm text-slate-50 light:text-slate-900 outline-none transition-colors focus:border-blue-500"
+        className="shrink-0 rounded-md border border-white/[0.09] light:border-white/80 px-3 py-2 text-sm text-slate-50 light:text-slate-900 outline-none transition-colors focus:border-blue-500 glass"
       >
         {OPTIONS.map((opt) => (
           <option key={opt.value} value={opt.value}>

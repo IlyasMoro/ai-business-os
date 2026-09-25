@@ -8,7 +8,7 @@ export default function PrivacyPage() {
   return (
     <div className="min-h-screen bg-black px-4 py-12 text-slate-300">
       <div className="mx-auto max-w-3xl">
-        <Link href="/" className="text-sm text-blue-400 hover:text-blue-300">
+        <Link href="/" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
           Back to home
         </Link>
 

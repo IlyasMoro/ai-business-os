@@ -7,11 +7,11 @@ type Size = "sm" | "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 " +
+    "border border-blue-400/30 bg-blue-500/15 text-blue-200 backdrop-blur-md hover:bg-blue-500/25 hover:shadow-[0_0_24px_-6px_rgb(59_130_246/0.6)] " +
     "light:text-blue-700 light:hover:bg-blue-500/20",
   secondary:
-    "border border-white/[0.06] bg-[#111111] text-slate-200 hover:border-white/10 hover:bg-white/5 " +
-    "light:border-slate-300 light:bg-white light:text-slate-700 light:hover:border-slate-400 light:hover:bg-slate-50",
+    "border border-white/[0.08] bg-white/[0.04] backdrop-blur-md text-slate-200 hover:border-white/10 hover:bg-white/5 " +
+    "light:border-slate-300 light:bg-white/70 light:text-slate-700 light:hover:border-slate-400 light:hover:bg-white",
   ghost:
     "text-slate-400 hover:bg-white/5 hover:text-slate-50 " +
     "light:text-slate-500 light:hover:bg-slate-100 light:hover:text-slate-900",
@@ -27,7 +27,7 @@ const sizeClasses: Record<Size, string> = {
 };
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 light:focus-visible:ring-offset-white disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-[color,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 light:focus-visible:ring-offset-white disabled:opacity-50 disabled:pointer-events-none";
 
 export function Button({
   className,

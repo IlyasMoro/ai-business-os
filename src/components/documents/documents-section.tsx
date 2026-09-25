@@ -53,7 +53,7 @@ export function DocumentsSection({
             type="file"
             name="file"
             required
-            className="block w-full text-sm text-slate-400 light:text-slate-500 file:mr-3 file:rounded-md file:border file:border-white/[0.06] light:border-slate-200 file:bg-[#1a1a1a] file:px-3 file:py-1.5 file:text-sm file:text-slate-300 light:text-slate-600 file:transition-colors hover:file:bg-white/5"
+            className="block w-full text-sm text-slate-400 light:text-slate-500 file:mr-3 file:rounded-md file:border file:border-white/[0.09] light:file:border-slate-300 file:bg-white/5 light:file:bg-white/70 file:px-3 file:py-1.5 file:text-sm file:text-slate-300 light:text-slate-600 file:transition-colors hover:file:bg-white/5"
           />
           <SubmitButton variant="secondary" pendingText="Uploading...">
             Upload

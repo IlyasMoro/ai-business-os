@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
@@ -32,14 +33,16 @@ export function MobileNav({
         <Menu className="h-5 w-5" />
       </button>
 
-      {open && (
+      {/* Portaled to <body>: the glass top bar uses backdrop-filter, which would
+          otherwise trap this fixed overlay inside the bar's own box. */}
+      {open && createPortal(
         <div className="fixed inset-0 z-50 sm:hidden">
           <div
             className="absolute inset-0 bg-black/60"
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-white/[0.06] bg-black shadow-xl light:border-slate-200 light:bg-white">
+          <div className="absolute inset-y-0 left-0 flex w-64 flex-col border-r border-white/[0.09] shadow-xl light:border-white/80 glass-strong">
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"
@@ -65,7 +68,8 @@ export function MobileNav({
               <UserMenu userName={userName} />
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

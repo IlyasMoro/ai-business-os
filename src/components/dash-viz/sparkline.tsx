@@ -133,7 +133,7 @@ export function Sparkline({
 
       {hoverIndex !== null && (
         <div
-          className={`pointer-events-none absolute -top-1 -translate-y-full rounded-md border border-white/10 light:border-slate-200 bg-[#0b0b0b] light:bg-white px-2 py-1 text-xs font-mono tabular-nums text-slate-50 light:text-slate-900 shadow-lg ${
+          className={`pointer-events-none absolute -top-1 -translate-y-full rounded-md border border-white/10 light:border-white/80 glass-strong px-2 py-1 text-xs font-mono tabular-nums text-slate-50 light:text-slate-900 shadow-lg ${
             align === "left" ? "left-0" : align === "right" ? "right-0" : "left-1/2 -translate-x-1/2"
           }`}
         >

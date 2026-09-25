@@ -124,7 +124,7 @@ export default async function ReportsPage() {
   }));
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Reports</h1>
@@ -132,7 +132,7 @@ export default async function ReportsPage() {
         </div>
         <a
           href="/api/reports/pdf"
-          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
         >
           <Download className="h-4 w-4" />
           Download PDF
@@ -140,19 +140,19 @@ export default async function ReportsPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Income (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">
             <AnimatedCounter value={totalIncome} prefix="$" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Expenses (6 months)</p>
           <p className="mt-2 text-2xl font-semibold text-red-400">
             <AnimatedCounter value={totalExpense} prefix="$" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Net (6 months)</p>
           <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50 light:text-slate-900" : "text-red-400"}`}>
             <AnimatedCounter value={net} prefix="$" decimals={0} />
@@ -171,7 +171,7 @@ export default async function ReportsPage() {
         <p className="mt-1 text-xs text-slate-500">{forecast.method}</p>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Portfolio breakdown</h2>
         <div className="flex flex-col items-center justify-around gap-8 sm:flex-row sm:items-start">
           <DonutChart
@@ -206,7 +206,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Revenue vs expenses</h2>
         <GroupedBarChart
           data={monthly.map((m) => ({ label: m.label, a: m.income, b: m.expense }))}
@@ -216,7 +216,7 @@ export default async function ReportsPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top customers by order value</h2>
           {customerValues.length === 0 ? (
             <p className="text-sm text-slate-500">No order value recorded yet.</p>
@@ -228,7 +228,7 @@ export default async function ReportsPage() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Value vs average customer</h2>
           {customerDeltas.length === 0 ? (
             <p className="text-sm text-slate-500">No order value recorded yet.</p>
@@ -242,7 +242,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         <div className="border-b border-white/[0.06] light:border-slate-200 p-6 pb-4">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Customer value ranking</h2>
         </div>
@@ -274,7 +274,7 @@ export default async function ReportsPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Recent invoices</h2>
         {recentInvoices.length === 0 ? (
           <p className="text-sm text-slate-500">No invoices yet.</p>
@@ -306,7 +306,7 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Recent AI activity</h2>
         {recentAiActions.length === 0 ? (
           <p className="text-sm text-slate-500">No actions have been proposed by the AI assistant yet.</p>
@@ -338,7 +338,7 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
         {recentAuditLogs.length === 0 ? (
           <p className="text-sm text-slate-500">

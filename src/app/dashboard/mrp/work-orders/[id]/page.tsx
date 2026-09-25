@@ -65,7 +65,7 @@ export default async function WorkOrderDetailPage({
   const action = updateWorkOrderStatus.bind(null, wo.id);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -75,7 +75,7 @@ export default async function WorkOrderDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Make {wo.quantity} ×{" "}
-              <Link href={`/dashboard/inventory/${wo.product.id}`} className="text-blue-400 hover:text-blue-300">
+              <Link href={`/dashboard/inventory/${wo.product.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                 {wo.product.name}
               </Link>
               {wo.dueDate && <> · Due {wo.dueDate.toLocaleDateString()}</>}

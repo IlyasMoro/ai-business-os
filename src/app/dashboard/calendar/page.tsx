@@ -40,7 +40,7 @@ export default async function CalendarPage({
   }
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Calendar</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Everything with a date across your business, plus any events you add.
@@ -50,11 +50,11 @@ export default async function CalendarPage({
         <ErrorBanner code={error} />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
         <EventForm />
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {groups.size === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">Nothing scheduled.</p>
         ) : (

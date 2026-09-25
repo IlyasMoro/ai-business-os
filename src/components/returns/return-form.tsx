@@ -16,7 +16,7 @@ export function ReturnForm({
     return (
       <p className="text-sm text-slate-400 light:text-slate-500">
         There are no fulfilled orders inside the return window right now.{" "}
-        <Link href="/dashboard/sales" className="text-blue-400 hover:text-blue-300">
+        <Link href="/dashboard/sales" className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
           View orders
         </Link>
         .

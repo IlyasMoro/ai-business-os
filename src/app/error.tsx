@@ -15,7 +15,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 text-center light:bg-white">
+    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
       <p className="text-sm font-semibold text-red-400">Something went wrong</p>
       <h1 className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
         Unexpected error

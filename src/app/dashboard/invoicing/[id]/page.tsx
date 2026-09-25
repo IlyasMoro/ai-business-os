@@ -59,7 +59,7 @@ export default async function InvoiceDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>

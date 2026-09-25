@@ -71,7 +71,7 @@ export default async function OrderDetailPage({
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
@@ -93,7 +93,7 @@ export default async function OrderDetailPage({
               )}
               {" · "}
               {order.invoice ? (
-                <Link href={`/dashboard/invoicing/${order.invoice.id}`} className="text-blue-400 hover:text-blue-300">
+                <Link href={`/dashboard/invoicing/${order.invoice.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                   Invoice {order.invoice.invoiceNumber} ({order.invoice.status})
                 </Link>
               ) : (
@@ -139,7 +139,7 @@ export default async function OrderDetailPage({
                                 {i > 0 && ", "}
                                 <Link
                                   href={`/dashboard/inventory/trace?q=${encodeURIComponent(m.lot.lotNumber)}`}
-                                  className="font-mono text-blue-400 hover:text-blue-300"
+                                  className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800"
                                 >
                                   {m.lot.lotNumber}
                                 </Link>
@@ -172,7 +172,7 @@ export default async function OrderDetailPage({
               {canOpenReturn && (
                 <Link
                   href={`/dashboard/returns/new?orderId=${order.id}`}
-                  className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+                  className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
                 >
                   Create return
                 </Link>

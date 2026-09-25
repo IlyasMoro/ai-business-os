@@ -31,7 +31,7 @@ export function UserMenu({ userName }: { userName: string }) {
         aria-label="Account menu"
         className="flex w-full items-center gap-2 rounded-md px-2 py-2 transition-colors duration-150 hover:bg-white/5 light:hover:bg-slate-100"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blue-400/30 bg-blue-500/20 text-xs font-semibold text-blue-300 backdrop-blur-md">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blue-400/30 bg-blue-500/20 text-xs font-semibold text-blue-300 backdrop-blur-md light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700">
           {initial}
         </span>
         <span className="flex-1 truncate text-left text-sm text-slate-300 light:text-slate-600">{firstName}</span>
@@ -41,7 +41,7 @@ export function UserMenu({ userName }: { userName: string }) {
       </button>
 
       {open && (
-        <div className="absolute inset-x-0 bottom-full z-50 mb-2 overflow-hidden rounded-md border border-white/10 bg-[#0a0a0a] py-1 shadow-xl light:border-slate-200 light:bg-white">
+        <div className="absolute inset-x-0 bottom-full z-50 mb-2 overflow-hidden rounded-md border border-white/[0.1] py-1 shadow-xl light:border-white/80 glass-strong">
           <form action={logout}>
             <button
               type="submit"

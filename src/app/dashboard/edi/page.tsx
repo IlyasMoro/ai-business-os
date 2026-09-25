@@ -41,7 +41,7 @@ export default async function EdiPage({
     "inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">EDI</h1>
@@ -63,7 +63,7 @@ export default async function EdiPage({
           {settings?.enabled && (
             <Link
               href="/dashboard/edi/import"
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+              className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
             >
               <Upload className="h-4 w-4" />
               Import file
@@ -86,19 +86,19 @@ export default async function EdiPage({
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ArrowDownToLine className="h-4 w-4" /> Received and processed
           </p>
           <p className="mt-2 text-2xl font-semibold text-emerald-400">{count("INBOUND", "PROCESSED")}</p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ArrowDownToLine className="h-4 w-4" /> Received and rejected
           </p>
           <p className="mt-2 text-2xl font-semibold text-red-400">{count("INBOUND", "REJECTED")}</p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ArrowUpFromLine className="h-4 w-4" /> Generated to send
           </p>
@@ -106,7 +106,7 @@ export default async function EdiPage({
         </div>
       </div>
 
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 overflow-x-auto rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {docs.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No EDI documents yet. Import a customer&apos;s purchase order, or generate one from a purchase order, invoice or

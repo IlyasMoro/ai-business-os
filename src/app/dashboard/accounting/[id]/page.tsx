@@ -51,7 +51,7 @@ export default async function TransactionDetailPage({
   const isAnomalous = avgAmount !== null && avgAmount > 0 && transaction.amount > avgAmount * 2.5;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <div className="flex items-start justify-between">
           <div>
@@ -73,7 +73,7 @@ export default async function TransactionDetailPage({
                   {" · "}
                   <Link
                     href={`/dashboard/invoicing/${transaction.invoice.id}`}
-                    className="text-blue-400 hover:text-blue-300"
+                    className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800"
                   >
                     Invoice {transaction.invoice.invoiceNumber}
                   </Link>
@@ -124,11 +124,11 @@ export default async function TransactionDetailPage({
               <div>
                 <p className="text-slate-500">Cost object</p>
                 {transaction.internalOrder ? (
-                  <Link href={`/dashboard/controlling/orders/${transaction.internalOrder.id}`} className="text-blue-400 hover:text-blue-300">
+                  <Link href={`/dashboard/controlling/orders/${transaction.internalOrder.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                     {transaction.internalOrder.orderNumber} {transaction.internalOrder.name}
                   </Link>
                 ) : (
-                  <Link href={`/dashboard/controlling/cost-centers/${transaction.costCenter!.id}`} className="text-blue-400 hover:text-blue-300">
+                  <Link href={`/dashboard/controlling/cost-centers/${transaction.costCenter!.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                     {transaction.costCenter!.code} {transaction.costCenter!.name}
                   </Link>
                 )}

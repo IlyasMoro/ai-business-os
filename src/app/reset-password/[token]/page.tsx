@@ -17,12 +17,12 @@ export default async function ResetPasswordPage({
   ) => Promise<ResetPasswordFormState>;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center bg-black px-4 light:bg-slate-50">
+    <div className="relative flex min-h-screen items-center justify-center px-4">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
       />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.06] bg-[#111111] p-8 shadow-lg light:border-slate-200 light:bg-white">
+      <div className="relative w-full max-w-md rounded-xl border border-white/[0.09] p-8 shadow-lg light:border-white/80 glass">
         <Link
           href="/"
           className="mb-6 flex flex-col items-center gap-1 text-center text-base font-extrabold tracking-tight text-blue-300 light:text-blue-600"

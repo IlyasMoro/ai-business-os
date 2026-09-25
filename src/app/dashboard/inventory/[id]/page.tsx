@@ -119,7 +119,7 @@ export default async function ProductDetailPage({
     dailyVelocity > 0 ? Math.max(1, Math.ceil(dailyVelocity * avgLeadTimeDays * SAFETY_FACTOR)) : null;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         {error === "in-use" ? (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
@@ -343,7 +343,7 @@ export default async function ProductDetailPage({
                     {product.usedInBoms.map((line, i) => (
                       <span key={line.id}>
                         {i > 0 && ", "}
-                        <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-blue-400 hover:text-blue-300">
+                        <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                           {line.parent.name}
                         </Link>
                       </span>

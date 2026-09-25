@@ -68,7 +68,7 @@ export default async function AccountingPage({
     .slice(0, 6);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -85,7 +85,7 @@ export default async function AccountingPage({
               name="q"
               placeholder="Search by category..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500 glass"
             />
           </form>
           <a
@@ -97,7 +97,7 @@ export default async function AccountingPage({
           </a>
           <Link
             href="/dashboard/accounting/new"
-            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
           >
             <Plus className="h-4 w-4" />
             New transaction
@@ -107,26 +107,26 @@ export default async function AccountingPage({
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2 lg:grid-cols-1">
-          <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Income</p>
             <p className="mt-2 text-2xl font-semibold text-emerald-400">
               <AnimatedCounter value={income} prefix="$" decimals={0} />
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Expenses</p>
             <p className="mt-2 text-2xl font-semibold text-red-400">
               <AnimatedCounter value={expense} prefix="$" decimals={0} />
             </p>
           </div>
-          <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Net</p>
             <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50 light:text-slate-900" : "text-red-400"}`}>
               <AnimatedCounter value={net} prefix="$" decimals={0} />
             </p>
           </div>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6 lg:col-span-1">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-1 glass">
           <div className="flex justify-center">
             <DonutChart
               title="Income vs expenses"
@@ -142,13 +142,13 @@ export default async function AccountingPage({
       </div>
 
       {topCategories.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top categories</h2>
           <HorizontalBarChart data={topCategories} color={VIZ.amber} />
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {transactions.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q

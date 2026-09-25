@@ -20,7 +20,7 @@ export default async function PlanningPage({
 
   if (!settings.enabled) {
     return (
-      <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+      <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Planning</h1>
         <p className="mt-4 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
           Planning is turned off for this company.
@@ -52,7 +52,7 @@ export default async function PlanningPage({
   const visible = showAll ? rows.filter((r) => r.salesDemand + r.componentDemand + r.onOrder + r.onHand > 0 || r.plannedQty > 0) : suggestions;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Planning</h1>
@@ -91,19 +91,19 @@ export default async function PlanningPage({
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ShoppingCart className="h-4 w-4" /> Items to buy
           </p>
           <p className="mt-2 text-2xl font-semibold text-blue-400">{toBuy.length}</p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <Wrench className="h-4 w-4" /> Items to make
           </p>
           <p className="mt-2 text-2xl font-semibold text-purple-400">{toMake.length}</p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ClipboardList className="h-4 w-4" /> Open work orders
           </p>
@@ -126,7 +126,7 @@ export default async function PlanningPage({
         </Link>
       </div>
 
-      <div className="mt-3 overflow-x-auto rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-3 overflow-x-auto rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {visible.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {showAll

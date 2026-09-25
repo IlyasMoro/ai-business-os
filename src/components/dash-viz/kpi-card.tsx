@@ -37,7 +37,7 @@ export function KpiCard({
   change?: KpiChange;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+    <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate-400 light:text-slate-500">{label}</p>

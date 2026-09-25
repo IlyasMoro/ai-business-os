@@ -8,7 +8,7 @@ import { contributionMargin, periodRange, resolvePeriods, type MarginLine } from
 function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnType<typeof contributionMargin>; hrefBase: string }) {
   const total = rows.reduce((s, r) => ({ revenue: s.revenue + r.revenue, cost: s.cost + r.cost, margin: s.margin + r.margin }), { revenue: 0, cost: 0, margin: 0 });
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+    <div className="overflow-x-auto rounded-2xl border border-white/[0.09] light:border-white/80 glass">
       <h2 className="px-5 pt-4 text-sm font-semibold text-slate-50 light:text-slate-900">{title}</h2>
       {rows.length === 0 ? (
         <p className="p-6 text-sm text-slate-500">No fulfilled orders in this period.</p>
@@ -92,7 +92,7 @@ export default async function ProfitabilityPage({ searchParams }: { searchParams
   }
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Profitability</h1>

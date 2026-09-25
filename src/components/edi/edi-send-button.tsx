@@ -54,7 +54,7 @@ export async function EdiSendButton({
         </SubmitButton>
       </form>
       {last && (
-        <Link href={`/dashboard/edi/${last.id}`} className="text-xs text-blue-400 hover:text-blue-300">
+        <Link href={`/dashboard/edi/${last.id}`} className="text-xs text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
           Last sent {last.createdAt.toLocaleDateString()}
         </Link>
       )}

@@ -12,10 +12,10 @@ export default async function InventorySettingsPage({ searchParams }: { searchPa
   const session = await requireRole(["OWNER", "ADMIN"]);
   const { error, saved } = await searchParams;
   const s = await getInventorySettings(session.companyId);
-  const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white";
+  const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Inventory settings</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">How lot and serial tracked stock is picked and watched for expiry.</p>
 

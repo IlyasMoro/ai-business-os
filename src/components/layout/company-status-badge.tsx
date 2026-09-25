@@ -26,7 +26,7 @@ export function CompanyStatusBadge({
 
   return (
     <div className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500/10 text-blue-300">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500/10 text-blue-300 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700">
         <Building2 className="h-3.5 w-3.5" />
       </span>
       <div className="min-w-0 leading-tight">

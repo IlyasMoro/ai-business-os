@@ -21,7 +21,7 @@ export default async function SettingsPage({
   const hasLogo = Boolean(company?.logoMimeType);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Settings</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Your company&apos;s profile.</p>
 
@@ -34,7 +34,7 @@ export default async function SettingsPage({
         )}
       </div>
 
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
             <Building2 className="h-5 w-5" />
@@ -66,7 +66,7 @@ export default async function SettingsPage({
         </form>
       </div>
 
-      <div className="mt-4 max-w-2xl rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+      <div className="mt-4 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
         <div className="flex items-center gap-3">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
             <ImageIcon className="h-5 w-5" />
@@ -102,7 +102,7 @@ export default async function SettingsPage({
             name="logo"
             accept="image/png,image/jpeg"
             required
-            className="block w-full text-sm text-slate-400 light:text-slate-500 file:mr-3 file:rounded-md file:border file:border-white/[0.06] light:border-slate-200 file:bg-[#1a1a1a] file:px-3 file:py-1.5 file:text-sm file:text-slate-300 light:text-slate-600 file:transition-colors hover:file:bg-white/5"
+            className="block w-full text-sm text-slate-400 light:text-slate-500 file:mr-3 file:rounded-md file:border file:border-white/[0.09] light:file:border-slate-300 file:bg-white/5 light:file:bg-white/70 file:px-3 file:py-1.5 file:text-sm file:text-slate-300 light:text-slate-600 file:transition-colors hover:file:bg-white/5"
           />
           <SubmitButton variant="secondary" pendingText="Uploading...">
             {hasLogo ? "Replace" : "Upload"}

@@ -39,7 +39,7 @@ export default async function EditTransactionPage({
   ) => Promise<TransactionFormState>;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Edit transaction</h1>
       <div className="mt-6">
         <TransactionForm

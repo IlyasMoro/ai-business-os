@@ -21,7 +21,7 @@ export default async function ControllingPage({
 
   if (!settings.enabled) {
     return (
-      <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+      <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Controlling</h1>
         <p className="mt-4 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
           Controlling is turned off.{" "}
@@ -72,11 +72,11 @@ export default async function ControllingPage({
       .map((o) => ({ href: `/dashboard/controlling/orders/${o.id}`, label: `${o.orderNumber} ${o.name}`, by: (orderActual.get(o.id) ?? 0) - o.budget })),
   ];
 
-  const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white";
+  const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass";
   const periodName = period.month ? monthLabel(period.periods[0]) : "the whole year";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Controlling</h1>
@@ -130,7 +130,7 @@ export default async function ControllingPage({
       <div className={`${card} mt-6 overflow-x-auto`}>
         <div className="flex items-center justify-between px-5 pt-4">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Cost centers</h2>
-          <Link href="/dashboard/controlling/cost-centers" className="text-sm text-blue-400 hover:text-blue-300">
+          <Link href="/dashboard/controlling/cost-centers" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
             Manage
           </Link>
         </div>
@@ -187,7 +187,7 @@ export default async function ControllingPage({
       <div className={`${card} mt-6 overflow-x-auto`}>
         <div className="flex items-center justify-between px-5 pt-4">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Open internal orders</h2>
-          <Link href="/dashboard/controlling/orders" className="text-sm text-blue-400 hover:text-blue-300">
+          <Link href="/dashboard/controlling/orders" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
             Manage
           </Link>
         </div>

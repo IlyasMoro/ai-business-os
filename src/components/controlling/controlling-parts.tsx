@@ -77,7 +77,7 @@ export function PeriodPicker({
   years: number[];
 }) {
   const cls =
-    "rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-3 py-2 text-sm text-slate-50 light:text-slate-900";
+    "rounded-md border border-white/[0.09] light:border-white/80 glass px-3 py-2 text-sm text-slate-50 light:text-slate-900";
   return (
     <form method="GET" action={action} className="flex flex-wrap items-center gap-2">
       <select name="fy" defaultValue={fiscalYear} className={cls} aria-label="Fiscal year">

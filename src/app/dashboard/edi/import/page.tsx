@@ -10,7 +10,7 @@ export default async function EdiImportPage({ searchParams }: { searchParams: Pr
   const { error } = await searchParams;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Import EDI file</h1>
       <p className="mt-1 max-w-2xl text-sm text-slate-400 light:text-slate-500">
         Upload or paste an X12 850 purchase order from a trading partner. Every order in the file becomes a pending

@@ -58,7 +58,7 @@ export default async function ProjectsPage({
   const now = new Date().getTime();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Projects</h1>
@@ -74,7 +74,7 @@ export default async function ProjectsPage({
               name="q"
               placeholder="Search projects..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500 glass"
             />
           </form>
           <a
@@ -86,7 +86,7 @@ export default async function ProjectsPage({
           </a>
           <Link
             href="/dashboard/projects/new"
-            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
           >
             <Plus className="h-4 w-4" />
             New project
@@ -94,7 +94,7 @@ export default async function ProjectsPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">
           <DonutChart
             title="Projects by status"
@@ -109,7 +109,7 @@ export default async function ProjectsPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {projects.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q ? "No projects match your search." : "No projects yet. Create your first one to get started."}

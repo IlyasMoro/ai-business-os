@@ -93,7 +93,7 @@ export function TransactionForm({
               onClick={handleSuggest}
               disabled={suggesting}
               title="Suggest a category with AI based on the description"
-              className="flex shrink-0 items-center gap-1 rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-2.5 text-slate-400 transition-colors hover:border-slate-700 hover:text-slate-200 disabled:opacity-50"
+              className="flex shrink-0 items-center gap-1 rounded-md border border-white/[0.09] light:border-white/80 px-2.5 text-slate-400 transition-colors hover:border-slate-700 hover:text-slate-200 disabled:opacity-50 glass"
             >
               <Sparkles className="h-4 w-4" />
             </button>

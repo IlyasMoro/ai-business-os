@@ -2,8 +2,8 @@ import { cn } from "@/lib/utils";
 import type { ComponentPropsWithRef, LabelHTMLAttributes } from "react";
 
 const fieldBase =
-  "block w-full rounded-md border border-white/[0.06] bg-[#111111] px-3 py-2 text-sm text-white caret-white outline-none transition-colors duration-150 placeholder:text-slate-500 hover:border-slate-700 focus:border-blue-500 " +
-  "light:border-slate-300 light:bg-white light:text-slate-900 light:caret-slate-900 light:placeholder:text-slate-400 light:hover:border-slate-400";
+  "block w-full rounded-md border border-white/[0.09] bg-white/[0.04] backdrop-blur-md px-3 py-2 text-sm text-white caret-white outline-none transition-colors duration-150 placeholder:text-slate-500 hover:border-slate-700 focus:border-blue-500/60 focus:shadow-[0_0_0_3px_rgb(59_130_246/0.18)] " +
+  "light:border-slate-300 light:bg-white/70 light:text-slate-900 light:caret-slate-900 light:placeholder:text-slate-400 light:hover:border-slate-400";
 
 export function Input({ className, ...props }: ComponentPropsWithRef<"input">) {
   return <input className={cn(fieldBase, className)} {...props} />;

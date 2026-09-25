@@ -62,24 +62,24 @@ function WidgetsSkeleton() {
     <div className="animate-pulse">
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
+          <div key={i} className="h-32 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
         ))}
       </div>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-32 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
+          <div key={i} className="h-32 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
         ))}
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
+          <div key={i} className="h-20 rounded-xl border border-white/[0.09] light:border-white/80 glass" />
         ))}
       </div>
-      <div className="mt-6 h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
+      <div className="mt-6 h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
-        <div className="h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
-        <div className="h-64 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white" />
+        <div className="h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
+        <div className="h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
+        <div className="h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
       </div>
     </div>
   );
@@ -94,7 +94,7 @@ export default async function DashboardOverviewPage({
   const user = await getCurrentUser();
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
 
       <Suspense fallback={<WidgetsSkeleton />}>
@@ -399,7 +399,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {secondaryStats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
-            <div className="rounded-xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-4 transition-colors hover:border-slate-700">
+            <div className="rounded-xl border border-white/[0.09] light:border-white/80 p-4 transition-colors hover:border-slate-700 glass">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-slate-400 light:text-slate-500">{stat.label}</p>
                 <stat.icon className={`h-4 w-4 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
@@ -410,7 +410,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
           <RingGauge label="Project completion" pct={completionRatio} goodIsHigh />
@@ -420,7 +420,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Customers by status</h2>
           <ul className="mt-4 space-y-4">
             {customerStatusRows.map((row) => (
@@ -435,7 +435,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Upcoming this week</h2>
           {upcomingItems.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">Nothing due in the next 7 days.</p>
@@ -472,7 +472,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           )}
         </div>
 
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
           <div className="mt-4">
             <ActivityTimeline items={timelineItems} />

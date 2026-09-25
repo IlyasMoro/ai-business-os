@@ -53,10 +53,10 @@ export default async function CostCenterPage({
   const plan = monthly.reduce((s, x) => s + x.plan, 0);
   const actual = monthly.reduce((s, x) => s + x.actual, 0);
   const v = variance(plan, actual, settings.tolerancePercent);
-  const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white";
+  const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-5xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -73,7 +73,7 @@ export default async function CostCenterPage({
             </p>
           </div>
           <form method="GET" className="flex items-center gap-2">
-            <select name="fy" defaultValue={period.fiscalYear} className="rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white px-3 py-2 text-sm text-slate-50 light:text-slate-900">
+            <select name="fy" defaultValue={period.fiscalYear} className="rounded-md border border-white/[0.09] light:border-white/80 px-3 py-2 text-sm text-slate-50 light:text-slate-900 glass">
               {period.years.map((y) => (
                 <option key={y} value={y}>
                   {fiscalYearLabel(y, settings.fiscalYearStartMonth)}
@@ -169,12 +169,9 @@ export default async function CostCenterPage({
               <Input id="description" name="description" defaultValue={cc.description ?? ""} maxLength={500} />
             </div>
             <SettingToggle name="active" label="Active" description="Inactive cost centers can't take new expenses." defaultChecked={cc.active} />
-            <div className="flex items-center gap-2">
-              <SubmitButton variant="secondary" pendingText="Saving...">
-                Save
-              </SubmitButton>
-              <DeleteButton action={deleteCostCenter.bind(null, cc.id)} confirmMessage={`Delete cost center ${cc.code}?`} />
-            </div>
+            <SubmitButton variant="secondary" pendingText="Saving...">
+              Save
+            </SubmitButton>
           </form>
           <div className={`${card} p-5`}>
             <p className="font-medium text-slate-50 light:text-slate-900">People ({cc.employees.length})</p>
@@ -192,6 +189,10 @@ export default async function CostCenterPage({
               </ul>
             )}
           </div>
+        </div>
+
+        <div className="mt-4 flex justify-end">
+          <DeleteButton action={deleteCostCenter.bind(null, cc.id)} confirmMessage={`Delete cost center ${cc.code}?`} />
         </div>
 
         <p className="mt-6">

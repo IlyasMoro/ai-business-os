@@ -30,7 +30,7 @@ export default async function TeamPage({
   ]);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         {members.length} member{members.length === 1 ? "" : "s"} in {session.name ? "your company" : "this workspace"}.

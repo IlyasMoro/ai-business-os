@@ -43,10 +43,10 @@ export default async function EdiPartnersPage({
     db.supplier.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
 
-  const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5";
+  const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass p-5";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Trading partners</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Customers and suppliers you exchange EDI files with, and which documents go each way.
@@ -76,7 +76,7 @@ export default async function EdiPartnersPage({
                   {p.customer && (
                     <>
                       Customer{" "}
-                      <Link href={`/dashboard/crm/${p.customer.id}`} className="text-blue-400 hover:text-blue-300">
+                      <Link href={`/dashboard/crm/${p.customer.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                         {p.customer.name}
                       </Link>
                     </>

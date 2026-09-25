@@ -20,7 +20,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
   const inventory = await getInventorySettings(session.companyId);
-  const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white";
+  const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass";
 
   const lots = query
     ? await db.stockLot.findMany({
@@ -60,7 +60,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
       });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Lot trace</h1>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         Find a lot or serial number to see where it came from and which customers received it.
@@ -73,7 +73,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
           name="q"
           defaultValue={query}
           placeholder="Lot or serial number..."
-          className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 font-mono text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none focus:border-blue-500"
+          className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 font-mono text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none focus:border-blue-500 glass"
         />
       </form>
 
@@ -91,7 +91,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <p className="font-mono text-lg font-semibold text-slate-50 light:text-slate-900">{lot.lotNumber}</p>
-                  <Link href={`/dashboard/inventory/${lot.product.id}`} className="text-sm text-blue-400 hover:text-blue-300">
+                  <Link href={`/dashboard/inventory/${lot.product.id}`} className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                     {lot.product.name} ({lot.product.sku})
                   </Link>
                 </div>
@@ -108,7 +108,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                   {[...customers].map(([id, name], i) => (
                     <span key={id}>
                       {i > 0 && ", "}
-                      <Link href={`/dashboard/crm/${id}`} className="text-blue-400 hover:text-blue-300">
+                      <Link href={`/dashboard/crm/${id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                         {name}
                       </Link>
                     </span>
@@ -129,7 +129,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {po && (
                           <>
                             {" from "}
-                            <Link href={`/dashboard/procurement/${po.id}`} className="text-blue-400 hover:text-blue-300">
+                            <Link href={`/dashboard/procurement/${po.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                               {po.supplier.name}
                             </Link>
                           </>
@@ -137,7 +137,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {wo && (
                           <>
                             {" on "}
-                            <Link href={`/dashboard/mrp/work-orders/${wo.id}`} className="font-mono text-blue-400 hover:text-blue-300">
+                            <Link href={`/dashboard/mrp/work-orders/${wo.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                               {wo.woNumber}
                             </Link>
                           </>
@@ -145,7 +145,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {o && !rma && (
                           <>
                             {" to "}
-                            <Link href={`/dashboard/sales/${o.id}`} className="text-blue-400 hover:text-blue-300">
+                            <Link href={`/dashboard/sales/${o.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                               {o.customer.name}
                               {o.customerPoNumber ? ` (PO ${o.customerPoNumber})` : ""}
                             </Link>
@@ -154,7 +154,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {rma && (
                           <>
                             {" on "}
-                            <Link href={`/dashboard/returns/${rma.id}`} className="font-mono text-blue-400 hover:text-blue-300">
+                            <Link href={`/dashboard/returns/${rma.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                               {rma.rmaNumber}
                             </Link>
                           </>

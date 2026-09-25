@@ -39,10 +39,10 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
   ]);
 
   const pretty = prettyX12(doc.content);
-  const linkClass = "text-blue-400 hover:text-blue-300";
+  const linkClass = "text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-4xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -61,7 +61,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
           </div>
           <a
             href={`/api/edi/${doc.id}`}
-            className="inline-flex items-center gap-2 self-start rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+            className="inline-flex items-center gap-2 self-start rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
           >
             <Download className="h-4 w-4" />
             Download file

@@ -62,7 +62,7 @@ export default async function InventoryPage({
     .slice(0, 6);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Products</h1>
@@ -78,7 +78,7 @@ export default async function InventoryPage({
               name="q"
               placeholder="Search by name or SKU..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500"
+              className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500 glass"
             />
           </form>
           <Link
@@ -95,7 +95,7 @@ export default async function InventoryPage({
           </Link>
           <Link
             href="/dashboard/inventory/new"
-            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
           >
             <Plus className="h-4 w-4" />
             New product
@@ -104,31 +104,31 @@ export default async function InventoryPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Inventory value</p>
           <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
         </div>
-        <div className="rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Low stock items</p>
           <p className={`mt-2 text-2xl font-semibold ${lowStockCount > 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
             <AnimatedCounter value={lowStockCount} decimals={0} />
           </p>
         </div>
-        <div className="flex items-center justify-center rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5">
+        <div className="flex items-center justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <RingGauge label="Stock health" pct={healthyRatio} goodIsHigh size={96} strokeWidth={8} />
         </div>
       </div>
 
       {topProductsByValue.length > 0 && (
-        <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-6">
+        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top products by value</h2>
           <HorizontalBarChart data={topProductsByValue} color={VIZ.blue} />
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {products.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             {q

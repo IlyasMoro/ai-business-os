@@ -26,7 +26,7 @@ export default async function CostCentersPage({
   const heads = new Map(headcount.map((h) => [h.costCenterId, h._count._all]));
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Cost centers</h1>
         <PeriodPicker action="/dashboard/controlling/cost-centers" fiscalYear={period.fiscalYear} month={period.month} startMonth={settings.fiscalYearStartMonth} years={period.years} />
@@ -37,7 +37,7 @@ export default async function CostCentersPage({
         <ErrorBanner code={error} />
       </div>
 
-      <div className="mt-2 overflow-x-auto rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white">
+      <div className="mt-2 overflow-x-auto rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {rows.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No cost centers yet. A common start is one per department, like 1000 Administration, 2000 Sales, 3000 Production.
@@ -86,7 +86,7 @@ export default async function CostCentersPage({
 
       <form
         action={createCostCenter}
-        className="mt-6 max-w-2xl space-y-4 rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5"
+        className="mt-6 max-w-2xl space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
       >
         <p className="font-medium text-slate-50 light:text-slate-900">New cost center</p>
         <div className="grid gap-4 sm:grid-cols-3">

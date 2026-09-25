@@ -29,10 +29,10 @@ export default async function ReceivePurchaseOrderPage({
   if (!po) notFound();
   if (po.status === "RECEIVED" || po.status === "CANCELLED") redirect(`/dashboard/procurement/${po.id}`);
 
-  const card = "rounded-2xl border border-white/[0.06] light:border-slate-200 bg-[#111111] light:bg-white p-5";
+  const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass p-5";
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] bg-black p-4 sm:-m-6 sm:p-6 light:bg-white">
+    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="max-w-3xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Receive purchase order</h1>
         <p className="mt-1 text-slate-400 light:text-slate-500">
