@@ -153,11 +153,11 @@ test("profitability and turning Controlling off", async ({ page }) => {
 
   await applyPreset(page, "Turn off");
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "Controlling", exact: true })).toHaveCount(0);
+  await expect(page.locator('aside nav a[href="/dashboard/controlling"]')).toHaveCount(0);
   await page.goto("/dashboard/accounting/new");
   await expect(page.locator('select[name="costObject"]')).toHaveCount(0);
 
   await applyPreset(page, "Flexible");
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "Controlling", exact: true }).first()).toBeAttached();
+  await expect(page.locator('aside nav a[href="/dashboard/controlling"]').first()).toBeAttached();
 });

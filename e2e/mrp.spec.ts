@@ -177,11 +177,11 @@ test("buy suggestions become purchase orders; make suggestions become work order
 test("services only template hides planning", async ({ page }) => {
   await applyPreset(page, "Services only");
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "Planning", exact: true })).toHaveCount(0);
+  await expect(page.locator('aside nav a[href="/dashboard/mrp"]')).toHaveCount(0);
   await page.goto(urls.bike);
   await expect(page.getByText("Bill of materials")).toHaveCount(0);
 
   await applyPreset(page, "Make to stock");
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "Planning", exact: true }).first()).toBeAttached();
+  await expect(page.locator('aside nav a[href="/dashboard/mrp"]').first()).toBeAttached();
 });

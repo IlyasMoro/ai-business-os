@@ -23,7 +23,7 @@ test.describe("platform settings access control", () => {
     const { companyName } = await registerCompany(page);
     createdCompanies.push(companyName);
 
-    await expect(page.getByRole("link", { name: "Platform Settings" })).toHaveCount(0);
+    await expect(page.locator('aside nav a[href="/dashboard/platform-settings"]')).toHaveCount(0);
 
     await page.goto("/dashboard/platform-settings");
     await expect(page.getByText("Page not found")).toBeVisible();
@@ -33,7 +33,8 @@ test.describe("platform settings access control", () => {
     const { companyName } = await registerCompany(page, { email: adminEmail });
     createdCompanies.push(companyName);
 
-    await expect(page.getByRole("link", { name: "Platform Settings" })).toBeVisible();
+    // Attached, not visible: it sits in the Administration group, collapsed by default.
+    await expect(page.locator('aside nav a[href="/dashboard/platform-settings"]')).toBeAttached();
 
     await page.goto("/dashboard/platform-settings");
     await page.fill("#resendApiKey", "re_e2e_fake_key_" + randomSuffix());

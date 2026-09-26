@@ -174,7 +174,7 @@ test("retail template skips approval", async ({ page }) => {
 test("services only template hides returns entirely", async ({ page }) => {
   await applyPreset(page, "Services only");
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "Returns", exact: true })).toHaveCount(0);
+  await expect(page.locator('aside nav a[href="/dashboard/returns"]')).toHaveCount(0);
   await shot(page, "09-services-only-no-returns-nav");
 
   await page.goto("/dashboard/returns/new");
@@ -182,5 +182,5 @@ test("services only template hides returns entirely", async ({ page }) => {
 
   await applyPreset(page, "Retail store");
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: "Returns", exact: true }).first()).toBeAttached();
+  await expect(page.locator('aside nav a[href="/dashboard/returns"]').first()).toBeAttached();
 });
