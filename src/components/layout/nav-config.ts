@@ -1,4 +1,5 @@
 import {
+  House,
   LayoutDashboard,
   Users,
   Boxes,
@@ -37,7 +38,9 @@ export type NavItem = {
   platformAdminOnly?: boolean;
 };
 
-export type NavGroup = { label: string; items: NavItem[] };
+/** `icon` marks the group heading; it matches the department icons in the
+ * landing page constellation (components/landing/module-constellation.tsx). */
+export type NavGroup = { label: string; icon: typeof LayoutDashboard; items: NavItem[] };
 
 /** Modules with no `roles` are visible to everyone; HR/Payroll/Accounting
  * are back-office modules restricted to OWNER/ADMIN. Items with
@@ -47,6 +50,7 @@ export type NavGroup = { label: string; items: NavItem[] };
 export const navGroups: NavGroup[] = [
   {
     label: "Workspace",
+    icon: House,
     items: [
       { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
       { href: "/dashboard/assistant", label: "AI Copilot", icon: Sparkles },
@@ -55,6 +59,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Customers & Sales",
+    icon: Users,
     items: [
       { href: "/dashboard/crm", label: "CRM", icon: Users },
       { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone },
@@ -66,6 +71,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Operations",
+    icon: Boxes,
     items: [
       { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
       { href: "/dashboard/procurement", label: "Procurement", icon: Truck },
@@ -74,6 +80,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Finance",
+    icon: Wallet,
     items: [
       { href: "/dashboard/accounting", label: "Accounting", icon: Wallet, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/controlling", label: "Controlling", icon: Target, roles: ["OWNER", "ADMIN"] },
@@ -81,6 +88,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "People",
+    icon: UserSquare2,
     items: [
       { href: "/dashboard/hr", label: "HR", icon: UserSquare2, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/payroll", label: "Payroll", icon: Banknote, roles: ["OWNER", "ADMIN"] },
@@ -89,6 +97,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Work Management",
+    icon: FolderKanban,
     items: [
       { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
       { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
@@ -96,12 +105,14 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Insights",
+    icon: BarChart3,
     items: [
       { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
     ],
   },
   {
     label: "Connectivity",
+    icon: Plug,
     items: [
       { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/edi", label: "EDI", icon: ArrowLeftRight, roles: ["OWNER", "ADMIN"] },
@@ -109,6 +120,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Administration",
+    icon: SlidersHorizontal,
     items: [
       { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"] },
       { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"] },

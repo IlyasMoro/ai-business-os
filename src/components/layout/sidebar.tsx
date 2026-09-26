@@ -16,7 +16,7 @@ export function Sidebar({
   hiddenHrefs?: string[];
 }) {
   return (
-    <aside className="relative z-30 hidden w-60 shrink-0 flex-col border-r border-white/[0.09] sm:flex light:border-white/80 glass-panel">
+    <aside className="relative z-30 hidden w-64 shrink-0 flex-col border-r border-white/[0.09] sm:flex light:border-white/80 glass-panel">
       <div className="flex h-16 items-center px-5">
         <Link href="/dashboard" className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
           <Logo />

@@ -254,6 +254,23 @@ html.light body::after {
   background: radial-gradient(ellipse 120% 100% at 50% 40%, transparent 60%, rgb(148 163 184 / 0.18));
 }
 
+/* Page stage: whatever mounts directly inside the dashboard's <main> (the
+   loading skeleton, then the real page that streams in to replace it)
+   fades and rises in. Saving a form re-renders the same page without
+   remounting it, so edits never replay the animation. */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.page-stage > * {
+  animation: page-in 240ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-stage > * { animation: none; }
+}
+
 @keyframes aurora-drift {
   0% { transform: translate3d(0, 0, 0) scale(1); }
   50% { transform: translate3d(-3%, 2%, 0) scale(1.06); }

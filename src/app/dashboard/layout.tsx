@@ -53,7 +53,7 @@ export default async function DashboardLayout({
           notifications={notifications}
           subscription={subscription}
         />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        <main className="page-stage flex-1 overflow-y-auto p-4 sm:p-6">
           {access.blocked ? <SubscriptionBlocked reason={access.reason} /> : children}
         </main>
       </div>
