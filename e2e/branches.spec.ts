@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { createCustomer, randomSuffix, waitForHydration } from "./fixtures";
+import { createCustomer, randomSuffix, selectAndSave, waitForHydration } from "./fixtures";
 
 async function switchBranch(page: Page, label: string) {
   const trigger = page.locator('header button[aria-haspopup="listbox"]');
@@ -57,4 +57,80 @@ test("orders belong to a branch and the switcher filters by it", async ({ page }
   await page.goto("/dashboard/sales");
   await expect(page.getByText(mainCustomer).first()).toBeVisible();
   await expect(page.getByText(northCustomer)).toHaveCount(0);
+});
+
+test("stock is kept per branch and orders ship from their own branch", async ({ page }) => {
+  const suffix = randomSuffix();
+  const code = "S" + suffix.slice(0, 4).toUpperCase();
+  const branchName = "South " + code;
+  const productName = "Branch Widget " + suffix;
+  const sku = "BW" + suffix;
+  const customerName = "South Buyer " + suffix;
+
+  await page.goto("/dashboard/branches");
+  const createForm = page.locator('form:has(button:has-text("Create branch"))');
+  await createForm.locator('input[name="code"]').fill(code);
+  await createForm.locator('input[name="name"]').fill(branchName);
+  await createForm.getByRole("button", { name: "Create branch" }).click();
+  await page.waitForURL(/saved=1/);
+
+  // Opening stock lands at the main branch (the form's default).
+  await page.goto("/dashboard/inventory/new");
+  await page.fill('input[name="sku"]', sku);
+  await page.fill('input[name="name"]', productName);
+  await page.fill('input[name="cost"]', "5.00");
+  await page.fill('input[name="unitPrice"]', "12.00");
+  await page.fill('input[name="stockQty"]', "10");
+  await page.getByRole("button", { name: "Create product" }).click();
+  await page.waitForURL(/\/dashboard\/inventory\/(?!new$)[^/]+$/, { timeout: 45000 });
+  const productUrl = page.url();
+
+  await createCustomer(page, customerName);
+  await page.goto("/dashboard/sales/new");
+  await page.selectOption('select[name="customerId"]', { label: customerName });
+  await page.selectOption('select[name="branchId"]', { label: `${branchName} (${code})` });
+  await page.getByRole("button", { name: "Create order" }).click();
+  await page.waitForURL(/\/dashboard\/sales\/(?!new$)[^/]+$/, { timeout: 45000 });
+  const orderUrl = page.url();
+
+  // The picker counts stock at the order's branch, which has none yet.
+  const option = page.locator('select[name="productId"] option', { hasText: `${productName} (${sku})` });
+  await expect(option).toContainText("0 in stock");
+  await page.selectOption('select[name="productId"]', (await option.getAttribute("value"))!);
+  await page.fill('input[name="quantity"]', "4");
+  await page.getByRole("button", { name: "Add item" }).click();
+  await expect(page.getByText("4 ×")).toBeVisible({ timeout: 45000 });
+
+  // Main's 10 units don't count for a South order.
+  await selectAndSave(page, 'select[name="status"]', "CONFIRMED");
+  await expect(page.getByText(`0 at ${branchName}, 10 more at other branches, 4 requested`)).toBeVisible();
+
+  // A stock take at South, made with South in view.
+  await switchBranch(page, branchName);
+  await page.goto(`${productUrl}/edit`);
+  await expect(page.getByText(`Stock at ${branchName}`)).toBeVisible();
+  await page.fill('input[name="stockQty"]', "6");
+  await page.getByRole("button", { name: "Save changes" }).click();
+  await page.waitForURL(productUrl, { timeout: 45000 });
+
+  await page.goto(orderUrl);
+  for (const status of ["CONFIRMED", "FULFILLED"]) {
+    await selectAndSave(page, 'select[name="status"]', status);
+  }
+  await page.reload();
+  await expect(page.locator('select[name="status"]')).toHaveValue("FULFILLED");
+
+  // South shipped 4 of its 6; Main still has 10; the total is 12.
+  await page.goto(productUrl);
+  await expect(page.getByText("Stock quantity").locator("xpath=following-sibling::p[1]")).toHaveText("12");
+  const southRow = page.getByRole("row", { name: new RegExp(branchName) });
+  await expect(southRow.getByRole("cell").nth(1)).toHaveText("2");
+  await expect(page.getByRole("row", { name: /Main branch/ }).getByRole("cell").nth(1)).toHaveText("10");
+
+  // A branch level of its own flags South as low without touching Main.
+  await southRow.getByRole("spinbutton").fill("3");
+  await southRow.getByRole("button", { name: "Save" }).click();
+  await page.waitForURL(/saved=1/);
+  await expect(page.getByRole("row", { name: new RegExp(branchName) }).getByText("Low")).toBeVisible();
+  await expect(page.getByRole("row", { name: /Main branch/ }).getByText("Low")).toHaveCount(0);
 });

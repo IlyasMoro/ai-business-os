@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { changeStock, stockBranchFor } from "@/lib/stock";
 import { lockedWhere } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { putIntoLot } from "@/lib/lots";
@@ -31,6 +32,7 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
     select: {
       id: true,
       status: true,
+      branchId: true,
       items: {
         select: {
           id: true,
@@ -85,14 +87,16 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
     plans.push({ productId: p.id, entries });
   }
 
+  const branchId = await stockBranchFor(session.companyId, po.branchId);
   await db.$transaction(async (tx) => {
     for (const item of po.items) {
-      await tx.product.update({ where: { id: item.product.id }, data: { stockQty: { increment: item.quantity } } });
+      await changeStock(tx, { companyId: session.companyId, branchId, productId: item.product.id, delta: item.quantity });
     }
     for (const plan of plans) {
       for (const e of plan.entries) {
         await putIntoLot(tx, {
           companyId: session.companyId,
+          branchId,
           productId: plan.productId,
           lotNumber: e.lotNumber,
           quantity: e.quantity,
@@ -131,7 +135,13 @@ export async function setProductTracking(productId: string, formData: FormData) 
 
   const product = await db.product.findUnique({
     where: { id: productId, companyId: session.companyId },
-    select: { id: true, stockQty: true, trackingMode: true, lots: { where: { quantity: { gt: 0 } }, select: { id: true } } },
+    select: {
+      id: true,
+      stockQty: true,
+      trackingMode: true,
+      lots: { where: { quantity: { gt: 0 } }, select: { id: true } },
+      branchStock: { where: { quantity: { gt: 0 } }, select: { branchId: true, quantity: true, branch: { select: { code: true, isMain: true } } } },
+    },
   });
   if (!product) redirect("/dashboard/inventory");
 
@@ -146,19 +156,25 @@ export async function setProductTracking(productId: string, formData: FormData) 
 
   await db.$transaction(async (tx) => {
     await tx.product.update({ where: { id: product.id }, data: { trackingMode: to, tracksExpiry } });
-    // Starting to track: what's on the shelf becomes the opening lot(s).
+    // Starting to track: what's on each branch's shelf becomes that
+    // branch's opening lot (or serials). Serials stay unique across
+    // branches by carrying the branch code outside the main branch.
     if (from === "NONE" && to !== "NONE" && product.stockQty > 0 && product.lots.length === 0) {
-      const codes = to === "LOT" ? ["OPENING"] : generateSerials("OPEN", product.stockQty);
-      for (const lotNumber of codes) {
-        await putIntoLot(tx, {
-          companyId: session.companyId,
-          productId: product.id,
-          lotNumber,
-          quantity: to === "LOT" ? product.stockQty : 1,
-          source: "OPENING",
-          kind: "OPENING",
-          links: {},
-        });
+      for (const bs of product.branchStock) {
+        const prefix = bs.branch.isMain ? "OPEN" : `OPEN-${bs.branch.code}-`;
+        const codes = to === "LOT" ? ["OPENING"] : generateSerials(prefix, bs.quantity);
+        for (const lotNumber of codes) {
+          await putIntoLot(tx, {
+            companyId: session.companyId,
+            branchId: bs.branchId,
+            productId: product.id,
+            lotNumber,
+            quantity: to === "LOT" ? bs.quantity : 1,
+            source: "OPENING",
+            kind: "OPENING",
+            links: {},
+          });
+        }
       }
     }
   });

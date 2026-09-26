@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { branchWhere } from "@/lib/branches";
+import { lowStockAt } from "@/lib/stock";
 import { getAgendaItems } from "@/lib/agenda";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { KpiCard, type KpiChange } from "@/components/dash-viz/kpi-card";
@@ -139,7 +140,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
   ] = await Promise.all([
     db.customer.count({ where: { companyId } }),
     db.order.count({ where: { companyId, ...inBranch, status: { in: ["PENDING", "CONFIRMED"] } } }),
-    db.product.findMany({ where: { companyId }, select: { stockQty: true, reorderLevel: true } }),
+    lowStockAt(companyId, inBranch.branchId ?? null),
     db.invoice.count({ where: { companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } } }),
     db.ticket.count({ where: { companyId, status: { in: ["OPEN", "IN_PROGRESS"] } } }),
     db.purchaseOrder.count({ where: { companyId, ...inBranch, status: { in: ["DRAFT", "ORDERED"] } } }),
@@ -188,7 +189,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     getAgendaItems(companyId),
   ]);
 
-  const lowStockCount = products.filter((p) => p.stockQty <= p.reorderLevel).length;
+  const lowStockCount = new Set(products.map((r) => r.productId)).size;
   const projectStatusMap = new Map(projectStatusGroups.map((g) => [g.status, g._count._all]));
   const activeCount = projectStatusMap.get("ACTIVE") ?? 0;
   const completedCount = projectStatusMap.get("COMPLETED") ?? 0;

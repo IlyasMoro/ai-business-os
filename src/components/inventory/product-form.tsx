@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui-dark/button";
 import { Input, Label, Textarea, FieldError } from "@/components/ui-dark/input";
+import { BranchSelect, type BranchPicker } from "@/components/layout/branch-select";
 import type { ProductFormState } from "@/lib/validation/inventory";
 
 type Action = (
@@ -14,6 +15,8 @@ export function ProductForm({
   action,
   defaultValues,
   submitLabel = "Save product",
+  branches,
+  stockBranch,
 }: {
   action: Action;
   defaultValues?: {
@@ -26,6 +29,10 @@ export function ProductForm({
     reorderLevel: number;
   };
   submitLabel?: string;
+  /** New products: which branch the opening stock goes to. */
+  branches?: BranchPicker | null;
+  /** Editing: the branch whose count the stock field shows and sets. */
+  stockBranch?: { id: string; label: string } | null;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
@@ -83,7 +90,8 @@ export function ProductForm({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="stockQty">Stock quantity</Label>
+          {stockBranch && <input type="hidden" name="branchId" value={stockBranch.id} />}
+          <Label htmlFor="stockQty">{stockBranch?.label ?? "Stock quantity"}</Label>
           <Input
             id="stockQty"
             name="stockQty"
@@ -109,6 +117,8 @@ export function ProductForm({
           <FieldError messages={state?.errors?.reorderLevel} />
         </div>
       </div>
+
+      {branches && <BranchSelect {...branches} />}
 
       {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 

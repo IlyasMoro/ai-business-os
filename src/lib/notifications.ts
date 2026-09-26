@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { lowStockAt } from "@/lib/stock";
 
 export type Notification = {
   id: string;
@@ -11,7 +12,7 @@ export type Notification = {
 export async function getNotifications(companyId: string): Promise<Notification[]> {
   const now = new Date();
 
-  const [overdueInvoices, products, urgentTickets, pendingActions] = await Promise.all([
+  const [overdueInvoices, lowStock, branchCount, urgentTickets, pendingActions] = await Promise.all([
     db.invoice.findMany({
       where: {
         companyId,
@@ -21,10 +22,8 @@ export async function getNotifications(companyId: string): Promise<Notification[
       orderBy: { dueDate: "asc" },
       take: 5,
     }),
-    db.product.findMany({
-      where: { companyId },
-      select: { id: true, name: true, stockQty: true, reorderLevel: true },
-    }),
+    lowStockAt(companyId, null),
+    db.branch.count({ where: { companyId, active: true } }),
     db.ticket.findMany({
       where: { companyId, status: { in: ["OPEN", "IN_PROGRESS"] }, priority: "HIGH" },
       select: { id: true, subject: true },
@@ -50,12 +49,14 @@ export async function getNotifications(companyId: string): Promise<Notification[
     });
   }
 
-  for (const p of products.filter((p) => p.stockQty <= p.reorderLevel).slice(0, 5)) {
+  // Low stock is per branch; name the branch once there is more than one.
+  for (const row of lowStock.slice(0, 5)) {
+    const where = branchCount > 1 ? ` at ${row.branchName}` : "";
     notifications.push({
-      id: `product-${p.id}`,
+      id: `product-${row.productId}-${row.branchId}`,
       severity: "medium",
-      message: `${p.name} is low on stock (${p.stockQty} left)`,
-      href: `/dashboard/inventory/${p.id}`,
+      message: `${row.productName} is low on stock${where} (${row.quantity} left)`,
+      href: `/dashboard/inventory/${row.productId}`,
     });
   }
 

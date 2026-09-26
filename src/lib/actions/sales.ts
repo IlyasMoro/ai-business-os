@@ -7,7 +7,8 @@ import { db } from "@/lib/db";
 import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { evaluateCreditCheck } from "@/lib/credit-math";
-import { findStockShortfalls } from "@/lib/stock-math";
+import { changeStock, quantitiesAt, stockBranchFor } from "@/lib/stock";
+import { describeShortfalls, findBranchShortfalls } from "@/lib/stock-levels";
 import { LotShortageError, getInventorySettings, takeFromLots } from "@/lib/lots";
 import {
   OrderSchema,
@@ -76,6 +77,7 @@ export async function updateOrderStatus(
       status: true,
       totalAmount: true,
       customerId: true,
+      branchId: true,
       customer: { select: { name: true, creditLimit: true } },
       items: {
         select: {
@@ -88,6 +90,26 @@ export async function updateOrderStatus(
   if (!order) {
     return { message: "Order not found." };
   }
+
+  // Goods leave from the order's own branch. Stock at other branches
+  // doesn't count: it has to be moved over first.
+  const branchId = await stockBranchFor(session.companyId, order.branchId);
+  const branchShortfalls = async () => {
+    const [atBranch, branch] = await Promise.all([
+      quantitiesAt(branchId, order.items.map((i) => i.product.id)),
+      db.branch.findUnique({ where: { id: branchId }, select: { name: true } }),
+    ]);
+    const shortfalls = findBranchShortfalls(
+      order.items.map((item) => ({
+        productId: item.product.id,
+        productName: item.product.name,
+        quantity: item.quantity,
+        branchQty: atBranch.get(item.product.id) ?? 0,
+        totalQty: item.product.stockQty,
+      }))
+    );
+    return shortfalls.length > 0 ? describeShortfalls(shortfalls, branch?.name ?? "this branch") : null;
+  };
 
   // Credit check runs at the moment an order moves from pending to
   // confirmed, matching the course's ERP credit management scenario: check
@@ -109,16 +131,8 @@ export async function updateOrderStatus(
 
     // Available to Promise check: confirm every line item is actually
     // covered by stock on hand before promising the order to the customer.
-    const shortfalls = findStockShortfalls(
-      order.items.map((item) => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        quantity: item.quantity,
-        stockQty: item.product.stockQty,
-      }))
-    );
-    if (shortfalls.length > 0) {
-      const summary = shortfalls.map((s) => `${s.productName} (${s.available} in stock, ${s.requested} requested)`).join(", ");
+    const summary = await branchShortfalls();
+    if (summary) {
       return { message: `Cannot confirm: not enough stock for ${summary}. Receive more stock or reduce the order.` };
     }
   }
@@ -127,16 +141,8 @@ export async function updateOrderStatus(
   // where goods physically leave, matching the course's "delivery" step.
   // Re-check availability here too, in case stock moved since confirmation.
   if (nextStatus === "FULFILLED" && order.status === "CONFIRMED") {
-    const shortfalls = findStockShortfalls(
-      order.items.map((item) => ({
-        productId: item.product.id,
-        productName: item.product.name,
-        quantity: item.quantity,
-        stockQty: item.product.stockQty,
-      }))
-    );
-    if (shortfalls.length > 0) {
-      const summary = shortfalls.map((s) => `${s.productName} (${s.available} in stock, ${s.requested} requested)`).join(", ");
+    const summary = await branchShortfalls();
+    if (summary) {
       return { message: `Cannot fulfil: not enough stock for ${summary}. Receive more stock or reduce the order.` };
     }
 
@@ -146,13 +152,11 @@ export async function updateOrderStatus(
     try {
       await db.$transaction(async (tx) => {
         for (const item of order.items) {
-          await tx.product.update({
-            where: { id: item.product.id },
-            data: { stockQty: { decrement: item.quantity } },
-          });
+          await changeStock(tx, { companyId: session.companyId, branchId, productId: item.product.id, delta: -item.quantity });
           if (item.product.trackingMode !== "NONE") {
             await takeFromLots(tx, {
               companyId: session.companyId,
+              branchId,
               productId: item.product.id,
               productName: item.product.name,
               quantity: item.quantity,

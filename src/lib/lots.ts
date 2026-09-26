@@ -34,6 +34,8 @@ export async function takeFromLots(
   tx: Tx,
   opts: {
     companyId: string;
+    /** Only lots at this branch are picked. */
+    branchId: string;
     productId: string;
     productName: string;
     quantity: number;
@@ -43,7 +45,7 @@ export async function takeFromLots(
   }
 ) {
   const lots = await tx.stockLot.findMany({
-    where: { productId: opts.productId, companyId: opts.companyId, quantity: { gt: 0 } },
+    where: { productId: opts.productId, companyId: opts.companyId, branchId: opts.branchId, quantity: { gt: 0 } },
     select: { id: true, lotNumber: true, quantity: true, expiresAt: true, receivedAt: true },
   });
   const { allocations, shortfall } = pickLots(lots, opts.quantity, {
@@ -66,6 +68,7 @@ export async function putIntoLot(
   tx: Tx,
   opts: {
     companyId: string;
+    branchId: string;
     productId: string;
     lotNumber: string;
     quantity: number;
@@ -76,7 +79,7 @@ export async function putIntoLot(
   }
 ) {
   const lot = await tx.stockLot.upsert({
-    where: { productId_lotNumber: { productId: opts.productId, lotNumber: opts.lotNumber } },
+    where: { productId_branchId_lotNumber: { productId: opts.productId, branchId: opts.branchId, lotNumber: opts.lotNumber } },
     create: {
       lotNumber: opts.lotNumber,
       quantity: opts.quantity,
@@ -85,6 +88,7 @@ export async function putIntoLot(
       purchaseOrderId: opts.links.purchaseOrderId,
       workOrderId: opts.links.workOrderId,
       productId: opts.productId,
+      branchId: opts.branchId,
       companyId: opts.companyId,
     },
     update: { quantity: { increment: opts.quantity } },
@@ -102,7 +106,16 @@ export async function putIntoLot(
  */
 export async function returnToLots(
   tx: Tx,
-  opts: { companyId: string; orderId: string; productId: string; quantity: number; returnId: string; returnNumber: string }
+  opts: {
+    companyId: string;
+    /** The order's branch; units that can't be matched to a lot land here. */
+    branchId: string;
+    orderId: string;
+    productId: string;
+    quantity: number;
+    returnId: string;
+    returnNumber: string;
+  }
 ) {
   const moves = await tx.lotMovement.findMany({
     where: { orderId: opts.orderId, companyId: opts.companyId, lot: { productId: opts.productId }, kind: { in: ["SALE", "RETURN"] } },
@@ -129,6 +142,7 @@ export async function returnToLots(
   if (remaining > 0) {
     await putIntoLot(tx, {
       companyId: opts.companyId,
+      branchId: opts.branchId,
       productId: opts.productId,
       lotNumber: opts.returnNumber,
       quantity: remaining,

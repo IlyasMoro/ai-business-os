@@ -57,6 +57,6 @@ test("marking a purchase order Received increments the product's stock", async (
   await expect(page.getByText("RECEIVED").first()).toBeVisible({ timeout: 45000 });
 
   await page.goto(productUrl);
-  await expect(page.getByText("Stock quantity")).toBeVisible();
-  await expect(page.getByText("35", { exact: true })).toBeVisible({ timeout: 45000 });
+  // The value under "Stock quantity" (35 can also show in the per-branch table).
+  await expect(page.getByText("Stock quantity").locator("xpath=following-sibling::p[1]")).toHaveText("35", { timeout: 45000 });
 });

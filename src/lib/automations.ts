@@ -2,7 +2,8 @@ import "server-only";
 import { db } from "@/lib/db";
 import { systemBranchId } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
-import { needsReorder, computeReorderQuantity } from "@/lib/automation-rules";
+import { stockRows } from "@/lib/stock";
+import { reorderPlanByBranch } from "@/lib/stock-levels";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import { getBusinessReportData } from "@/lib/business-report-data";
 import { generateBusinessReportPdf } from "@/lib/report-pdf";
@@ -54,23 +55,10 @@ async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string 
 }
 
 async function runLowStockReorder(companyId: string, webhookUrl: string | null) {
-  const lowStockProducts = await db.product.findMany({
-    where: { companyId },
-    select: { id: true, name: true, cost: true, stockQty: true, reorderLevel: true },
-  });
-  const lowStock = lowStockProducts.filter((p) => needsReorder(p.stockQty, p.reorderLevel));
-  if (lowStock.length === 0) return;
-
-  const alreadyOnOrder = await db.purchaseOrderItem.findMany({
-    where: {
-      productId: { in: lowStock.map((p) => p.id) },
-      purchaseOrder: { companyId, status: { in: ["DRAFT", "ORDERED"] } },
-    },
-    select: { productId: true },
-  });
-  const alreadyOnOrderIds = new Set(alreadyOnOrder.map((i) => i.productId));
-  const toOrder = lowStock.filter((p) => !alreadyOnOrderIds.has(p.id));
-  if (toOrder.length === 0) return;
+  // Each branch reorders for itself: one purchase order per branch that is
+  // short, delivered to that branch.
+  const plan = reorderPlanByBranch(await stockRows(companyId, null));
+  if (plan.size === 0) return;
 
   const supplier = await db.supplier.findFirst({
     where: { companyId },
@@ -79,31 +67,49 @@ async function runLowStockReorder(companyId: string, webhookUrl: string | null) 
   });
   if (!supplier) return;
 
-  const purchaseOrder = await db.purchaseOrder.create({
-    data: { companyId, supplierId: supplier.id, branchId: await systemBranchId(companyId) },
-  });
+  const mainBranchId = await systemBranchId(companyId);
+  for (const [branchId, lines] of plan) {
+    // Skip products this branch already has on order. Older orders without
+    // a branch belong to the main branch.
+    const alreadyOnOrder = await db.purchaseOrderItem.findMany({
+      where: {
+        productId: { in: lines.map((l) => l.productId) },
+        purchaseOrder: {
+          companyId,
+          status: { in: ["DRAFT", "ORDERED"] },
+          ...(branchId === mainBranchId ? { OR: [{ branchId }, { branchId: null }] } : { branchId }),
+        },
+      },
+      select: { productId: true },
+    });
+    const alreadyOnOrderIds = new Set(alreadyOnOrder.map((i) => i.productId));
+    const toOrder = lines.filter((l) => !alreadyOnOrderIds.has(l.productId));
+    if (toOrder.length === 0) continue;
 
-  await db.purchaseOrderItem.createMany({
-    data: toOrder.map((p) => ({
-      purchaseOrderId: purchaseOrder.id,
-      productId: p.id,
-      quantity: computeReorderQuantity(p.stockQty, p.reorderLevel),
-      unitCost: p.cost,
-    })),
-  });
+    const products = await db.product.findMany({
+      where: { id: { in: toOrder.map((l) => l.productId) }, companyId },
+      select: { id: true, name: true, cost: true },
+    });
+    const byId = new Map(products.map((p) => [p.id, p]));
+    const items = toOrder
+      .filter((l) => byId.has(l.productId))
+      .map((l) => ({ productId: l.productId, quantity: l.quantity, unitCost: byId.get(l.productId)!.cost }));
+    if (items.length === 0) continue;
 
-  const items = await db.purchaseOrderItem.findMany({
-    where: { purchaseOrderId: purchaseOrder.id },
-    select: { quantity: true, unitCost: true },
-  });
-  const totalAmount = computePurchaseOrderTotal(items);
-  await db.purchaseOrder.update({ where: { id: purchaseOrder.id }, data: { totalAmount } });
+    const totalAmount = computePurchaseOrderTotal(items);
+    const purchaseOrder = await db.purchaseOrder.create({
+      data: { companyId, supplierId: supplier.id, branchId, totalAmount, items: { create: items } },
+      select: { id: true, branch: { select: { name: true } } },
+    });
 
-  await sendWebhookNotification(
-    webhookUrl,
-    `Reorder created for ${toOrder.length} low-stock product${toOrder.length === 1 ? "" : "s"}: ${toOrder.map((p) => p.name).join(", ")}`,
-    { event: "low_stock_reorder", products: toOrder.map((p) => p.name), purchaseOrderId: purchaseOrder.id, totalAmount }
-  );
+    const names = items.map((i) => byId.get(i.productId)!.name);
+    const where = purchaseOrder.branch ? ` at ${purchaseOrder.branch.name}` : "";
+    await sendWebhookNotification(
+      webhookUrl,
+      `Reorder created${where} for ${names.length} low-stock product${names.length === 1 ? "" : "s"}: ${names.join(", ")}`,
+      { event: "low_stock_reorder", products: names, purchaseOrderId: purchaseOrder.id, branch: purchaseOrder.branch?.name ?? null, totalAmount }
+    );
+  }
 }
 
 async function runStaleTicketEscalation(companyId: string, webhookUrl: string | null) {

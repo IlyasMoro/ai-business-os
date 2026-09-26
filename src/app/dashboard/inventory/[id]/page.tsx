@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { Badge } from "@/components/ui-dark/badge";
 import { LinkButton, Button } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
-import { deleteProduct, applyReorderSuggestion } from "@/lib/actions/inventory";
+import { deleteProduct, applyReorderSuggestion, setBranchReorderLevel } from "@/lib/actions/inventory";
+import { effectiveReorderLevel, isLowAtBranch } from "@/lib/stock-levels";
 import { removeBomLine } from "@/lib/actions/mrp";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { BomLineForm } from "@/components/mrp/bom-line-form";
@@ -15,7 +16,7 @@ import { getMrpSettings } from "@/lib/mrp";
 import { getInventorySettings } from "@/lib/lots";
 import { isExpired, isExpiringSoon } from "@/lib/lot-math";
 import { setProductTracking } from "@/lib/actions/lots";
-import { Select, Label } from "@/components/ui-dark/input";
+import { Select, Label, Input } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { SettingToggle } from "@/components/ui-dark/setting-toggle";
 import { Pencil } from "lucide-react";
@@ -56,8 +57,40 @@ export default async function ProductDetailPage({
       : await db.stockLot.findMany({
           where: { productId: product.id, quantity: { gt: 0 } },
           orderBy: [{ expiresAt: { sort: "asc", nulls: "last" } }, { receivedAt: "asc" }],
+          include: { branch: { select: { name: true } } },
           take: 200,
         });
+
+  // Stock per branch. Everyone can see every branch's count (so staff can
+  // point customers to another shop); only owners and admins set levels.
+  const branches = await db.branch.findMany({
+    where: { companyId: session.companyId },
+    orderBy: [{ isMain: "desc" }, { name: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      active: true,
+      stock: { where: { productId: product.id }, select: { quantity: true, reorderLevel: true } },
+    },
+  });
+  const branchStock = branches
+    .filter((b) => b.active || b.stock.length > 0)
+    .map((b) => {
+      const row = b.stock[0];
+      const level = { reorderLevel: row?.reorderLevel ?? null, productReorderLevel: product.reorderLevel };
+      return {
+        id: b.id,
+        name: b.name,
+        stocked: !!row,
+        quantity: row?.quantity ?? 0,
+        reorderLevel: row?.reorderLevel ?? null,
+        effectiveLevel: effectiveReorderLevel(level),
+        low: !!row && isLowAtBranch({ quantity: row.quantity, ...level }),
+      };
+    });
+  const multiBranch = branchStock.length > 1;
+  const lowAnywhere = branchStock.some((b) => b.low);
+  const canSetLevels = hasRole(session, ["OWNER", "ADMIN"]);
   const [otherProducts, suppliers] = mrpSettings.enabled
     ? await Promise.all([
         db.product.findMany({
@@ -140,8 +173,8 @@ export default async function ProductDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{product.name}</h1>
-              {product.stockQty <= product.reorderLevel && (
-                <Badge tone="red">Low stock</Badge>
+              {lowAnywhere && (
+                <Badge tone="red">{multiBranch ? `Low at ${branchStock.filter((b) => b.low).map((b) => b.name).join(", ")}` : "Low stock"}</Badge>
               )}
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">{product.sku}</p>
@@ -184,6 +217,61 @@ export default async function ProductDetailPage({
             )}
           </CardContent>
         </Card>
+
+        {multiBranch && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Stock by branch</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                    <th className="py-2 font-medium">Branch</th>
+                    <th className="py-2 text-right font-medium">On hand</th>
+                    <th className="py-2 pl-6 font-medium">Reorder level</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {branchStock.map((b) => (
+                    <tr key={b.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="py-2 text-slate-50 light:text-slate-900">
+                        {b.name}
+                        {b.low && <Badge tone="red" className="ml-2">Low</Badge>}
+                        {!b.stocked && <span className="ml-2 text-xs text-slate-500">not stocked</span>}
+                      </td>
+                      <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{b.quantity}</td>
+                      <td className="py-2 pl-6">
+                        {canSetLevels ? (
+                          <form action={setBranchReorderLevel.bind(null, product.id, b.id)} className="flex items-center gap-2">
+                            <Input
+                              name="reorderLevel"
+                              type="number"
+                              min="0"
+                              step="1"
+                              defaultValue={b.reorderLevel ?? ""}
+                              placeholder={`${product.reorderLevel} (default)`}
+                              aria-label={`Reorder level at ${b.name}`}
+                              className="w-32"
+                            />
+                            <SubmitButton pendingText="Saving..." variant="secondary">
+                              Save
+                            </SubmitButton>
+                          </form>
+                        ) : (
+                          <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">
+                            {b.effectiveLevel}
+                            {b.reorderLevel === null && <span className="ml-1 text-xs text-slate-500">(default)</span>}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        )}
 
         {suggestedReorderLevel !== null && suggestedReorderLevel !== product.reorderLevel && (
           <Card className="mt-6 border-amber-500/30">
@@ -260,6 +348,7 @@ export default async function ProductDetailPage({
                         {lot.lotNumber}
                       </Link>
                       <span className="flex items-center gap-3">
+                        {multiBranch && <span className="text-xs text-slate-400">{lot.branch.name}</span>}
                         {lot.expiresAt && (
                           <span className="text-xs text-slate-400">Expires {lot.expiresAt.toLocaleDateString()}</span>
                         )}

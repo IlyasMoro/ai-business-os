@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { stockBranchFor } from "@/lib/stock";
 import { lockedWhere } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { StatusBadge } from "@/components/ui-dark/badge";
@@ -65,11 +66,21 @@ export default async function OrderDetailPage({
   const canOpenReturn =
     returnPolicy.enabled && order.status === "FULFILLED" && isWithinReturnWindow(fulfilledAt, returnPolicy.windowDays);
 
-  const products = await db.product.findMany({
-    where: { companyId: session.companyId },
-    select: { id: true, name: true, sku: true, unitPrice: true, stockQty: true },
-    orderBy: { name: "asc" },
-  });
+  // "In stock" means at this order's branch, where it will ship from.
+  const stockBranchId = await stockBranchFor(session.companyId, order.branchId);
+  const products = (
+    await db.product.findMany({
+      where: { companyId: session.companyId },
+      select: {
+        id: true,
+        name: true,
+        sku: true,
+        unitPrice: true,
+        branchStock: { where: { branchId: stockBranchId }, select: { quantity: true } },
+      },
+      orderBy: { name: "asc" },
+    })
+  ).map(({ branchStock, ...p }) => ({ ...p, stockQty: branchStock[0]?.quantity ?? 0 }));
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">

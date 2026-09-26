@@ -61,6 +61,7 @@ model Company {
   subscription        Subscription?
   teamInvites         TeamInvite[]
   branches            Branch[]
+  branchStock         BranchStock[]
 }
 
 enum UserRole {
@@ -141,9 +142,33 @@ model Branch {
   purchaseOrders PurchaseOrder[] @relation("PurchaseOrderBranch")
   employees      Employee[]      @relation("EmployeeBranch")
   costCenters    CostCenter[]    @relation("CostCenterBranch")
+  stock          BranchStock[]
+  lots           StockLot[]
 
   @@unique([companyId, code])
   @@index([companyId])
+}
+
+// Stock of one product at one branch. A branch only "stocks" a product
+// once it has a row here; low stock alerts only look at existing rows.
+model BranchStock {
+  id           String @id @default(cuid())
+  quantity     Int    @default(0)
+  // Null means use the product's own reorder level.
+  reorderLevel Int?
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([branchId, productId])
+  @@index([companyId])
+  @@index([productId])
 }
 
 model PasswordResetToken {
@@ -259,6 +284,9 @@ model Product {
   trackingMode TrackingMode @default(NONE)
   tracksExpiry Boolean      @default(false)
   lots         StockLot[]
+
+  // stockQty above is the company total: always the sum of these rows.
+  branchStock BranchStock[]
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1413,12 +1441,18 @@ model StockLot {
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  // The branch the lot sits at. The same lot number can sit at two
+  // branches once part of it is moved.
+  branchId String
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   movements LotMovement[]
 
-  @@unique([productId, lotNumber])
+  @@unique([productId, branchId, lotNumber])
+  @@index([branchId])
   @@index([companyId])
   @@index([companyId, expiresAt])
 }

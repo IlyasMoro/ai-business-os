@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { quantitiesAt } from "@/lib/stock";
+import { systemBranchId } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
@@ -54,7 +56,15 @@ export default async function WorkOrderDetailPage({
   });
   if (!wo) notFound();
 
-  const lines = wo.product.bomComponents;
+  // Builds happen at the main branch, so only its stock counts.
+  const atMain = await quantitiesAt(
+    await systemBranchId(session.companyId),
+    wo.product.bomComponents.map((l) => l.componentId)
+  );
+  const lines = wo.product.bomComponents.map((l) => ({
+    ...l,
+    component: { ...l.component, stockQty: atMain.get(l.componentId) ?? 0 },
+  }));
   const requirements = explodeBom(lines, wo.quantity).map((req) => {
     const line = lines.find((l) => l.componentId === req.componentId)!;
     return { ...req, line, short: Math.max(0, req.required - line.component.stockQty) };

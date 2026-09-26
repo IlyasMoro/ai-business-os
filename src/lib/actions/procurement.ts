@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { changeStock, stockBranchFor } from "@/lib/stock";
 import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import {
@@ -108,7 +109,7 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
 
   const current = await db.purchaseOrder.findUnique({
     where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { status: true, items: { select: { productId: true, quantity: true, product: { select: { trackingMode: true } } } } },
+    select: { status: true, branchId: true, items: { select: { productId: true, quantity: true, product: { select: { trackingMode: true } } } } },
   });
   if (!current) return;
 
@@ -118,6 +119,9 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
   if (isNewlyReceived && current.items.some((i) => i.product.trackingMode !== "NONE")) {
     redirect(`/dashboard/procurement/${purchaseOrderId}/receive?error=lots-needed`);
   }
+
+  // Stock arrives at the branch that ordered it.
+  const branchId = await stockBranchFor(session.companyId, current.branchId);
 
   await db.$transaction(async (tx) => {
     await tx.purchaseOrder.update({
@@ -130,10 +134,7 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
 
     if (isNewlyReceived) {
       for (const item of current.items) {
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stockQty: { increment: item.quantity } },
-        });
+        await changeStock(tx, { companyId: session.companyId, branchId, productId: item.productId, delta: item.quantity });
       }
     }
   });

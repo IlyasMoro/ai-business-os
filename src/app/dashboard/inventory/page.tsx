@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { getBranchContext } from "@/lib/branches";
+import { lowStockAt } from "@/lib/stock";
 import type { Prisma } from "@/generated/prisma/client";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
@@ -37,29 +39,47 @@ export default async function InventoryPage({
       : {}),
   };
 
-  const [products, totalCount, allForTotals] = await Promise.all([
+  // With a branch in view every figure is that branch's; with "All
+  // branches" they are company totals, and a product is low when any
+  // branch is short of it.
+  const { viewBranch } = await getBranchContext();
+  const viewBranchId = viewBranch?.id ?? null;
+
+  const [productRows, totalCount, allForTotals, lowRows] = await Promise.all([
     db.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
+      include: viewBranchId ? { branchStock: { where: { branchId: viewBranchId }, select: { quantity: true } } } : undefined,
     }),
     db.product.count({ where }),
     db.product.findMany({
       where: { companyId: session.companyId },
-      select: { name: true, stockQty: true, reorderLevel: true, unitPrice: true },
+      select: {
+        id: true,
+        name: true,
+        stockQty: true,
+        unitPrice: true,
+        ...(viewBranchId ? { branchStock: { where: { branchId: viewBranchId }, select: { quantity: true } } } : {}),
+      },
     }),
+    lowStockAt(session.companyId, viewBranchId),
   ]);
+  const qtyOf = (p: { stockQty: number; branchStock?: { quantity: number }[] }) =>
+    viewBranchId ? (p.branchStock?.[0]?.quantity ?? 0) : p.stockQty;
+  const lowIds = new Set(lowRows.map((r) => r.productId));
+  const products = productRows.map((p) => ({ ...p, qty: qtyOf(p), low: lowIds.has(p.id) }));
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const totalValue = allForTotals.reduce((s, p) => s + p.stockQty * p.unitPrice, 0);
-  const lowStockCount = allForTotals.filter((p) => p.stockQty <= p.reorderLevel).length;
+  const totalValue = allForTotals.reduce((s, p) => s + qtyOf(p) * p.unitPrice, 0);
+  const lowStockCount = lowIds.size;
   const healthyRatio =
     allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : 100;
 
   const topProductsByValue = allForTotals
-    .map((p) => ({ label: p.name, value: p.stockQty * p.unitPrice }))
+    .map((p) => ({ label: p.name, value: qtyOf(p) * p.unitPrice }))
     .filter((p) => p.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, 6);
@@ -146,7 +166,7 @@ export default async function InventoryPage({
                 <th className="px-5 py-3 font-medium">SKU</th>
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Unit price</th>
-                <th className="px-5 py-3 font-medium">Stock</th>
+                <th className="px-5 py-3 font-medium">{viewBranch ? `Stock at ${viewBranch.name}` : "Stock"}</th>
               </tr>
             </thead>
             <tbody>
@@ -165,12 +185,12 @@ export default async function InventoryPage({
                     {formatCompactCurrency(product.unitPrice)}
                   </td>
                   <td className="px-5 py-3">
-                    {product.stockQty <= product.reorderLevel ? (
+                    {product.low ? (
                       <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 font-mono text-xs tabular-nums text-red-400">
-                        {product.stockQty} low
+                        {product.qty} low
                       </span>
                     ) : (
-                      <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">{product.stockQty}</span>
+                      <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">{product.qty}</span>
                     )}
                   </td>
                 </tr>

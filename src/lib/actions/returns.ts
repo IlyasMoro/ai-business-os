@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { changeStock, stockBranchFor } from "@/lib/stock";
 import { lockedWhere } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { getReturnPolicy } from "@/lib/returns-policy";
@@ -169,6 +170,7 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
       status: true,
       refundAmount: true,
       orderId: true,
+      order: { select: { branchId: true } },
       items: { select: { productId: true, quantity: true, condition: true, product: { select: { trackingMode: true } } } },
     },
   });
@@ -180,6 +182,8 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
 
   const policy = await getReturnPolicy(session.companyId);
   const now = new Date();
+  // Returned goods go back to the branch that shipped them.
+  const branchId = await stockBranchFor(session.companyId, rma.order.branchId);
 
   await db.$transaction(async (tx) => {
     await tx.returnAuthorization.update({
@@ -197,13 +201,11 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
     if (nextStatus === "RECEIVED") {
       for (const item of rma.items) {
         if (!shouldRestock(item.condition, policy.restockDamaged)) continue;
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { stockQty: { increment: item.quantity } },
-        });
+        await changeStock(tx, { companyId: session.companyId, branchId, productId: item.productId, delta: item.quantity });
         if (item.product.trackingMode !== "NONE") {
           await returnToLots(tx, {
             companyId: session.companyId,
+            branchId,
             orderId: rma.orderId,
             productId: item.productId,
             quantity: item.quantity,

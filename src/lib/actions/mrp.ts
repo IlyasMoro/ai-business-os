@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { resolveNewRecordBranch } from "@/lib/branches";
+import { changeStock, quantitiesAt } from "@/lib/stock";
+import { resolveNewRecordBranch, systemBranchId } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { buildMrpPlan, getMrpSettings } from "@/lib/mrp";
 import { MRP_PRESETS, isMrpPreset } from "@/lib/mrp-settings-presets";
@@ -198,11 +199,14 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
   const now = new Date();
 
   if (nextStatus === "COMPLETED") {
+    // Work orders don't have a branch yet: builds happen at the main branch.
+    const branchId = await systemBranchId(session.companyId);
     const settings = await getMrpSettings(session.companyId);
     const lines = wo.product.bomComponents;
     const requirements = explodeBom(lines, wo.quantity);
 
     if (!settings.allowNegativeStock) {
+      const atBranch = await quantitiesAt(branchId, requirements.map((r) => r.componentId));
       const shortfalls = findStockShortfalls(
         requirements.map((req) => {
           const line = lines.find((l) => l.componentId === req.componentId)!;
@@ -210,7 +214,7 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
             productId: req.componentId,
             productName: line.component.name,
             quantity: req.required,
-            stockQty: line.component.stockQty,
+            stockQty: atBranch.get(req.componentId) ?? 0,
           };
         })
       );
@@ -226,10 +230,11 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
       await db.$transaction(async (tx) => {
         for (const req of requirements) {
           const line = lines.find((l) => l.componentId === req.componentId)!;
-          await tx.product.update({ where: { id: req.componentId }, data: { stockQty: { decrement: req.required } } });
+          await changeStock(tx, { companyId: session.companyId, branchId, productId: req.componentId, delta: -req.required });
           if (line.component.trackingMode !== "NONE") {
             await takeFromLots(tx, {
               companyId: session.companyId,
+              branchId,
               productId: req.componentId,
               productName: line.component.name,
               quantity: req.required,
@@ -239,10 +244,11 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
             });
           }
         }
-        await tx.product.update({ where: { id: wo.productId }, data: { stockQty: { increment: wo.quantity } } });
+        await changeStock(tx, { companyId: session.companyId, branchId, productId: wo.productId, delta: wo.quantity });
         if (wo.product.trackingMode === "LOT") {
           await putIntoLot(tx, {
             companyId: session.companyId,
+            branchId,
             productId: wo.productId,
             lotNumber: wo.woNumber,
             quantity: wo.quantity,
@@ -254,6 +260,7 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
           for (const serial of generateSerials(wo.woNumber, wo.quantity)) {
             await putIntoLot(tx, {
               companyId: session.companyId,
+              branchId,
               productId: wo.productId,
               lotNumber: serial,
               quantity: 1,
