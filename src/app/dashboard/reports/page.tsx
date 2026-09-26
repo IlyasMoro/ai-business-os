@@ -6,9 +6,9 @@ import { formatCompactCurrency } from "@/lib/utils";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { GroupedBarChart } from "@/components/dash-viz/grouped-bar-chart";
-import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
-import { HeatBar } from "@/components/dash-viz/heat-bar";
-import { MonoTrendBadge } from "@/components/dash-viz/mono-badge";
+import { auditHref, formatAuditAction, formatAuditDetails } from "@/lib/audit-format";
+import { rankCustomers } from "@/lib/customer-ranking";
+import Link from "next/link";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { forecastNextMonthRevenue } from "@/lib/ai-tools";
@@ -30,24 +30,6 @@ const invoiceStatusColor: Record<(typeof invoiceStatusOrder)[number], string> = 
   PAID: VIZ.emerald,
   OVERDUE: VIZ.red,
 };
-
-function formatAuditAction(action: string) {
-  const readable = action.replace(/\./g, " ").replace(/_/g, " ");
-  return readable.charAt(0).toUpperCase() + readable.slice(1);
-}
-
-function formatAuditMetadata(metadata: string | null) {
-  if (!metadata) return null;
-  try {
-    const parsed = JSON.parse(metadata) as Record<string, unknown>;
-    const parts = Object.entries(parsed)
-      .filter(([, value]) => value !== undefined && value !== null && value !== "")
-      .map(([key, value]) => `${key}: ${value}`);
-    return parts.length > 0 ? parts.join(", ") : null;
-  } catch {
-    return null;
-  }
-}
 
 export default async function ReportsPage() {
   const session = await requireRole(["OWNER", "ADMIN"]);
@@ -95,7 +77,7 @@ export default async function ReportsPage() {
       where: { companyId },
       orderBy: { createdAt: "desc" },
       take: 10,
-      select: { id: true, action: true, metadata: true, createdAt: true, user: { select: { name: true } } },
+      select: { id: true, action: true, entityType: true, entityId: true, metadata: true, createdAt: true, user: { select: { name: true } } },
     }),
   ]);
 
@@ -115,24 +97,18 @@ export default async function ReportsPage() {
     const monthTx = transactions.filter((t) => t.date >= monthStart && t.date <= monthEnd);
     const income = monthTx.filter((t) => t.type === "INCOME").reduce((s, t) => s + t.amount, 0);
     const expense = monthTx.filter((t) => t.type === "EXPENSE").reduce((s, t) => s + t.amount, 0);
-    return { label: format(monthStart, "MMM"), income, expense };
+    return { label: format(monthStart, "MMM"), longLabel: format(monthStart, "MMMM yyyy"), income, expense };
   });
 
   const totalIncome = monthly.reduce((s, m) => s + m.income, 0);
   const totalExpense = monthly.reduce((s, m) => s + m.expense, 0);
   const net = totalIncome - totalExpense;
 
-  const customerValues = customersWithOrders
-    .map((c) => ({ name: c.name, total: c.orders.reduce((s, o) => s + o.totalAmount, 0) }))
-    .filter((c) => c.total > 0)
-    .sort((a, b) => b.total - a.total)
-    .slice(0, 6);
-  const avgCustomerValue =
-    customerValues.length > 0 ? customerValues.reduce((s, c) => s + c.total, 0) / customerValues.length : 0;
-  const customerDeltas = customerValues.map((c) => ({
-    ...c,
-    deltaPct: avgCustomerValue > 0 ? ((c.total - avgCustomerValue) / avgCustomerValue) * 100 : 0,
-  }));
+  const rankedCustomers = rankCustomers(
+    customersWithOrders.map((c) => ({ name: c.name, total: c.orders.reduce((s, o) => s + o.totalAmount, 0) }))
+  );
+  // IDs in the activity log (branches) shown by name.
+  const branchNames = new Map(branches.map((b) => [b.id, b.name]));
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -274,69 +250,56 @@ export default async function ReportsPage() {
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Revenue vs expenses</h2>
         <GroupedBarChart
-          data={monthly.map((m) => ({ label: m.label, a: m.income, b: m.expense }))}
+          data={monthly.map((m) => ({ label: m.label, longLabel: m.longLabel, a: m.income, b: m.expense }))}
           aLabel="Income"
           bLabel="Expenses"
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
-          <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top customers by order value</h2>
-          {customerValues.length === 0 ? (
-            <p className="text-sm text-slate-500">No order value recorded yet.</p>
-          ) : (
-            <HorizontalBarChart
-              data={customerValues.map((c) => ({ label: c.name, value: c.total }))}
-              color={VIZ.blue}
-            />
+      <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Customers by order value</h2>
+          {rankedCustomers.length > 0 && (
+            <p className="text-xs text-slate-500">
+              {rankedCustomers.length === 1
+                ? "Comparison with the average starts from two customers."
+                : "Share of order value, and how each compares with the average customer."}
+            </p>
           )}
         </div>
-
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
-          <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Value vs average customer</h2>
-          {customerDeltas.length === 0 ? (
-            <p className="text-sm text-slate-500">No order value recorded yet.</p>
-          ) : (
-            <ul className="space-y-3">
-              {customerDeltas.map((c) => (
-                <HeatBar key={c.name} label={c.name} deltaPct={c.deltaPct} />
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
-
-      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
-        <div className="border-b border-white/[0.06] light:border-slate-200 p-6 pb-4">
-          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Customer value ranking</h2>
-        </div>
-        <div className="p-6 pt-4">
-          {customerDeltas.length === 0 ? (
-            <p className="text-sm text-slate-500">No order value recorded yet.</p>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                  <th className="py-2 font-medium">Customer</th>
-                  <th className="py-2 font-medium">Order value</th>
-                  <th className="py-2 font-medium">Vs average</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customerDeltas.map((c) => (
-                  <tr key={c.name} className="border-b border-white/[0.04] last:border-0">
-                    <td className="py-2.5 text-slate-50 light:text-slate-900">{c.name}</td>
-                    <td className="py-2.5 font-mono tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(c.total)}</td>
-                    <td className="py-2.5">
-                      <MonoTrendBadge pct={c.deltaPct} />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+        {rankedCustomers.length === 0 ? (
+          <p className="text-sm text-slate-500">No order value recorded yet.</p>
+        ) : (
+          <ol className="space-y-3">
+            {rankedCustomers.map((c) => (
+              <li key={c.name} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5">
+                <span className="font-mono text-xs tabular-nums text-slate-500">{c.rank}</span>
+                <span className="truncate text-sm text-slate-100 light:text-slate-800">{c.name}</span>
+                <span className="flex items-baseline gap-3 font-mono tabular-nums">
+                  <span className="text-sm text-slate-50 light:text-slate-900">{formatCompactCurrency(c.total)}</span>
+                  <span className="w-10 text-right text-[11px] text-slate-500">{Math.round(c.sharePct)}%</span>
+                  {c.vsAveragePct !== null && (
+                    <span
+                      className={`w-16 text-right text-[11px] ${
+                        c.vsAveragePct > 0
+                          ? "text-emerald-400 light:text-emerald-700"
+                          : c.vsAveragePct < 0
+                            ? "text-red-400 light:text-red-700"
+                            : "text-slate-500"
+                      }`}
+                    >
+                      {c.vsAveragePct > 0 ? "▲ +" : c.vsAveragePct < 0 ? "▼ " : ""}
+                      {c.vsAveragePct}%
+                    </span>
+                  )}
+                </span>
+                <span className="col-start-2 col-end-4 block h-1.5 overflow-hidden rounded-full bg-white/[0.06] light:bg-slate-900/[0.07]">
+                  <span className="block h-full rounded-full" style={{ width: `${c.barPct}%`, backgroundColor: VIZ.blue }} />
+                </span>
+              </li>
+            ))}
+          </ol>
+        )}
       </div>
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
@@ -422,9 +385,17 @@ export default async function ReportsPage() {
             <tbody>
               {recentAuditLogs.map((log) => (
                 <tr key={log.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="py-2 text-slate-50 light:text-slate-900">{formatAuditAction(log.action)}</td>
+                  <td className="py-2 text-slate-50 light:text-slate-900">
+                    {auditHref(log.entityType, log.entityId) ? (
+                      <Link href={auditHref(log.entityType, log.entityId)!} className="hover:text-blue-400">
+                        {formatAuditAction(log.action)}
+                      </Link>
+                    ) : (
+                      formatAuditAction(log.action)
+                    )}
+                  </td>
                   <td className="py-2 text-slate-400 light:text-slate-500">{log.user.name}</td>
-                  <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditMetadata(log.metadata) ?? "—"}</td>
+                  <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditDetails(log.metadata, branchNames) ?? "—"}</td>
                   <td className="py-2 font-mono text-xs tabular-nums text-slate-500">
                     {format(log.createdAt, "MMM d, HH:mm")}
                   </td>

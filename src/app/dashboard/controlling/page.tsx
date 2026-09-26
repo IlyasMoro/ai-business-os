@@ -124,7 +124,7 @@ export default async function ControllingPage({
 
       <div className={`${card} mt-6 p-6`}>
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Cost center plan vs actual by month</h2>
-        <GroupedBarChart data={chart} aLabel="Plan" bLabel="Actual" />
+        <GroupedBarChart data={chart} aLabel="Plan" bLabel="Actual" diffLabel="Variance" />
       </div>
 
       <div className={`${card} mt-6 overflow-x-auto`}>

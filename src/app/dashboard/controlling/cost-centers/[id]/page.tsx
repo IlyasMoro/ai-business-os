@@ -98,7 +98,7 @@ export default async function CostCenterPage({
 
         <div className={`${card} mt-4 p-6`}>
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Plan vs actual by month</h2>
-          <GroupedBarChart data={monthly.map((x) => ({ label: monthLabel(x.p).slice(0, 3), a: x.plan, b: x.actual }))} aLabel="Plan" bLabel="Actual" />
+          <GroupedBarChart data={monthly.map((x) => ({ label: monthLabel(x.p).slice(0, 3), a: x.plan, b: x.actual }))} aLabel="Plan" bLabel="Actual" diffLabel="Variance" />
         </div>
 
         <form action={saveBudgets.bind(null, cc.id, period.fiscalYear)} className={`${card} mt-6 p-5`}>
