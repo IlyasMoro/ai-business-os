@@ -18,7 +18,7 @@ function Bar({ label, pct, color }: { label: string; pct: number; color: string 
         <span>{label}</span>
         <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">{Math.round(clamped)}%</span>
       </div>
-      <div className="h-1.5 rounded-full" style={{ backgroundColor: VIZ.border }}>
+      <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06] light:bg-slate-900/[0.07]">
         <div
           className="h-1.5 rounded-full transition-[width] duration-700 ease-out"
           style={{ width: `${width}%`, backgroundColor: color }}

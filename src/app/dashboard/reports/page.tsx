@@ -14,6 +14,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { forecastNextMonthRevenue } from "@/lib/ai-tools";
 import { Sparkles, Download } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
+import { StatusBadge } from "@/components/ui-dark/badge";
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
@@ -22,6 +23,10 @@ const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
   FULFILLED: VIZ.emerald,
   CANCELLED: VIZ.red,
 };
+
+// Badge tones for the recent invoices and AI activity lists.
+const INVOICE_TONE = { DRAFT: "slate", SENT: "blue", PAID: "green", OVERDUE: "red" } as const;
+const AI_ACTION_TONE = { PENDING: "yellow", APPROVED: "blue", EXECUTED: "green", REJECTED: "slate", FAILED: "red" } as const;
 
 const invoiceStatusOrder = ["DRAFT", "SENT", "PAID", "OVERDUE"] as const;
 const invoiceStatusColor: Record<(typeof invoiceStatusOrder)[number], string> = {
@@ -307,27 +312,25 @@ export default async function ReportsPage() {
         {recentInvoices.length === 0 ? (
           <p className="text-sm text-slate-500">No invoices yet.</p>
         ) : (
-          <ul className="divide-y divide-white/[0.04]">
+          <ul className="-mx-2 divide-y divide-white/[0.04] light:divide-slate-200">
             {recentInvoices.map((invoice) => (
-              <li key={invoice.id} className="group flex items-center justify-between py-2.5">
-                <div className="min-w-0">
-                  <p className="font-mono text-sm text-slate-200 light:text-slate-800">{invoice.invoiceNumber}</p>
-                  <p className="truncate text-xs text-slate-500">{invoice.customer.name}</p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs uppercase tracking-wide text-slate-500">
-                    {invoice.status.toLowerCase()}
-                  </span>
-                  <span className="font-mono text-sm tabular-nums text-amber-400">
-                    {formatCompactCurrency(invoice.totalAmount)}
-                  </span>
-                  <a
-                    href={`/dashboard/invoicing/${invoice.id}`}
-                    className="text-xs text-blue-400 opacity-0 transition-opacity group-hover:opacity-100"
-                  >
-                    View →
-                  </a>
-                </div>
+              <li key={invoice.id}>
+                {/* The whole row opens the invoice, on touch as well as hover. */}
+                <Link
+                  href={`/dashboard/invoicing/${invoice.id}`}
+                  className="flex items-center justify-between gap-4 rounded-lg px-2 py-2.5 transition-colors hover:bg-white/[0.04] light:hover:bg-slate-900/[0.04]"
+                >
+                  <div className="min-w-0">
+                    <p className="font-mono text-sm text-slate-200 light:text-slate-800">{invoice.invoiceNumber}</p>
+                    <p className="truncate text-xs text-slate-500">{invoice.customer.name}</p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-4">
+                    <StatusBadge status={invoice.status} tone={INVOICE_TONE[invoice.status]} />
+                    <span className="w-16 text-right font-mono text-sm tabular-nums text-slate-50 light:text-slate-900">
+                      {formatCompactCurrency(invoice.totalAmount)}
+                    </span>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>
@@ -353,8 +356,8 @@ export default async function ReportsPage() {
                 <tr key={action.id} className="border-b border-white/[0.04] last:border-0">
                   <td className="py-2 text-slate-50 light:text-slate-900">{action.summary}</td>
                   <td className="py-2 text-slate-400 light:text-slate-500">{action.requestedBy.name}</td>
-                  <td className="py-2 text-xs uppercase tracking-wide text-slate-500">
-                    {action.status.toLowerCase()}
+                  <td className="py-2">
+                    <StatusBadge status={action.status} tone={AI_ACTION_TONE[action.status]} />
                   </td>
                   <td className="py-2 font-mono text-xs tabular-nums text-slate-500">
                     {format(action.createdAt, "MMM d, HH:mm")}

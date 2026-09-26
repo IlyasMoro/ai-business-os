@@ -2,7 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { branchWhere } from "@/lib/branches";
+import { branchWhere, getCompanyBranches } from "@/lib/branches";
+import { auditHref, formatAuditAction, formatAuditDetails } from "@/lib/audit-format";
 import { lowStockAt } from "@/lib/stock";
 import { getAgendaItems } from "@/lib/agenda";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -186,7 +187,15 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       where: { companyId },
       orderBy: { createdAt: "desc" },
       take: 6,
-      select: { id: true, action: true, createdAt: true, user: { select: { name: true } } },
+      select: {
+        id: true,
+        action: true,
+        entityType: true,
+        entityId: true,
+        metadata: true,
+        createdAt: true,
+        user: { select: { name: true } },
+      },
     }),
     getAgendaItems(companyId),
   ]);
@@ -303,11 +312,16 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     INACTIVE: VIZ.muted,
   };
 
+  // Branch IDs in the activity log shown by name, as on Reports.
+  const branchNames = new Map((await getCompanyBranches(companyId)).map((b) => [b.id, b.name]));
+  const statusText = (status: string) => status.charAt(0) + status.slice(1).toLowerCase();
+
   const timelineItems: TimelineItem[] = [
     ...recentAiActions.map((a) => ({
       id: `ai-${a.id}`,
       title: a.summary,
-      meta: `AI proposal · ${a.requestedBy.name} · ${a.status.toLowerCase()}`,
+      meta: `AI proposal · ${a.requestedBy.name} · ${statusText(a.status)}`,
+      href: "/dashboard/assistant",
       when: formatDistanceToNow(a.createdAt, { addSuffix: true }),
       tone: (a.status === "EXECUTED"
         ? "emerald"
@@ -318,8 +332,9 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     })),
     ...recentAuditLogs.map((l) => ({
       id: `audit-${l.id}`,
-      title: l.action.replace(/\./g, " ").replace(/_/g, " "),
-      meta: `by ${l.user.name}`,
+      title: formatAuditAction(l.action),
+      meta: [formatAuditDetails(l.metadata, branchNames), `by ${l.user.name}`].filter(Boolean).join(" · "),
+      href: auditHref(l.entityType, l.entityId),
       when: formatDistanceToNow(l.createdAt, { addSuffix: true }),
       tone: "blue" as TimelineItem["tone"],
       createdAt: l.createdAt,

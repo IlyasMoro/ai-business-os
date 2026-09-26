@@ -72,10 +72,14 @@ export default async function HrPage({
     const key = e.department?.trim() || "Unassigned";
     deptCounts.set(key, (deptCounts.get(key) ?? 0) + 1);
   }
-  const deptRows = Array.from(deptCounts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 6);
-  const deptColors = [VIZ.blue, VIZ.amber, VIZ.emerald, VIZ.red, VIZ.muted, VIZ.borderLight];
+  // Four departments in fixed colours; any more fold into "Other" rather
+  // than cycling into colours too dark to read.
+  const sortedDepts = Array.from(deptCounts.entries()).sort((a, b) => b[1] - a[1]);
+  const deptRows: [string, number][] =
+    sortedDepts.length > 5
+      ? [...sortedDepts.slice(0, 4), ["Other", sortedDepts.slice(4).reduce((s, [, n]) => s + n, 0)]]
+      : sortedDepts;
+  const deptColors = [VIZ.blue, VIZ.amber, VIZ.emerald, VIZ.red, VIZ.muted];
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -141,7 +145,7 @@ export default async function HrPage({
                   label={dept}
                   count={count}
                   pct={(count / allForDept.length) * 100}
-                  color={deptColors[i % deptColors.length]}
+                  color={dept === "Other" ? VIZ.muted : deptColors[i]}
                 />
               ))}
             </ul>
