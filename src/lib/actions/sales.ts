@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { evaluateCreditCheck } from "@/lib/credit-math";
 import { findStockShortfalls } from "@/lib/stock-math";
@@ -49,7 +50,7 @@ export async function createOrder(
   }
 
   const order = await db.order.create({
-    data: { customerId: customer.id, companyId: session.companyId },
+    data: { customerId: customer.id, companyId: session.companyId, branchId: await resolveNewRecordBranch(formData) },
   });
 
   revalidatePath("/dashboard/sales");
@@ -70,7 +71,7 @@ export async function updateOrderStatus(
   const nextStatus = status as (typeof OrderStatusValues)[number];
 
   const order = await db.order.findUnique({
-    where: { id: orderId, companyId: session.companyId },
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: {
       status: true,
       totalAmount: true,
@@ -162,7 +163,7 @@ export async function updateOrderStatus(
           }
         }
         await tx.order.update({
-          where: { id: orderId, companyId: session.companyId },
+          where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
           data: { status: nextStatus, fulfilledAt: new Date() },
         });
       });
@@ -182,7 +183,7 @@ export async function updateOrderStatus(
   }
 
   await db.order.update({
-    where: { id: orderId, companyId: session.companyId },
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
     data: { status: nextStatus },
   });
 
@@ -199,7 +200,7 @@ export async function deleteOrder(orderId: string) {
   }
 
   await db.order.delete({
-    where: { id: orderId, companyId: session.companyId },
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
   });
 
   revalidatePath("/dashboard/sales");
@@ -223,7 +224,7 @@ export async function addOrderItem(
   }
 
   const order = await db.order.findUnique({
-    where: { id: orderId, companyId: session.companyId },
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { id: true },
   });
   if (!order) {
@@ -257,7 +258,7 @@ export async function removeOrderItem(orderId: string, itemId: string) {
   const session = await verifySession();
 
   await db.orderItem.delete({
-    where: { id: itemId, order: { companyId: session.companyId } },
+    where: { id: itemId, order: { companyId: session.companyId, ...(await lockedWhere()) } },
   });
 
   await recomputeOrderTotal(orderId);

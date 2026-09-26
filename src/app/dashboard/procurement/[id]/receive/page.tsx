@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { Input, Label, Textarea } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { Badge } from "@/components/ui-dark/badge";
@@ -20,7 +21,7 @@ export default async function ReceivePurchaseOrderPage({
   const session = await verifySession();
 
   const po = await db.purchaseOrder.findUnique({
-    where: { id, companyId: session.companyId },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       supplier: { select: { name: true } },
       items: { include: { product: { select: { name: true, sku: true, trackingMode: true, tracksExpiry: true } } } },

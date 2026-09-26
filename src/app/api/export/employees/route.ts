@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import { toCsv } from "@/lib/csv";
 
 export async function GET() {
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const employees = await db.employee.findMany({
-    where: { companyId: session.companyId },
+    where: { companyId: session.companyId, ...(await branchWhere()) },
     orderBy: { name: "asc" },
     select: { name: true, email: true, position: true, department: true, salary: true, hireDate: true, status: true },
   });

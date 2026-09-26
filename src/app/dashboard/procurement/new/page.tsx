@@ -1,5 +1,6 @@
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchPicker } from "@/lib/branches";
 import { PurchaseOrderForm } from "@/components/procurement/purchase-order-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
 
@@ -10,6 +11,7 @@ export default async function NewPurchaseOrderPage({
 }) {
   const { error } = await searchParams;
   const session = await verifySession();
+  const branches = await branchPicker();
 
   const suppliers = await db.supplier.findMany({
     where: { companyId: session.companyId },
@@ -22,7 +24,7 @@ export default async function NewPurchaseOrderPage({
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New purchase order</h1>
       <div className="mt-6 max-w-xl">
         <ErrorBanner code={error} />
-        <PurchaseOrderForm suppliers={suppliers} />
+        <PurchaseOrderForm branches={branches} suppliers={suppliers} />
       </div>
     </div>
   );

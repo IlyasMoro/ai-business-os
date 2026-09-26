@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateAssistantReply } from "@/lib/ai";
@@ -180,7 +181,7 @@ async function executeAiAction(
       const invoiceNumber = `INV-${String(count + 1).padStart(4, "0")}`;
 
       const invoice = await db.invoice.create({
-        data: { invoiceNumber, customerId: args.customerId, dueDate, companyId },
+        data: { invoiceNumber, customerId: args.customerId, dueDate, companyId, branchId: await resolveNewRecordBranch() },
       });
       return { result: { invoiceId: invoice.id, invoiceNumber } };
     }

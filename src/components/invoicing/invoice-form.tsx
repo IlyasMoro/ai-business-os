@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui-dark/button";
+import { BranchSelect, type BranchPicker } from "@/components/layout/branch-select";
 import { Input, Label, Select, FieldError } from "@/components/ui-dark/input";
 import type { InvoiceFormState } from "@/lib/validation/invoicing";
 
@@ -13,12 +14,14 @@ type Action = (
 export function InvoiceForm({
   action,
   customers,
+  branches,
   defaultDueDate,
   defaultTaxRate = 0,
   submitLabel = "Create invoice",
 }: {
   action: Action;
   customers: { id: string; name: string }[];
+  branches?: BranchPicker | null;
   defaultDueDate: string;
   defaultTaxRate?: number;
   submitLabel?: string;
@@ -61,6 +64,9 @@ export function InvoiceForm({
       </div>
 
       {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
+
+      {branches && <BranchSelect {...branches} />}
+
 
       <Button type="submit" disabled={pending}>
         {pending ? "Creating..." : submitLabel}

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { getReturnPolicy } from "@/lib/returns-policy";
 import { returnToLots } from "@/lib/lots";
@@ -61,7 +62,7 @@ export async function createReturn(formData: FormData) {
   if (!validated.success) redirect(`${back}error=invalid`);
 
   const order = await db.order.findUnique({
-    where: { id: validated.data.orderId, companyId: session.companyId },
+    where: { id: validated.data.orderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { id: true, status: true, createdAt: true, fulfilledAt: true },
   });
   if (!order || order.status !== "FULFILLED") redirect(`${back}error=not-returnable`);

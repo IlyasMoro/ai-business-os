@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole, requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { computeInvoiceTotal, computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
@@ -68,6 +69,7 @@ export async function createInvoice(
       invoiceNumber,
       customerId: customer.id,
       companyId: session.companyId,
+      branchId: await resolveNewRecordBranch(formData),
       dueDate,
       taxRate: validated.data.taxRate,
     },
@@ -90,7 +92,7 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
   const nextStatus = status as (typeof InvoiceStatusValues)[number];
 
   const current = await db.invoice.findUnique({
-    where: { id: invoiceId, companyId: session.companyId },
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { status: true, totalAmount: true },
   });
   if (!current) return;
@@ -138,7 +140,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
   const session = await verifySession();
 
   const invoice = await db.invoice.findUnique({
-    where: { id: invoiceId, companyId: session.companyId },
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true } },
@@ -195,7 +197,7 @@ export async function deleteInvoice(invoiceId: string) {
   }
 
   await db.invoice.delete({
-    where: { id: invoiceId, companyId: session.companyId },
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
   });
 
   revalidatePath("/dashboard/invoicing");
@@ -221,7 +223,7 @@ export async function addInvoiceLineItem(
   }
 
   const invoice = await db.invoice.findUnique({
-    where: { id: invoiceId, companyId: session.companyId },
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { id: true },
   });
   if (!invoice) {
@@ -254,7 +256,7 @@ export async function removeInvoiceLineItem(invoiceId: string, itemId: string) {
   const session = await verifySession();
 
   await db.invoiceLineItem.delete({
-    where: { id: itemId, invoice: { companyId: session.companyId } },
+    where: { id: itemId, invoice: { companyId: session.companyId, ...(await lockedWhere()) } },
   });
 
   await recomputeInvoiceTotal(invoiceId);

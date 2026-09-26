@@ -61,7 +61,11 @@ export async function register(
 
   const user = await db.$transaction(async (tx) => {
     const company = await tx.company.create({
-      data: { name: companyName },
+      data: {
+        name: companyName,
+        // Every company starts with its Main branch; more can be added later.
+        branches: { create: { name: "Main branch", code: "MAIN", isMain: true } },
+      },
     });
     await tx.subscription.create({
       data: {

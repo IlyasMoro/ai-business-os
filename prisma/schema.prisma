@@ -60,6 +60,7 @@ model Company {
   calendarEvents      CalendarEvent[]
   subscription        Subscription?
   teamInvites         TeamInvite[]
+  branches            Branch[]
 }
 
 enum UserRole {
@@ -81,6 +82,11 @@ model User {
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Branch access: null means every branch; set, the user only sees and
+  // creates records for this one branch. Owners are never restricted.
+  branchId String?
+  branch   Branch? @relation("UserBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   chatMessages        AiChatMessage[]
   requestedAiActions  AiAction[]           @relation("AiActionRequestedBy")
   decidedAiActions    AiAction[]           @relation("AiActionDecidedBy")
@@ -91,6 +97,7 @@ model User {
   sentInvites         TeamInvite[]
 
   @@index([companyId])
+  @@index([branchId])
 }
 
 model TeamInvite {
@@ -109,6 +116,33 @@ model TeamInvite {
   invitedBy       User   @relation(fields: [invitedByUserId], references: [id], onDelete: Cascade)
 
   @@unique([companyId, email])
+  @@index([companyId])
+}
+
+// A physical location of the business: a shop, office, warehouse or site.
+// Every company has at least one (the Main branch, created at signup or by
+// the migration for existing companies). Branches are deactivated rather
+// than deleted once they have records.
+model Branch {
+  id        String   @id @default(cuid())
+  name      String
+  code      String
+  address   String?
+  active    Boolean  @default(true)
+  isMain    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  users          User[]          @relation("UserBranch")
+  orders         Order[]         @relation("OrderBranch")
+  invoices       Invoice[]       @relation("InvoiceBranch")
+  purchaseOrders PurchaseOrder[] @relation("PurchaseOrderBranch")
+  employees      Employee[]      @relation("EmployeeBranch")
+  costCenters    CostCenter[]    @relation("CostCenterBranch")
+
+  @@unique([companyId, code])
   @@index([companyId])
 }
 
@@ -279,6 +313,11 @@ model PurchaseOrder {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Which branch this belongs to. Existing rows were moved into each
+  // company's Main branch; new rows always get one.
+  branchId String?
+  branch   Branch? @relation("PurchaseOrderBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   supplierId String
   supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
@@ -286,6 +325,7 @@ model PurchaseOrder {
 
   @@index([companyId])
   @@index([supplierId])
+  @@index([branchId])
 }
 
 model PurchaseOrderItem {
@@ -324,6 +364,11 @@ model Order {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Which branch this belongs to. Existing rows were moved into each
+  // company's Main branch; new rows always get one.
+  branchId String?
+  branch   Branch? @relation("OrderBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
@@ -333,6 +378,7 @@ model Order {
 
   @@index([companyId])
   @@index([customerId])
+  @@index([branchId])
 }
 
 model OrderItem {
@@ -455,6 +501,11 @@ model Invoice {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Which branch this belongs to. Existing rows were moved into each
+  // company's Main branch; new rows always get one.
+  branchId String?
+  branch   Branch? @relation("InvoiceBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   customerId String
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
@@ -466,6 +517,7 @@ model Invoice {
 
   @@unique([companyId, invoiceNumber])
   @@index([companyId])
+  @@index([branchId])
 }
 
 model InvoiceLineItem {
@@ -543,11 +595,17 @@ model Employee {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Which branch this belongs to. Existing rows were moved into each
+  // company's Main branch; new rows always get one.
+  branchId String?
+  branch   Branch? @relation("EmployeeBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   payrollItems PayrollItem[]
   tasks        Task[]
   tickets      Ticket[]
 
   @@index([companyId])
+  @@index([branchId])
 }
 
 enum PayrollRunStatus {
@@ -1163,6 +1221,10 @@ model CostCenter {
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
+  // Optional: ties this cost center to a branch, for profit per branch.
+  branchId String?
+  branch   Branch? @relation("CostCenterBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   transactions     Transaction[]
   employees        Employee[]
   budgets          CostBudget[]
@@ -1173,6 +1235,7 @@ model CostCenter {
 
   @@unique([companyId, code])
   @@index([companyId])
+  @@index([branchId])
 }
 
 // Planned cost for one cost center in one calendar month.

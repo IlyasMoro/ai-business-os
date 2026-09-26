@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { Label, Select, Input } from "@/components/ui-dark/input";
+import { BranchSelect, type BranchPicker } from "@/components/layout/branch-select";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { createPurchaseOrder } from "@/lib/actions/procurement";
 
 export function PurchaseOrderForm({
   suppliers,
+  branches,
 }: {
   suppliers: { id: string; name: string }[];
+  branches?: BranchPicker | null;
 }) {
   if (suppliers.length === 0) {
     return (
@@ -39,6 +42,8 @@ export function PurchaseOrderForm({
         <Label htmlFor="expectedDate">Expected delivery date (optional)</Label>
         <Input id="expectedDate" name="expectedDate" type="date" />
       </div>
+      {branches && <BranchSelect {...branches} />}
+
       <SubmitButton pendingText="Creating...">Create purchase order</SubmitButton>
     </form>
   );

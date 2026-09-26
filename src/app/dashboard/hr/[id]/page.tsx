@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { LinkButton } from "@/components/ui-dark/button";
@@ -27,7 +28,7 @@ export default async function EmployeeDetailPage({
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const [employee, documents, tasks, payrollItems] = await Promise.all([
-    db.employee.findUnique({ where: { id, companyId: session.companyId } }),
+    db.employee.findUnique({ where: { id, companyId: session.companyId, ...(await lockedWhere()) } }),
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "EMPLOYEE", entityId: id },
       select: { id: true, filename: true, size: true },

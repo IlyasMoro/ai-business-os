@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
 
 export async function GET(
@@ -11,7 +12,7 @@ export async function GET(
   const session = await verifySession();
 
   const invoice = await db.invoice.findUnique({
-    where: { id, companyId: session.companyId },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },

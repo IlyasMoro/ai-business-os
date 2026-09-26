@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
@@ -30,7 +31,7 @@ export default async function PurchaseOrderDetailPage({
   const session = await verifySession();
 
   const purchaseOrder = await db.purchaseOrder.findUnique({
-    where: { id, companyId: session.companyId },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       supplier: true,
       items: { include: { product: true } },

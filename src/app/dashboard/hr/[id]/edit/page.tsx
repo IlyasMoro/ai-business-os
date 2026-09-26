@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { EmployeeForm } from "@/components/hr/employee-form";
 import { updateEmployee } from "@/lib/actions/hr";
 import type { EmployeeFormState } from "@/lib/validation/hr";
@@ -15,7 +16,7 @@ export default async function EditEmployeePage({
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const employee = await db.employee.findUnique({
-    where: { id, companyId: session.companyId },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
   });
 
   if (!employee) notFound();

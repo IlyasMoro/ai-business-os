@@ -1,10 +1,12 @@
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchPicker } from "@/lib/branches";
 import { OrderForm } from "@/components/sales/order-form";
 import { createOrder } from "@/lib/actions/sales";
 
 export default async function NewOrderPage() {
   const session = await verifySession();
+  const branches = await branchPicker();
 
   const customers = await db.customer.findMany({
     where: { companyId: session.companyId },
@@ -16,7 +18,7 @@ export default async function NewOrderPage() {
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New order</h1>
       <div className="mt-6">
-        <OrderForm action={createOrder} customers={customers} submitLabel="Create order" />
+        <OrderForm branches={branches} action={createOrder} customers={customers} submitLabel="Create order" />
       </div>
     </div>
   );

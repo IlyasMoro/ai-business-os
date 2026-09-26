@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import { toCsv } from "@/lib/csv";
 
 export async function GET() {
   const session = await verifySession();
 
   const invoices = await db.invoice.findMany({
-    where: { companyId: session.companyId },
+    where: { companyId: session.companyId, ...(await branchWhere()) },
     orderBy: { issueDate: "desc" },
     select: {
       invoiceNumber: true,

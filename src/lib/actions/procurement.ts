@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import {
   SupplierSchema,
@@ -84,6 +85,7 @@ export async function createPurchaseOrder(formData: FormData) {
     data: {
       supplierId: supplier.id,
       companyId: session.companyId,
+      branchId: await resolveNewRecordBranch(formData),
       expectedDate: validated.data.expectedDate ? new Date(validated.data.expectedDate) : undefined,
     },
   });
@@ -105,7 +107,7 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
   const nextStatus = status as (typeof PurchaseOrderStatusValues)[number];
 
   const current = await db.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, companyId: session.companyId },
+    where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { status: true, items: { select: { productId: true, quantity: true, product: { select: { trackingMode: true } } } } },
   });
   if (!current) return;
@@ -149,7 +151,7 @@ export async function deletePurchaseOrder(purchaseOrderId: string) {
   }
 
   await db.purchaseOrder.delete({
-    where: { id: purchaseOrderId, companyId: session.companyId },
+    where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
   });
 
   revalidatePath("/dashboard/procurement");
@@ -170,7 +172,7 @@ export async function addPurchaseOrderItem(purchaseOrderId: string, formData: Fo
   }
 
   const purchaseOrder = await db.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, companyId: session.companyId },
+    where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { id: true },
   });
   if (!purchaseOrder) {
@@ -204,7 +206,7 @@ export async function removePurchaseOrderItem(purchaseOrderId: string, itemId: s
   const session = await verifySession();
 
   await db.purchaseOrderItem.delete({
-    where: { id: itemId, purchaseOrder: { companyId: session.companyId } },
+    where: { id: itemId, purchaseOrder: { companyId: session.companyId, ...(await lockedWhere()) } },
   });
 
   await recomputePurchaseOrderTotal(purchaseOrderId);

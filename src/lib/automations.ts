@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { systemBranchId } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { needsReorder, computeReorderQuantity } from "@/lib/automation-rules";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
@@ -79,7 +80,7 @@ async function runLowStockReorder(companyId: string, webhookUrl: string | null) 
   if (!supplier) return;
 
   const purchaseOrder = await db.purchaseOrder.create({
-    data: { companyId, supplierId: supplier.id },
+    data: { companyId, supplierId: supplier.id, branchId: await systemBranchId(companyId) },
   });
 
   await db.purchaseOrderItem.createMany({

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { formatOf, getEdiSettings, ourParty, reserveControlNumber, shortRef } from "@/lib/edi/settings";
 import {
@@ -192,7 +193,7 @@ export async function generatePurchaseOrder850(purchaseOrderId: string) {
   const back = `/dashboard/procurement/${purchaseOrderId}`;
   const session = await requireAdmin(back);
   const po = await db.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, companyId: session.companyId },
+    where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
     include: { supplier: true, companyRef: { select: { name: true } }, items: { include: { product: true } } },
   });
   if (!po) redirect("/dashboard/procurement");
@@ -223,7 +224,7 @@ export async function generateInvoice810(invoiceId: string) {
   const back = `/dashboard/invoicing/${invoiceId}`;
   const session = await requireAdmin(back);
   const invoice = await db.invoice.findUnique({
-    where: { id: invoiceId, companyId: session.companyId },
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       customer: true,
       order: { select: { customerPoNumber: true } },
@@ -262,7 +263,7 @@ export async function generateShipNotice856(orderId: string) {
   const back = `/dashboard/sales/${orderId}`;
   const session = await requireAdmin(back);
   const order = await db.order.findUnique({
-    where: { id: orderId, companyId: session.companyId },
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
     include: { items: { include: { product: { select: { sku: true } } } } },
   });
   if (!order) redirect("/dashboard/sales");
@@ -421,11 +422,13 @@ export async function importEdiDocument(formData: FormData) {
     ? await reject(problem, { docType, partnerId: partner.id, controlNumber })
     : await db.$transaction(async (tx) => {
         const created = [];
+        const branchId = await resolveNewRecordBranch();
         for (const o of orders) {
           created.push(
             await tx.order.create({
               data: {
                 companyId,
+                branchId,
                 customerId: partner.customerId!,
                 customerPoNumber: o.poNumber,
                 totalAmount: o.items.reduce((s, i) => s + i.quantity * i.unitPrice, 0),

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { computeNetPay, computePayrollRunTotal } from "@/lib/payroll-math";
 import {
@@ -156,7 +157,7 @@ export async function addPayrollItem(
   }
 
   const employee = await db.employee.findUnique({
-    where: { id: validated.data.employeeId, companyId: session.companyId },
+    where: { id: validated.data.employeeId, companyId: session.companyId, ...(await lockedWhere()) },
     select: { id: true },
   });
   if (!employee) {

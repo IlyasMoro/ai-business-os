@@ -3,9 +3,11 @@ import { createEmployee } from "@/lib/actions/hr";
 import { dateInputDaysFromNow } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchPicker } from "@/lib/branches";
 
 export default async function NewEmployeePage() {
   const session = await requireRole(["OWNER", "ADMIN"]);
+  const branches = await branchPicker();
   const costCenters = await db.costCenter.findMany({
     where: { companyId: session.companyId, active: true },
     select: { id: true, code: true, name: true },
@@ -16,7 +18,7 @@ export default async function NewEmployeePage() {
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New employee</h1>
       <div className="mt-6">
-        <EmployeeForm
+        <EmployeeForm branches={branches}
           action={createEmployee}
           defaultValues={{
             name: "",

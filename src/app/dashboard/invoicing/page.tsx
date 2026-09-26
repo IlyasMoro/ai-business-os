@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
@@ -38,9 +39,11 @@ export default async function InvoicingPage({
   const { page: pageParam, q } = await searchParams;
   const page = parsePage(pageParam);
   const session = await verifySession();
+  const inBranch = await branchWhere();
 
   const where: Prisma.InvoiceWhereInput = {
     companyId: session.companyId,
+    ...inBranch,
     ...(q
       ? {
           OR: [
@@ -60,7 +63,7 @@ export default async function InvoicingPage({
       take: PAGE_SIZE,
     }),
     db.invoice.count({ where }),
-    db.invoice.groupBy({ by: ["status"], where: { companyId: session.companyId }, _count: { _all: true } }),
+    db.invoice.groupBy({ by: ["status"], where: { companyId: session.companyId, ...inBranch }, _count: { _all: true } }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
@@ -73,7 +76,7 @@ export default async function InvoicingPage({
   const collectionRate = collectibleTotal > 0 ? (paidCount / collectibleTotal) * 100 : 100;
 
   const outstandingInvoices = await db.invoice.findMany({
-    where: { companyId: session.companyId, status: { in: ["SENT", "OVERDUE"] } },
+    where: { companyId: session.companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } },
     include: { customer: { select: { name: true } } },
   });
   const outstandingByCustomer = new Map<string, number>();

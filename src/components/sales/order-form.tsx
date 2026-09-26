@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui-dark/button";
+import { BranchSelect, type BranchPicker } from "@/components/layout/branch-select";
 import { Label, Select, FieldError } from "@/components/ui-dark/input";
 import type { OrderFormState } from "@/lib/validation/sales";
 
@@ -13,10 +14,12 @@ type Action = (
 export function OrderForm({
   action,
   customers,
+  branches,
   submitLabel = "Create order",
 }: {
   action: Action;
   customers: { id: string; name: string }[];
+  branches?: BranchPicker | null;
   submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -37,6 +40,9 @@ export function OrderForm({
         </Select>
         <FieldError messages={state?.errors?.customerId} />
       </div>
+
+      {branches && <BranchSelect {...branches} />}
+
 
       {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
 

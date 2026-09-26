@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import {
   TicketSchema,
   TicketStatusValues,
@@ -63,7 +64,7 @@ export async function createTicket(
 
   if (assigneeId) {
     const employee = await db.employee.findUnique({
-      where: { id: assigneeId, companyId: session.companyId },
+      where: { id: assigneeId, companyId: session.companyId, ...(await lockedWhere()) },
       select: { id: true },
     });
     if (!employee) {
@@ -127,7 +128,7 @@ export async function updateTicket(
 
   if (assigneeId) {
     const employee = await db.employee.findUnique({
-      where: { id: assigneeId, companyId: session.companyId },
+      where: { id: assigneeId, companyId: session.companyId, ...(await lockedWhere()) },
       select: { id: true },
     });
     if (!employee) {

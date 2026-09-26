@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { buildMrpPlan, getMrpSettings } from "@/lib/mrp";
 import { MRP_PRESETS, isMrpPreset } from "@/lib/mrp-settings-presets";
@@ -370,6 +371,7 @@ export async function createPurchaseOrdersFromPlan(productId: string | null) {
       data: {
         supplierId,
         companyId: session.companyId,
+        branchId: await resolveNewRecordBranch(),
         expectedDate: new Date(latest),
         totalAmount: computePurchaseOrderTotal(items),
         items: { create: items },

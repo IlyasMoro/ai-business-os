@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import { getAgendaItems } from "@/lib/agenda";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { KpiCard, type KpiChange } from "@/components/dash-viz/kpi-card";
@@ -106,6 +107,7 @@ export default async function DashboardOverviewPage({
 
 async function DashboardWidgets({ companyId }: { companyId: string }) {
   const now = new Date();
+  const inBranch = await branchWhere();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
   const months = monthBuckets(6);
   const currentMonthStart = startOfMonth(now);
@@ -136,12 +138,12 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     agendaItems,
   ] = await Promise.all([
     db.customer.count({ where: { companyId } }),
-    db.order.count({ where: { companyId, status: { in: ["PENDING", "CONFIRMED"] } } }),
+    db.order.count({ where: { companyId, ...inBranch, status: { in: ["PENDING", "CONFIRMED"] } } }),
     db.product.findMany({ where: { companyId }, select: { stockQty: true, reorderLevel: true } }),
-    db.invoice.count({ where: { companyId, status: { in: ["SENT", "OVERDUE"] } } }),
+    db.invoice.count({ where: { companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } } }),
     db.ticket.count({ where: { companyId, status: { in: ["OPEN", "IN_PROGRESS"] } } }),
-    db.purchaseOrder.count({ where: { companyId, status: { in: ["DRAFT", "ORDERED"] } } }),
-    db.employee.count({ where: { companyId, status: "ACTIVE" } }),
+    db.purchaseOrder.count({ where: { companyId, ...inBranch, status: { in: ["DRAFT", "ORDERED"] } } }),
+    db.employee.count({ where: { companyId, ...inBranch, status: "ACTIVE" } }),
     db.campaign.count({ where: { companyId, status: "ACTIVE" } }),
     db.transaction.findMany({
       where: { companyId, type: "INCOME", date: { gte: sixMonthsAgo } },
@@ -169,7 +171,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       where: { project: { companyId, status: "ACTIVE" } },
       _count: { _all: true },
     }),
-    db.invoice.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
+    db.invoice.groupBy({ by: ["status"], where: { companyId, ...inBranch }, _count: { _all: true } }),
     db.customer.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
     db.aiAction.findMany({
       where: { companyId },

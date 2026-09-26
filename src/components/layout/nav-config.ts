@@ -1,5 +1,6 @@
 import {
   House,
+  MapPin,
   LayoutDashboard,
   Users,
   Boxes,
@@ -123,6 +124,7 @@ export const navGroups: NavGroup[] = [
     icon: SlidersHorizontal,
     items: [
       { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"] },
+      { href: "/dashboard/branches", label: "Branches", icon: MapPin, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/admin", label: "Companies", icon: Building2, platformAdminOnly: true },
       { href: "/dashboard/platform-settings", label: "Platform Settings", icon: Settings, platformAdminOnly: true },

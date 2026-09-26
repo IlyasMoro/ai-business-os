@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { Button } from "@/components/ui-dark/button";
+import { BranchSelect, type BranchPicker } from "@/components/layout/branch-select";
 import { Input, Label, Select, FieldError } from "@/components/ui-dark/input";
 import type { EmployeeFormState } from "@/lib/validation/hr";
 
@@ -14,6 +15,7 @@ export function EmployeeForm({
   action,
   defaultValues,
   costCenters = [],
+  branches,
   submitLabel = "Save employee",
 }: {
   action: Action;
@@ -28,6 +30,7 @@ export function EmployeeForm({
     costCenterId?: string | null;
   };
   costCenters?: { id: string; label: string }[];
+  branches?: BranchPicker | null;
   submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -109,6 +112,9 @@ export function EmployeeForm({
       )}
 
       {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
+
+      {branches && <BranchSelect {...branches} />}
+
 
       <Button type="submit" disabled={pending}>
         {pending ? "Saving..." : submitLabel}

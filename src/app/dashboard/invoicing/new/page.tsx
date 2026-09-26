@@ -1,11 +1,13 @@
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchPicker } from "@/lib/branches";
 import { InvoiceForm } from "@/components/invoicing/invoice-form";
 import { createInvoice } from "@/lib/actions/invoicing";
 import { dateInputDaysFromNow } from "@/lib/utils";
 
 export default async function NewInvoicePage() {
   const session = await verifySession();
+  const branches = await branchPicker();
 
   const [customers, company] = await Promise.all([
     db.customer.findMany({
@@ -22,7 +24,7 @@ export default async function NewInvoicePage() {
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New invoice</h1>
       <div className="mt-6">
-        <InvoiceForm
+        <InvoiceForm branches={branches}
           action={createInvoice}
           customers={customers}
           defaultDueDate={defaultDueDate}

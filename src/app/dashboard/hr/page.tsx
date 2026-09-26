@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AllocationBar } from "@/components/dash-viz/allocation-bar";
@@ -34,9 +35,11 @@ export default async function HrPage({
   const { page: pageParam, q, error } = await searchParams;
   const page = parsePage(pageParam);
   const session = await requireRole(["OWNER", "ADMIN"]);
+  const inBranch = await branchWhere();
 
   const where: Prisma.EmployeeWhereInput = {
     companyId: session.companyId,
+    ...inBranch,
     ...(q
       ? {
           OR: [
@@ -56,8 +59,8 @@ export default async function HrPage({
       take: PAGE_SIZE,
     }),
     db.employee.count({ where }),
-    db.employee.groupBy({ by: ["status"], where: { companyId: session.companyId }, _count: { _all: true } }),
-    db.employee.findMany({ where: { companyId: session.companyId }, select: { department: true } }),
+    db.employee.groupBy({ by: ["status"], where: { companyId: session.companyId, ...inBranch }, _count: { _all: true } }),
+    db.employee.findMany({ where: { companyId: session.companyId, ...inBranch }, select: { department: true } }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));

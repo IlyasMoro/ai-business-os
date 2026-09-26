@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { EmployeeSchema, type EmployeeFormState } from "@/lib/validation/hr";
 
@@ -50,6 +51,7 @@ export async function createEmployee(
       email: email || undefined,
       hireDate: parsedHireDate,
       companyId: session.companyId,
+      branchId: await resolveNewRecordBranch(formData),
     },
   });
 
@@ -92,7 +94,7 @@ export async function updateEmployee(
   if (costCenterId === "invalid") return { message: "Select a valid cost center." };
 
   await db.employee.update({
-    where: { id: employeeId, companyId: session.companyId },
+    where: { id: employeeId, companyId: session.companyId, ...(await lockedWhere()) },
     data: { ...rest, email: email || null, hireDate: parsedHireDate, costCenterId },
   });
 
@@ -110,7 +112,7 @@ export async function deleteEmployee(employeeId: string) {
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const inUse = await db.payrollItem.findFirst({
-    where: { employeeId, employee: { companyId: session.companyId } },
+    where: { employeeId, employee: { companyId: session.companyId, ...(await lockedWhere()) } },
     select: { id: true },
   });
   if (inUse) {
@@ -118,7 +120,7 @@ export async function deleteEmployee(employeeId: string) {
   }
 
   await db.employee.delete({
-    where: { id: employeeId, companyId: session.companyId },
+    where: { id: employeeId, companyId: session.companyId, ...(await lockedWhere()) },
   });
 
   await logAudit(session.companyId, session.userId, "employee.deleted", "Employee", employeeId);

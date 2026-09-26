@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { Button, LinkButton } from "@/components/ui-dark/button";
@@ -34,7 +35,7 @@ export default async function InvoiceDetailPage({
   const session = await verifySession();
 
   const invoice = await db.invoice.findUnique({
-    where: { id, companyId: session.companyId },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       customer: true,
       lineItems: true,

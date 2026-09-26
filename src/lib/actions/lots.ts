@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import * as z from "zod";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { lockedWhere } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { putIntoLot } from "@/lib/lots";
 import { INVENTORY_PRESETS, isInventoryPreset } from "@/lib/inventory-presets";
@@ -26,7 +27,7 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
   const back = `/dashboard/procurement/${purchaseOrderId}/receive`;
 
   const po = await db.purchaseOrder.findUnique({
-    where: { id: purchaseOrderId, companyId: session.companyId },
+    where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: {
       id: true,
       status: true,

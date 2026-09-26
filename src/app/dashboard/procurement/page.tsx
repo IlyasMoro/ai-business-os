@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
@@ -39,9 +40,11 @@ export default async function ProcurementPage({
   const { page: pageParam, q } = await searchParams;
   const page = parsePage(pageParam);
   const session = await verifySession();
+  const inBranch = await branchWhere();
 
   const where: Prisma.PurchaseOrderWhereInput = {
     companyId: session.companyId,
+    ...inBranch,
     ...(q ? { supplier: { name: { contains: q } } } : {}),
   };
 
@@ -56,7 +59,7 @@ export default async function ProcurementPage({
     db.purchaseOrder.count({ where }),
     db.purchaseOrder.groupBy({
       by: ["status"],
-      where: { companyId: session.companyId },
+      where: { companyId: session.companyId, ...inBranch },
       _count: { _all: true },
       _sum: { totalAmount: true },
     }),
@@ -69,7 +72,7 @@ export default async function ProcurementPage({
 
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
   const purchaseOrdersForTrend = await db.purchaseOrder.findMany({
-    where: { companyId: session.companyId, createdAt: { gte: sixMonthsAgo } },
+    where: { companyId: session.companyId, ...inBranch, createdAt: { gte: sixMonthsAgo } },
     select: { createdAt: true, totalAmount: true },
   });
   const monthlyValueTrend = Array.from({ length: 6 }).map((_, i) => {
