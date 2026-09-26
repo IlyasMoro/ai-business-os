@@ -1,9 +1,8 @@
 import "server-only";
 import type Groq from "groq-sdk";
 import { TOOL_DEFINITIONS, isKnownTool, isReadTool, runReadTool, proposeAiAction } from "@/lib/ai-tools";
-import { createChatCompletion } from "@/lib/ai-provider";
+import { createChatCompletion, GROQ_MODEL as MODEL } from "@/lib/ai-provider";
 
-const MODEL = "llama-3.3-70b-versatile";
 const MAX_TOOL_ITERATIONS = 4;
 
 export async function generateAssistantReply(

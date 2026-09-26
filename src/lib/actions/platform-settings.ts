@@ -6,6 +6,7 @@ import { requirePlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { getGroqClient } from "@/lib/groq-client";
+import { GROQ_MODEL } from "@/lib/ai-provider";
 import {
   PlatformEmailSettingsSchema,
   PlatformGroqSettingsSchema,
@@ -105,18 +106,22 @@ export async function clearGroqSettings() {
 export async function testGroqConnection() {
   await requirePlatformAdmin();
 
+  // redirect() works by throwing, so it must stay outside the try block or
+  // the catch would swallow the success redirect and always report failure.
+  let ok = false;
   try {
     const groq = await getGroqClient();
     await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: GROQ_MODEL,
       messages: [{ role: "user", content: "Reply with only the word OK." }],
-      max_tokens: 5,
+      max_tokens: 400,
+      reasoning_effort: "low",
     });
-    redirect("/dashboard/platform-settings?groqtested=1");
+    ok = true;
   } catch (err) {
     console.error("[platform-settings] Groq test call failed:", err);
-    redirect("/dashboard/platform-settings?error=invalid");
   }
+  redirect(ok ? "/dashboard/platform-settings?groqtested=1" : "/dashboard/platform-settings?error=invalid");
 }
 
 export async function updateOpenAiSettings(formData: FormData) {

@@ -1,7 +1,6 @@
 import "server-only";
-import { createChatCompletion } from "@/lib/ai-provider";
+import { createChatCompletion, GROQ_MODEL as MODEL } from "@/lib/ai-provider";
 
-const MODEL = "llama-3.3-70b-versatile";
 
 export async function suggestTransactionCategory(
   description: string,
@@ -21,7 +20,9 @@ export async function suggestTransactionCategory(
         content: `Suggest a short (1-3 word) accounting category for this ${type.toLowerCase()} transaction description: "${description}".${preferExisting} Reply with ONLY the category name, nothing else.`,
       },
     ],
-    max_tokens: 20,
+    // Room for the model's brief reasoning before the one line answer.
+    max_tokens: 400,
+    reasoning_effort: "low",
   });
 
   const suggestion = completion.choices[0]?.message?.content?.trim() ?? "";
@@ -40,7 +41,8 @@ export async function suggestTicketPriority(
         content: `A customer support ticket has this subject: "${subject}" and description: "${description}". Classify its urgency as exactly one word: LOW, MEDIUM, or HIGH. Reply with ONLY that word.`,
       },
     ],
-    max_tokens: 5,
+    max_tokens: 400,
+    reasoning_effort: "low",
   });
 
   const raw = completion.choices[0]?.message?.content?.trim().toUpperCase() ?? "";

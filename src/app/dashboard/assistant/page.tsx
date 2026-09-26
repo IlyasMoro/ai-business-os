@@ -1,143 +1,90 @@
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
-import { Badge } from "@/components/ui-dark/badge";
 import { Button } from "@/components/ui-dark/button";
-import { ChatForm } from "@/components/assistant/chat-form";
+import { CopilotChat, type CopilotMessage, type CopilotAction } from "@/components/assistant/copilot-chat";
 import { clearChatHistory, approveAiAction, rejectAiAction } from "@/lib/actions/assistant";
-import type { AiActionStatus } from "@/generated/prisma/enums";
-
-const statusTone: Record<AiActionStatus, "yellow" | "green" | "red" | "slate"> = {
-  PENDING: "yellow",
-  APPROVED: "green",
-  EXECUTED: "green",
-  REJECTED: "red",
-  FAILED: "red",
-};
 
 export default async function AssistantPage() {
   const session = await verifySession();
   const canDecide = hasRole(session, ["OWNER", "ADMIN"]);
 
-  const [messages, pendingActions, allActions] = await Promise.all([
+  const [messages, pendingActions, company] = await Promise.all([
     db.aiChatMessage.findMany({
       where: { companyId: session.companyId, userId: session.userId },
       orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        role: true,
+        content: true,
+        aiActions: { select: { id: true, summary: true, status: true }, orderBy: { createdAt: "asc" } },
+      },
     }),
     db.aiAction.findMany({
       where: { companyId: session.companyId, status: "PENDING" },
       orderBy: { createdAt: "desc" },
+      select: { id: true, summary: true, chatMessageId: true },
     }),
-    db.aiAction.findMany({
-      where: { companyId: session.companyId, chatMessageId: { not: null } },
-      select: { chatMessageId: true, summary: true, status: true },
-    }),
+    db.company.findUnique({ where: { id: session.companyId }, select: { name: true } }),
   ]);
 
-  const actionsByMessageId = new Map<string, { summary: string; status: AiActionStatus }[]>();
-  for (const action of allActions) {
-    if (!action.chatMessageId) continue;
-    const list = actionsByMessageId.get(action.chatMessageId) ?? [];
-    list.push({ summary: action.summary, status: action.status });
-    actionsByMessageId.set(action.chatMessageId, list);
-  }
+  const chatMessages: CopilotMessage[] = messages.map((m) => ({
+    id: m.id,
+    role: m.role,
+    content: m.content,
+    actions: m.aiActions as CopilotAction[],
+  }));
+
+  // Actions are company wide but chats are per user, so an action another
+  // teammate's chat proposed never appears inline here. List those (and any
+  // not tied to a chat) up top so owners and admins can still decide on them.
+  const ownMessageIds = new Set(messages.map((m) => m.id));
+  const otherPending = pendingActions.filter((a) => !a.chatMessageId || !ownMessageIds.has(a.chatMessageId));
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-2xl">
-        <div className="flex items-center justify-between">
+    <div className="-m-4 flex h-[calc(100dvh-4rem)] flex-col sm:-m-6">
+      <div className="border-b border-white/[0.06] px-4 py-4 light:border-slate-900/[0.06] sm:px-6">
+        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">AI Copilot</h1>
             <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
               Ask questions about your business, or ask it to take action.
             </p>
           </div>
-          {messages.length > 0 && (
-            <DeleteButton
-              action={clearChatHistory}
-              confirmMessage="Clear the conversation?"
-              label="Clear chat"
-            />
+          {chatMessages.length > 0 && (
+            <DeleteButton action={clearChatHistory} confirmMessage="Clear the conversation?" label="Clear chat" />
           )}
         </div>
 
-        {pendingActions.length > 0 && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Pending approvals</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {pendingActions.map((action) => (
-                <div
-                  key={action.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-white/[0.06] light:border-slate-200 px-3 py-2"
-                >
+        {canDecide && otherPending.length > 0 && (
+          <div className="mx-auto mt-4 max-w-3xl rounded-xl border border-amber-500/30 bg-amber-500/[0.06] p-3 light:border-amber-600/30 light:bg-amber-500/[0.08]">
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-300 light:text-amber-700">
+              Waiting for approval from your team&apos;s chats ({otherPending.length})
+            </p>
+            <ul className="mt-2 max-h-40 space-y-2 overflow-y-auto">
+              {otherPending.map((action) => (
+                <li key={action.id} className="flex items-center justify-between gap-3">
                   <p className="text-sm text-slate-50 light:text-slate-900">{action.summary}</p>
-                  {canDecide ? (
-                    <div className="flex shrink-0 gap-2">
-                      <form action={approveAiAction.bind(null, action.id)}>
-                        <Button type="submit" size="sm" variant="primary">
-                          Approve
-                        </Button>
-                      </form>
-                      <form action={rejectAiAction.bind(null, action.id)}>
-                        <Button type="submit" size="sm" variant="secondary">
-                          Reject
-                        </Button>
-                      </form>
-                    </div>
-                  ) : (
-                    <span className="shrink-0 text-xs text-slate-500">Awaiting OWNER/ADMIN approval</span>
-                  )}
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
-
-        <Card className="mt-6 flex h-[28rem] flex-col">
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">
-            {messages.length === 0 ? (
-              <p className="text-center text-sm text-slate-500">
-                Ask me anything about your customers, orders, invoices, or team.
-              </p>
-            ) : (
-              messages.map((message) => {
-                const relatedActions = actionsByMessageId.get(message.id) ?? [];
-                return (
-                  <div
-                    key={message.id}
-                    className={message.role === "USER" ? "ml-auto max-w-[80%]" : "mr-auto max-w-[80%]"}
-                  >
-                    <div
-                      className={
-                        message.role === "USER"
-                          ? "rounded-lg border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm text-blue-100"
-                          : "rounded-lg border border-white/[0.06] light:border-slate-200 bg-slate-800/60 px-3 py-2 text-sm text-slate-50 light:text-slate-900"
-                      }
-                    >
-                      {message.content}
-                    </div>
-                    {relatedActions.length > 0 && (
-                      <div className="mt-1 flex flex-wrap gap-1.5">
-                        {relatedActions.map((action, i) => (
-                          <Badge key={i} tone={statusTone[action.status]}>
-                            {action.summary} · {action.status.toLowerCase()}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                  <div className="flex shrink-0 gap-2">
+                    <form action={approveAiAction.bind(null, action.id)}>
+                      <Button type="submit" size="sm" variant="primary">
+                        Approve
+                      </Button>
+                    </form>
+                    <form action={rejectAiAction.bind(null, action.id)}>
+                      <Button type="submit" size="sm" variant="secondary">
+                        Reject
+                      </Button>
+                    </form>
                   </div>
-                );
-              })
-            )}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="border-t border-white/[0.06] light:border-slate-200 p-4">
-            <ChatForm />
-          </div>
-        </Card>
+        )}
       </div>
+
+      <CopilotChat messages={chatMessages} canDecide={canDecide} companyName={company?.name ?? "your business"} />
     </div>
   );
 }
