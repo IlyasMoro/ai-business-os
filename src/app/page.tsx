@@ -4,36 +4,10 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { AiTerminalPreview } from "@/components/landing/ai-terminal-preview";
 import { ProductPreview } from "@/components/landing/product-preview";
-import {
-  ArrowRight,
-  BarChart3,
-  Boxes,
-  Receipt,
-  Zap,
-  Users,
-  Wallet,
-} from "lucide-react";
+import { ModuleConstellation } from "@/components/landing/module-constellation";
+import { FeatureBento } from "@/components/landing/feature-bento";
+import { ArrowRight } from "lucide-react";
 import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
-
-const modules = [
-  { icon: Users, name: "CRM & Sales", description: "Every lead, quote, and customer conversation in one pipeline, from first contact to signed deal." },
-  { icon: Boxes, name: "Inventory", description: "Set a reorder point once. Get flagged the moment stock dips below it, before you run out." },
-  { icon: Receipt, name: "Invoicing", description: "Line items, tax, and totals calculated automatically. Send a professional invoice in one click." },
-  { icon: Wallet, name: "Accounting & Payroll", description: "Income and expenses linked back to the invoice or project that created them, so the books reconcile themselves." },
-  { icon: BarChart3, name: "Reports", description: "Six-month trends and at-risk numbers, plus an AI summary of what actually needs your attention this week." },
-  { icon: Zap, name: "Automation", description: "Overdue invoice reminders, low-stock reorders, stale-ticket escalation, and dead-lead cleanup, running every day without you lifting a finger." },
-];
-
-const alsoIncluded = [
-  "Marketing",
-  "Procurement",
-  "HR",
-  "Projects",
-  "Calendar",
-  "Support",
-  "Integrations",
-  "Documents",
-];
 
 const CTA_CLASS =
   "border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
@@ -52,10 +26,13 @@ export default function Home() {
 
       <main className="relative">
         {/* Hero */}
-        <section className="mx-auto max-w-4xl px-6 pt-20 pb-16 text-center sm:pt-28">
-          <h1 className="animate-fade-up animate-fade-up-2 mx-auto max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-6xl">
-            Run your business. Let AI handle the busywork,{" "}
-            <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
+        <section className="mx-auto max-w-6xl px-6 pt-20 pb-16 text-center sm:pt-28">
+          {/* Exactly two lines from lg up: each half is its own line, kept on one
+              line and sized to the viewport so it always fits. Smaller screens
+              let each half wrap naturally. */}
+          <h1 className="animate-fade-up animate-fade-up-2 mx-auto text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-[clamp(2.25rem,3.3vw,3.2rem)]">
+            <span className="block lg:whitespace-nowrap">Run your business. Let AI handle the busywork,</span>
+            <span className="block bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent lg:whitespace-nowrap">
               with your approval on everything that matters.
             </span>
           </h1>
@@ -73,7 +50,7 @@ export default function Home() {
             </LinkButton>
           </div>
 
-          <div className="animate-fade-up animate-fade-up-5 mt-16 flex w-full items-start justify-between border-t border-white/10 pt-12">
+          <div className="animate-fade-up animate-fade-up-5 mx-auto mt-16 flex w-full max-w-4xl items-start justify-between border-t border-white/10 pt-12">
             {[
               ["$49/mo", "Flat pricing"],
               ["14 days", "Free trial"],
@@ -87,13 +64,31 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Product screenshot, with the AI Copilot shown as a live widget on top of it */}
-        <section className="px-6 pb-24 sm:pb-32">
+        {/* Product screenshot, with the AI Copilot shown as a live widget on top of it.
+            From sm up the widget hangs 3rem (md: 4rem) below the screenshot, so the
+            bottom padding adds that overhang back to keep the usual 8rem gap. */}
+        <section className="px-6 pb-24 sm:pb-44 md:pb-48">
           <Reveal className="relative mx-auto max-w-4xl">
             <ProductPreview />
             <div className="relative mt-6 sm:absolute sm:-bottom-12 sm:-right-6 sm:mt-0 sm:w-80 md:-bottom-16 md:-right-10 md:w-[26rem]">
               <AiTerminalPreview />
             </div>
+          </Reveal>
+        </section>
+
+        {/* The AIBOS mark as a map of the product: eight departments around one AI */}
+        <section className="mx-auto max-w-6xl px-6 pb-24 sm:pb-32">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
+              Eight departments, one AI at the center
+            </h2>
+            <p className="mt-3 text-slate-400">
+              Every point of the AIBOS logo is a part of your business. They all feed the AI Copilot in the
+              middle, so it sees the whole picture and can act across all of them.
+            </p>
+          </Reveal>
+          <Reveal className="mt-12">
+            <ModuleConstellation />
           </Reveal>
         </section>
 
@@ -108,31 +103,7 @@ export default function Home() {
             </p>
           </Reveal>
 
-          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {modules.map((mod, i) => (
-              <Reveal key={mod.name} delay={i * 75}>
-                <div className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] p-6 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-white/20 hover:bg-white/[0.05] hover:shadow-lg hover:shadow-black/30">
-                  <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-slate-50 transition-colors duration-300 group-hover:border-white/25 group-hover:bg-white/15">
-                    <mod.icon className="h-5 w-5" />
-                  </span>
-                  <h3 className="mt-4 font-semibold text-slate-50">{mod.name}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{mod.description}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal className="mt-8 flex flex-wrap items-center justify-center gap-2 border-t border-white/10 pt-8">
-            <span className="text-sm text-slate-500">Plus every other department:</span>
-            {alsoIncluded.map((name) => (
-              <span
-                key={name}
-                className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400 backdrop-blur-md transition-all duration-300 hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/10 hover:text-slate-50 hover:shadow-[0_0_18px_rgba(255,255,255,0.25)]"
-              >
-                {name}
-              </span>
-            ))}
-          </Reveal>
+          <FeatureBento />
         </section>
       </main>
 

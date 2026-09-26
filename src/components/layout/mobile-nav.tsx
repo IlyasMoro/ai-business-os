@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/brand/logo";
 import { Menu, X } from "lucide-react";
 import { NavLinks } from "./nav-links";
 import { UserMenu } from "./user-menu";
@@ -46,13 +46,10 @@ export function MobileNav({
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"
-                className="flex items-center gap-1"
+                className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 onClick={() => setOpen(false)}
               >
-                <Image src="/logo-mark.png" alt="" width={48} height={48} className="-my-2 -ml-2.5 -mr-1.5 shrink-0" />
-                <span className="font-display text-lg font-extrabold tracking-tight text-white light:text-slate-900">
-                  AIBOS
-                </span>
+                <Logo />
               </Link>
               <button
                 type="button"

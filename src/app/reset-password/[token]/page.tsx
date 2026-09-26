@@ -1,5 +1,5 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Logo } from "@/components/brand/logo";
 import { resetPassword } from "@/lib/actions/auth";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import type { ResetPasswordFormState } from "@/lib/validation/auth";
@@ -25,10 +25,9 @@ export default async function ResetPasswordPage({
       <div className="relative w-full max-w-md rounded-xl border border-white/[0.09] p-8 shadow-lg light:border-white/80 glass">
         <Link
           href="/"
-          className="mb-6 flex flex-col items-center gap-1 text-center text-base font-display font-extrabold tracking-tight text-blue-300 light:text-blue-600"
+          className="mb-6 flex justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         >
-          <Image src="/logo-mark.png" alt="" width={64} height={64} className="shrink-0" />
-          AIBOS
+          <Logo layout="stacked" />
         </Link>
         <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">Choose a new password</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
