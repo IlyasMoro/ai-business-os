@@ -27,7 +27,13 @@ const sizeClasses: Record<Size, string> = {
 };
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-[color,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 light:focus-visible:ring-offset-white disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-[color,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 light:focus-visible:ring-offset-white disabled:opacity-50 disabled:pointer-events-none";
+
+/** Button look for elements that can't be <Button>/<LinkButton>, such as a
+ * plain <a> pointing at a file download route. */
+export function buttonStyles(variant: Variant = "primary", size: Size = "md", className?: string) {
+  return cn(base, variantClasses[variant], sizeClasses[size], className);
+}
 
 export function Button({
   className,

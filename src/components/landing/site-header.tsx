@@ -8,7 +8,7 @@ export function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link href="/" className="flex items-center gap-1 rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
           <Image src="/logo-mark.png" alt="" width={44} height={44} className="shrink-0" />
-          <span className="text-base font-extrabold tracking-tight text-blue-400">
+          <span className="text-base font-display font-extrabold tracking-tight text-blue-400">
             AIBOS
           </span>
         </Link>

@@ -7,6 +7,7 @@ import { Input, Label } from "@/components/ui-dark/input";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { runAutomationsNow, updateWebhookUrl, clearWebhookUrl, sendTestWebhook } from "@/lib/actions/automation";
 import { Webhook } from "lucide-react";
+import { buttonStyles } from "@/components/ui-dark/button";
 
 export default async function AutomationPage({
   searchParams,
@@ -150,7 +151,7 @@ export default async function AutomationPage({
           </p>
           <a
             href="/api/export/backup"
-            className="mt-4 inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+            className={buttonStyles("secondary", "md", "mt-4")}
           >
             Download full backup (JSON)
           </a>

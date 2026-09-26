@@ -9,7 +9,9 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Download, Banknote } from "lucide-react";
+import { EmptyState } from "@/components/ui-dark/empty-state";
+import { buttonStyles } from "@/components/ui-dark/button";
 
 const statusOrder = ["DRAFT", "PROCESSED", "PAID"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -75,14 +77,14 @@ export default async function PayrollPage({
         <div className="flex items-center gap-2">
           <a
             href="/api/export/payroll"
-            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+            className={buttonStyles("secondary")}
           >
             <Download className="h-4 w-4" />
             Export CSV
           </a>
           <Link
             href="/dashboard/payroll/new"
-            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+            className={buttonStyles("primary")}
           >
             <Plus className="h-4 w-4" />
             New payroll run
@@ -120,9 +122,12 @@ export default async function PayrollPage({
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {payrollRuns.length === 0 ? (
-          <p className="p-8 text-center text-sm text-slate-500">
-            No payroll runs yet. Create your first one to get started.
-          </p>
+          <EmptyState
+            icon={Banknote}
+            title="No payroll runs yet"
+            description="Create a payroll run to pay your employees for a period."
+            action={{ href: "/dashboard/payroll/new", label: "New payroll run" }}
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>

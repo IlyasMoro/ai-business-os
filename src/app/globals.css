@@ -35,7 +35,8 @@
 }
 
 @theme inline {
-  --font-sans: "Century Gothic", CenturyGothic, AppleGothic, var(--font-jost), sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Century Gothic", CenturyGothic, AppleGothic, var(--font-jost), sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -52,15 +53,15 @@ html.light {
 
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  /* Century Gothic and Jost are both thin, geometric faces, fine at large
-     display sizes but hard to read at the small body sizes used throughout
-     the dashboard, especially light text on the dark surfaces this app
-     uses by default. Medium weight as the base instead of the browser
-     default (normal, 400) fixes that everywhere in one place. Anything
-     that explicitly sets font-normal, font-semibold or font-bold keeps
-     that choice, since those utility classes are more specific than this
-     rule and simply win the cascade. */
-  font-weight: 500;
+  /* Inter for everything people read: tables, forms, cards and menus.
+     Century Gothic is kept as the brand display face for page titles and
+     the AIBOS wordmark (h1 and .font-display below), where its wide,
+     geometric letters read well because they are large. */
+}
+
+h1,
+.font-display {
+  font-family: var(--font-display);
 }
 
 /* Chrome/Safari paint autofilled and password-suggestion-filled inputs with

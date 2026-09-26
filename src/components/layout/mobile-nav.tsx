@@ -50,7 +50,7 @@ export function MobileNav({
                 onClick={() => setOpen(false)}
               >
                 <Image src="/logo-mark.png" alt="" width={44} height={44} className="shrink-0" />
-                <span className="text-sm font-extrabold tracking-tight text-blue-300 light:text-blue-600">
+                <span className="text-sm font-display font-extrabold tracking-tight text-blue-300 light:text-blue-600">
                   AIBOS
                 </span>
               </Link>

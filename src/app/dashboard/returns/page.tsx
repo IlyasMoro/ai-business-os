@@ -12,6 +12,8 @@ import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { ReturnStatusValues, type ReturnStatus } from "@/lib/returns-math";
 import { Plus, Search, ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
+import { buttonStyles } from "@/components/ui-dark/button";
+import { fieldStyles } from "@/components/ui-dark/input";
 
 const statusColor: Record<ReturnStatus, string> = {
   REQUESTED: VIZ.amber,
@@ -87,21 +89,21 @@ export default async function ReturnsPage({
             {policy.restockingFeePercent > 0 && ` · ${policy.restockingFeePercent}% restocking fee`}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <form method="GET" className="relative w-full max-w-xs">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+          <form method="GET" className="relative w-full min-w-48 sm:w-64 sm:flex-none">
+            <Search className="pointer-events-none absolute z-10 left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
               type="search"
               name="q"
               placeholder="Search RMA or customer..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500 glass"
+              className={fieldStyles("pl-9")}
             />
           </form>
           {canManagePolicy && (
             <Link
               href="/dashboard/returns/policy"
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
+              className={buttonStyles("secondary", "md", "whitespace-nowrap")}
             >
               <Settings2 className="h-4 w-4" />
               Return policy
@@ -110,7 +112,7 @@ export default async function ReturnsPage({
           {policy.enabled && (
             <Link
               href="/dashboard/returns/new"
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+              className={buttonStyles("primary", "md", "whitespace-nowrap")}
             >
               <Plus className="h-4 w-4" />
               New return

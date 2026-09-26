@@ -11,6 +11,7 @@ import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { forecastNextMonthRevenue } from "@/lib/ai-tools";
 import { Sparkles, Download } from "lucide-react";
+import { buttonStyles } from "@/components/ui-dark/button";
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
@@ -132,7 +133,7 @@ export default async function ReportsPage() {
         </div>
         <a
           href="/api/reports/pdf"
-          className="inline-flex shrink-0 items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+          className={buttonStyles("primary", "md", "shrink-0")}
         >
           <Download className="h-4 w-4" />
           Download PDF

@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { Reveal } from "@/components/landing/reveal";
 import { Check } from "lucide-react";
+import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 
 export const metadata = {
   title: "Pricing",
@@ -37,7 +38,8 @@ const FAQ = [
 
 export default function PricingPage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-slate-50">
+    <div className="relative isolate min-h-screen overflow-hidden text-slate-50">
+      <AuroraBackdrop />
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
         <div className="absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-blue-700/10 blur-[140px]" />
@@ -87,7 +89,7 @@ export default function PricingPage() {
 
         <section className="mx-auto max-w-3xl px-6 pb-24">
           <Reveal className="text-center">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Common questions</h2>
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">Common questions</h2>
           </Reveal>
 
           <div className="mt-10 space-y-5">

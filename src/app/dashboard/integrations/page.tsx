@@ -4,6 +4,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { disconnectGoogle, sendTestEmail } from "@/lib/actions/integrations";
 import { Mail } from "lucide-react";
+import { buttonStyles } from "@/components/ui-dark/button";
 
 export default async function IntegrationsPage({
   searchParams,
@@ -65,7 +66,7 @@ export default async function IntegrationsPage({
           ) : (
             <a
               href="/api/integrations/google/connect"
-              className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+              className={buttonStyles("primary")}
             >
               Connect
             </a>

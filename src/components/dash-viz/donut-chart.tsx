@@ -68,6 +68,16 @@ export function DonutChart({
               </feMerge>
             </filter>
           </defs>
+          {/* Faint track under the arcs, so an all zero chart still reads as
+              an empty ring instead of a blank box. */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            strokeWidth={strokeWidth}
+            className="stroke-white/[0.06] light:stroke-slate-900/[0.06]"
+          />
           {arcs.map(({ slice, fraction, offset }, i) => {
             const targetDash = fraction * circumference;
             const dash = drawn ? targetDash : 0;

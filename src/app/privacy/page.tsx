@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 
 export const metadata = {
   title: "Privacy Policy",
@@ -6,9 +7,10 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-black px-4 py-12 text-slate-300">
-      <div className="mx-auto max-w-3xl">
-        <Link href="/" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+    <div className="relative isolate min-h-screen px-4 py-12 text-slate-300">
+      <AuroraBackdrop />
+      <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-10">
+        <Link href="/" className="text-sm text-blue-400 hover:text-blue-300">
           Back to home
         </Link>
 

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui-dark/badge";
 import { getInventorySettings } from "@/lib/lots";
 import { expiryWarningCutoff, isExpired, isExpiringSoon } from "@/lib/lot-math";
 import { Search } from "lucide-react";
+import { fieldStyles } from "@/components/ui-dark/input";
 
 const KIND_LABEL = {
   RECEIPT: "Received",
@@ -67,13 +68,13 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
       </p>
 
       <form method="GET" className="relative mt-4 max-w-md">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <Search className="pointer-events-none absolute z-10 left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
         <input
           type="search"
           name="q"
           defaultValue={query}
           placeholder="Lot or serial number..."
-          className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 font-mono text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none focus:border-blue-500 glass"
+          className={fieldStyles("pl-9 font-mono")}
         />
       </form>
 

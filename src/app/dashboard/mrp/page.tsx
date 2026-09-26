@@ -7,6 +7,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { buildMrpPlan, getMrpSettings } from "@/lib/mrp";
 import { createPurchaseOrdersFromPlan, createWorkOrderFromPlan } from "@/lib/actions/mrp";
 import { ClipboardList, Settings2, ShoppingCart, Wrench, TriangleAlert } from "lucide-react";
+import { buttonStyles } from "@/components/ui-dark/button";
 
 export default async function PlanningPage({
   searchParams,
@@ -64,7 +65,7 @@ export default async function PlanningPage({
         <div className="flex flex-wrap items-center gap-3">
           <Link
             href="/dashboard/mrp/work-orders"
-            className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
+            className={buttonStyles("secondary", "md", "whitespace-nowrap")}
           >
             <ClipboardList className="h-4 w-4" />
             Work orders
@@ -72,7 +73,7 @@ export default async function PlanningPage({
           {canManage && (
             <Link
               href="/dashboard/mrp/settings"
-              className="inline-flex items-center gap-2 whitespace-nowrap rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
+              className={buttonStyles("secondary", "md", "whitespace-nowrap")}
             >
               <Settings2 className="h-4 w-4" />
               Settings

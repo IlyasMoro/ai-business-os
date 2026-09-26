@@ -13,6 +13,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
+import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 
 const modules = [
   { icon: Users, name: "CRM & Sales", description: "Every lead, quote, and customer conversation in one pipeline, from first contact to signed deal." },
@@ -39,7 +40,8 @@ const CTA_CLASS =
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-slate-50">
+    <div className="relative isolate min-h-screen overflow-hidden text-slate-50">
+      <AuroraBackdrop />
       {/* Ambient background: a single, static, understated glow for depth */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
@@ -98,7 +100,7 @@ export default function Home() {
         {/* Feature grid */}
         <section className="mx-auto max-w-6xl px-6 pb-24">
           <Reveal className="mx-auto max-w-2xl text-center">
-            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Every department, one workspace
             </h2>
             <p className="mt-3 text-slate-400">

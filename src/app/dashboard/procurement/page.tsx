@@ -10,7 +10,10 @@ import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
-import { Plus, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, Truck } from "lucide-react";
+import { EmptyState } from "@/components/ui-dark/empty-state";
+import { buttonStyles } from "@/components/ui-dark/button";
+import { fieldStyles } from "@/components/ui-dark/input";
 
 const statusOrder = ["DRAFT", "ORDERED", "RECEIVED", "CANCELLED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -86,33 +89,33 @@ export default async function ProcurementPage({
             {totalCount} purchase order{totalCount === 1 ? "" : "s"}
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <form method="GET" className="relative w-full max-w-xs">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+        <div className="flex flex-wrap items-center gap-3 sm:justify-end">
+          <form method="GET" className="relative w-full min-w-48 sm:w-64 sm:flex-none">
+            <Search className="pointer-events-none absolute z-10 left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
             <input
               type="search"
               name="q"
               placeholder="Search by supplier..."
               defaultValue={q}
-              className="w-full rounded-md border border-white/[0.09] light:border-white/80 py-2 pl-9 pr-3 text-sm text-slate-50 light:text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-blue-500 glass"
+              className={fieldStyles("pl-9")}
             />
           </form>
           <Link
             href="/dashboard/procurement/suppliers"
-            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
+            className={buttonStyles("secondary")}
           >
             Suppliers
           </Link>
           <a
             href="/api/export/purchase-orders"
-            className="inline-flex items-center gap-2 rounded-md border border-white/[0.06] light:border-slate-200 px-4 py-2 text-sm font-medium text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5 light:hover:bg-slate-100"
+            className={buttonStyles("secondary")}
           >
             <Download className="h-4 w-4" />
             Export CSV
           </a>
           <Link
             href="/dashboard/procurement/new"
-            className="inline-flex items-center gap-2 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+            className={buttonStyles("primary")}
           >
             <Plus className="h-4 w-4" />
             New purchase order
@@ -150,11 +153,12 @@ export default async function ProcurementPage({
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 glass">
         {purchaseOrders.length === 0 ? (
-          <p className="p-8 text-center text-sm text-slate-500">
-            {q
-              ? "No purchase orders match your search."
-              : "No purchase orders yet. Create your first one to get started."}
-          </p>
+          <EmptyState
+            icon={Truck}
+            title={q ? "No purchase orders match your search" : "No purchase orders yet"}
+            description={q ? "Try a different search term, or clear it to see everything." : "Create a purchase order to buy stock from a supplier."}
+            action={q ? { href: "/dashboard/procurement", label: "Clear search", variant: "secondary" } : { href: "/dashboard/procurement/new", label: "New purchase order" }}
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>

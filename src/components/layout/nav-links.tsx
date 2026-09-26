@@ -97,7 +97,7 @@ export function NavLinks({
   };
 
   return (
-    <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-3 font-(family-name:--font-inter) antialiased">
+    <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3 pb-3 antialiased">
       {groups.map((group) => {
         const open = openGroups.includes(group.label);
         const containsActive = group.label === activeGroup;

@@ -8,8 +8,8 @@ const jost = Jost({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-// Crisper UI face for dense navigation text, where Century Gothic's wide,
-// thin letterforms get hard to read at small sizes.
+// Body and UI text. Century Gothic (with Jost as its web fallback) stays as
+// the display face for page titles and the wordmark; see globals.css.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
