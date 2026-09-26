@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { AnimatedCounter } from "./animated-counter";
 import { Sparkline } from "./sparkline";
+import { SpotlightCard } from "./spotlight-card";
 
 export type KpiChange = {
   /** Percentage change vs the previous period. Null when the previous
@@ -24,6 +25,7 @@ export function KpiCard({
   icon: Icon,
   color,
   trend,
+  trendLabels,
   change,
 }: {
   label: string;
@@ -34,10 +36,18 @@ export function KpiCard({
   icon: LucideIcon;
   color: string;
   trend: number[];
+  /** Month names for the sparkline tooltip, one per trend point. */
+  trendLabels?: string[];
   change?: KpiChange;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+    <SpotlightCard color={color} className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+      {/* Thin lit strip along the top edge in the card's accent colour. */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-8 top-0 h-px opacity-70"
+        style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
+      />
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate-400 light:text-slate-500">{label}</p>
@@ -48,7 +58,7 @@ export function KpiCard({
         </div>
         <span
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-          style={{ backgroundColor: `${color}1a`, color }}
+          style={{ backgroundColor: `${color}1a`, color, boxShadow: `0 0 18px -4px ${color}66` }}
         >
           <Icon className="h-5 w-5" />
         </span>
@@ -56,10 +66,10 @@ export function KpiCard({
       {/* No line for a series that is all zero: it would only draw the floor. */}
       {trend.length > 1 && trend.some((v) => v !== 0) && (
         <div className="mt-4">
-          <Sparkline data={trend} color={color} width={200} height={36} />
+          <Sparkline data={trend} color={color} labels={trendLabels} currency={prefix === "$"} title={`${label} by month`} />
         </div>
       )}
-    </div>
+    </SpotlightCard>
   );
 }
 
@@ -71,7 +81,7 @@ function ChangeBadge({ change }: { change: KpiChange }) {
   }
   // Rounded to 0%: nothing moved, so no arrow and no good or bad colour.
   if (Math.round(pct) === 0) {
-    return <p className="mt-1 text-xs text-slate-500">No change {label}</p>;
+    return <p className="mt-1 text-xs text-slate-500">Same as last month</p>;
   }
 
   const isUp = pct >= 0;

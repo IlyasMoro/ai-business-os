@@ -206,7 +206,8 @@ export function TrendChart({
         </div>
       )}
 
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>{title}</caption>
         <tbody>
           {data.map((d, i) => (
@@ -217,6 +218,7 @@ export function TrendChart({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

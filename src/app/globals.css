@@ -383,3 +383,85 @@ html.light body::after {
   .glass-panel, .glass-strong { background-color: rgb(8 11 20 / 0.97); }
   .light .glass, .light .glass-panel, .light .glass-strong { background-color: rgb(255 255 255 / 0.96); }
 }
+
+/* ---------- Digital effects (dashboard) ----------
+   .spotlight     a soft glow and a lit border that follow the pointer. The
+                  SpotlightCard component feeds --mx/--my; --spot is the
+                  card's accent colour.
+   .digital-grid  a faint grid texture that fades out towards the edges.
+   Both are overlays (pseudo elements), so they never fight the glass fill. */
+.spotlight {
+  position: relative;
+  isolation: isolate;
+  --mx: 50%;
+  --my: 0%;
+  --spot: rgb(59 130 246);
+}
+
+.spotlight::before,
+.spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+/* Glow inside the card. */
+.spotlight::before {
+  z-index: -1;
+  background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--spot) 16%, transparent), transparent 70%);
+}
+
+/* Border that lights up nearest the pointer. */
+.spotlight::after {
+  padding: 1px;
+  background: radial-gradient(180px circle at var(--mx) var(--my), color-mix(in srgb, var(--spot) 75%, transparent), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+.spotlight:hover::before,
+.spotlight:hover::after,
+.spotlight:focus-within::before,
+.spotlight:focus-within::after {
+  opacity: 1;
+}
+
+.light .spotlight::before {
+  background: radial-gradient(260px circle at var(--mx) var(--my), color-mix(in srgb, var(--spot) 10%, transparent), transparent 70%);
+}
+
+.digital-grid {
+  position: relative;
+  isolation: isolate;
+}
+
+.digital-grid::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgb(148 163 184 / 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(148 163 184 / 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 45%, #000 30%, transparent 85%);
+  mask-image: radial-gradient(ellipse 70% 80% at 50% 45%, #000 30%, transparent 85%);
+}
+
+.light .digital-grid::before {
+  background-image:
+    linear-gradient(rgb(71 85 105 / 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(71 85 105 / 0.08) 1px, transparent 1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spotlight::before,
+  .spotlight::after { transition: none; }
+}

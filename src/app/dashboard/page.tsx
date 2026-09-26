@@ -9,10 +9,12 @@ import { getAgendaItems } from "@/lib/agenda";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { KpiCard, type KpiChange } from "@/components/dash-viz/kpi-card";
 import { RingGauge } from "@/components/dash-viz/ring-gauge";
-import { AllocationBar } from "@/components/dash-viz/allocation-bar";
+import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { ActivityTimeline, type TimelineItem } from "@/components/dash-viz/activity-timeline";
 import { VIZ } from "@/components/dash-viz/colors";
-import { subMonths, startOfMonth, endOfMonth, formatDistanceToNow } from "date-fns";
+import { SpotlightCard } from "@/components/dash-viz/spotlight-card";
+import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
+import { subMonths, startOfMonth, endOfMonth, format, formatDistanceToNow } from "date-fns";
 import {
   Users,
   ShoppingCart,
@@ -114,6 +116,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
   const inBranch = await branchWhere();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
   const months = monthBuckets(6);
+  const monthLabels = months.map((m) => format(m, "MMM yyyy"));
   const currentMonthStart = startOfMonth(now);
   const previousMonthStart = startOfMonth(subMonths(now, 1));
   const previousMonthEnd = endOfMonth(subMonths(now, 1));
@@ -277,15 +280,15 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
 
   const projectsChange: KpiChange = {
     pct: pctChange(newProjectsThisMonth, newProjectsLastMonth),
-    label: "new vs last month",
+    label: "new projects vs last month",
   };
   const customersChange: KpiChange = {
     pct: pctChange(newCustomersThisMonth, newCustomersLastMonth),
-    label: "new vs last month",
+    label: "new customers vs last month",
   };
   const campaignsChange: KpiChange = {
     pct: pctChange(newCampaignsThisMonth, newCampaignsLastMonth),
-    label: "new vs last month",
+    label: "new campaigns vs last month",
   };
 
   const taskStatusMap = new Map(taskStatusGroups.map((g) => [g.status, g._count._all]));
@@ -305,7 +308,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     status,
     count: customerStatusMap.get(status) ?? 0,
   }));
-  const totalCustomersForBars = customerStatusRows.reduce((s, r) => s + r.count, 0) || 1;
+  const totalCustomers = customerStatusRows.reduce((s, r) => s + r.count, 0);
   const customerStatusColor: Record<(typeof customerStatusRows)[number]["status"], string> = {
     LEAD: VIZ.amber,
     ACTIVE: VIZ.emerald,
@@ -365,6 +368,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           icon={Wallet}
           color={VIZ.emerald}
           trend={revenueTrend}
+          trendLabels={monthLabels}
           change={revenueChange}
         />
         <KpiCard
@@ -375,6 +379,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           icon={TrendingDown}
           color={VIZ.red}
           trend={expenseTrend}
+          trendLabels={monthLabels}
           change={expensesChange}
         />
         <KpiCard
@@ -385,6 +390,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           icon={TrendingUp}
           color={VIZ.blue}
           trend={profitTrend}
+          trendLabels={monthLabels}
           change={profitChange}
         />
       </div>
@@ -396,6 +402,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           icon={FolderKanban}
           color={VIZ.blue}
           trend={projectsCumulative}
+          trendLabels={monthLabels}
           change={projectsChange}
         />
         <KpiCard
@@ -404,6 +411,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           icon={Users}
           color={VIZ.amber}
           trend={customersCumulative}
+          trendLabels={monthLabels}
           change={customersChange}
         />
         <KpiCard
@@ -412,25 +420,41 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           icon={Megaphone}
           color={VIZ.emerald}
           trend={campaignsCumulative}
+          trendLabels={monthLabels}
           change={campaignsChange}
         />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {secondaryStats.map((stat) => (
-          <Link key={stat.label} href={stat.href}>
-            <div className="rounded-xl border border-white/[0.09] light:border-white/80 p-4 transition-colors hover:border-slate-700 glass">
-              <div className="flex items-center justify-between">
-                <p className="text-xs text-slate-400 light:text-slate-500">{stat.label}</p>
-                <stat.icon className={`h-4 w-4 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
+          <Link key={stat.label} href={stat.href} className="block h-full">
+            {/* Number and icon on top, label below: long labels wrap freely and every tile keeps the same height. */}
+            <SpotlightCard
+              color={stat.alert ? VIZ.amber : VIZ.blue}
+              className="flex h-full flex-col rounded-xl border border-white/[0.09] light:border-white/80 p-4 glass"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xl font-semibold text-slate-50 light:text-slate-900">
+                  <AnimatedCounter value={stat.value} duration={900} />
+                </p>
+                <stat.icon className={`mt-1 h-4 w-4 shrink-0 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
               </div>
-              <p className="mt-1.5 font-mono text-xl font-semibold tabular-nums text-slate-50 light:text-slate-900">{stat.value}</p>
-            </div>
+              <p className="mt-1 flex items-center gap-1.5 text-xs leading-snug text-slate-400 light:text-slate-500">
+                {/* Pulsing dot on tiles that need attention. */}
+                {stat.alert && (
+                  <span aria-hidden className="relative flex h-1.5 w-1.5 shrink-0">
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 motion-safe:animate-ping" />
+                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  </span>
+                )}
+                {stat.label}
+              </p>
+            </SpotlightCard>
           </Link>
         ))}
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
+      <div className="digital-grid mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
           <RingGauge
@@ -455,19 +479,18 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
-          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Customers by status</h2>
-          <ul className="mt-4 space-y-4">
-            {customerStatusRows.map((row) => (
-              <AllocationBar
-                key={row.status}
-                label={row.status.charAt(0) + row.status.slice(1).toLowerCase()}
-                count={row.count}
-                pct={(row.count / totalCustomersForBars) * 100}
-                color={customerStatusColor[row.status]}
-              />
-            ))}
-          </ul>
+        {/* Same interactive donut as the status breakdowns on Reports. */}
+        <div className="flex justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
+          <DonutChart
+            title="Customers by status"
+            centerValue={String(totalCustomers)}
+            centerLabel="customers"
+            slices={customerStatusRows.map((row) => ({
+              label: row.status.charAt(0) + row.status.slice(1).toLowerCase(),
+              value: row.count,
+              color: customerStatusColor[row.status],
+            }))}
+          />
         </div>
 
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
@@ -508,7 +531,17 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         </div>
 
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
-          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
+            {/* Rendered fresh on every visit, so this is the latest activity. */}
+            <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-emerald-400 light:text-emerald-600">
+              <span aria-hidden className="relative flex h-1.5 w-1.5">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+              </span>
+              Latest
+            </span>
+          </div>
           <div className="mt-4">
             <ActivityTimeline items={timelineItems} />
           </div>

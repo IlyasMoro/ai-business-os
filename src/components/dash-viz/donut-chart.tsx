@@ -195,7 +195,8 @@ export function DonutChart({
         </div>
       </div>
 
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>{title}</caption>
         <tbody>
           {slices.map((s) => (
@@ -207,6 +208,7 @@ export function DonutChart({
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }
