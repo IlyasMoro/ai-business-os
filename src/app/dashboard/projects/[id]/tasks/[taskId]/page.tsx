@@ -8,6 +8,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { TaskCommentForm } from "@/components/projects/task-comment-form";
 import { deleteTaskComment } from "@/lib/actions/projects";
 import { formatDistanceToNow } from "date-fns";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const priorityTone = {
   LOW: "slate",
@@ -36,7 +37,8 @@ export default async function TaskDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href={`/dashboard/projects/${projectId}`} label={`Back to ${task.project.name}`} />
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{task.title}</h1>
           <StatusBadge status={task.priority} tone={priorityTone[task.priority]} />
@@ -80,14 +82,6 @@ export default async function TaskDetailPage({
           </CardContent>
         </Card>
 
-        <p className="mt-6">
-          <Link
-            href={`/dashboard/projects/${projectId}`}
-            className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600"
-          >
-            ← Back to {task.project.name}
-          </Link>
-        </p>
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { deleteCompany } from "@/lib/actions/admin";
 import { DeleteCompanyForm } from "@/components/admin/delete-company-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 export default async function AdminCompanyDetailPage({
   params,
@@ -33,43 +34,42 @@ export default async function AdminCompanyDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <Link href="/dashboard/admin" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-        Back to companies
-      </Link>
+      <div className="mx-auto max-w-3xl">
+        <BackButton href="/dashboard/admin" label="Back to companies" />
+        <h1 className="mt-3 text-2xl font-semibold text-slate-50 light:text-slate-900">{company.name}</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+          Signed up on {company.createdAt.toLocaleDateString()}
+        </p>
 
-      <h1 className="mt-3 text-2xl font-semibold text-slate-50 light:text-slate-900">{company.name}</h1>
-      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        Signed up on {company.createdAt.toLocaleDateString()}
-      </p>
+        <div className="mt-4">
+          <ErrorBanner code={error} />
+        </div>
 
-      <div className="mt-4 max-w-2xl">
-        <ErrorBanner code={error} />
-      </div>
+        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+          <h2 className="font-medium text-slate-50 light:text-slate-900">Users ({company.users.length})</h2>
+          <ul className="mt-3 divide-y divide-white/[0.06] light:divide-slate-200">
+            {company.users.map((u) => (
+              <li key={u.id} className="flex items-center justify-between py-2 text-sm">
+                <div>
+                  <p className="text-slate-200 light:text-slate-800">{u.name}</p>
+                  <p className="text-slate-500">{u.email}</p>
+                </div>
+                <div className="text-right text-slate-400 light:text-slate-500">
+                  <p>{u.role}</p>
+                  <p className="text-xs text-slate-500">
+                    joined {u.createdAt.toLocaleDateString()}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-        <h2 className="font-medium text-slate-50 light:text-slate-900">Users ({company.users.length})</h2>
-        <ul className="mt-3 divide-y divide-white/[0.06] light:divide-slate-200">
-          {company.users.map((u) => (
-            <li key={u.id} className="flex items-center justify-between py-2 text-sm">
-              <div>
-                <p className="text-slate-200 light:text-slate-800">{u.name}</p>
-                <p className="text-slate-500">{u.email}</p>
-              </div>
-              <div className="text-right text-slate-400 light:text-slate-500">
-                <p>{u.role}</p>
-                <p className="text-xs text-slate-500">
-                  joined {u.createdAt.toLocaleDateString()}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-6 max-w-2xl rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
-        <h2 className="font-medium text-red-400">Danger zone</h2>
-        <div className="mt-3">
-          <DeleteCompanyForm companyName={company.name} action={deleteAction} />
+        <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
+          <h2 className="font-medium text-red-400">Danger zone</h2>
+          <div className="mt-3">
+            <DeleteCompanyForm companyName={company.name} action={deleteAction} />
+          </div>
         </div>
       </div>
     </div>

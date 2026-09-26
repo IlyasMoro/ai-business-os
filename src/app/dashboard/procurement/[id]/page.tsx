@@ -11,6 +11,8 @@ import { PurchaseOrderItemForm } from "@/components/procurement/purchase-order-i
 import { PurchaseOrderStatusForm } from "@/components/procurement/purchase-order-status-form";
 import { deletePurchaseOrder, removePurchaseOrderItem } from "@/lib/actions/procurement";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
+import { BackButton } from "@/components/ui-dark/back-button";
+import { BranchTag } from "@/components/layout/branch-tag";
 
 const statusTone = {
   DRAFT: "slate",
@@ -33,6 +35,7 @@ export default async function PurchaseOrderDetailPage({
   const purchaseOrder = await db.purchaseOrder.findUnique({
     where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
+      branch: { select: { name: true } },
       supplier: true,
       items: { include: { product: true } },
     },
@@ -48,7 +51,8 @@ export default async function PurchaseOrderDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/procurement" label="Back to purchase orders" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -56,6 +60,7 @@ export default async function PurchaseOrderDetailPage({
                 Purchase order for {purchaseOrder.supplier.name}
               </h1>
               <StatusBadge status={purchaseOrder.status} tone={statusTone[purchaseOrder.status]} />
+              <BranchTag name={purchaseOrder.branch?.name} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {purchaseOrder.createdAt.toLocaleDateString()}
@@ -94,6 +99,12 @@ export default async function PurchaseOrderDetailPage({
         </div>
 
         <ErrorBanner code={error} />
+        {purchaseOrder.autoCreated && purchaseOrder.status === "DRAFT" && (
+          <p className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
+            Drafted by automation because stock ran low. Nothing is ordered until an owner or admin checks it and moves it to
+            Ordered, or deletes it.
+          </p>
+        )}
 
         <Card className="mt-6">
           <CardHeader>
@@ -127,11 +138,6 @@ export default async function PurchaseOrderDetailPage({
           </CardContent>
         </Card>
 
-        <p className="mt-6">
-          <Link href="/dashboard/procurement" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to purchase orders
-          </Link>
-        </p>
       </div>
     </div>
   );

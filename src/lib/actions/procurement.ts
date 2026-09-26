@@ -109,9 +109,13 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
 
   const current = await db.purchaseOrder.findUnique({
     where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { status: true, branchId: true, items: { select: { productId: true, quantity: true, product: { select: { trackingMode: true } } } } },
+    select: { status: true, branchId: true, autoCreated: true, items: { select: { productId: true, quantity: true, product: { select: { trackingMode: true } } } } },
   });
   if (!current) return;
+  // A purchase order drafted by automation moves on only with an owner's or admin's approval.
+  if (current.autoCreated && current.status === "DRAFT" && nextStatus !== "DRAFT" && !hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect(`/dashboard/procurement/${purchaseOrderId}?error=approval-needed`);
+  }
 
   // Receiving a PO is what actually puts the ordered stock into Inventory —
   // without this, stock levels silently drift from what's really on hand.

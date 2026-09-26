@@ -35,168 +35,170 @@ export default async function PlatformSettingsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Platform settings</h1>
-      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        Platform wide configuration, visible only to the platform operator, not exposed to any
-        company&apos;s regular users.
-      </p>
+      <div className="mx-auto max-w-3xl">
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Platform settings</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+          Platform wide configuration, visible only to the platform operator, not exposed to any
+          company&apos;s regular users.
+        </p>
 
-      <div className="mt-4 max-w-2xl space-y-3">
-        <ErrorBanner code={error} />
-        {saved && (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            Saved.
-          </div>
-        )}
-        {testsent && (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            Test email sent to {user.email}. Check your inbox.
-          </div>
-        )}
-        {groqtested && (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            Groq connection successful.
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
-            <Mail className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">Transactional email (Resend)</p>
-            <p className="text-sm text-slate-400 light:text-slate-500">
-              {configured
-                ? "Configured. Used for password resets, invoice reminders, and notifications for every company on this platform."
-                : "Not configured. Those emails currently fail silently."}
-            </p>
-          </div>
+        <div className="mt-4 space-y-3">
+          <ErrorBanner code={error} />
+          {saved && (
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+              Saved.
+            </div>
+          )}
+          {testsent && (
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+              Test email sent to {user.email}. Check your inbox.
+            </div>
+          )}
+          {groqtested && (
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+              Groq connection successful.
+            </div>
+          )}
         </div>
 
-        <form action={updateEmailSettings} className="mt-5 space-y-4">
-          <div>
-            <Label htmlFor="resendApiKey">Resend API key</Label>
-            <Input
-              id="resendApiKey"
-              name="resendApiKey"
-              type="password"
-              placeholder={settings?.resendApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "re_..."}
-              autoComplete="off"
-            />
+        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+              <Mail className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-medium text-slate-50 light:text-slate-900">Transactional email (Resend)</p>
+              <p className="text-sm text-slate-400 light:text-slate-500">
+                {configured
+                  ? "Configured. Used for password resets, invoice reminders, and notifications for every company on this platform."
+                  : "Not configured. Those emails currently fail silently."}
+              </p>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="resendFromEmail">From address</Label>
-            <Input
-              id="resendFromEmail"
-              name="resendFromEmail"
-              type="email"
-              placeholder={settings?.resendFromEmail || "onboarding@resend.dev"}
-            />
-          </div>
-          <SubmitButton pendingText="Saving...">Save</SubmitButton>
-        </form>
 
-        {configured && (
-          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
-            <form action={sendTestAction}>
-              <SubmitButton variant="secondary" pendingText="Sending...">
-                Send test email
-              </SubmitButton>
-            </form>
-            <form action={clearEmailSettings}>
-              <SubmitButton variant="ghost" pendingText="Clearing...">
-                Clear
-              </SubmitButton>
-            </form>
-          </div>
-        )}
-      </div>
+          <form action={updateEmailSettings} className="mt-5 space-y-4">
+            <div>
+              <Label htmlFor="resendApiKey">Resend API key</Label>
+              <Input
+                id="resendApiKey"
+                name="resendApiKey"
+                type="password"
+                placeholder={settings?.resendApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "re_..."}
+                autoComplete="off"
+              />
+            </div>
+            <div>
+              <Label htmlFor="resendFromEmail">From address</Label>
+              <Input
+                id="resendFromEmail"
+                name="resendFromEmail"
+                type="email"
+                placeholder={settings?.resendFromEmail || "onboarding@resend.dev"}
+              />
+            </div>
+            <SubmitButton pendingText="Saving...">Save</SubmitButton>
+          </form>
 
-      <div className="mt-4 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
-            <Sparkles className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot (Groq)</p>
-            <p className="text-sm text-slate-400 light:text-slate-500">
-              {groqConfigured
-                ? "Configured. Used by every company's AI Copilot chat and by automatic transaction/ticket categorization."
-                : "Not configured here — falling back to the GROQ_API_KEY environment variable, if set."}
-            </p>
-          </div>
+          {configured && (
+            <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
+              <form action={sendTestAction}>
+                <SubmitButton variant="secondary" pendingText="Sending...">
+                  Send test email
+                </SubmitButton>
+              </form>
+              <form action={clearEmailSettings}>
+                <SubmitButton variant="ghost" pendingText="Clearing...">
+                  Clear
+                </SubmitButton>
+              </form>
+            </div>
+          )}
         </div>
 
-        <form action={updateGroqSettings} className="mt-5 space-y-4">
-          <div>
-            <Label htmlFor="groqApiKey">Groq API key</Label>
-            <Input
-              id="groqApiKey"
-              name="groqApiKey"
-              type="password"
-              placeholder={settings?.groqApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "gsk_..."}
-              autoComplete="off"
-            />
+        <div className="mt-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot (Groq)</p>
+              <p className="text-sm text-slate-400 light:text-slate-500">
+                {groqConfigured
+                  ? "Configured. Used by every company's AI Copilot chat and by automatic transaction/ticket categorization."
+                  : "Not configured here — falling back to the GROQ_API_KEY environment variable, if set."}
+              </p>
+            </div>
           </div>
-          <SubmitButton pendingText="Saving...">Save</SubmitButton>
-        </form>
 
-        {groqConfigured && (
-          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
-            <form action={testGroqConnection}>
-              <SubmitButton variant="secondary" pendingText="Testing...">
-                Test connection
-              </SubmitButton>
-            </form>
-            <form action={clearGroqSettings}>
-              <SubmitButton variant="ghost" pendingText="Clearing...">
-                Clear
-              </SubmitButton>
-            </form>
-          </div>
-        )}
-      </div>
+          <form action={updateGroqSettings} className="mt-5 space-y-4">
+            <div>
+              <Label htmlFor="groqApiKey">Groq API key</Label>
+              <Input
+                id="groqApiKey"
+                name="groqApiKey"
+                type="password"
+                placeholder={settings?.groqApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "gsk_..."}
+                autoComplete="off"
+              />
+            </div>
+            <SubmitButton pendingText="Saving...">Save</SubmitButton>
+          </form>
 
-      <div className="mt-4 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-        <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
-            <ShieldCheck className="h-5 w-5" />
-          </span>
-          <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot fallback (OpenAI)</p>
-            <p className="text-sm text-slate-400 light:text-slate-500">
-              {openaiConfigured
-                ? "Configured. If a Groq request fails (e.g. an outage), it automatically retries once against OpenAI (gpt-4o-mini) instead of failing outright."
-                : "Not configured. If Groq is unreachable, the AI Copilot and automatic categorization simply fail until Groq recovers."}
-            </p>
-          </div>
+          {groqConfigured && (
+            <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
+              <form action={testGroqConnection}>
+                <SubmitButton variant="secondary" pendingText="Testing...">
+                  Test connection
+                </SubmitButton>
+              </form>
+              <form action={clearGroqSettings}>
+                <SubmitButton variant="ghost" pendingText="Clearing...">
+                  Clear
+                </SubmitButton>
+              </form>
+            </div>
+          )}
         </div>
 
-        <form action={updateOpenAiSettings} className="mt-5 space-y-4">
-          <div>
-            <Label htmlFor="openaiApiKey">OpenAI API key</Label>
-            <Input
-              id="openaiApiKey"
-              name="openaiApiKey"
-              type="password"
-              placeholder={settings?.openaiApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "sk-..."}
-              autoComplete="off"
-            />
+        <div className="mt-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+              <ShieldCheck className="h-5 w-5" />
+            </span>
+            <div>
+              <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot fallback (OpenAI)</p>
+              <p className="text-sm text-slate-400 light:text-slate-500">
+                {openaiConfigured
+                  ? "Configured. If a Groq request fails (e.g. an outage), it automatically retries once against OpenAI (gpt-4o-mini) instead of failing outright."
+                  : "Not configured. If Groq is unreachable, the AI Copilot and automatic categorization simply fail until Groq recovers."}
+              </p>
+            </div>
           </div>
-          <SubmitButton pendingText="Saving...">Save</SubmitButton>
-        </form>
 
-        {openaiConfigured && (
-          <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
-            <form action={clearOpenAiSettings}>
-              <SubmitButton variant="ghost" pendingText="Clearing...">
-                Clear
-              </SubmitButton>
-            </form>
-          </div>
-        )}
+          <form action={updateOpenAiSettings} className="mt-5 space-y-4">
+            <div>
+              <Label htmlFor="openaiApiKey">OpenAI API key</Label>
+              <Input
+                id="openaiApiKey"
+                name="openaiApiKey"
+                type="password"
+                placeholder={settings?.openaiApiKey ? "•••••••••••••••• (configured, leave blank to keep)" : "sk-..."}
+                autoComplete="off"
+              />
+            </div>
+            <SubmitButton pendingText="Saving...">Save</SubmitButton>
+          </form>
+
+          {openaiConfigured && (
+            <div className="mt-4 flex items-center gap-2 border-t border-white/[0.06] light:border-slate-200 pt-4">
+              <form action={clearOpenAiSettings}>
+                <SubmitButton variant="ghost" pendingText="Clearing...">
+                  Clear
+                </SubmitButton>
+              </form>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

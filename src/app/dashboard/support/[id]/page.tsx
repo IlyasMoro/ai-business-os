@@ -12,6 +12,7 @@ import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteTicket, deleteTicketMessage } from "@/lib/actions/support";
 import { formatDistanceToNow } from "date-fns";
 import { Pencil } from "lucide-react";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   OPEN: "blue",
@@ -53,7 +54,8 @@ export default async function TicketDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/support" label="Back to support" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -134,11 +136,6 @@ export default async function TicketDetailPage({
           documents={documents}
         />
 
-        <p className="mt-6">
-          <Link href="/dashboard/support" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to support
-          </Link>
-        </p>
       </div>
     </div>
   );

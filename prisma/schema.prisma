@@ -190,6 +190,8 @@ model StockTransfer {
   transferNumber String
   status         StockTransferStatus @default(DRAFT)
   note           String?
+  // Drafted by an automation: only an owner or admin may approve (send) it.
+  autoCreated    Boolean             @default(false)
   createdAt      DateTime            @default(now())
   sentAt         DateTime?
   receivedAt     DateTime?
@@ -387,6 +389,8 @@ enum PurchaseOrderStatus {
 model PurchaseOrder {
   id           String              @id @default(cuid())
   status       PurchaseOrderStatus @default(DRAFT)
+  // Drafted by an automation: only an owner or admin may move it on from draft.
+  autoCreated  Boolean             @default(false)
   totalAmount  Float               @default(0)
   createdAt    DateTime            @default(now())
   expectedDate DateTime?

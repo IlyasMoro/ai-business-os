@@ -15,6 +15,7 @@ import { UsageBar, VarianceBadge, money } from "@/components/controlling/control
 import { getControllingSettings, loadCostLines } from "@/lib/controlling";
 import { fiscalYearLabel, fiscalYearMonths, monthLabel, periodKey, periodOf, periodRange, resolvePeriods, variance } from "@/lib/controlling-math";
 import { deleteCostCenter, saveBudgets, updateCostCenter } from "@/lib/actions/controlling";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const SOURCE_LABEL = { EXPENSE: "Expense", PAYROLL: "Payroll", ALLOCATION: "Allocation", SETTLEMENT: "Settlement" } as const;
 
@@ -60,7 +61,8 @@ export default async function CostCenterPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-5xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/controlling/cost-centers" label="Back to cost centers" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -199,11 +201,6 @@ export default async function CostCenterPage({
           <DeleteButton action={deleteCostCenter.bind(null, cc.id)} confirmMessage={`Delete cost center ${cc.code}?`} />
         </div>
 
-        <p className="mt-6">
-          <Link href="/dashboard/controlling/cost-centers" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to cost centers
-          </Link>
-        </p>
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ export function ReturnForm({
   const selected = orders.some((o) => o.id === defaultOrderId) ? defaultOrderId : "";
 
   return (
-    <form action={createReturn} className="max-w-xl space-y-4">
+    <form action={createReturn} className="space-y-4">
       <div>
         <Label htmlFor="orderId">Order</Label>
         <Select id="orderId" name="orderId" defaultValue={selected} required>

@@ -73,7 +73,7 @@ export default async function InvoicingPage({
   const sentCount = statusMap.get("SENT") ?? 0;
   const overdueCount = statusMap.get("OVERDUE") ?? 0;
   const collectibleTotal = paidCount + sentCount + overdueCount;
-  const collectionRate = collectibleTotal > 0 ? (paidCount / collectibleTotal) * 100 : 100;
+  const collectionRate = collectibleTotal > 0 ? (paidCount / collectibleTotal) * 100 : null;
 
   const outstandingInvoices = await db.invoice.findMany({
     where: { companyId: session.companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } },
@@ -140,7 +140,12 @@ export default async function InvoicingPage({
               color: statusColor[status],
             }))}
           />
-          <RingGauge label="Collection rate" pct={collectionRate} goodIsHigh />
+          <RingGauge
+            label="Collection rate"
+            pct={collectionRate}
+            detail={`${paidCount} of ${collectibleTotal} paid`}
+            emptyText="No invoices sent yet"
+          />
         </div>
       </div>
 

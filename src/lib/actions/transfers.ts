@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as z from "zod";
 import { db } from "@/lib/db";
-import { verifySession } from "@/lib/dal";
+import { hasRole, verifySession } from "@/lib/dal";
 import { logAudit } from "@/lib/audit";
 import { getBranchContext } from "@/lib/branches";
 import { changeStock, quantitiesAt } from "@/lib/stock";
@@ -46,6 +46,11 @@ async function loadTransfer(transferId: string, action: TransferAction) {
   if (!transfer || !canActOnTransfer(ctx.lockedBranchId, transfer, "view")) redirect(BASE);
   const back = `${BASE}/${transfer.id}`;
   if (!canActOnTransfer(ctx.lockedBranchId, transfer, action)) redirect(`${back}?error=forbidden`);
+  // Automation only suggests: changing, cancelling or sending its drafts is
+  // for owners and admins. Receiving stays with the destination branch.
+  if (transfer.autoCreated && action !== "view" && action !== "receive" && !hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect(`${back}?error=approval-needed`);
+  }
   return { session, ctx, transfer, back };
 }
 
@@ -195,7 +200,7 @@ export async function sendTransfer(transferId: string) {
     throw e;
   }
 
-  await logAudit(session.companyId, session.userId, "transfer.sent", "StockTransfer", transfer.id, {
+  await logAudit(session.companyId, session.userId, transfer.autoCreated ? "transfer.approved_and_sent" : "transfer.sent", "StockTransfer", transfer.id, {
     lines: transfer.items.length,
   });
   revalidatePath(back);

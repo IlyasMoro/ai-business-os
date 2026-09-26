@@ -69,6 +69,38 @@ export async function getNotifications(companyId: string): Promise<Notification[
     });
   }
 
+  // Automation drafts wait for an owner or admin to approve them.
+  const [suggestedTransfers, suggestedOrders] = await Promise.all([
+    db.stockTransfer.findMany({
+      where: { companyId, autoCreated: true, status: "DRAFT" },
+      select: { id: true, transferNumber: true, toBranch: { select: { name: true } } },
+      orderBy: { createdAt: "asc" },
+      take: 5,
+    }),
+    db.purchaseOrder.findMany({
+      where: { companyId, autoCreated: true, status: "DRAFT" },
+      select: { id: true, branch: { select: { name: true } } },
+      orderBy: { createdAt: "asc" },
+      take: 5,
+    }),
+  ]);
+  for (const t of suggestedTransfers) {
+    notifications.push({
+      id: `transfer-${t.id}`,
+      severity: "medium",
+      message: `Transfer ${t.transferNumber} to ${t.toBranch.name} suggested by automation, needs approval`,
+      href: `/dashboard/transfers/${t.id}`,
+    });
+  }
+  for (const po of suggestedOrders) {
+    notifications.push({
+      id: `po-${po.id}`,
+      severity: "medium",
+      message: `Reorder${po.branch ? ` for ${po.branch.name}` : ""} drafted by automation, needs approval`,
+      href: `/dashboard/procurement/${po.id}`,
+    });
+  }
+
   for (const a of pendingActions) {
     notifications.push({
       id: `ai-action-${a.id}`,

@@ -4,7 +4,7 @@ import { createCampaign } from "@/lib/actions/marketing";
 
 export function CampaignForm() {
   return (
-    <form action={createCampaign} className="max-w-xl space-y-4">
+    <form action={createCampaign} className="space-y-4">
       <div>
         <Label htmlFor="name">Campaign name</Label>
         <Input id="name" name="name" placeholder="Spring Promo" required />

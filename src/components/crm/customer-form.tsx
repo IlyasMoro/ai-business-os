@@ -22,7 +22,7 @@ export function CustomerForm({
   submitLabel?: string;
 }) {
   return (
-    <form action={action} className="max-w-xl space-y-4">
+    <form action={action} className="space-y-4">
       <div>
         <Label htmlFor="name">Name</Label>
         <Input id="name" name="name" defaultValue={defaultValues?.name} required />

@@ -3,7 +3,7 @@ import { ArrowRight, ArrowRightLeft, Plus } from "lucide-react";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
-import { StatusBadge } from "@/components/ui-dark/badge";
+import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { TRANSFER_TONE } from "@/lib/transfer-rules";
@@ -93,7 +93,10 @@ export default async function TransfersPage() {
                       {t.items.reduce((s, i) => s + i.quantity, 0)}
                     </td>
                     <td className="px-5 py-3">
-                      <StatusBadge status={t.status} tone={TRANSFER_TONE[t.status]} />
+                      <span className="inline-flex flex-wrap items-center gap-1.5">
+                        <StatusBadge status={t.status} tone={TRANSFER_TONE[t.status]} />
+                        {t.autoCreated && t.status === "DRAFT" && <Badge tone="yellow">Needs approval</Badge>}
+                      </span>
                     </td>
                     <td className="px-5 py-3 text-slate-400 light:text-slate-500">{t.createdAt.toLocaleDateString()}</td>
                   </tr>

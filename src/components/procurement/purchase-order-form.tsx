@@ -24,7 +24,7 @@ export function PurchaseOrderForm({
   }
 
   return (
-    <form action={createPurchaseOrder} className="max-w-xl space-y-4">
+    <form action={createPurchaseOrder} className="space-y-4">
       <div>
         <Label htmlFor="supplierId">Supplier</Label>
         <Select id="supplierId" name="supplierId" defaultValue="" required>

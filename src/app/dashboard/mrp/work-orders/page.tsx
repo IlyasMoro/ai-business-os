@@ -7,6 +7,7 @@ import { getMrpSettings } from "@/lib/mrp";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   PLANNED: "slate",
@@ -40,6 +41,7 @@ export default async function WorkOrdersPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+      <BackButton href="/dashboard/mrp" label="Back to planning" />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Work orders</h1>
@@ -130,11 +132,6 @@ export default async function WorkOrdersPage({
         )}
       </div>
 
-      <p className="mt-6">
-        <Link href="/dashboard/mrp" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-          ← Back to planning
-        </Link>
-      </p>
     </div>
   );
 }

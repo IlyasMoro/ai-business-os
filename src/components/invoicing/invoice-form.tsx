@@ -29,7 +29,7 @@ export function InvoiceForm({
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
-    <form action={formAction} className="max-w-xl space-y-4">
+    <form action={formAction} className="space-y-4">
       <div>
         <Label htmlFor="customerId">Customer</Label>
         <Select id="customerId" name="customerId" defaultValue="" required>

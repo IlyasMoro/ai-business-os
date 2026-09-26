@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { TicketForm } from "@/components/support/ticket-form";
 import { updateTicket } from "@/lib/actions/support";
 import type { TicketFormState } from "@/lib/validation/support";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 export default async function EditTicketPage({
   params,
@@ -39,21 +40,24 @@ export default async function EditTicketPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Edit ticket</h1>
-      <div className="mt-6">
-        <TicketForm
-          action={action}
-          customers={customers}
-          employees={employees}
-          defaultValues={{
-            customerId: ticket.customerId,
-            subject: ticket.subject,
-            description: ticket.description,
-            priority: ticket.priority,
-            assigneeId: ticket.assigneeId,
-          }}
-          submitLabel="Save changes"
-        />
+      <div className="mx-auto max-w-3xl">
+        <BackButton href={`/dashboard/support/${id}`} label="Back to ticket" />
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Edit ticket</h1>
+        <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+          <TicketForm
+            action={action}
+            customers={customers}
+            employees={employees}
+            defaultValues={{
+              customerId: ticket.customerId,
+              subject: ticket.subject,
+              description: ticket.description,
+              priority: ticket.priority,
+              assigneeId: ticket.assigneeId,
+            }}
+            submitLabel="Save changes"
+          />
+        </div>
       </div>
     </div>
   );

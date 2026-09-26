@@ -10,6 +10,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteEmployee } from "@/lib/actions/hr";
 import { Pencil } from "lucide-react";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   ACTIVE: "green",
@@ -52,7 +53,8 @@ export default async function EmployeeDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/hr" label="Back to HR" />
         {error === "in-use" && (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             This employee can&apos;t be deleted because they&apos;re referenced in a payroll run.
@@ -157,11 +159,6 @@ export default async function EmployeeDetailPage({
           documents={documents}
         />
 
-        <p className="mt-6">
-          <Link href="/dashboard/hr" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to HR
-          </Link>
-        </p>
       </div>
     </div>
   );

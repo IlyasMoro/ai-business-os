@@ -29,18 +29,57 @@ export function lowStockRows<T extends BranchStockRow>(rows: T[]): T[] {
     .sort((a, b) => a.quantity - effectiveReorderLevel(a) - (b.quantity - effectiveReorderLevel(b)));
 }
 
+/** Stock a branch can give away and still sit at twice its own reorder level. */
+export function spareQuantity(row: Pick<BranchStockRow, "quantity" | "reorderLevel" | "productReorderLevel">): number {
+  return Math.max(0, row.quantity - 2 * effectiveReorderLevel(row));
+}
+
+export type RestockPlan = {
+  /** One draft transfer per route, keyed by "from→to". */
+  transfers: { fromBranchId: string; toBranchId: string; lines: { productId: string; quantity: number }[] }[];
+  /** What is still missing after transfers, one purchase order per branch. */
+  purchases: Map<string, { productId: string; quantity: number }[]>;
+};
+
 /**
- * Groups low rows into one reorder per branch, as automations raise one
- * purchase order per branch that is short.
+ * Restocking low branches: cover each shortfall from other branches' spare
+ * stock first (biggest spare first, never pushing a donor below twice its
+ * reorder level), and buy only what is still missing. `skip` holds
+ * "branchId:productId" pairs that already have stock on its way.
  */
-export function reorderPlanByBranch(rows: BranchStockRow[]): Map<string, { productId: string; quantity: number }[]> {
-  const plan = new Map<string, { productId: string; quantity: number }[]>();
-  for (const row of lowStockRows(rows)) {
-    const lines = plan.get(row.branchId) ?? [];
-    lines.push({ productId: row.productId, quantity: computeReorderQuantity(row.quantity, effectiveReorderLevel(row)) });
-    plan.set(row.branchId, lines);
+export function planRestock(rows: BranchStockRow[], skip: Set<string> = new Set()): RestockPlan {
+  const spare = new Map(rows.map((r) => [`${r.branchId}:${r.productId}`, spareQuantity(r)]));
+  const routes = new Map<string, RestockPlan["transfers"][number]>();
+  const purchases: RestockPlan["purchases"] = new Map();
+
+  for (const low of lowStockRows(rows)) {
+    if (skip.has(`${low.branchId}:${low.productId}`)) continue;
+    let needed = computeReorderQuantity(low.quantity, effectiveReorderLevel(low));
+
+    const donors = rows
+      .filter((r) => r.productId === low.productId && r.branchId !== low.branchId)
+      .map((r) => ({ row: r, spare: spare.get(`${r.branchId}:${r.productId}`) ?? 0 }))
+      .filter((d) => d.spare > 0)
+      .sort((a, b) => b.spare - a.spare);
+
+    for (const donor of donors) {
+      if (needed <= 0) break;
+      const qty = Math.min(needed, donor.spare);
+      spare.set(`${donor.row.branchId}:${donor.row.productId}`, donor.spare - qty);
+      needed -= qty;
+      const key = `${donor.row.branchId}→${low.branchId}`;
+      const route = routes.get(key) ?? { fromBranchId: donor.row.branchId, toBranchId: low.branchId, lines: [] };
+      route.lines.push({ productId: low.productId, quantity: qty });
+      routes.set(key, route);
+    }
+
+    if (needed > 0) {
+      const lines = purchases.get(low.branchId) ?? [];
+      lines.push({ productId: low.productId, quantity: needed });
+      purchases.set(low.branchId, lines);
+    }
   }
-  return plan;
+  return { transfers: [...routes.values()], purchases };
 }
 
 export type BranchShortfall = {

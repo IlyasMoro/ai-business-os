@@ -30,6 +30,7 @@ const MESSAGES: Record<string, string> = {
   "branch-duplicate": "A branch with that code already exists.",
   "branch-main": "The main branch can't be deactivated. Make another branch the main one first.",
   "branch-inactive": "That branch is inactive. Reactivate it on the Branches page first.",
+  "approval-needed": "This was suggested by an automation, so an owner or admin has to approve it first.",
   "transfer-same-branch": "Choose two different branches to move stock between.",
   "transfer-locked": "This transfer has already been sent, so it can't be changed.",
   "transfer-empty": "Add at least one product before sending.",

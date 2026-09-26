@@ -55,7 +55,7 @@ export function TransactionForm({
   }
 
   return (
-    <form action={formAction} className="max-w-xl space-y-4">
+    <form action={formAction} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="type">Type</Label>

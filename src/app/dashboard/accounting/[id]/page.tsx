@@ -8,6 +8,7 @@ import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { deleteTransaction } from "@/lib/actions/accounting";
 import { Pencil } from "lucide-react";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const typeTone = {
   INCOME: "green",
@@ -54,7 +55,8 @@ export default async function TransactionDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/accounting" label="Back to accounting" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -151,11 +153,6 @@ export default async function TransactionDetailPage({
           </CardContent>
         </Card>
 
-        <p className="mt-6">
-          <Link href="/dashboard/accounting" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to accounting
-          </Link>
-        </p>
       </div>
     </div>
   );

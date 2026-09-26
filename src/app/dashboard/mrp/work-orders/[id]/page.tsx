@@ -11,6 +11,7 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { deleteWorkOrder, updateWorkOrderStatus } from "@/lib/actions/mrp";
 import { explodeBom, nextWorkOrderStatuses, type WorkOrderStatus } from "@/lib/mrp-math";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   PLANNED: "slate",
@@ -76,7 +77,8 @@ export default async function WorkOrderDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/mrp/work-orders" label="Back to work orders" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -179,11 +181,6 @@ export default async function WorkOrderDetailPage({
           </Card>
         )}
 
-        <p className="mt-6">
-          <Link href="/dashboard/mrp/work-orders" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to work orders
-          </Link>
-        </p>
       </div>
     </div>
   );

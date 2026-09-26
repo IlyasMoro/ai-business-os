@@ -3,7 +3,9 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
-import { Sparkline } from "@/components/dash-viz/sparkline";
+import { TrendChart } from "@/components/dash-viz/trend-chart";
+import { ChangeBadge } from "@/components/dash-viz/change-badge";
+import { format } from "date-fns";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
@@ -60,9 +62,15 @@ export default async function PayrollPage({
     where,
     orderBy: { periodEnd: "desc" },
     take: 6,
-    select: { totalAmount: true },
+    select: { totalAmount: true, periodEnd: true },
   });
-  const payrollTrend = recentRuns.map((r) => r.totalAmount).reverse();
+  const runsOldestFirst = [...recentRuns].reverse();
+  const payrollTrend = runsOldestFirst.map((r) => r.totalAmount);
+  const trendPoints = runsOldestFirst.map((r) => ({
+    label: format(r.periodEnd, "MMM d"),
+    longLabel: `Run ending ${format(r.periodEnd, "d MMMM yyyy")}`,
+    value: r.totalAmount,
+  }));
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -93,15 +101,20 @@ export default async function PayrollPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
+        <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total paid</p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-400">
+          <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
             <AnimatedCounter value={totalPaid} prefix="$" decimals={0} />
           </p>
-          {payrollTrend.length > 1 && (
-            <div className="mt-3">
-              <Sparkline data={payrollTrend} color={VIZ.emerald} width={180} height={32} />
+          <div className="mt-2">
+            <ChangeBadge values={payrollTrend} period="previous run" />
+          </div>
+          {payrollTrend.length > 1 ? (
+            <div className="mt-4 flex-1">
+              <TrendChart data={trendPoints} color={VIZ.emerald} currency title="Payroll total per run, last 6 runs" />
             </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">No activity in the last 6 months yet.</p>
           )}
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-2 glass">

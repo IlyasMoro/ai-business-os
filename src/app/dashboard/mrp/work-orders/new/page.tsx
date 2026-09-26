@@ -7,6 +7,7 @@ import { Input, Label, Select, Textarea } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { getMrpSettings } from "@/lib/mrp";
 import { createWorkOrder } from "@/lib/actions/mrp";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 export default async function NewWorkOrderPage({
   searchParams,
@@ -27,54 +28,57 @@ export default async function NewWorkOrderPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New work order</h1>
-      <div className="mt-6 max-w-xl">
-        <ErrorBanner code={error} />
-        {products.length === 0 ? (
-          <p className="text-sm text-slate-400 light:text-slate-500">
-            No products have a bill of materials yet. Open a product in{" "}
-            <Link href="/dashboard/inventory" className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-              Inventory
-            </Link>{" "}
-            and add its components first.
-          </p>
-        ) : (
-          <form action={createWorkOrder} className="space-y-4">
-            <div>
-              <Label htmlFor="productId">Product to make</Label>
-              <Select
-                id="productId"
-                name="productId"
-                defaultValue={products.some((p) => p.id === productId) ? productId : ""}
-                required
-              >
-                <option value="" disabled>
-                  Select a product
-                </option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.sku})
+      <div className="mx-auto max-w-3xl">
+        <BackButton href="/dashboard/mrp/work-orders" label="Back to work orders" />
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New work order</h1>
+        <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+          <ErrorBanner code={error} />
+          {products.length === 0 ? (
+            <p className="text-sm text-slate-400 light:text-slate-500">
+              No products have a bill of materials yet. Open a product in{" "}
+              <Link href="/dashboard/inventory" className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                Inventory
+              </Link>{" "}
+              and add its components first.
+            </p>
+          ) : (
+            <form action={createWorkOrder} className="space-y-4">
+              <div>
+                <Label htmlFor="productId">Product to make</Label>
+                <Select
+                  id="productId"
+                  name="productId"
+                  defaultValue={products.some((p) => p.id === productId) ? productId : ""}
+                  required
+                >
+                  <option value="" disabled>
+                    Select a product
                   </option>
-                ))}
-              </Select>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="quantity">Quantity</Label>
-                <Input id="quantity" name="quantity" type="number" min="1" step="1" defaultValue={1} required />
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.sku})
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <Label htmlFor="quantity">Quantity</Label>
+                  <Input id="quantity" name="quantity" type="number" min="1" step="1" defaultValue={1} required />
+                </div>
+                <div>
+                  <Label htmlFor="dueDate">Due date (optional)</Label>
+                  <Input id="dueDate" name="dueDate" type="date" />
+                </div>
               </div>
               <div>
-                <Label htmlFor="dueDate">Due date (optional)</Label>
-                <Input id="dueDate" name="dueDate" type="date" />
+                <Label htmlFor="notes">Notes (optional)</Label>
+                <Textarea id="notes" name="notes" rows={3} maxLength={2000} />
               </div>
-            </div>
-            <div>
-              <Label htmlFor="notes">Notes (optional)</Label>
-              <Textarea id="notes" name="notes" rows={3} maxLength={2000} />
-            </div>
-            <SubmitButton pendingText="Creating...">Create work order</SubmitButton>
-          </form>
-        )}
+              <SubmitButton pendingText="Creating...">Create work order</SubmitButton>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

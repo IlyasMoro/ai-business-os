@@ -10,6 +10,7 @@ import { UsageBar, VarianceBadge, money } from "@/components/controlling/control
 import { getControllingSettings, loadCostLines } from "@/lib/controlling";
 import { variance } from "@/lib/controlling-math";
 import { closeInternalOrder, reopenInternalOrder, settleInternalOrder, updateInternalOrder } from "@/lib/actions/controlling";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const tone = { OPEN: "blue", CLOSED: "yellow", SETTLED: "green" } as const;
 
@@ -42,7 +43,8 @@ export default async function InternalOrderPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-4xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/controlling/orders" label="Back to internal orders" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
@@ -175,11 +177,6 @@ export default async function InternalOrderPage({
           </form>
         )}
 
-        <p className="mt-6">
-          <Link href="/dashboard/controlling/orders" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to internal orders
-          </Link>
-        </p>
       </div>
     </div>
   );

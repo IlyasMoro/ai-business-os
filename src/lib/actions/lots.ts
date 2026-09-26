@@ -32,6 +32,7 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
     select: {
       id: true,
       status: true,
+      autoCreated: true,
       branchId: true,
       items: {
         select: {
@@ -44,6 +45,9 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
   });
   if (!po) redirect("/dashboard/procurement");
   if (po.status === "RECEIVED" || po.status === "CANCELLED") redirect(`/dashboard/procurement/${po.id}`);
+  if (po.autoCreated && po.status === "DRAFT" && !hasRole(session, ["OWNER", "ADMIN"])) {
+    redirect(`/dashboard/procurement/${po.id}?error=approval-needed`);
+  }
 
   type Plan = { productId: string; entries: { lotNumber: string; quantity: number; expiresAt: Date | null }[] };
   const plans: Plan[] = [];

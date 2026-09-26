@@ -7,6 +7,7 @@ import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { DOC_TYPE_LABEL, prettyX12 } from "@/lib/edi/labels";
 import { Download } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = { GENERATED: "blue", PROCESSED: "green", REJECTED: "red" } as const;
 
@@ -44,7 +45,8 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-4xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/edi" label="Back to EDI" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">
@@ -138,11 +140,6 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
           </CardContent>
         </Card>
 
-        <p className="mt-6">
-          <Link href="/dashboard/edi" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to EDI
-          </Link>
-        </p>
       </div>
     </div>
   );

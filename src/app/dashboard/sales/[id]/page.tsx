@@ -14,6 +14,8 @@ import { EdiSendButton } from "@/components/edi/edi-send-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { getReturnPolicy } from "@/lib/returns-policy";
 import { isWithinReturnWindow, returnDeadline } from "@/lib/returns-math";
+import { BackButton } from "@/components/ui-dark/back-button";
+import { BranchTag } from "@/components/layout/branch-tag";
 
 const statusTone = {
   PENDING: "yellow",
@@ -44,6 +46,7 @@ export default async function OrderDetailPage({
   const order = await db.order.findUnique({
     where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
+      branch: { select: { name: true } },
       customer: true,
       items: { include: { product: true } },
       invoice: { select: { id: true, invoiceNumber: true, status: true } },
@@ -84,7 +87,8 @@ export default async function OrderDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/sales" label="Back to orders" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -95,6 +99,7 @@ export default async function OrderDetailPage({
                 </Link>
               </h1>
               <StatusBadge status={order.status} tone={statusTone[order.status]} />
+              <BranchTag name={order.branch?.name} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {order.createdAt.toLocaleDateString()}
@@ -221,11 +226,6 @@ export default async function OrderDetailPage({
           </Card>
         )}
 
-        <p className="mt-6">
-          <Link href="/dashboard/sales" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to orders
-          </Link>
-        </p>
       </div>
     </div>
   );

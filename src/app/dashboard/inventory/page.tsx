@@ -76,7 +76,7 @@ export default async function InventoryPage({
   const totalValue = allForTotals.reduce((s, p) => s + qtyOf(p) * p.unitPrice, 0);
   const lowStockCount = lowIds.size;
   const healthyRatio =
-    allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : 100;
+    allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : null;
 
   const topProductsByValue = allForTotals
     .map((p) => ({ label: p.name, value: qtyOf(p) * p.unitPrice }))
@@ -140,7 +140,14 @@ export default async function InventoryPage({
           </p>
         </div>
         <div className="flex items-center justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <RingGauge label="Stock health" pct={healthyRatio} goodIsHigh size={96} strokeWidth={8} />
+          <RingGauge
+            label="Stock health"
+            pct={healthyRatio}
+            detail={`${allForTotals.length - lowStockCount} of ${allForTotals.length} above reorder level`}
+            emptyText="No products yet"
+            size={96}
+            strokeWidth={8}
+          />
         </div>
       </div>
 

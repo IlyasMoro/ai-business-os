@@ -20,66 +20,68 @@ export default async function IntegrationsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Integrations</h1>
-      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        Connect third-party accounts so this app can act on your behalf.
-      </p>
+      <div className="mx-auto max-w-3xl">
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Integrations</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+          Connect third-party accounts so this app can act on your behalf.
+        </p>
 
-      <div className="mt-4 max-w-2xl">
-        <ErrorBanner code={error} />
-        {connected && (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            Gmail connected successfully.
-          </div>
-        )}
-        {testsent && (
-          <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
-            Test email sent. Check your inbox.
-          </div>
-        )}
-      </div>
-
-      <div className="mt-6 max-w-2xl rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
-              <Mail className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">Gmail</p>
-              {integration ? (
-                <p className="text-sm text-emerald-400">Connected as {integration.email}</p>
-              ) : (
-                <p className="text-sm text-slate-400 light:text-slate-500">
-                  Not connected. Emails currently send via the app&apos;s default provider.
-                </p>
-              )}
+        <div className="mt-4">
+          <ErrorBanner code={error} />
+          {connected && (
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+              Gmail connected successfully.
             </div>
-          </div>
-
-          {integration ? (
-            <form action={disconnectGoogle}>
-              <SubmitButton variant="ghost" pendingText="Disconnecting...">
-                Disconnect
-              </SubmitButton>
-            </form>
-          ) : (
-            <a
-              href="/api/integrations/google/connect"
-              className={buttonStyles("primary")}
-            >
-              Connect
-            </a>
+          )}
+          {testsent && (
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+              Test email sent. Check your inbox.
+            </div>
           )}
         </div>
 
-        {integration && (
-          <form action={sendTestEmail} className="mt-4 border-t border-white/[0.06] light:border-slate-200 pt-4">
-            <SubmitButton variant="secondary" pendingText="Sending...">
-              Send test email
-            </SubmitButton>
-          </form>
-        )}
+        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+                <Mail className="h-5 w-5" />
+              </span>
+              <div>
+                <p className="font-medium text-slate-50 light:text-slate-900">Gmail</p>
+                {integration ? (
+                  <p className="text-sm text-emerald-400">Connected as {integration.email}</p>
+                ) : (
+                  <p className="text-sm text-slate-400 light:text-slate-500">
+                    Not connected. Emails currently send via the app&apos;s default provider.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {integration ? (
+              <form action={disconnectGoogle}>
+                <SubmitButton variant="ghost" pendingText="Disconnecting...">
+                  Disconnect
+                </SubmitButton>
+              </form>
+            ) : (
+              <a
+                href="/api/integrations/google/connect"
+                className={buttonStyles("primary")}
+              >
+                Connect
+              </a>
+            )}
+          </div>
+
+          {integration && (
+            <form action={sendTestEmail} className="mt-4 border-t border-white/[0.06] light:border-slate-200 pt-4">
+              <SubmitButton variant="secondary" pendingText="Sending...">
+                Send test email
+              </SubmitButton>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );

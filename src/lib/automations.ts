@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import { systemBranchId } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { stockRows } from "@/lib/stock";
-import { reorderPlanByBranch } from "@/lib/stock-levels";
+import { planRestock } from "@/lib/stock-levels";
+import { formatTransferNumber, nextTransferSequence } from "@/lib/transfer-rules";
 import { computePurchaseOrderTotal } from "@/lib/procurement-math";
 import { getBusinessReportData } from "@/lib/business-report-data";
 import { generateBusinessReportPdf } from "@/lib/report-pdf";
@@ -55,11 +56,64 @@ async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string 
 }
 
 async function runLowStockReorder(companyId: string, webhookUrl: string | null) {
-  // Each branch reorders for itself: one purchase order per branch that is
-  // short, delivered to that branch.
-  const plan = reorderPlanByBranch(await stockRows(companyId, null));
-  if (plan.size === 0) return;
+  // Restock low branches: first from other branches' spare stock (draft
+  // transfers), then buy what is still missing (draft purchase orders, one
+  // per branch). Everything is a draft marked autoCreated, so nothing moves
+  // or is ordered until an owner or admin approves it.
+  const rows = await stockRows(companyId, null);
+  if (rows.length === 0) return;
+  const mainBranchId = await systemBranchId(companyId);
 
+  // Stock already on its way to a branch (an open transfer or purchase
+  // order) is not asked for twice. Older orders without a branch count as
+  // the main branch's.
+  const [openTransfers, openOrders] = await Promise.all([
+    db.stockTransferItem.findMany({
+      where: { transfer: { companyId, status: { in: ["DRAFT", "SENT"] } } },
+      select: { productId: true, transfer: { select: { toBranchId: true } } },
+    }),
+    db.purchaseOrderItem.findMany({
+      where: { purchaseOrder: { companyId, status: { in: ["DRAFT", "ORDERED"] } } },
+      select: { productId: true, purchaseOrder: { select: { branchId: true } } },
+    }),
+  ]);
+  const skip = new Set([
+    ...openTransfers.map((i) => `${i.transfer.toBranchId}:${i.productId}`),
+    ...openOrders.map((i) => `${i.purchaseOrder.branchId ?? mainBranchId}:${i.productId}`),
+  ]);
+
+  const plan = planRestock(rows, skip);
+  if (plan.transfers.length === 0 && plan.purchases.size === 0) return;
+
+  const names = new Map(rows.map((r) => [r.productId, r.productName]));
+  const branchNames = new Map(rows.map((r) => [r.branchId, r.branchName]));
+
+  if (plan.transfers.length > 0) {
+    const existing = await db.stockTransfer.findMany({ where: { companyId }, select: { transferNumber: true } });
+    let sequence = nextTransferSequence(existing.map((t) => t.transferNumber));
+    for (const route of plan.transfers) {
+      const to = branchNames.get(route.toBranchId) ?? "a branch";
+      const transfer = await db.stockTransfer.create({
+        data: {
+          companyId,
+          transferNumber: formatTransferNumber(sequence++),
+          fromBranchId: route.fromBranchId,
+          toBranchId: route.toBranchId,
+          autoCreated: true,
+          note: `Suggested by automation: ${route.lines.map((l) => names.get(l.productId)).join(", ")} low at ${to}.`,
+          items: { create: route.lines },
+        },
+        select: { id: true, transferNumber: true },
+      });
+      await sendWebhookNotification(
+        webhookUrl,
+        `Transfer ${transfer.transferNumber} suggested: ${branchNames.get(route.fromBranchId)} to ${to}, awaiting approval`,
+        { event: "low_stock_transfer_suggested", transferId: transfer.id, from: branchNames.get(route.fromBranchId), to }
+      );
+    }
+  }
+
+  if (plan.purchases.size === 0) return;
   const supplier = await db.supplier.findFirst({
     where: { companyId },
     orderBy: { createdAt: "asc" },
@@ -67,47 +121,29 @@ async function runLowStockReorder(companyId: string, webhookUrl: string | null) 
   });
   if (!supplier) return;
 
-  const mainBranchId = await systemBranchId(companyId);
-  for (const [branchId, lines] of plan) {
-    // Skip products this branch already has on order. Older orders without
-    // a branch belong to the main branch.
-    const alreadyOnOrder = await db.purchaseOrderItem.findMany({
-      where: {
-        productId: { in: lines.map((l) => l.productId) },
-        purchaseOrder: {
-          companyId,
-          status: { in: ["DRAFT", "ORDERED"] },
-          ...(branchId === mainBranchId ? { OR: [{ branchId }, { branchId: null }] } : { branchId }),
-        },
-      },
-      select: { productId: true },
-    });
-    const alreadyOnOrderIds = new Set(alreadyOnOrder.map((i) => i.productId));
-    const toOrder = lines.filter((l) => !alreadyOnOrderIds.has(l.productId));
-    if (toOrder.length === 0) continue;
-
+  for (const [branchId, lines] of plan.purchases) {
     const products = await db.product.findMany({
-      where: { id: { in: toOrder.map((l) => l.productId) }, companyId },
+      where: { id: { in: lines.map((l) => l.productId) }, companyId },
       select: { id: true, name: true, cost: true },
     });
     const byId = new Map(products.map((p) => [p.id, p]));
-    const items = toOrder
+    const items = lines
       .filter((l) => byId.has(l.productId))
       .map((l) => ({ productId: l.productId, quantity: l.quantity, unitCost: byId.get(l.productId)!.cost }));
     if (items.length === 0) continue;
 
     const totalAmount = computePurchaseOrderTotal(items);
     const purchaseOrder = await db.purchaseOrder.create({
-      data: { companyId, supplierId: supplier.id, branchId, totalAmount, items: { create: items } },
+      data: { companyId, supplierId: supplier.id, branchId, totalAmount, autoCreated: true, items: { create: items } },
       select: { id: true, branch: { select: { name: true } } },
     });
 
-    const names = items.map((i) => byId.get(i.productId)!.name);
+    const itemNames = items.map((i) => byId.get(i.productId)!.name);
     const where = purchaseOrder.branch ? ` at ${purchaseOrder.branch.name}` : "";
     await sendWebhookNotification(
       webhookUrl,
-      `Reorder created${where} for ${names.length} low-stock product${names.length === 1 ? "" : "s"}: ${names.join(", ")}`,
-      { event: "low_stock_reorder", products: names, purchaseOrderId: purchaseOrder.id, branch: purchaseOrder.branch?.name ?? null, totalAmount }
+      `Reorder drafted${where} for ${itemNames.length} low stock product${itemNames.length === 1 ? "" : "s"}: ${itemNames.join(", ")}, awaiting approval`,
+      { event: "low_stock_reorder", products: itemNames, purchaseOrderId: purchaseOrder.id, branch: purchaseOrder.branch?.name ?? null, totalAmount }
     );
   }
 }

@@ -5,6 +5,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { SupplierForm } from "@/components/procurement/supplier-form";
 import { deleteSupplier } from "@/lib/actions/procurement";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 export default async function SuppliersPage({
   searchParams,
@@ -42,6 +43,7 @@ export default async function SuppliersPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+      <BackButton href="/dashboard/procurement" label="Back to purchase orders" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Suppliers</h1>
@@ -49,12 +51,6 @@ export default async function SuppliersPage({
             {suppliers.length} supplier{suppliers.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
-          href="/dashboard/procurement"
-          className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600"
-        >
-          ← Back to purchase orders
-        </Link>
       </div>
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">

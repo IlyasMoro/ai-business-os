@@ -38,104 +38,106 @@ export default async function TeamPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
-      <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-        {members.length} member{members.length === 1 ? "" : "s"} in {session.name ? "your company" : "this workspace"}.
-      </p>
+      <div className="mx-auto max-w-3xl">
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+          {members.length} member{members.length === 1 ? "" : "s"} in {session.name ? "your company" : "this workspace"}.
+        </p>
 
-      <div className="mt-4 max-w-3xl">
-        <ErrorBanner code={error} />
-      </div>
+        <div className="mt-4">
+          <ErrorBanner code={error} />
+        </div>
 
-      <Card className="mt-6 max-w-3xl">
-        <CardHeader>
-          <CardTitle>Invite a teammate</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <InviteForm />
-        </CardContent>
-      </Card>
-
-      {invites.length > 0 && (
-        <Card className="mt-6 max-w-3xl">
+        <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Pending invites</CardTitle>
+            <CardTitle>Invite a teammate</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InviteForm />
+          </CardContent>
+        </Card>
+
+        {invites.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Pending invites</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                {invites.map((invite) => {
+                  const expired = invite.expiresAt < new Date();
+                  return (
+                    <li key={invite.id} className="flex items-center justify-between py-2.5 text-sm">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-slate-50 light:text-slate-900">{invite.email}</span>
+                        <StatusBadge status={invite.role} tone={roleTone[invite.role]} />
+                        {expired && <Badge tone="red">Expired</Badge>}
+                      </div>
+                      <DeleteButton
+                        action={revokeInvite.bind(null, invite.id)}
+                        confirmMessage="Revoke this invite?"
+                        label="Revoke"
+                      />
+                    </li>
+                  );
+                })}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Members</CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-              {invites.map((invite) => {
-                const expired = invite.expiresAt < new Date();
-                return (
-                  <li key={invite.id} className="flex items-center justify-between py-2.5 text-sm">
+              {members.map((member) => (
+                <li key={member.id} className="flex items-center justify-between py-2.5 text-sm">
+                  <div>
                     <div className="flex items-center gap-2.5">
-                      <span className="text-slate-50 light:text-slate-900">{invite.email}</span>
-                      <StatusBadge status={invite.role} tone={roleTone[invite.role]} />
-                      {expired && <Badge tone="red">Expired</Badge>}
+                      <span className="font-medium text-slate-50 light:text-slate-900">{member.name}</span>
+                      <StatusBadge status={member.role} tone={roleTone[member.role]} />
                     </div>
-                    <DeleteButton
-                      action={revokeInvite.bind(null, invite.id)}
-                      confirmMessage="Revoke this invite?"
-                      label="Revoke"
-                    />
-                  </li>
-                );
-              })}
+                    <p className="text-slate-400 light:text-slate-500">{member.email}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {showBranchAccess && member.role === "EMPLOYEE" && (
+                      <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
+                        <Select
+                          name="branchId"
+                          defaultValue={member.branchId ?? ""}
+                          aria-label={`Branch access for ${member.name}`}
+                          className="w-44"
+                        >
+                          <option value="">All branches</option>
+                          {branches
+                            .filter((b) => b.active || b.id === member.branchId)
+                            .map((b) => (
+                              <option key={b.id} value={b.id}>
+                                Only {b.name}
+                              </option>
+                            ))}
+                        </Select>
+                        <SubmitButton pendingText="Saving..." variant="secondary">
+                          Save
+                        </SubmitButton>
+                      </form>
+                    )}
+                    {session.role === "OWNER" && member.id !== session.userId && (
+                      <DeleteButton
+                        action={removeTeamMember.bind(null, member.id)}
+                        confirmMessage={`Remove ${member.name} from this company?`}
+                        label="Remove"
+                      />
+                    )}
+                  </div>
+                </li>
+              ))}
             </ul>
           </CardContent>
         </Card>
-      )}
-
-      <Card className="mt-6 max-w-3xl">
-        <CardHeader>
-          <CardTitle>Members</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-            {members.map((member) => (
-              <li key={member.id} className="flex items-center justify-between py-2.5 text-sm">
-                <div>
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-medium text-slate-50 light:text-slate-900">{member.name}</span>
-                    <StatusBadge status={member.role} tone={roleTone[member.role]} />
-                  </div>
-                  <p className="text-slate-400 light:text-slate-500">{member.email}</p>
-                </div>
-                <div className="flex flex-wrap items-center justify-end gap-2">
-                  {showBranchAccess && member.role === "EMPLOYEE" && (
-                    <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
-                      <Select
-                        name="branchId"
-                        defaultValue={member.branchId ?? ""}
-                        aria-label={`Branch access for ${member.name}`}
-                        className="w-44"
-                      >
-                        <option value="">All branches</option>
-                        {branches
-                          .filter((b) => b.active || b.id === member.branchId)
-                          .map((b) => (
-                            <option key={b.id} value={b.id}>
-                              Only {b.name}
-                            </option>
-                          ))}
-                      </Select>
-                      <SubmitButton pendingText="Saving..." variant="secondary">
-                        Save
-                      </SubmitButton>
-                    </form>
-                  )}
-                  {session.role === "OWNER" && member.id !== session.userId && (
-                    <DeleteButton
-                      action={removeTeamMember.bind(null, member.id)}
-                      confirmMessage={`Remove ${member.name} from this company?`}
-                      label="Remove"
-                    />
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      </div>
     </div>
   );
 }

@@ -125,7 +125,7 @@ export default async function CrmPage({
           <DonutChart
             title="Customers by status"
             centerValue={String(totalAll)}
-            centerLabel="total"
+            centerLabel="customers"
             slices={statusOrder.map((status) => ({
               label: status.charAt(0) + status.slice(1).toLowerCase(),
               value: statusMap.get(status) ?? 0,

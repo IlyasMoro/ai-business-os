@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { verifySession } from "@/lib/dal";
+import { hasRole, verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
 import { quantitiesAt } from "@/lib/stock";
@@ -19,6 +19,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { Input, Select } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 export default async function TransferDetailPage({
   params,
@@ -46,7 +47,11 @@ export default async function TransferDetailPage({
   // Other branches' transfers look missing to a locked employee.
   if (!transfer || !canActOnTransfer(ctx.lockedBranchId, transfer, "view")) notFound();
 
-  const can = (action: "edit" | "send" | "cancel" | "receive") => canActOnTransfer(ctx.lockedBranchId, transfer, action);
+  // Automation drafts need an owner or admin for anything but viewing and receiving.
+  const isAdmin = hasRole(session, ["OWNER", "ADMIN"]);
+  const can = (action: "edit" | "send" | "cancel" | "receive") =>
+    canActOnTransfer(ctx.lockedBranchId, transfer, action) && (!transfer.autoCreated || action === "receive" || isAdmin);
+  const awaitingApproval = transfer.autoCreated && transfer.status === "DRAFT";
   const isDraft = transfer.status === "DRAFT";
 
   const [products, lotMoves] = await Promise.all([
@@ -72,7 +77,8 @@ export default async function TransferDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/transfers" label="Back to transfers" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -94,7 +100,7 @@ export default async function TransferDetailPage({
           <div className="flex flex-wrap items-center gap-2">
             {isDraft && can("send") && (
               <form action={sendTransfer.bind(null, transfer.id)}>
-                <SubmitButton pendingText="Sending...">Send</SubmitButton>
+                <SubmitButton pendingText="Sending...">{transfer.autoCreated ? "Approve and send" : "Send"}</SubmitButton>
               </form>
             )}
             {transfer.status === "SENT" && can("receive") && (
@@ -116,6 +122,12 @@ export default async function TransferDetailPage({
           <ErrorBanner code={error} />
           {why && (
             <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>
+          )}
+          {awaitingApproval && (
+            <p className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
+              Suggested by automation. Nothing moves until an owner or admin checks the lines and approves it
+              {isAdmin ? " with Approve and send, or cancels it." : "."}
+            </p>
           )}
           {transfer.status === "SENT" && (
             <p className="mb-4 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-300 light:text-blue-700">
@@ -213,11 +225,6 @@ export default async function TransferDetailPage({
           </Card>
         )}
 
-        <p className="mt-6">
-          <Link href="/dashboard/transfers" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to transfers
-          </Link>
-        </p>
       </div>
     </div>
   );

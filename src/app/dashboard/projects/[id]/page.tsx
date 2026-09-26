@@ -12,6 +12,7 @@ import { ProjectStatusForm } from "@/components/projects/project-status-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteProject, removeTask } from "@/lib/actions/projects";
 import { Pencil } from "lucide-react";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   ACTIVE: "blue",
@@ -66,7 +67,8 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/projects" label="Back to projects" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -174,11 +176,6 @@ export default async function ProjectDetailPage({
           documents={documents}
         />
 
-        <p className="mt-6">
-          <Link href="/dashboard/projects" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to projects
-          </Link>
-        </p>
       </div>
     </div>
   );

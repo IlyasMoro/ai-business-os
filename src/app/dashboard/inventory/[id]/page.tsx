@@ -20,6 +20,7 @@ import { Select, Label, Input } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { SettingToggle } from "@/components/ui-dark/setting-toggle";
 import { Pencil } from "lucide-react";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const SALES_LOOKBACK_DAYS = 90;
 const DEFAULT_LEAD_TIME_DAYS = 14;
@@ -161,7 +162,8 @@ export default async function ProductDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/inventory" label="Back to inventory" />
         {error === "in-use" ? (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             This product can&apos;t be deleted because it&apos;s used in an order, a bill of materials, a work order or a stock transfer.
@@ -196,326 +198,327 @@ export default async function ProductDetailPage({
           </div>
         </div>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Details</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-slate-500">Cost</p>
-              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Unit price</p>
-              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Stock quantity</p>
-              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">{product.stockQty}</p>
-            </div>
-            <div>
-              <p className="text-slate-500">Reorder level</p>
-              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">{product.reorderLevel}</p>
-            </div>
-            {product.description && (
-              <div className="col-span-2">
-                <p className="text-slate-500">Description</p>
-                <p className="whitespace-pre-wrap text-slate-50 light:text-slate-900">{product.description}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {multiBranch && (
-          <Card className="mt-6">
-            <CardHeader>
-              <CardTitle>Stock by branch</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
-                    <th className="py-2 font-medium">Branch</th>
-                    <th className="py-2 text-right font-medium">On hand</th>
-                    <th className="py-2 pl-6 font-medium">Reorder level</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {branchStock.map((b) => (
-                    <tr key={b.id} className="border-b border-white/[0.04] last:border-0">
-                      <td className="py-2 text-slate-50 light:text-slate-900">
-                        {b.name}
-                        {b.low && <Badge tone="red" className="ml-2">Low</Badge>}
-                        {!b.stocked && <span className="ml-2 text-xs text-slate-500">not stocked</span>}
-                      </td>
-                      <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">
-                        {b.quantity}
-                        {b.arriving > 0 && (
-                          <span className="ml-2 font-sans text-xs text-blue-300 light:text-blue-700">+{b.arriving} arriving</span>
-                        )}
-                      </td>
-                      <td className="py-2 pl-6">
-                        {canSetLevels ? (
-                          <form action={setBranchReorderLevel.bind(null, product.id, b.id)} className="flex items-center gap-2">
-                            <Input
-                              name="reorderLevel"
-                              type="number"
-                              min="0"
-                              step="1"
-                              defaultValue={b.reorderLevel ?? ""}
-                              placeholder={`${product.reorderLevel} (default)`}
-                              aria-label={`Reorder level at ${b.name}`}
-                              className="w-32"
-                            />
-                            <SubmitButton pendingText="Saving..." variant="secondary">
-                              Save
-                            </SubmitButton>
-                          </form>
-                        ) : (
-                          <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">
-                            {b.effectiveLevel}
-                            {b.reorderLevel === null && <span className="ml-1 text-xs text-slate-500">(default)</span>}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-        )}
-
-        {suggestedReorderLevel !== null && suggestedReorderLevel !== product.reorderLevel && (
-          <Card className="mt-6 border-amber-500/30">
-            <CardContent className="flex items-center justify-between gap-4 pt-5">
-              <p className="text-sm text-slate-300 light:text-slate-600">
-                Based on {unitsSoldRecently} units sold in the last {SALES_LOOKBACK_DAYS} days (
-                {dailyVelocity.toFixed(2)}/day) and an average {avgLeadTimeDays.toFixed(0)} day supplier lead
-                time, a reorder level of{" "}
-                <span className="font-mono font-semibold text-amber-400">{suggestedReorderLevel}</span> would
-                keep you covered.
-              </p>
-              <form action={applyReorderSuggestion.bind(null, product.id, suggestedReorderLevel)}>
-                <Button type="submit" variant="secondary" size="sm">
-                  Apply
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Tracking</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form action={setProductTracking.bind(null, product.id)} className="grid items-end gap-4 sm:grid-cols-3">
-              <div>
-                <Label htmlFor="trackingMode">Track this product by</Label>
-                <Select id="trackingMode" name="trackingMode" defaultValue={product.trackingMode}>
-                  <option value="NONE">Quantity only</option>
-                  <option value="LOT">Lot number</option>
-                  <option value="SERIAL">Serial number (one per unit)</option>
-                </Select>
-              </div>
-              <div className="sm:col-span-2">
-                <SettingToggle
-                  name="tracksExpiry"
-                  label="Track expiry dates"
-                  description="Ask for an expiry date when receiving, and pick by it if your rule is first expiring first out."
-                  defaultChecked={product.tracksExpiry}
-                />
-              </div>
-              <div className="sm:col-span-3">
-                <SubmitButton variant="secondary" pendingText="Saving...">
-                  Save tracking
-                </SubmitButton>
-                <p className="mt-2 text-xs text-slate-500">
-                  Stock already on hand becomes an opening lot when tracking starts.
-                </p>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-
-        {product.trackingMode !== "NONE" && (
-          <Card className="mt-6">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>{product.trackingMode === "SERIAL" ? "Serials on hand" : "Lots on hand"}</CardTitle>
-              <span className="text-xs text-slate-500">
-                Picked {inventory.pickingRule === "FEFO" ? "first expiring first" : "oldest first"}
-              </span>
-            </CardHeader>
-            <CardContent>
-              {lots.length === 0 ? (
-                <p className="text-sm text-slate-500">Nothing on hand.</p>
-              ) : (
-                <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-                  {lots.map((lot) => (
-                    <li key={lot.id} className="flex items-center justify-between py-2 text-sm">
-                      <Link
-                        href={`/dashboard/inventory/trace?q=${encodeURIComponent(lot.lotNumber)}`}
-                        className="font-mono text-slate-50 hover:text-blue-400 light:text-slate-900"
-                      >
-                        {lot.lotNumber}
-                      </Link>
-                      <span className="flex items-center gap-3">
-                        {multiBranch && <span className="text-xs text-slate-400">{lot.branch.name}</span>}
-                        {lot.expiresAt && (
-                          <span className="text-xs text-slate-400">Expires {lot.expiresAt.toLocaleDateString()}</span>
-                        )}
-                        {isExpired(lot) ? (
-                          <Badge tone="red">Expired</Badge>
-                        ) : isExpiringSoon(lot, inventory.expiryWarningDays) ? (
-                          <Badge tone="yellow">Expires soon</Badge>
-                        ) : null}
-                        <span className="font-mono tabular-nums text-slate-300">{lot.quantity}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </CardContent>
-          </Card>
-        )}
-
-        {mrpSettings.enabled && (
-          <>
-            <Card className="mt-6">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <Card>
               <CardHeader>
-                <CardTitle>Planning</CardTitle>
+                <CardTitle>Details</CardTitle>
               </CardHeader>
-              <CardContent>
-                <PlanningFieldsForm
-                  productId={product.id}
-                  leadTimeDays={product.leadTimeDays}
-                  lotSize={product.lotSize}
-                  preferredSupplierId={product.preferredSupplierId}
-                  suppliers={suppliers}
-                />
+              <CardContent className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-slate-500">Cost</p>
+                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Unit price</p>
+                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Stock quantity</p>
+                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">{product.stockQty}</p>
+                </div>
+                <div>
+                  <p className="text-slate-500">Reorder level</p>
+                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">{product.reorderLevel}</p>
+                </div>
+                {product.description && (
+                  <div className="col-span-2">
+                    <p className="text-slate-500">Description</p>
+                    <p className="whitespace-pre-wrap text-slate-50 light:text-slate-900">{product.description}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            <Card className="mt-6">
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle>Bill of materials</CardTitle>
-                <Badge tone={product.bomComponents.length > 0 ? "purple" : "slate"}>
-                  {product.bomComponents.length > 0 ? "Made in house" : "Bought in"}
-                </Badge>
+            {multiBranch && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Stock by branch</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                        <th className="py-2 font-medium">Branch</th>
+                        <th className="py-2 text-right font-medium">On hand</th>
+                        <th className="py-2 pl-6 font-medium">Reorder level</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {branchStock.map((b) => (
+                        <tr key={b.id} className="border-b border-white/[0.04] last:border-0">
+                          <td className="py-2 text-slate-50 light:text-slate-900">
+                            {b.name}
+                            {b.low && <Badge tone="red" className="ml-2">Low</Badge>}
+                            {!b.stocked && <span className="ml-2 text-xs text-slate-500">not stocked</span>}
+                          </td>
+                          <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">
+                            {b.quantity}
+                            {b.arriving > 0 && (
+                              <span className="ml-2 font-sans text-xs text-blue-300 light:text-blue-700">+{b.arriving} arriving</span>
+                            )}
+                          </td>
+                          <td className="py-2 pl-6">
+                            {canSetLevels ? (
+                              <form action={setBranchReorderLevel.bind(null, product.id, b.id)} className="flex items-center gap-2">
+                                <Input
+                                  name="reorderLevel"
+                                  type="number"
+                                  min="0"
+                                  step="1"
+                                  defaultValue={b.reorderLevel ?? ""}
+                                  placeholder={`${product.reorderLevel} (default)`}
+                                  aria-label={`Reorder level at ${b.name}`}
+                                  className="w-32"
+                                />
+                                <SubmitButton pendingText="Saving..." variant="secondary">
+                                  Save
+                                </SubmitButton>
+                              </form>
+                            ) : (
+                              <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">
+                                {b.effectiveLevel}
+                                {b.reorderLevel === null && <span className="ml-1 text-xs text-slate-500">(default)</span>}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            )}
+
+            {suggestedReorderLevel !== null && suggestedReorderLevel !== product.reorderLevel && (
+              <Card className="border-amber-500/30">
+                <CardContent className="flex items-center justify-between gap-4 pt-5">
+                  <p className="text-sm text-slate-300 light:text-slate-600">
+                    Based on {unitsSoldRecently} units sold in the last {SALES_LOOKBACK_DAYS} days (
+                    {dailyVelocity.toFixed(2)}/day) and an average {avgLeadTimeDays.toFixed(0)} day supplier lead
+                    time, a reorder level of{" "}
+                    <span className="font-mono font-semibold text-amber-400">{suggestedReorderLevel}</span> would
+                    keep you covered.
+                  </p>
+                  <form action={applyReorderSuggestion.bind(null, product.id, suggestedReorderLevel)}>
+                    <Button type="submit" variant="secondary" size="sm">
+                      Apply
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Tracking</CardTitle>
               </CardHeader>
               <CardContent>
-                {product.bomComponents.length > 0 ? (
-                  <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
-                    {product.bomComponents.map((line) => (
-                      <li key={line.id} className="flex items-center justify-between py-2 text-sm">
-                        <div>
+                <form action={setProductTracking.bind(null, product.id)} className="grid items-end gap-4 sm:grid-cols-3">
+                  <div>
+                    <Label htmlFor="trackingMode">Track this product by</Label>
+                    <Select id="trackingMode" name="trackingMode" defaultValue={product.trackingMode}>
+                      <option value="NONE">Quantity only</option>
+                      <option value="LOT">Lot number</option>
+                      <option value="SERIAL">Serial number (one per unit)</option>
+                    </Select>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <SettingToggle
+                      name="tracksExpiry"
+                      label="Track expiry dates"
+                      description="Ask for an expiry date when receiving, and pick by it if your rule is first expiring first out."
+                      defaultChecked={product.tracksExpiry}
+                    />
+                  </div>
+                  <div className="sm:col-span-3">
+                    <SubmitButton variant="secondary" pendingText="Saving...">
+                      Save tracking
+                    </SubmitButton>
+                    <p className="mt-2 text-xs text-slate-500">
+                      Stock already on hand becomes an opening lot when tracking starts.
+                    </p>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            {product.trackingMode !== "NONE" && (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle>{product.trackingMode === "SERIAL" ? "Serials on hand" : "Lots on hand"}</CardTitle>
+                  <span className="text-xs text-slate-500">
+                    Picked {inventory.pickingRule === "FEFO" ? "first expiring first" : "oldest first"}
+                  </span>
+                </CardHeader>
+                <CardContent>
+                  {lots.length === 0 ? (
+                    <p className="text-sm text-slate-500">Nothing on hand.</p>
+                  ) : (
+                    <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                      {lots.map((lot) => (
+                        <li key={lot.id} className="flex items-center justify-between py-2 text-sm">
                           <Link
-                            href={`/dashboard/inventory/${line.component.id}`}
-                            className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                            href={`/dashboard/inventory/trace?q=${encodeURIComponent(lot.lotNumber)}`}
+                            className="font-mono text-slate-50 hover:text-blue-400 light:text-slate-900"
                           >
-                            {line.component.name}
+                            {lot.lotNumber}
                           </Link>
-                          <p className="font-mono text-xs tabular-nums text-slate-500">
-                            {line.quantity} per unit × ${line.component.cost.toFixed(2)} · {line.component.stockQty} in stock
-                          </p>
-                        </div>
-                        <DeleteButton
-                          action={removeBomLine.bind(null, product.id, line.id)}
-                          confirmMessage="Remove this component?"
-                          label=""
-                        />
+                          <span className="flex items-center gap-3">
+                            {multiBranch && <span className="text-xs text-slate-400">{lot.branch.name}</span>}
+                            {lot.expiresAt && (
+                              <span className="text-xs text-slate-400">Expires {lot.expiresAt.toLocaleDateString()}</span>
+                            )}
+                            {isExpired(lot) ? (
+                              <Badge tone="red">Expired</Badge>
+                            ) : isExpiringSoon(lot, inventory.expiryWarningDays) ? (
+                              <Badge tone="yellow">Expires soon</Badge>
+                            ) : null}
+                            <span className="font-mono tabular-nums text-slate-300">{lot.quantity}</span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+          </div>
+          <div className="space-y-6">
+            {mrpSettings.enabled && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Planning</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <PlanningFieldsForm
+                      productId={product.id}
+                      leadTimeDays={product.leadTimeDays}
+                      lotSize={product.lotSize}
+                      preferredSupplierId={product.preferredSupplierId}
+                      suppliers={suppliers}
+                    />
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Bill of materials</CardTitle>
+                    <Badge tone={product.bomComponents.length > 0 ? "purple" : "slate"}>
+                      {product.bomComponents.length > 0 ? "Made in house" : "Bought in"}
+                    </Badge>
+                  </CardHeader>
+                  <CardContent>
+                    {product.bomComponents.length > 0 ? (
+                      <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
+                        {product.bomComponents.map((line) => (
+                          <li key={line.id} className="flex items-center justify-between py-2 text-sm">
+                            <div>
+                              <Link
+                                href={`/dashboard/inventory/${line.component.id}`}
+                                className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                              >
+                                {line.component.name}
+                              </Link>
+                              <p className="font-mono text-xs tabular-nums text-slate-500">
+                                {line.quantity} per unit × ${line.component.cost.toFixed(2)} · {line.component.stockQty} in stock
+                              </p>
+                            </div>
+                            <DeleteButton
+                              action={removeBomLine.bind(null, product.id, line.id)}
+                              confirmMessage="Remove this component?"
+                              label=""
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="mb-4 text-sm text-slate-500">
+                        No components. Add some to make this product in house with work orders.
+                      </p>
+                    )}
+                    <BomLineForm productId={product.id} components={otherProducts} />
+                    {product.bomComponents.length > 0 && (
+                      <p className="mt-4 text-right font-mono text-sm tabular-nums text-slate-400 light:text-slate-500">
+                        Component cost per unit: <span className="font-semibold text-amber-400">${rolledUpCost.toFixed(2)}</span>
+                      </p>
+                    )}
+                    {product.usedInBoms.length > 0 && (
+                      <p className="mt-3 text-xs text-slate-500">
+                        Used in:{" "}
+                        {product.usedInBoms.map((line, i) => (
+                          <span key={line.id}>
+                            {i > 0 && ", "}
+                            <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                              {line.parent.name}
+                            </Link>
+                          </span>
+                        ))}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Sales history</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {salesHistory.length === 0 ? (
+                  <p className="text-sm text-slate-500">No sales yet.</p>
+                ) : (
+                  <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                    {salesHistory.map((item) => (
+                      <li key={item.id} className="flex items-center justify-between py-2 text-sm">
+                        <Link
+                          href={`/dashboard/sales/${item.order.id}`}
+                          className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                        >
+                          {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
+                        </Link>
+                        <span className="font-mono tabular-nums text-slate-500">
+                          {item.quantity} × ${item.unitPrice.toFixed(2)}
+                        </span>
                       </li>
                     ))}
                   </ul>
-                ) : (
-                  <p className="mb-4 text-sm text-slate-500">
-                    No components. Add some to make this product in house with work orders.
-                  </p>
-                )}
-                <BomLineForm productId={product.id} components={otherProducts} />
-                {product.bomComponents.length > 0 && (
-                  <p className="mt-4 text-right font-mono text-sm tabular-nums text-slate-400 light:text-slate-500">
-                    Component cost per unit: <span className="font-semibold text-amber-400">${rolledUpCost.toFixed(2)}</span>
-                  </p>
-                )}
-                {product.usedInBoms.length > 0 && (
-                  <p className="mt-3 text-xs text-slate-500">
-                    Used in:{" "}
-                    {product.usedInBoms.map((line, i) => (
-                      <span key={line.id}>
-                        {i > 0 && ", "}
-                        <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-                          {line.parent.name}
-                        </Link>
-                      </span>
-                    ))}
-                  </p>
                 )}
               </CardContent>
             </Card>
-          </>
-        )}
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Sales history</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {salesHistory.length === 0 ? (
-              <p className="text-sm text-slate-500">No sales yet.</p>
-            ) : (
-              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-                {salesHistory.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-2 text-sm">
-                    <Link
-                      href={`/dashboard/sales/${item.order.id}`}
-                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
-                    >
-                      {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
-                    </Link>
-                    <span className="font-mono tabular-nums text-slate-500">
-                      {item.quantity} × ${item.unitPrice.toFixed(2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Purchase history</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {purchaseHistory.length === 0 ? (
+                  <p className="text-sm text-slate-500">No purchases yet.</p>
+                ) : (
+                  <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                    {purchaseHistory.map((item) => (
+                      <li key={item.id} className="flex items-center justify-between py-2 text-sm">
+                        <Link
+                          href={`/dashboard/procurement/${item.purchaseOrder.id}`}
+                          className="text-slate-300 light:text-slate-600 hover:text-blue-400"
+                        >
+                          {item.purchaseOrder.supplier.name} · {item.purchaseOrder.createdAt.toLocaleDateString()}
+                        </Link>
+                        <span className="font-mono tabular-nums text-slate-500">
+                          {item.quantity} × ${item.unitCost.toFixed(2)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Purchase history</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {purchaseHistory.length === 0 ? (
-              <p className="text-sm text-slate-500">No purchases yet.</p>
-            ) : (
-              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-                {purchaseHistory.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-2 text-sm">
-                    <Link
-                      href={`/dashboard/procurement/${item.purchaseOrder.id}`}
-                      className="text-slate-300 light:text-slate-600 hover:text-blue-400"
-                    >
-                      {item.purchaseOrder.supplier.name} · {item.purchaseOrder.createdAt.toLocaleDateString()}
-                    </Link>
-                    <span className="font-mono tabular-nums text-slate-500">
-                      {item.quantity} × ${item.unitCost.toFixed(2)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-
-        <p className="mt-6">
-          <Link href="/dashboard/inventory" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to inventory
-          </Link>
-        </p>
       </div>
     </div>
   );

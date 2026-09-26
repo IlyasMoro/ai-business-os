@@ -15,6 +15,8 @@ import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail } from "@/lib/ac
 import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import { Download, Send } from "lucide-react";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
+import { BackButton } from "@/components/ui-dark/back-button";
+import { BranchTag } from "@/components/layout/branch-tag";
 
 const statusTone = {
   DRAFT: "slate",
@@ -37,6 +39,7 @@ export default async function InvoiceDetailPage({
   const invoice = await db.invoice.findUnique({
     where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
+      branch: { select: { name: true } },
       customer: true,
       lineItems: true,
     },
@@ -61,12 +64,14 @@ export default async function InvoiceDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/invoicing" label="Back to invoices" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
               <h1 className="font-mono text-2xl font-semibold text-slate-50 light:text-slate-900">{invoice.invoiceNumber}</h1>
               <StatusBadge status={invoice.status} tone={statusTone[invoice.status]} />
+              <BranchTag name={invoice.branch?.name} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">{invoice.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
@@ -139,11 +144,6 @@ export default async function InvoiceDetailPage({
           documents={documents}
         />
 
-        <p className="mt-6">
-          <Link href="/dashboard/invoicing" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to invoices
-          </Link>
-        </p>
       </div>
     </div>
   );

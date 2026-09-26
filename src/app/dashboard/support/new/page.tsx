@@ -2,6 +2,7 @@ import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { TicketForm } from "@/components/support/ticket-form";
 import { createTicket } from "@/lib/actions/support";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 export default async function NewTicketPage() {
   const session = await verifySession();
@@ -21,14 +22,17 @@ export default async function NewTicketPage() {
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New ticket</h1>
-      <div className="mt-6">
-        <TicketForm
-          action={createTicket}
-          customers={customers}
-          employees={employees}
-          submitLabel="Create ticket"
-        />
+      <div className="mx-auto max-w-3xl">
+        <BackButton href="/dashboard/support" label="Back to support" />
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New ticket</h1>
+        <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+          <TicketForm
+            action={createTicket}
+            customers={customers}
+            employees={employees}
+            submitLabel="Create ticket"
+          />
+        </div>
       </div>
     </div>
   );

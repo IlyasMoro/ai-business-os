@@ -102,7 +102,7 @@ export default async function ProjectsPage({
           <DonutChart
             title="Projects by status"
             centerValue={String(totalCount)}
-            centerLabel="total"
+            centerLabel="projects"
             slices={[
               { label: "Active", value: statusMap.get("ACTIVE") ?? 0, color: statusColor.ACTIVE },
               { label: "Completed", value: statusMap.get("COMPLETED") ?? 0, color: statusColor.COMPLETED },

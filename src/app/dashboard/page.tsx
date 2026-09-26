@@ -48,7 +48,9 @@ function runningTotals(monthlyCounts: number[], startingBase: number): number[] 
  * meaningless (division by zero) rather than actually informative. */
 function pctChange(current: number, previous: number): number | null {
   if (previous === 0) return current === 0 ? 0 : null;
-  return ((current - previous) / previous) * 100;
+  // Divide by the size of last period's figure, so going from a loss to a
+  // profit reads as up, not down.
+  return ((current - previous) / Math.abs(previous)) * 100;
 }
 
 const AGENDA_ICON = {
@@ -195,7 +197,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
   const completedCount = projectStatusMap.get("COMPLETED") ?? 0;
   const onHoldCount = projectStatusMap.get("ON_HOLD") ?? 0;
   const totalProjects = activeCount + completedCount + onHoldCount;
-  const completionRatio = totalProjects > 0 ? (completedCount / totalProjects) * 100 : 0;
+  const completionRatio = totalProjects > 0 ? (completedCount / totalProjects) * 100 : null;
 
   const snapshot = { customerCount, openOrderCount, lowStockCount, outstandingInvoiceCount, openTicketCount, activeProjectCount: activeCount };
 
@@ -280,14 +282,14 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
   const taskStatusMap = new Map(taskStatusGroups.map((g) => [g.status, g._count._all]));
   const totalActiveProjectTasks = taskStatusGroups.reduce((s, g) => s + g._count._all, 0);
   const doneTaskCount = taskStatusMap.get("DONE") ?? 0;
-  const avgTaskCompletion = totalActiveProjectTasks > 0 ? (doneTaskCount / totalActiveProjectTasks) * 100 : 0;
+  const avgTaskCompletion = totalActiveProjectTasks > 0 ? (doneTaskCount / totalActiveProjectTasks) * 100 : null;
 
   const invoiceStatusMap = new Map(invoiceStatusGroups.map((g) => [g.status, g._count._all]));
   const paidCount = invoiceStatusMap.get("PAID") ?? 0;
   const sentCount = invoiceStatusMap.get("SENT") ?? 0;
   const overdueCount = invoiceStatusMap.get("OVERDUE") ?? 0;
   const collectibleTotal = paidCount + sentCount + overdueCount;
-  const collectionRate = collectibleTotal > 0 ? (paidCount / collectibleTotal) * 100 : 100;
+  const collectionRate = collectibleTotal > 0 ? (paidCount / collectibleTotal) * 100 : null;
 
   const customerStatusMap = new Map(customerStatusGroups.map((g) => [g.status, g._count._all]));
   const customerStatusRows = (["LEAD", "ACTIVE", "INACTIVE"] as const).map((status) => ({
@@ -416,9 +418,24 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
-          <RingGauge label="Project completion" pct={completionRatio} goodIsHigh />
-          <RingGauge label="Avg. task progress" pct={avgTaskCompletion} goodIsHigh />
-          <RingGauge label="Invoice collection rate" pct={collectionRate} goodIsHigh />
+          <RingGauge
+            label="Project completion"
+            pct={completionRatio}
+            detail={`${completedCount} of ${totalProjects} completed`}
+            emptyText="No projects yet"
+          />
+          <RingGauge
+            label="Task progress"
+            pct={avgTaskCompletion}
+            detail={`${doneTaskCount} of ${totalActiveProjectTasks} tasks done`}
+            emptyText="No tasks in active projects"
+          />
+          <RingGauge
+            label="Invoice collection rate"
+            pct={collectionRate}
+            detail={`${paidCount} of ${collectibleTotal} invoices paid`}
+            emptyText="No invoices sent yet"
+          />
         </div>
       </div>
 

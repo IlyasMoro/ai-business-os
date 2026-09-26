@@ -29,6 +29,18 @@ export function GroupedBarChart({
 
   const max = Math.max(1, ...data.flatMap((d) => [d.a, d.b]));
 
+  // Nothing to compare yet: one line instead of a row of empty columns.
+  if (data.every((d) => d.a === 0 && d.b === 0)) {
+    return (
+      <div
+        className="flex items-center justify-center rounded-xl border border-dashed border-white/[0.08] text-xs text-slate-500 light:border-slate-300"
+        style={{ height: Math.min(height, 96) }}
+      >
+        No {aLabel.toLowerCase()} or {bLabel.toLowerCase()} recorded for this period yet.
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-3 flex items-center gap-4 text-xs text-slate-400 light:text-slate-500">

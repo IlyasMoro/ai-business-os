@@ -5,12 +5,13 @@ import { branchWhere } from "@/lib/branches";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
-import { Sparkline } from "@/components/dash-viz/sparkline";
+import { TrendChart } from "@/components/dash-viz/trend-chart";
+import { ChangeBadge } from "@/components/dash-viz/change-badge";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, ShoppingCart } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
@@ -78,6 +79,11 @@ export default async function SalesPage({
       .reduce((s, o) => s + o.totalAmount, 0);
   });
 
+  const trendPoints = monthlyValueTrend.map((value, i) => {
+    const month = subMonths(new Date(), 5 - i);
+    return { label: format(month, "MMM"), longLabel: format(month, "MMMM yyyy"), value };
+  });
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -116,15 +122,20 @@ export default async function SalesPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
+        <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total order value</p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-400">
+          <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
-          {monthlyValueTrend.some((v) => v > 0) && (
-            <div className="mt-3">
-              <Sparkline data={monthlyValueTrend} color={VIZ.emerald} width={180} height={32} />
+          <div className="mt-2">
+            <ChangeBadge values={monthlyValueTrend} period="last month" />
+          </div>
+          {monthlyValueTrend.some((v) => v > 0) ? (
+            <div className="mt-4 flex-1">
+              <TrendChart data={trendPoints} color={VIZ.emerald} currency title="Order value by month, last 6 months" />
             </div>
+          ) : (
+            <p className="mt-4 text-sm text-slate-500">No activity in the last 6 months yet.</p>
           )}
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-2 glass">

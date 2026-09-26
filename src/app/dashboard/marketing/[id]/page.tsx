@@ -8,6 +8,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { CampaignStatusForm } from "@/components/marketing/campaign-status-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteCampaign } from "@/lib/actions/marketing";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   DRAFT: "slate",
@@ -41,7 +42,8 @@ export default async function CampaignDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/marketing" label="Back to campaigns" />
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -132,11 +134,6 @@ export default async function CampaignDetailPage({
           documents={documents}
         />
 
-        <p className="mt-6">
-          <Link href="/dashboard/marketing" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to campaigns
-          </Link>
-        </p>
       </div>
     </div>
   );

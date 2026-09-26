@@ -29,7 +29,7 @@ export function ProjectForm({
   const [state, formAction, pending] = useActionState(action, undefined);
 
   return (
-    <form action={formAction} className="max-w-xl space-y-4">
+    <form action={formAction} className="space-y-4">
       <div>
         <Label htmlFor="name">Name</Label>
         <Input id="name" name="name" defaultValue={defaultValues?.name} required />

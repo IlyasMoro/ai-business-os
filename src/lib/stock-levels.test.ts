@@ -5,7 +5,8 @@ import {
   findBranchShortfalls,
   isLowAtBranch,
   lowStockRows,
-  reorderPlanByBranch,
+  planRestock,
+  spareQuantity,
   type BranchStockRow,
 } from "@/lib/stock-levels";
 
@@ -52,23 +53,6 @@ describe("lowStockRows", () => {
   });
 });
 
-describe("reorderPlanByBranch", () => {
-  it("raises one plan per short branch and leaves healthy branches out", () => {
-    const plan = reorderPlanByBranch([
-      row({ branchId: "main", productId: "p1", quantity: 2 }),
-      row({ branchId: "main", productId: "p2", quantity: 1, productReorderLevel: 3 }),
-      row({ branchId: "north", productId: "p1", quantity: 40 }),
-      row({ branchId: "south", productId: "p1", quantity: 0, reorderLevel: 10 }),
-    ]);
-    expect([...plan.keys()].sort()).toEqual(["main", "south"]);
-    expect(plan.get("main")).toEqual([
-      { productId: "p1", quantity: 8 },
-      { productId: "p2", quantity: 5 },
-    ]);
-    expect(plan.get("south")).toEqual([{ productId: "p1", quantity: 20 }]);
-  });
-});
-
 describe("findBranchShortfalls", () => {
   it("passes when the branch covers the order on its own", () => {
     expect(
@@ -102,5 +86,55 @@ describe("describeShortfalls", () => {
         "Main branch"
       )
     ).toBe("Widget (2 at Main branch, 10 more at other branches, 5 requested), Gadget (0 at Main branch, 1 requested)");
+  });
+});
+
+describe("spareQuantity", () => {
+  it("is what sits above twice the reorder level", () => {
+    expect(spareQuantity(row({ quantity: 30 }))).toBe(20);
+    expect(spareQuantity(row({ quantity: 8 }))).toBe(0);
+    expect(spareQuantity(row({ quantity: 30, reorderLevel: 12 }))).toBe(6);
+  });
+});
+
+describe("planRestock", () => {
+  it("covers a low branch from another branch's spare stock instead of buying", () => {
+    const plan = planRestock([
+      row({ branchId: "north", branchName: "North", quantity: 2 }),
+      row({ branchId: "main", quantity: 40 }),
+    ]);
+    // North needs 8 (twice 5, minus 2); Main can spare 30.
+    expect(plan.transfers).toEqual([{ fromBranchId: "main", toBranchId: "north", lines: [{ productId: "p1", quantity: 8 }] }]);
+    expect(plan.purchases.size).toBe(0);
+  });
+
+  it("buys only what the spare stock can't cover", () => {
+    const plan = planRestock([
+      row({ branchId: "north", quantity: 0, reorderLevel: 10 }),
+      row({ branchId: "main", quantity: 16 }),
+    ]);
+    // North needs 20; Main keeps 10 and can spare 6.
+    expect(plan.transfers[0].lines).toEqual([{ productId: "p1", quantity: 6 }]);
+    expect(plan.purchases.get("north")).toEqual([{ productId: "p1", quantity: 14 }]);
+  });
+
+  it("never lets two low branches draw the same spare units twice", () => {
+    const plan = planRestock([
+      row({ branchId: "a", quantity: 0 }),
+      row({ branchId: "b", quantity: 1 }),
+      row({ branchId: "main", quantity: 22 }),
+    ]);
+    const moved = plan.transfers.flatMap((t) => t.lines).reduce((s, l) => s + l.quantity, 0);
+    expect(moved).toBe(12); // Main's spare: 22 minus twice 5
+    const bought = [...plan.purchases.values()].flat().reduce((s, l) => s + l.quantity, 0);
+    expect(moved + bought).toBe(10 + 9); // a needs 10, b needs 9
+  });
+
+  it("buys when no branch has spare, and skips stock already on its way", () => {
+    const rows = [row({ branchId: "north", quantity: 1 }), row({ branchId: "main", quantity: 9 })];
+    expect(planRestock(rows).purchases.get("north")).toEqual([{ productId: "p1", quantity: 9 }]);
+    const skipped = planRestock(rows, new Set(["north:p1"]));
+    expect(skipped.transfers).toEqual([]);
+    expect(skipped.purchases.size).toBe(0);
   });
 });

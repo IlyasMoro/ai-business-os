@@ -53,7 +53,8 @@ export function KpiCard({
           <Icon className="h-5 w-5" />
         </span>
       </div>
-      {trend.length > 1 && (
+      {/* No line for a series that is all zero: it would only draw the floor. */}
+      {trend.length > 1 && trend.some((v) => v !== 0) && (
         <div className="mt-4">
           <Sparkline data={trend} color={color} width={200} height={36} />
         </div>
@@ -67,6 +68,10 @@ function ChangeBadge({ change }: { change: KpiChange }) {
 
   if (pct === null) {
     return <p className="mt-1 text-xs text-slate-500">New this period</p>;
+  }
+  // Rounded to 0%: nothing moved, so no arrow and no good or bad colour.
+  if (Math.round(pct) === 0) {
+    return <p className="mt-1 text-xs text-slate-500">No change {label}</p>;
   }
 
   const isUp = pct >= 0;

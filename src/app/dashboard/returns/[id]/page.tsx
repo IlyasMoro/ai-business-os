@@ -11,6 +11,7 @@ import { ReturnStatusActions } from "@/components/returns/return-status-actions"
 import { deleteReturn, removeReturnItem } from "@/lib/actions/returns";
 import { getReturnPolicy } from "@/lib/returns-policy";
 import { computeRefund, isReturnEditable, returnableQuantity, shouldRestock } from "@/lib/returns-math";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   REQUESTED: "yellow",
@@ -68,7 +69,8 @@ export default async function ReturnDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/returns" label="Back to returns" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -160,11 +162,6 @@ export default async function ReturnDetailPage({
           </CardContent>
         </Card>
 
-        <p className="mt-6">
-          <Link href="/dashboard/returns" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to returns
-          </Link>
-        </p>
       </div>
     </div>
   );

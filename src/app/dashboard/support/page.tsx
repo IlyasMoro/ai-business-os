@@ -129,17 +129,21 @@ export default async function SupportPage({
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Tickets by priority</h2>
-          <ul className="mt-4 space-y-4">
-            {priorityOrder.map((priority) => (
-              <AllocationBar
-                key={priority}
-                label={priority.charAt(0) + priority.slice(1).toLowerCase()}
-                count={priorityMap.get(priority) ?? 0}
-                pct={((priorityMap.get(priority) ?? 0) / totalPriority) * 100}
-                color={priorityColor[priority]}
-              />
-            ))}
-          </ul>
+          {priorityGroups.every((g) => g._count._all === 0) ? (
+            <p className="mt-4 text-xs text-slate-500">No tickets yet. Priorities show here once tickets come in.</p>
+          ) : (
+            <ul className="mt-4 space-y-4">
+              {priorityOrder.map((priority) => (
+                <AllocationBar
+                  key={priority}
+                  label={priority.charAt(0) + priority.slice(1).toLowerCase()}
+                  count={priorityMap.get(priority) ?? 0}
+                  pct={((priorityMap.get(priority) ?? 0) / totalPriority) * 100}
+                  color={priorityColor[priority]}
+                />
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 

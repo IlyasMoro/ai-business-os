@@ -12,6 +12,7 @@ import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteCustomer, deleteContact } from "@/lib/actions/crm";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { Pencil } from "lucide-react";
+import { BackButton } from "@/components/ui-dark/back-button";
 
 const statusTone = {
   LEAD: "yellow",
@@ -86,7 +87,8 @@ export default async function CustomerDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="max-w-3xl">
+      <div className="mx-auto max-w-6xl">
+        <BackButton href="/dashboard/crm" label="Back to customers" />
         <ErrorBanner code={error} />
         <div className="flex items-start justify-between">
           <div>
@@ -265,11 +267,6 @@ export default async function CustomerDetailPage({
           documents={documents}
         />
 
-        <p className="mt-6">
-          <Link href="/dashboard/crm" className="text-sm text-slate-500 hover:text-slate-300 light:text-slate-600">
-            ← Back to customers
-          </Link>
-        </p>
       </div>
     </div>
   );
