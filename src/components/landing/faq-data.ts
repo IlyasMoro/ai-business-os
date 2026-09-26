@@ -4,6 +4,8 @@
    mirror how subscriptions work in lib/subscription-access.ts. Public copy
    uses no hyphens. */
 
+import { EXTRA_USER_PRICE, MAX_SCALE_USERS } from "@/lib/plans";
+
 export type FaqItem = { q: string; a: string };
 export type FaqGroup = { title: string; items: FaqItem[] };
 
@@ -18,7 +20,15 @@ export const PRICING_FAQ: FaqItem[] = [
   },
   {
     q: "Is it priced per user?",
-    a: "No. One flat $49 a month covers your whole company, however many people you invite.",
+    a: `Not like most apps. Each plan includes users: up to 10 on Starter, up to 50 on Growth and up to ${MAX_SCALE_USERS} on Scale. Need more? Add extra users on any plan for $${EXTRA_USER_PRICE} each a month, or move up a plan. Larger companies can ask us about an Enterprise plan.`,
+  },
+  {
+    q: "Which plan should I choose?",
+    a: "Starter suits a business with one location. Growth adds up to 3 branches, stock transfers, planning and automations, and is the best fit for most growing businesses. Scale adds unlimited branches and EDI for larger distributors.",
+  },
+  {
+    q: "Is there a discount for paying yearly?",
+    a: "Yes. Paying yearly gives you 2 months free on every plan.",
   },
   {
     q: "Can I cancel anytime?",
@@ -43,10 +53,10 @@ export const FAQ_GROUPS: FaqGroup[] = [
         a: "Yes. Switch off modules like Returns, Planning or EDI in settings and they leave the menu. Turn them back on whenever you like.",
       },
       {
-        // Mirrors the Branches, Transfers and Profit by branch features;
-        // no plan limits the number of branches.
+        // Mirrors the Branches, Transfers and Profit by branch features and
+        // the branch limits in lib/plans.ts.
         q: "Can I use AIBOS with several branches?",
-        a: "Yes, and one plan covers your whole business however many branches you run. Each branch keeps its own stock, orders and invoices, you can move stock between branches, staff can be limited to their own branch, and Reports compares profit per branch side by side.",
+        a: "Yes. Growth covers up to 3 branches and Scale any number. Each branch keeps its own stock, orders and invoices, you can move stock between branches, staff can be limited to their own branch, and Reports compares profit per branch side by side.",
       },
     ],
   },

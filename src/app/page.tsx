@@ -10,6 +10,7 @@ import { FeatureBento } from "@/components/landing/feature-bento";
 import { FaqSection } from "@/components/landing/faq-section";
 import { ArrowRight } from "lucide-react";
 import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
+import { STARTING_PRICE } from "@/lib/plans";
 
 const CTA_CLASS =
   "border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
@@ -54,7 +55,7 @@ export default function Home() {
 
           <div className="animate-fade-up animate-fade-up-5 mx-auto mt-16 flex w-full max-w-4xl items-start justify-between border-t border-white/10 pt-12">
             {[
-              ["$49/mo", "Flat pricing"],
+              [`From $${STARTING_PRICE}`, "Per month"],
               ["14 days", "Free trial"],
               ["24/7", "Always on"],
             ].map(([value, label]) => (

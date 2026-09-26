@@ -1,5 +1,6 @@
 import { Check, Minus } from "lucide-react";
 import { navGroups } from "@/components/layout/nav-config";
+import { EXTRA_USER_PRICE, MODULE_MIN_PLAN, STARTING_PRICE } from "@/lib/plans";
 
 /* Pricing comparison: AIBOS against running a separate app per department.
    Department rows come from the sidebar config, so the table always lists
@@ -20,7 +21,7 @@ const ACROSS_THE_BUSINESS = [
   { feature: "Customers, orders and invoices shared everywhere", others: "Copied or synced between apps" },
   { feature: "AI that reads across every department", others: "Limited to each app's own data" },
   { feature: "Every AI action waits for your approval", others: "Varies by app" },
-  { feature: "Unlimited users with owner, admin and employee roles", others: "Usually charged per user" },
+  { feature: `Users included in every plan, extra users $${EXTRA_USER_PRICE} a month`, others: "Usually charged for every user" },
   { feature: "Export any list or download a full backup", others: "Varies by app" },
 ];
 
@@ -67,7 +68,7 @@ export function PricingCompare() {
             </th>
             <th scope="col" className="w-24 border-x border-blue-400/20 bg-blue-500/[0.1] px-4 py-5 sm:w-[28%] sm:px-5">
               <span className="block text-base font-semibold text-white">AIBOS</span>
-              <span className="mt-0.5 hidden text-xs font-normal text-blue-200/80 sm:block">$49 a month, everything included</span>
+              <span className="mt-0.5 hidden text-xs font-normal text-blue-200/80 sm:block">From ${STARTING_PRICE} a month, 10 users included</span>
             </th>
             <th scope="col" className="hidden px-5 py-5 sm:table-cell">
               <span className="block text-base font-semibold text-slate-300">Separate apps</span>
@@ -90,7 +91,18 @@ export function PricingCompare() {
                   {dept.label}
                 </span>
                 <span className="mt-1 block pl-[1.625rem] text-xs leading-relaxed text-slate-400">
-                  {dept.modules.join(" · ")}
+                  {dept.modules.map((module, i) => (
+                    <span key={module}>
+                      {i > 0 && " · "}
+                      {module}
+                      {/* Modules that need more than Starter say which plan. */}
+                      {MODULE_MIN_PLAN[module] && (
+                        <span className="ml-1 rounded bg-blue-500/15 px-1 py-px text-[10px] font-semibold text-blue-200">
+                          {MODULE_MIN_PLAN[module]}
+                        </span>
+                      )}
+                    </span>
+                  ))}
                 </span>
                 <span className="block pl-[1.625rem]">
                   <OthersNote>Usually a separate app</OthersNote>

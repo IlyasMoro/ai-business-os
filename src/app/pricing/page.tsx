@@ -1,11 +1,11 @@
-import { LinkButton } from "@/components/ui/button";
 import { SiteHeader } from "@/components/landing/site-header";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { Reveal } from "@/components/landing/reveal";
 import Link from "next/link";
 import { ArrowRight, Check } from "lucide-react";
 import { FaqRows } from "@/components/landing/faq-section";
-import { PricingCompare, PLAN_DEPARTMENTS } from "@/components/landing/pricing-compare";
+import { PricingCompare } from "@/components/landing/pricing-compare";
+import { PricingPlans } from "@/components/landing/pricing-plans";
 import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 import { PRICING_FAQ } from "@/components/landing/faq-data";
 
@@ -16,7 +16,7 @@ export const metadata = {
 // The promises that decide a purchase, strongest first.
 const INCLUDED = [
   "AI Copilot that asks before it acts",
-  "Unlimited users, with owner, admin and employee roles",
+  "Owner, admin and employee roles for every user",
   "Email for invoices, reminders and notifications",
   "Export your data anytime, cancel anytime",
 ];
@@ -35,75 +35,52 @@ export default function PricingPage() {
       <SiteHeader />
 
       <main className="relative">
-        <section className="mx-auto max-w-3xl px-6 pt-20 pb-16 text-center sm:pt-28">
+        <section className="mx-auto max-w-3xl px-6 pt-20 pb-12 text-center sm:pt-28">
           <h1 className="mx-auto max-w-2xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
-            One plan. Every module. No surprises.
+            Simple plans that grow with you. No surprises.
           </h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-slate-300">
-            A single flat price for your whole company, whether it&apos;s just you or your entire
-            team.
+          <p className="mx-auto mt-6 max-w-xl text-balance text-lg leading-relaxed text-slate-300">
+            Every plan includes a team of users, and adding more is simple. Pick a plan by how many
+            branches you run and how big your team is.
           </p>
         </section>
 
-        {/* One compact card, read top to bottom: price, button, promises, then
-            a link down to the full comparison table. */}
-        <section className="mx-auto max-w-md px-6 pb-24">
-          <Reveal className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl sm:p-10">
-            <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-56 w-80 -translate-x-1/2 rounded-full bg-blue-600/20 blur-[90px]" />
-
-            <div className="relative text-center">
-              <p className="text-sm font-semibold text-slate-300">AIBOS</p>
-              <p className="mt-3 flex items-baseline justify-center gap-1.5">
-                <span className="text-6xl font-semibold tracking-tight">$49</span>
-                <span className="text-slate-400">/ month</span>
-              </p>
-              <p className="mt-2 text-sm text-slate-400">One flat price for your whole company</p>
-
-              <LinkButton
-                href="/register"
-                variant="glass"
-                size="lg"
-                className="mt-8 w-full rounded-full border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl"
-              >
-                Start your free trial
-              </LinkButton>
-              <p className="mt-3 text-xs text-slate-400">14 days free · No credit card needed</p>
-            </div>
-
-            <div className="relative mt-8 border-t border-white/10 pt-8">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Everything included</p>
-              <p className="mt-2 text-base font-semibold text-slate-100">
-                All {PLAN_DEPARTMENTS.length} departments, every module, one AI.
-              </p>
-              <ul className="mt-5 space-y-3.5">
-                {INCLUDED.map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm font-medium text-slate-200">
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/15">
-                      <Check className="h-3 w-3 text-emerald-300" />
-                    </span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <a
-                href="#compare"
-                className="group mt-7 inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:text-blue-300"
-              >
-                See everything that&apos;s included
-                <ArrowRight className="h-3.5 w-3.5 rotate-90 transition-transform group-hover:translate-y-0.5" />
-              </a>
-            </div>
+        <section className="mx-auto max-w-6xl px-6 pb-16">
+          <Reveal>
+            <PricingPlans />
           </Reveal>
+        </section>
+
+        {/* The promises every plan keeps, then a link down to the full comparison. */}
+        <section className="mx-auto max-w-4xl px-6 pb-24 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">On every plan</p>
+          <ul className="mt-5 flex flex-wrap justify-center gap-x-8 gap-y-3">
+            {INCLUDED.map((item) => (
+              <li key={item} className="flex items-center gap-2.5 text-sm font-medium text-slate-200">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-400/15">
+                  <Check className="h-3 w-3 text-emerald-300" />
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+          <a
+            href="#compare"
+            className="group mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-blue-400 hover:text-blue-300"
+          >
+            See everything that&apos;s included
+            <ArrowRight className="h-3.5 w-3.5 rotate-90 transition-transform group-hover:translate-y-0.5" />
+          </a>
         </section>
 
         <section id="compare" className="mx-auto max-w-5xl scroll-mt-24 px-6 pb-24 sm:pb-32">
           <Reveal className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-blue-400">Compare</p>
             <h2 className="font-display mt-3 text-2xl font-semibold tracking-tight sm:text-3xl">
-              One plan instead of a stack of apps
+              One system instead of a stack of apps
             </h2>
             <p className="mt-3 text-slate-400">
-              Everything a growing business runs on, in one place and priced once.
+              Everything a growing business runs on, in one place. Modules marked Growth or Scale come with those plans.
             </p>
           </Reveal>
           <Reveal className="mt-10">
