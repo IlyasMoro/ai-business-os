@@ -42,6 +42,12 @@ export const FAQ_GROUPS: FaqGroup[] = [
         q: "Can I turn off modules I don't need?",
         a: "Yes. Switch off modules like Returns, Planning or EDI in settings and they leave the menu. Turn them back on whenever you like.",
       },
+      {
+        // Mirrors the Branches, Transfers and Profit by branch features;
+        // no plan limits the number of branches.
+        q: "Can I use AIBOS with several branches?",
+        a: "Yes, and one plan covers your whole business however many branches you run. Each branch keeps its own stock, orders and invoices, you can move stock between branches, staff can be limited to their own branch, and Reports compares profit per branch side by side.",
+      },
     ],
   },
   {
