@@ -214,3 +214,51 @@ test("a transfer moves stock and its lots from one branch to another", async ({ 
   await page.getByRole("button", { name: "Send" }).click();
   await expect(page.getByText(`Not enough stock to send: ${productName} (4 at ${branchName}, 6 more at other branches, 5 requested).`)).toBeVisible({ timeout: 45000 });
 });
+
+test("money is booked per branch and Reports compares branch profit", async ({ page }) => {
+  const suffix = randomSuffix();
+  const code = "W" + suffix.slice(0, 4).toUpperCase();
+  const branchName = "West " + code;
+  const incomeCategory = "West sales " + suffix;
+  const expenseCategory = "West rent " + suffix;
+
+  await page.goto("/dashboard/branches");
+  const createForm = page.locator('form:has(button:has-text("Create branch"))');
+  await createForm.locator('input[name="code"]').fill(code);
+  await createForm.locator('input[name="name"]').fill(branchName);
+  await createForm.getByRole("button", { name: "Create branch" }).click();
+  await page.waitForURL(/saved=1/);
+
+  for (const [type, amount, category] of [
+    ["INCOME", "500", incomeCategory],
+    ["EXPENSE", "200", expenseCategory],
+  ] as const) {
+    await page.goto("/dashboard/accounting/new");
+    await page.selectOption('select[name="type"]', type);
+    await page.fill('input[name="amount"]', amount);
+    await page.fill('input[name="category"]', category);
+    await page.selectOption('select[name="branchId"]', { label: `${branchName} (${code})` });
+    await page.getByRole("button", { name: "Create transaction" }).click();
+    await page.waitForURL(/\/dashboard\/accounting\/(?!new$)[^/]+$/, { timeout: 45000 });
+    await expect(page.getByText(branchName)).toBeVisible();
+  }
+
+  // Side by side on Reports, and in the CSV export.
+  await page.goto("/dashboard/reports");
+  const westRow = page.getByRole("row", { name: new RegExp(branchName) });
+  await expect(westRow).toContainText("60.0%");
+  const csv = await (await page.request.get("/api/export/branch-profit")).text();
+  expect(csv).toContain(`${branchName},500.00,200.00,300.00,60.0`);
+
+  // With West in view, Accounting and Reports only show West's money.
+  await switchBranch(page, branchName);
+  await page.goto("/dashboard/accounting");
+  await expect(page.getByText(incomeCategory).first()).toBeVisible();
+  await expect(page.getByText(expenseCategory).first()).toBeVisible();
+  await page.goto("/dashboard/reports");
+  await expect(page.getByText(`over the last 6 months at ${branchName}`)).toBeVisible();
+  await expect(page.getByText("Net (6 months)").locator("xpath=following-sibling::p[1]")).toContainText("$300");
+  const pdf = await page.request.get("/api/reports/pdf");
+  expect(pdf.status()).toBe(200);
+  expect(pdf.headers()["content-type"]).toBe("application/pdf");
+});

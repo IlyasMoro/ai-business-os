@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { resolveNewRecordBranch } from "@/lib/branches";
+import { getBranchContext, resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateAssistantReply } from "@/lib/ai";
@@ -55,12 +55,14 @@ export async function sendChatMessage(
     select: { role: true, content: true },
   });
 
+  // The Copilot sees what the user sees: the branch in the top bar switcher.
+  const { viewBranch } = await getBranchContext();
   const [company, snapshot] = await Promise.all([
     db.company.findUnique({
       where: { id: session.companyId },
       select: { name: true },
     }),
-    getBusinessSnapshot(session.companyId),
+    getBusinessSnapshot(session.companyId, viewBranch?.id ?? null),
   ]);
 
   // Created up front (with placeholder content) so any actions the assistant
@@ -87,7 +89,8 @@ export async function sendChatMessage(
         history.map((message) => ({
           role: message.role === "USER" ? "user" : "assistant",
           content: message.content,
-        }))
+        })),
+        viewBranch ? { id: viewBranch.id, name: viewBranch.name } : null
       )) || "I couldn't generate a response. Please try again.";
   } catch {
     finalContent = "Sorry, I ran into an error reaching the assistant. Please try again.";

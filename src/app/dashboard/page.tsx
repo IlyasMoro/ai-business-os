@@ -147,11 +147,11 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
     db.employee.count({ where: { companyId, ...inBranch, status: "ACTIVE" } }),
     db.campaign.count({ where: { companyId, status: "ACTIVE" } }),
     db.transaction.findMany({
-      where: { companyId, type: "INCOME", date: { gte: sixMonthsAgo } },
+      where: { companyId, ...inBranch, type: "INCOME", date: { gte: sixMonthsAgo } },
       select: { amount: true, date: true },
     }),
     db.transaction.findMany({
-      where: { companyId, type: "EXPENSE", date: { gte: sixMonthsAgo } },
+      where: { companyId, ...inBranch, type: "EXPENSE", date: { gte: sixMonthsAgo } },
       select: { amount: true, date: true },
     }),
     db.project.findMany({

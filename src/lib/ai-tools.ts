@@ -27,7 +27,9 @@ export {
 
 // ---------- Read-tool executors ----------
 
-export async function runReadTool(companyId: string, name: string, rawArgs: unknown): Promise<unknown> {
+/** branchId: the branch in the user's switcher; orders, invoices and income follow it. */
+export async function runReadTool(companyId: string, name: string, rawArgs: unknown, branchId: string | null = null): Promise<unknown> {
+  const inBranch = branchId ? { branchId } : {};
   switch (name) {
     case "find_customer": {
       const parsed = FindCustomerArgs.safeParse(rawArgs);
@@ -63,7 +65,7 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
     }
     case "list_overdue_invoices": {
       const invoices = await db.invoice.findMany({
-        where: { companyId, status: { in: ["SENT", "OVERDUE"] } },
+        where: { companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } },
         select: {
           id: true,
           invoiceNumber: true,
@@ -102,7 +104,7 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
       const end = endOfMonth(subMonths(new Date(), monthsAgo));
 
       const orders = await db.order.findMany({
-        where: { companyId, createdAt: { gte: start, lte: end } },
+        where: { companyId, ...inBranch, createdAt: { gte: start, lte: end } },
         select: { totalAmount: true, customer: { select: { name: true } } },
       });
       const totalValue = orders.reduce((s, o) => s + o.totalAmount, 0);
@@ -121,7 +123,7 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
       };
     }
     case "forecast_next_month_revenue": {
-      return forecastNextMonthRevenue(companyId);
+      return forecastNextMonthRevenue(companyId, branchId);
     }
     default:
       return { error: `Unknown read tool: ${name}` };
@@ -130,7 +132,7 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
 
 /** Trailing 3-month average of recorded income — a rough trend estimate, not
  * a guarantee. Shared by the AI Copilot's forecast tool and the Reports page. */
-export async function forecastNextMonthRevenue(companyId: string) {
+export async function forecastNextMonthRevenue(companyId: string, branchId: string | null = null) {
   const months = [2, 1, 0].map((n) => ({
     start: startOfMonth(subMonths(new Date(), n)),
     end: endOfMonth(subMonths(new Date(), n)),
@@ -138,7 +140,7 @@ export async function forecastNextMonthRevenue(companyId: string) {
   const totals = await Promise.all(
     months.map(async ({ start, end }) => {
       const income = await db.transaction.aggregate({
-        where: { companyId, type: "INCOME", date: { gte: start, lte: end } },
+        where: { companyId, type: "INCOME", date: { gte: start, lte: end }, ...(branchId ? { branchId } : {}) },
         _sum: { amount: true },
       });
       return income._sum.amount ?? 0;

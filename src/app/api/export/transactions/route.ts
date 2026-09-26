@@ -2,19 +2,20 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
+import { branchWhere } from "@/lib/branches";
 
 export async function GET() {
   const session = await requireRole(["OWNER", "ADMIN"]);
 
   const transactions = await db.transaction.findMany({
-    where: { companyId: session.companyId },
+    where: { companyId: session.companyId, ...(await branchWhere()) },
     orderBy: { date: "desc" },
-    select: { date: true, type: true, category: true, amount: true, description: true },
+    select: { date: true, type: true, category: true, amount: true, description: true, branch: { select: { name: true } } },
   });
 
   const csv = toCsv(
-    ["Date", "Type", "Category", "Amount", "Description"],
-    transactions.map((t) => [t.date, t.type, t.category, t.amount, t.description])
+    ["Date", "Type", "Category", "Amount", "Description", "Branch"],
+    transactions.map((t) => [t.date, t.type, t.category, t.amount, t.description, t.branch?.name ?? "Company wide"])
   );
 
   return new NextResponse(csv, {

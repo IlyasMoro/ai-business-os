@@ -4,11 +4,12 @@ import { dateInputDaysFromNow } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { loadCostObjectOptions } from "@/lib/controlling";
+import { moneyBranchPicker } from "@/lib/branches";
 
 export default async function NewTransactionPage() {
   const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const [existing, projects, costObjects] = await Promise.all([
+  const [existing, projects, costObjects, branches] = await Promise.all([
     db.transaction.findMany({
       where: { companyId: session.companyId },
       select: { category: true },
@@ -21,6 +22,7 @@ export default async function NewTransactionPage() {
       orderBy: { name: "asc" },
     }),
     loadCostObjectOptions(session.companyId),
+    moneyBranchPicker(),
   ]);
 
   return (
@@ -39,6 +41,7 @@ export default async function NewTransactionPage() {
           existingCategories={existing.map((t) => t.category)}
           projects={projects}
           costObjects={costObjects}
+          branches={branches}
           submitLabel="Create transaction"
         />
       </div>

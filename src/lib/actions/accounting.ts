@@ -10,6 +10,28 @@ import { checkRateLimit } from "@/lib/rate-limit";
 import { checkCostObject, getControllingSettings } from "@/lib/controlling";
 
 /** Cost object and budget check shared by create and update. */
+/**
+ * Branch for a manual entry: the one picked, else the cost center's
+ * branch, else company wide (null). `keepId` lets an entry keep a branch
+ * that has since been deactivated.
+ */
+async function transactionBranch(
+  companyId: string,
+  raw: FormDataEntryValue | null,
+  costCenterId: string | null,
+  keepId: string | null = null
+): Promise<string | null | "invalid"> {
+  const picked = typeof raw === "string" && raw ? raw : null;
+  if (picked) {
+    const branch = await db.branch.findUnique({ where: { id: picked, companyId }, select: { active: true } });
+    if (!branch || (!branch.active && picked !== keepId)) return "invalid";
+    return picked;
+  }
+  if (!costCenterId) return null;
+  const center = await db.costCenter.findUnique({ where: { id: costCenterId, companyId }, select: { branchId: true } });
+  return center?.branchId ?? null;
+}
+
 async function controlCost(
   companyId: string,
   data: { type: "INCOME" | "EXPENSE"; amount: number },
@@ -104,6 +126,8 @@ export async function createTransaction(
 
   const control = await controlCost(session.companyId, rest, parsedDate, formData.get("costObject"));
   if ("error" in control) return { message: control.error };
+  const branchId = await transactionBranch(session.companyId, formData.get("branchId"), control.costCenterId);
+  if (branchId === "invalid") return { message: "Choose an active branch, or company wide." };
 
   const transaction = await db.transaction.create({
     data: {
@@ -113,6 +137,7 @@ export async function createTransaction(
       projectId: projectId || undefined,
       costCenterId: control.costCenterId,
       internalOrderId: control.internalOrderId,
+      branchId,
       companyId: session.companyId,
     },
   });
@@ -162,6 +187,12 @@ export async function updateTransaction(
 
   const control = await controlCost(session.companyId, rest, parsedDate, formData.get("costObject"), transactionId);
   if ("error" in control) return { message: control.error };
+  const existing = await db.transaction.findUnique({
+    where: { id: transactionId, companyId: session.companyId },
+    select: { branchId: true },
+  });
+  const branchId = await transactionBranch(session.companyId, formData.get("branchId"), control.costCenterId, existing?.branchId);
+  if (branchId === "invalid") return { message: "Choose an active branch, or company wide." };
 
   await db.transaction.update({
     where: { id: transactionId, companyId: session.companyId },
@@ -172,6 +203,8 @@ export async function updateTransaction(
       projectId: projectId || null,
       costCenterId: control.costCenterId,
       internalOrderId: control.internalOrderId,
+      // Only touch the branch when the form offers the field (two or more branches).
+      ...(formData.has("branchId") ? { branchId } : {}),
     },
   });
 

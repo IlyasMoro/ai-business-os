@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { moneyBranchPicker } from "@/lib/branches";
+import { OptionalBranchSelect } from "@/components/layout/optional-branch-select";
 import { Badge } from "@/components/ui-dark/badge";
 import { Input, Label } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
@@ -18,6 +20,7 @@ export default async function CostCentersPage({
   const session = await requireRole(["OWNER", "ADMIN"]);
   const { fy, m, error } = await searchParams;
   const settings = await getControllingSettings(session.companyId);
+  const branchOptions = await moneyBranchPicker(null);
   const period = resolvePeriods(fy, m, settings.fiscalYearStartMonth);
   const [{ rows }, headcount] = await Promise.all([
     costCenterPlanActual(session.companyId, settings, period.periods),
@@ -103,6 +106,7 @@ export default async function CostCentersPage({
           <Label htmlFor="description">Description (optional)</Label>
           <Input id="description" name="description" maxLength={500} />
         </div>
+        {branchOptions && <OptionalBranchSelect {...branchOptions} emptyLabel="No branch (company wide)" label="Branch (optional)" />}
         <SubmitButton pendingText="Creating...">Create cost center</SubmitButton>
       </form>
     </div>

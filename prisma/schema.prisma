@@ -146,6 +146,7 @@ model Branch {
   stock          BranchStock[]
   lots           StockLot[]
   transfersOut   StockTransfer[] @relation("TransferFrom")
+  transactions   Transaction[]   @relation("TransactionBranch")
   transfersIn    StockTransfer[] @relation("TransferTo")
 
   @@unique([companyId, code])
@@ -646,10 +647,16 @@ model Transaction {
   internalOrderId String?
   internalOrder   InternalOrder? @relation(fields: [internalOrderId], references: [id], onDelete: SetNull)
 
+  // The branch this money belongs to, for profit per branch. Null means
+  // company wide (head office costs and the like).
+  branchId String?
+  branch   Branch? @relation("TransactionBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
   @@index([companyId])
   @@index([projectId])
   @@index([costCenterId])
   @@index([internalOrderId])
+  @@index([branchId])
 }
 
 // ---------- HR & Payroll ----------

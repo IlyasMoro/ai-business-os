@@ -19,6 +19,7 @@ export function TransactionForm({
   existingCategories = [],
   projects = [],
   costObjects = null,
+  branches = null,
   submitLabel = "Save transaction",
 }: {
   action: Action;
@@ -34,6 +35,8 @@ export function TransactionForm({
   existingCategories?: string[];
   projects?: { id: string; name: string }[];
   costObjects?: CostObjectOptions;
+  /** Shown once there is more than one branch. defaultId "" is company wide. */
+  branches?: { options: { id: string; name: string; code: string }[]; defaultId: string } | null;
   submitLabel?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
@@ -135,6 +138,21 @@ export function TransactionForm({
             ))}
           </Select>
           <FieldError messages={state?.errors?.projectId} />
+        </div>
+      )}
+
+      {branches && (
+        <div>
+          <Label htmlFor="branchId">Branch</Label>
+          <Select id="branchId" name="branchId" defaultValue={branches.defaultId}>
+            <option value="">Company wide</option>
+            {branches.options.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name} ({b.code})
+              </option>
+            ))}
+          </Select>
+          <p className="mt-1 text-xs text-slate-500">Company wide entries follow their cost center&apos;s branch, if it has one.</p>
         </div>
       )}
 

@@ -93,7 +93,7 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
 
   const current = await db.invoice.findUnique({
     where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { status: true, totalAmount: true },
+    select: { status: true, totalAmount: true, branchId: true },
   });
   if (!current) return;
 
@@ -121,6 +121,8 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
             amount: current.totalAmount,
             description: `Payment for invoice ${invoiceId}`,
             invoiceId,
+            // Income belongs to the branch that raised the invoice.
+            branchId: current.branchId,
           },
         });
       }

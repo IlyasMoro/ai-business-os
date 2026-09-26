@@ -1,5 +1,7 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { getBranchContext } from "@/lib/branches";
+import { getProfitByBranch, PROFIT_MONTHS } from "@/lib/branch-profit-data";
 import { formatCompactCurrency } from "@/lib/utils";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
@@ -52,6 +54,11 @@ export default async function ReportsPage() {
   const companyId = session.companyId;
 
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+  // Everything follows the top bar switcher, except the profit by branch
+  // table, which compares all branches side by side.
+  const { viewBranch, branches } = await getBranchContext();
+  const inBranch = viewBranch ? { branchId: viewBranch.id } : {};
+  const multiBranch = branches.filter((b) => b.active).length > 1;
 
   const [
     orderGroups,
@@ -62,18 +69,18 @@ export default async function ReportsPage() {
     recentAiActions,
     recentAuditLogs,
   ] = await Promise.all([
-    db.order.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
-    db.invoice.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
+    db.order.groupBy({ by: ["status"], where: { companyId, ...inBranch }, _count: { _all: true } }),
+    db.invoice.groupBy({ by: ["status"], where: { companyId, ...inBranch }, _count: { _all: true } }),
     db.transaction.findMany({
-      where: { companyId, date: { gte: sixMonthsAgo } },
+      where: { companyId, date: { gte: sixMonthsAgo }, ...inBranch },
       select: { type: true, amount: true, date: true },
     }),
     db.customer.findMany({
       where: { companyId },
-      select: { name: true, orders: { select: { totalAmount: true } } },
+      select: { name: true, orders: { where: inBranch, select: { totalAmount: true } } },
     }),
     db.invoice.findMany({
-      where: { companyId },
+      where: { companyId, ...inBranch },
       orderBy: { createdAt: "desc" },
       take: 8,
       select: { id: true, invoiceNumber: true, totalAmount: true, status: true, customer: { select: { name: true } } },
@@ -92,7 +99,10 @@ export default async function ReportsPage() {
     }),
   ]);
 
-  const forecast = await forecastNextMonthRevenue(companyId);
+  const [forecast, profit] = await Promise.all([
+    forecastNextMonthRevenue(companyId, viewBranch?.id ?? null),
+    multiBranch ? getProfitByBranch(companyId) : Promise.resolve(null),
+  ]);
 
   const orderCountByStatus = new Map(orderGroups.map((g) => [g.status, g._count._all]));
   const invoiceCountByStatus = new Map(invoiceGroups.map((g) => [g.status, g._count._all]));
@@ -129,7 +139,10 @@ export default async function ReportsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Reports</h1>
-          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">A snapshot of revenue, sales, and invoicing over the last 6 months.</p>
+          <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+            A snapshot of revenue, sales, and invoicing over the last 6 months
+            {viewBranch ? ` at ${viewBranch.name}` : ""}.
+          </p>
         </div>
         <a
           href="/api/reports/pdf"
@@ -171,6 +184,57 @@ export default async function ReportsPage() {
         </p>
         <p className="mt-1 text-xs text-slate-500">{forecast.method}</p>
       </div>
+
+      {profit && (
+        <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Profit by branch</h2>
+              <p className="text-xs text-slate-500">
+                Last {PROFIT_MONTHS} months, all branches side by side. Money not tied to a branch shows as company wide.
+              </p>
+            </div>
+            <a href="/api/export/branch-profit" className={buttonStyles("secondary", "sm", "shrink-0")}>
+              <Download className="h-4 w-4" />
+              CSV
+            </a>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                  <th className="py-2 pr-4 font-medium">Branch</th>
+                  <th className="py-2 pr-4 text-right font-medium">Income</th>
+                  <th className="py-2 pr-4 text-right font-medium">Expenses</th>
+                  <th className="py-2 pr-4 text-right font-medium">Net</th>
+                  <th className="py-2 text-right font-medium">Margin</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[...profit.rows, profit.total].map((r, i, all) => {
+                  const isTotal = i === all.length - 1;
+                  return (
+                    <tr
+                      key={r.branchId ?? r.name}
+                      className={isTotal ? "border-t border-white/[0.12] font-semibold light:border-slate-300" : "border-b border-white/[0.04]"}
+                    >
+                      <td className={`py-2 pr-4 ${r.branchId === null && !isTotal ? "text-slate-400" : "text-slate-50 light:text-slate-900"}`}>{r.name}</td>
+                      <td className="py-2 pr-4 text-right font-mono tabular-nums text-emerald-400">{formatCompactCurrency(r.income)}</td>
+                      <td className="py-2 pr-4 text-right font-mono tabular-nums text-red-400">{formatCompactCurrency(r.expense)}</td>
+                      <td className={`py-2 pr-4 text-right font-mono tabular-nums ${r.net < 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
+                        {formatCompactCurrency(r.net)}
+                      </td>
+                      <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">
+                        {r.marginPct === null ? "n/a" : `${r.marginPct.toFixed(1)}%`}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Portfolio breakdown</h2>

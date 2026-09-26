@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { moneyBranchPicker } from "@/lib/branches";
+import { OptionalBranchSelect } from "@/components/layout/optional-branch-select";
 import { GroupedBarChart } from "@/components/dash-viz/grouped-bar-chart";
 import { Badge } from "@/components/ui-dark/badge";
 import { Input, Label } from "@/components/ui-dark/input";
@@ -33,6 +35,7 @@ export default async function CostCenterPage({
     include: { employees: { where: { status: "ACTIVE" }, select: { id: true, name: true }, orderBy: { name: "asc" } } },
   });
   if (!cc) notFound();
+  const branchOptions = await moneyBranchPicker(cc.branchId);
 
   const period = resolvePeriods(fy, undefined, settings.fiscalYearStartMonth);
   const months = fiscalYearMonths(period.fiscalYear, settings.fiscalYearStartMonth);
@@ -168,6 +171,7 @@ export default async function CostCenterPage({
               <Label htmlFor="description">Description</Label>
               <Input id="description" name="description" defaultValue={cc.description ?? ""} maxLength={500} />
             </div>
+            {branchOptions && <OptionalBranchSelect {...branchOptions} emptyLabel="No branch (company wide)" />}
             <SettingToggle name="active" label="Active" description="Inactive cost centers can't take new expenses." defaultChecked={cc.active} />
             <SubmitButton variant="secondary" pendingText="Saving...">
               Save

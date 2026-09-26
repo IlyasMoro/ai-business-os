@@ -30,14 +30,20 @@ const invoiceStatusColor: Record<(typeof invoiceStatusOrder)[number], string> = 
 /** Gathers the same 6-month snapshot the on-screen Reports page shows,
  * shaped for generateBusinessReportPdf. Shared by the on-demand download
  * route and the scheduled email so both paths can never drift apart. */
-export async function getBusinessReportData(companyId: string, companyName: string): Promise<BusinessReportData> {
+export async function getBusinessReportData(
+  companyId: string,
+  companyName: string,
+  /** One branch only (the on screen switcher); omitted means the whole company. */
+  branch: { id: string; name: string } | null = null
+): Promise<BusinessReportData> {
   const sixMonthsAgo = startOfMonth(subMonths(new Date(), 5));
+  const inBranch = branch ? { branchId: branch.id } : {};
 
   const [orderGroups, invoiceGroups, transactions, company] = await Promise.all([
-    db.order.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
-    db.invoice.groupBy({ by: ["status"], where: { companyId }, _count: { _all: true } }),
+    db.order.groupBy({ by: ["status"], where: { companyId, ...inBranch }, _count: { _all: true } }),
+    db.invoice.groupBy({ by: ["status"], where: { companyId, ...inBranch }, _count: { _all: true } }),
     db.transaction.findMany({
-      where: { companyId, date: { gte: sixMonthsAgo } },
+      where: { companyId, date: { gte: sixMonthsAgo }, ...inBranch },
       select: { type: true, amount: true, date: true },
     }),
     db.company.findUnique({ where: { id: companyId }, select: { logoData: true, logoMimeType: true } }),
@@ -66,7 +72,7 @@ export async function getBusinessReportData(companyId: string, companyName: stri
     }));
 
   return {
-    companyName,
+    companyName: branch ? `${companyName}, ${branch.name}` : companyName,
     generatedAt: new Date(),
     totalIncome,
     totalExpense,

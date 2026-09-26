@@ -6,6 +6,7 @@ import { TransactionForm } from "@/components/accounting/transaction-form";
 import { updateTransaction } from "@/lib/actions/accounting";
 import type { TransactionFormState } from "@/lib/validation/accounting";
 import { toDateInputValue } from "@/lib/utils";
+import { moneyBranchPicker } from "@/lib/branches";
 
 export default async function EditTransactionPage({
   params,
@@ -31,7 +32,10 @@ export default async function EditTransactionPage({
   ]);
 
   if (!transaction) notFound();
-  const costObjects = await loadCostObjectOptions(session.companyId, transaction);
+  const [costObjects, branches] = await Promise.all([
+    loadCostObjectOptions(session.companyId, transaction),
+    moneyBranchPicker(transaction.branchId),
+  ]);
 
   const action = updateTransaction.bind(null, transaction.id) as (
     state: TransactionFormState,
@@ -56,6 +60,7 @@ export default async function EditTransactionPage({
           existingCategories={existing.map((t) => t.category)}
           projects={projects}
           costObjects={costObjects}
+          branches={branches}
           submitLabel="Save changes"
         />
       </div>

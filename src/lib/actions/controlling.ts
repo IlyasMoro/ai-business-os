@@ -39,6 +39,15 @@ const text = (formData: FormData, name: string) => {
   return typeof v === "string" && v.trim() ? v : undefined;
 };
 
+/** "" or missing means no branch; otherwise the branch must be this company's. */
+async function ownBranch(companyId: string, raw: FormDataEntryValue | null, back: string, keepId: string | null = null) {
+  const id = typeof raw === "string" && raw ? raw : null;
+  if (!id) return null;
+  const branch = await db.branch.findUnique({ where: { id, companyId }, select: { active: true } });
+  if (!branch || (!branch.active && id !== keepId)) redirect(`${back}?error=branch-inactive`);
+  return id;
+}
+
 async function ownCostCenter(companyId: string, id: string | undefined, back: string) {
   if (!id) return null;
   const cc = await db.costCenter.findUnique({ where: { id, companyId }, select: { id: true } });
@@ -64,7 +73,8 @@ export async function createCostCenter(formData: FormData) {
   });
   if (exists) redirect(`${back}?error=co-duplicate`);
 
-  const cc = await db.costCenter.create({ data: { ...validated.data, companyId: session.companyId } });
+  const branchId = await ownBranch(session.companyId, formData.get("branchId"), back);
+  const cc = await db.costCenter.create({ data: { ...validated.data, branchId, companyId: session.companyId } });
   await logAudit(session.companyId, session.userId, "cost_center.created", "CostCenter", cc.id, { code: cc.code });
   revalidatePath(BASE, "layout");
   redirect(`${back}/${cc.id}`);
@@ -80,9 +90,18 @@ export async function updateCostCenter(costCenterId: string, formData: FormData)
   });
   if (!validated.success) redirect(`${back}?error=invalid`);
 
+  const current = await db.costCenter.findUnique({
+    where: { id: costCenterId, companyId: session.companyId },
+    select: { branchId: true },
+  });
+  if (!current) redirect(`${BASE}/cost-centers`);
+  // The field only shows with two or more branches; without it, keep the branch.
+  const branchId = formData.has("branchId")
+    ? await ownBranch(session.companyId, formData.get("branchId"), back, current.branchId)
+    : current.branchId;
   await db.costCenter.update({
     where: { id: costCenterId, companyId: session.companyId },
-    data: { ...validated.data, description: validated.data.description ?? null },
+    data: { ...validated.data, description: validated.data.description ?? null, branchId },
   });
   revalidatePath(BASE, "layout");
   redirect(`${back}?saved=1`);

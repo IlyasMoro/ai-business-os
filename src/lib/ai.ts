@@ -11,12 +11,19 @@ export async function generateAssistantReply(
   userId: string,
   chatMessageId: string,
   snapshot: string,
-  history: { role: "user" | "assistant"; content: string }[]
+  history: { role: "user" | "assistant"; content: string }[],
+  /** The branch in the user's switcher, or null for the whole company. */
+  branch: { id: string; name: string } | null = null
 ) {
+  const scope = branch
+    ? `The user is looking at the ${branch.name} branch only. The snapshot and the order, invoice, sales and forecast tools cover that branch; customers, tickets and projects are company wide. Say so when it matters.`
+    : "The user is looking at the whole company (all branches).";
   const messages: Groq.Chat.ChatCompletionMessageParam[] = [
     {
       role: "system",
       content: `You are the AI Copilot embedded in ${companyName}'s internal business operations dashboard (CRM, inventory, sales, invoicing, accounting, HR, payroll, projects, and support). Answer questions helpfully and concisely.
+
+${scope}
 
 Here is a live snapshot of ${companyName}'s current data:
 ${snapshot}
@@ -80,7 +87,7 @@ If asked about something not covered by the snapshot or tools, say you don't hav
       if (!isKnownTool(name)) {
         result = { error: `Unknown tool: ${name}` };
       } else if (isReadTool(name)) {
-        result = await runReadTool(companyId, name, args);
+        result = await runReadTool(companyId, name, args, branch?.id ?? null);
       } else {
         result = await proposeAiAction(companyId, userId, chatMessageId, name, args);
       }

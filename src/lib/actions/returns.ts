@@ -227,6 +227,8 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
           description: `Refund for ${rma.rmaNumber}`,
           date: now,
           companyId: session.companyId,
+          // Charged to the branch that made the sale.
+          branchId,
         },
       });
     }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { branchWhere } from "@/lib/branches";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
@@ -32,8 +33,12 @@ export default async function AccountingPage({
   const page = parsePage(pageParam);
   const session = await requireRole(["OWNER", "ADMIN"]);
 
+  // Follows the top bar switcher. With a branch in view, company wide
+  // entries (no branch) are left out, like other branches' money.
+  const inBranch = await branchWhere();
   const where: Prisma.TransactionWhereInput = {
     companyId: session.companyId,
+    ...inBranch,
     ...(q ? { category: { contains: q } } : {}),
   };
 
@@ -46,7 +51,7 @@ export default async function AccountingPage({
     }),
     db.transaction.count({ where }),
     db.transaction.findMany({
-      where: { companyId: session.companyId },
+      where: { companyId: session.companyId, ...inBranch },
       select: { type: true, amount: true, category: true },
     }),
   ]);

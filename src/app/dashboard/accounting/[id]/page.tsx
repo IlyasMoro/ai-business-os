@@ -31,8 +31,10 @@ export default async function TransactionDetailPage({
       invoice: { select: { id: true, invoiceNumber: true } },
       costCenter: { select: { id: true, code: true, name: true } },
       internalOrder: { select: { id: true, orderNumber: true, name: true } },
+      branch: { select: { name: true } },
     },
   });
+  const multiBranch = (await db.branch.count({ where: { companyId: session.companyId, active: true } })) > 1;
 
   if (!transaction) notFound();
 
@@ -120,6 +122,12 @@ export default async function TransactionDetailPage({
               <p className="text-slate-500">Category</p>
               <p className="text-slate-50 light:text-slate-900">{transaction.category}</p>
             </div>
+            {(multiBranch || transaction.branch) && (
+              <div>
+                <p className="text-slate-500">Branch</p>
+                <p className="text-slate-50 light:text-slate-900">{transaction.branch?.name ?? "Company wide"}</p>
+              </div>
+            )}
             {(transaction.costCenter || transaction.internalOrder) && (
               <div>
                 <p className="text-slate-500">Cost object</p>

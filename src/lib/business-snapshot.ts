@@ -2,13 +2,15 @@ import "server-only";
 import { db } from "@/lib/db";
 import { lowStockAt } from "@/lib/stock";
 
-export async function getBusinessSnapshot(companyId: string) {
+/** Company wide, or one branch's orders, invoices and stock when branchId is set. */
+export async function getBusinessSnapshot(companyId: string, branchId: string | null = null) {
+  const inBranch = branchId ? { branchId } : {};
   const [customerCount, openOrderCount, lowStock, outstandingInvoiceCount, openTicketCount, activeProjectCount] =
     await Promise.all([
       db.customer.count({ where: { companyId } }),
-      db.order.count({ where: { companyId, status: { in: ["PENDING", "CONFIRMED"] } } }),
-      lowStockAt(companyId, null),
-      db.invoice.count({ where: { companyId, status: { in: ["SENT", "OVERDUE"] } } }),
+      db.order.count({ where: { companyId, ...inBranch, status: { in: ["PENDING", "CONFIRMED"] } } }),
+      lowStockAt(companyId, branchId),
+      db.invoice.count({ where: { companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } } }),
       db.ticket.count({ where: { companyId, status: { in: ["OPEN", "IN_PROGRESS"] } } }),
       db.project.count({ where: { companyId, status: "ACTIVE" } }),
     ]);

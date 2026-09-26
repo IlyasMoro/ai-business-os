@@ -122,6 +122,21 @@ export async function branchPicker(): Promise<{ options: { id: string; name: str
   return { options: active.map(({ id, name, code }) => ({ id, name, code })), defaultId };
 }
 
+/**
+ * Options for a money form's Branch field, where "" means company wide.
+ * Null with fewer than two branches. `currentId` keeps an entry's branch
+ * listed even if it has since been deactivated.
+ */
+export async function moneyBranchPicker(
+  currentId?: string | null
+): Promise<{ options: { id: string; name: string; code: string }[]; defaultId: string } | null> {
+  const ctx = await getBranchContext();
+  const listed = ctx.branches.filter((b) => b.active || b.id === currentId);
+  if (ctx.branches.filter((b) => b.active).length < 2) return null;
+  const defaultId = currentId !== undefined ? (currentId ?? "") : (ctx.viewBranchId ?? "");
+  return { options: listed.map(({ id, name, code }) => ({ id, name, code })), defaultId };
+}
+
 /** For records created by the system (automations, EDI, AI): the main branch. */
 export async function systemBranchId(companyId: string): Promise<string> {
   return ensureMainBranch(companyId);
