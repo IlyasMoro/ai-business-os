@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LinkButton } from "@/components/ui/button";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
@@ -6,6 +7,7 @@ import { AiTerminalPreview } from "@/components/landing/ai-terminal-preview";
 import { ProductPreview } from "@/components/landing/product-preview";
 import { ModuleConstellation } from "@/components/landing/module-constellation";
 import { FeatureBento } from "@/components/landing/feature-bento";
+import { FaqSection } from "@/components/landing/faq-section";
 import { ArrowRight } from "lucide-react";
 import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 
@@ -14,7 +16,7 @@ const CTA_CLASS =
 
 export default function Home() {
   return (
-    <div className="relative isolate min-h-screen overflow-hidden text-slate-50">
+    <div className="relative isolate min-h-screen overflow-x-clip text-slate-50">
       <AuroraBackdrop />
       {/* Ambient background: a single, static, understated glow for depth */}
       <div aria-hidden className="pointer-events-none absolute inset-0">
@@ -67,7 +69,7 @@ export default function Home() {
         {/* Product screenshot, with the AI Copilot shown as a live widget on top of it.
             From sm up the widget hangs 3rem (md: 4rem) below the screenshot, so the
             bottom padding adds that overhang back to keep the usual 8rem gap. */}
-        <section className="px-6 pb-24 sm:pb-44 md:pb-48">
+        <section id="copilot" className="scroll-mt-24 px-6 pb-24 sm:pb-44 md:pb-48">
           <Reveal className="relative mx-auto max-w-4xl">
             <ProductPreview />
             <div className="relative mt-6 sm:absolute sm:-bottom-12 sm:-right-6 sm:mt-0 sm:w-80 md:-bottom-16 md:-right-10 md:w-[26rem]">
@@ -77,7 +79,7 @@ export default function Home() {
         </section>
 
         {/* The AIBOS mark as a map of the product: eight departments around one AI */}
-        <section className="mx-auto max-w-6xl px-6 pb-24 sm:pb-32">
+        <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24 sm:pb-32">
           <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Eight departments, one AI at the center
@@ -93,7 +95,7 @@ export default function Home() {
         </section>
 
         {/* Feature grid */}
-        <section className="mx-auto max-w-6xl px-6 pb-24">
+        <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24 sm:pb-32">
           <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
               Every department, one workspace
@@ -104,6 +106,32 @@ export default function Home() {
           </Reveal>
 
           <FeatureBento />
+        </section>
+
+        <section id="faq" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24 sm:pb-32">
+          <FaqSection />
+        </section>
+
+        {/* Closing call to action: the last doubts are answered right above. */}
+        <section className="px-6 pb-24 sm:pb-32">
+          <Reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-14 text-center backdrop-blur-xl sm:px-12 sm:py-16">
+            <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[100px]" />
+            <h2 className="font-display relative text-3xl font-semibold tracking-tight sm:text-4xl">
+              Your whole business, one AI that asks first.
+            </h2>
+            <p className="relative mx-auto mt-4 max-w-xl text-slate-300">
+              Start with every module and the AI Copilot included. 14 days free, no credit card needed.
+            </p>
+            <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
+              <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} rounded-full`}>
+                Start free trial
+                <ArrowRight className="h-4 w-4" />
+              </LinkButton>
+              <Link href="/pricing" className="rounded-full px-5 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:text-white">
+                See pricing
+              </Link>
+            </div>
+          </Reveal>
         </section>
       </main>
 
