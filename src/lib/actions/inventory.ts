@@ -133,13 +133,14 @@ export async function deleteProduct(productId: string) {
     redirect("/dashboard/inventory?error=forbidden");
   }
 
-  const [inOrder, inBom, inWorkOrder] = await Promise.all([
+  const [inOrder, inBom, inWorkOrder, inTransfer] = await Promise.all([
     db.orderItem.findFirst({ where: { productId, product: { companyId: session.companyId } }, select: { id: true } }),
     // Components are protected; a product's own BOM lines go with it.
     db.bomLine.findFirst({ where: { componentId: productId, companyId: session.companyId }, select: { id: true } }),
     db.workOrder.findFirst({ where: { productId, companyId: session.companyId }, select: { id: true } }),
+    db.stockTransferItem.findFirst({ where: { productId, transfer: { companyId: session.companyId } }, select: { id: true } }),
   ]);
-  if (inOrder || inBom || inWorkOrder) {
+  if (inOrder || inBom || inWorkOrder || inTransfer) {
     redirect(`/dashboard/inventory/${productId}?error=in-use`);
   }
 

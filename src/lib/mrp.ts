@@ -18,7 +18,7 @@ function addTo(map: Map<string, number>, key: string, qty: number) {
 
 /** Loads everything the planning run needs for one company and runs it. */
 export async function buildMrpPlan(companyId: string, settings: MrpSettingsValues): Promise<PlanRow[]> {
-  const [products, bomLines, orderItems, purchaseItems, openWorkOrders] = await Promise.all([
+  const [products, bomLines, orderItems, purchaseItems, openWorkOrders, inTransit] = await Promise.all([
     db.product.findMany({
       where: { companyId },
       select: {
@@ -54,6 +54,12 @@ export async function buildMrpPlan(companyId: string, settings: MrpSettingsValue
       where: { companyId, status: { in: ["PLANNED", "IN_PROGRESS"] } },
       select: { productId: true, quantity: true },
     }),
+    // Stock moving between branches has left stockQty but not the company,
+    // so it counts as arriving, like an open purchase order.
+    db.stockTransferItem.findMany({
+      where: { transfer: { companyId, status: "SENT" } },
+      select: { productId: true, quantity: true },
+    }),
   ]);
 
   const bom: BomEdge[] = bomLines;
@@ -63,6 +69,7 @@ export async function buildMrpPlan(companyId: string, settings: MrpSettingsValue
   const scheduledReceipts = new Map<string, number>();
   for (const item of purchaseItems) addTo(scheduledReceipts, item.productId, item.quantity);
   for (const wo of openWorkOrders) addTo(scheduledReceipts, wo.productId, wo.quantity);
+  for (const item of inTransit) addTo(scheduledReceipts, item.productId, item.quantity);
 
   const openWorkOrderDemand = new Map<string, number>();
   for (const wo of openWorkOrders) {

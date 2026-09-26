@@ -14,6 +14,8 @@ const KIND_LABEL = {
   PRODUCTION: "Built",
   RETURN: "Returned",
   OPENING: "Opening stock",
+  TRANSFER_OUT: "Sent",
+  TRANSFER_IN: "Arrived",
 } as const;
 
 export default async function LotTracePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
@@ -28,6 +30,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
         where: { companyId: session.companyId, lotNumber: { contains: query, mode: "insensitive" } },
         include: {
           product: { select: { id: true, name: true, sku: true } },
+          branch: { select: { name: true } },
           movements: { orderBy: { createdAt: "asc" } },
         },
         orderBy: { receivedAt: "desc" },
@@ -39,12 +42,18 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
   const ids = (key: "orderId" | "purchaseOrderId" | "workOrderId" | "returnId") => [
     ...new Set(lots.flatMap((l) => [...l.movements.map((m) => m[key]), key === "purchaseOrderId" ? l.purchaseOrderId : key === "workOrderId" ? l.workOrderId : null]).filter((x): x is string => !!x)),
   ];
-  const [orders, pos, wos, rmas] = await Promise.all([
+  const transferIds = [...new Set(lots.flatMap((l) => l.movements.map((m) => m.transferId)).filter((x): x is string => !!x))];
+  const [orders, pos, wos, rmas, transfers] = await Promise.all([
     db.order.findMany({ where: { id: { in: ids("orderId") }, companyId: session.companyId }, select: { id: true, customerPoNumber: true, customer: { select: { id: true, name: true } } } }),
     db.purchaseOrder.findMany({ where: { id: { in: ids("purchaseOrderId") }, companyId: session.companyId }, select: { id: true, supplier: { select: { name: true } } } }),
     db.workOrder.findMany({ where: { id: { in: ids("workOrderId") }, companyId: session.companyId }, select: { id: true, woNumber: true } }),
     db.returnAuthorization.findMany({ where: { id: { in: ids("returnId") }, companyId: session.companyId }, select: { id: true, rmaNumber: true } }),
+    db.stockTransfer.findMany({
+      where: { id: { in: transferIds }, companyId: session.companyId },
+      select: { id: true, transferNumber: true, fromBranch: { select: { name: true } }, toBranch: { select: { name: true } } },
+    }),
   ]);
+  const transferMap = new Map(transfers.map((t) => [t.id, t]));
   const orderMap = new Map(orders.map((o) => [o.id, o]));
   const poMap = new Map(pos.map((p) => [p.id, p]));
   const woMap = new Map(wos.map((w) => [w.id, w]));
@@ -91,7 +100,9 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
             <div key={lot.id} className={`${card} p-5`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <p className="font-mono text-lg font-semibold text-slate-50 light:text-slate-900">{lot.lotNumber}</p>
+                  <p className="font-mono text-lg font-semibold text-slate-50 light:text-slate-900">
+                    {lot.lotNumber} <span className="font-sans text-sm font-normal text-slate-400">at {lot.branch.name}</span>
+                  </p>
                   <Link href={`/dashboard/inventory/${lot.product.id}`} className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                     {lot.product.name} ({lot.product.sku})
                   </Link>
@@ -123,10 +134,19 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                   const po = m.purchaseOrderId ? poMap.get(m.purchaseOrderId) : undefined;
                   const wo = m.workOrderId ? woMap.get(m.workOrderId) : undefined;
                   const rma = m.returnId ? rmaMap.get(m.returnId) : undefined;
+                  const tr = m.transferId ? transferMap.get(m.transferId) : undefined;
                   return (
                     <li key={m.id} className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-slate-300 light:text-slate-600">
                         <span className="text-slate-500">{m.createdAt.toLocaleDateString()}</span> {KIND_LABEL[m.kind]}
+                        {tr && (
+                          <>
+                            {m.kind === "TRANSFER_OUT" ? ` to ${tr.toBranch.name} on ` : ` from ${tr.fromBranch.name} on `}
+                            <Link href={`/dashboard/transfers/${tr.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                              {tr.transferNumber}
+                            </Link>
+                          </>
+                        )}
                         {po && (
                           <>
                             {" from "}

@@ -16,7 +16,7 @@ export const getInventorySettings = cache(async (companyId: string): Promise<Inv
 });
 
 type Tx = Parameters<Parameters<typeof db.$transaction>[0]>[0];
-type Links = { orderId?: string; purchaseOrderId?: string; workOrderId?: string; returnId?: string };
+type Links = { orderId?: string; purchaseOrderId?: string; workOrderId?: string; returnId?: string; transferId?: string };
 
 export class LotShortageError extends Error {
   constructor(public productName: string, public shortfall: number) {
@@ -39,7 +39,7 @@ export async function takeFromLots(
     productId: string;
     productName: string;
     quantity: number;
-    kind: "SALE" | "CONSUMPTION";
+    kind: "SALE" | "CONSUMPTION" | "TRANSFER_OUT";
     settings: InventorySettingsValues;
     links: Links;
   }
@@ -73,8 +73,10 @@ export async function putIntoLot(
     lotNumber: string;
     quantity: number;
     expiresAt?: Date | null;
-    source: "PO" | "WO" | "OPENING" | "RETURN";
-    kind: "RECEIPT" | "PRODUCTION" | "OPENING" | "RETURN";
+    /** Kept from the original lot on a transfer, so oldest first picking still holds. */
+    receivedAt?: Date;
+    source: "PO" | "WO" | "OPENING" | "RETURN" | (string & {});
+    kind: "RECEIPT" | "PRODUCTION" | "OPENING" | "RETURN" | "TRANSFER_IN";
     links: Links;
   }
 ) {
@@ -84,6 +86,7 @@ export async function putIntoLot(
       lotNumber: opts.lotNumber,
       quantity: opts.quantity,
       expiresAt: opts.expiresAt ?? null,
+      ...(opts.receivedAt ? { receivedAt: opts.receivedAt } : {}),
       source: opts.source,
       purchaseOrderId: opts.links.purchaseOrderId,
       workOrderId: opts.links.workOrderId,

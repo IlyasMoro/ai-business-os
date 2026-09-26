@@ -34,6 +34,8 @@ export default async function DashboardLayout({
     // Unset EDI stays visible so it can be set up; only an explicit off hides it.
     ...(ediSettings && !ediSettings.enabled ? ["/dashboard/edi"] : []),
     ...(controlling.enabled ? [] : ["/dashboard/controlling"]),
+    // Transfers only make sense once there is somewhere to move stock to.
+    ...(branchCtx.branches.filter((b) => b.active).length > 1 ? [] : ["/dashboard/transfers"]),
   ];
   const platformAdmin = isPlatformAdmin(user.email);
 

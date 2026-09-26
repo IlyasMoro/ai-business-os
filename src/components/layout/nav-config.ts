@@ -1,5 +1,6 @@
 import {
   House,
+  ArrowRightLeft,
   MapPin,
   LayoutDashboard,
   Users,
@@ -75,6 +76,7 @@ export const navGroups: NavGroup[] = [
     icon: Boxes,
     items: [
       { href: "/dashboard/inventory", label: "Inventory", icon: Boxes },
+      { href: "/dashboard/transfers", label: "Transfers", icon: ArrowRightLeft },
       { href: "/dashboard/procurement", label: "Procurement", icon: Truck },
       { href: "/dashboard/mrp", label: "Planning / MRP", icon: Factory },
     ],

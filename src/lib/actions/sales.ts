@@ -133,7 +133,7 @@ export async function updateOrderStatus(
     // covered by stock on hand before promising the order to the customer.
     const summary = await branchShortfalls();
     if (summary) {
-      return { message: `Cannot confirm: not enough stock for ${summary}. Receive more stock or reduce the order.` };
+      return { message: `Cannot confirm: not enough stock for ${summary}. ${summary.includes("more at other branches") ? "Transfer stock from another branch, receive more, or reduce the order." : "Receive more stock or reduce the order."}` };
     }
   }
 
@@ -143,7 +143,7 @@ export async function updateOrderStatus(
   if (nextStatus === "FULFILLED" && order.status === "CONFIRMED") {
     const summary = await branchShortfalls();
     if (summary) {
-      return { message: `Cannot fulfil: not enough stock for ${summary}. Receive more stock or reduce the order.` };
+      return { message: `Cannot fulfil: not enough stock for ${summary}. ${summary.includes("more at other branches") ? "Transfer stock from another branch, receive more, or reduce the order." : "Receive more stock or reduce the order."}` };
     }
 
     // Lot and serial products also ship from specific lots, picked by the

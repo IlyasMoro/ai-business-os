@@ -62,6 +62,7 @@ model Company {
   teamInvites         TeamInvite[]
   branches            Branch[]
   branchStock         BranchStock[]
+  stockTransfers      StockTransfer[]
 }
 
 enum UserRole {
@@ -144,6 +145,8 @@ model Branch {
   costCenters    CostCenter[]    @relation("CostCenterBranch")
   stock          BranchStock[]
   lots           StockLot[]
+  transfersOut   StockTransfer[] @relation("TransferFrom")
+  transfersIn    StockTransfer[] @relation("TransferTo")
 
   @@unique([companyId, code])
   @@index([companyId])
@@ -168,6 +171,55 @@ model BranchStock {
 
   @@unique([branchId, productId])
   @@index([companyId])
+  @@index([productId])
+}
+
+enum StockTransferStatus {
+  DRAFT
+  SENT
+  RECEIVED
+  CANCELLED
+}
+
+// Moves stock from one branch to another. Sending takes it out of the
+// source branch (and out of specific lots); receiving puts it into the
+// destination. In between it is in transit and counts at neither branch.
+model StockTransfer {
+  id             String              @id @default(cuid())
+  transferNumber String
+  status         StockTransferStatus @default(DRAFT)
+  note           String?
+  createdAt      DateTime            @default(now())
+  sentAt         DateTime?
+  receivedAt     DateTime?
+
+  fromBranchId String
+  fromBranch   Branch @relation("TransferFrom", fields: [fromBranchId], references: [id], onDelete: Cascade)
+  toBranchId   String
+  toBranch     Branch @relation("TransferTo", fields: [toBranchId], references: [id], onDelete: Cascade)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  items StockTransferItem[]
+
+  @@unique([companyId, transferNumber])
+  @@index([companyId])
+  @@index([fromBranchId])
+  @@index([toBranchId])
+}
+
+model StockTransferItem {
+  id       String @id @default(cuid())
+  quantity Int
+
+  transferId String
+  transfer   StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([transferId, productId])
   @@index([productId])
 }
 
@@ -286,7 +338,8 @@ model Product {
   lots         StockLot[]
 
   // stockQty above is the company total: always the sum of these rows.
-  branchStock BranchStock[]
+  branchStock   BranchStock[]
+  transferItems StockTransferItem[]
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1464,6 +1517,8 @@ enum LotMovementKind {
   PRODUCTION
   RETURN
   OPENING
+  TRANSFER_OUT
+  TRANSFER_IN
 }
 
 // Every change to a lot's quantity, so any lot or serial can be traced
@@ -1482,11 +1537,13 @@ model LotMovement {
   purchaseOrderId String?
   workOrderId     String?
   returnId        String?
+  transferId      String?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   @@index([lotId])
+  @@index([transferId])
   @@index([companyId])
   @@index([orderId])
 }

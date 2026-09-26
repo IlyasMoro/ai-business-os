@@ -134,3 +134,83 @@ test("stock is kept per branch and orders ship from their own branch", async ({ 
   await expect(page.getByRole("row", { name: new RegExp(branchName) }).getByText("Low")).toBeVisible();
   await expect(page.getByRole("row", { name: /Main branch/ }).getByText("Low")).toHaveCount(0);
 });
+
+test("a transfer moves stock and its lots from one branch to another", async ({ page }) => {
+  const suffix = randomSuffix();
+  const code = "E" + suffix.slice(0, 4).toUpperCase();
+  const branchName = "East " + code;
+  const productName = "Transfer Widget " + suffix;
+  const sku = "TW" + suffix;
+
+  await page.goto("/dashboard/branches");
+  const createForm = page.locator('form:has(button:has-text("Create branch"))');
+  await createForm.locator('input[name="code"]').fill(code);
+  await createForm.locator('input[name="name"]').fill(branchName);
+  await createForm.getByRole("button", { name: "Create branch" }).click();
+  await page.waitForURL(/saved=1/);
+
+  // 10 at Main, then lot tracked: the shelf becomes Main's OPENING lot.
+  await page.goto("/dashboard/inventory/new");
+  await page.fill('input[name="sku"]', sku);
+  await page.fill('input[name="name"]', productName);
+  await page.fill('input[name="cost"]', "3.00");
+  await page.fill('input[name="unitPrice"]', "9.00");
+  await page.fill('input[name="stockQty"]', "10");
+  await page.getByRole("button", { name: "Create product" }).click();
+  await page.waitForURL(/\/dashboard\/inventory\/(?!new$)[^/]+$/, { timeout: 45000 });
+  const productUrl = page.url();
+  await page.selectOption('select[name="trackingMode"]', "LOT");
+  await page.getByRole("button", { name: "Save tracking" }).click();
+  await expect(page.getByText("Saved.")).toBeVisible({ timeout: 45000 });
+
+  // Main → East, 4 units.
+  await page.goto("/dashboard/transfers/new");
+  await page.selectOption('select[name="toBranchId"]', { label: `${branchName} (${code})` });
+  await page.getByRole("button", { name: "Create transfer" }).click();
+  await page.waitForURL(/\/dashboard\/transfers\/(?!new$)[^/]+$/, { timeout: 45000 });
+  const transferUrl = page.url();
+
+  const option = page.locator('select[name="productId"] option', { hasText: `${productName} (${sku})` });
+  await expect(option).toContainText("10 at Main branch");
+  await page.selectOption('select[name="productId"]', (await option.getAttribute("value"))!);
+  await page.fill('input[name="quantity"]', "4");
+  await page.getByRole("button", { name: "Add product" }).click();
+  await expect(page.getByText("10 at Main branch").first()).toBeVisible({ timeout: 45000 });
+
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText("In transit:")).toBeVisible({ timeout: 45000 });
+  await expect(page.getByText("OPENING")).toBeVisible();
+
+  // In transit: gone from Main, shown as arriving at East, not yet counted.
+  await page.goto(productUrl);
+  const eastRow = page.getByRole("row", { name: new RegExp(branchName) });
+  await expect(page.getByRole("row", { name: /Main branch/ }).getByRole("cell").nth(1)).toHaveText("6");
+  await expect(eastRow.getByRole("cell").nth(1)).toContainText("+4 arriving");
+  await expect(page.getByText("Stock quantity").locator("xpath=following-sibling::p[1]")).toHaveText("6");
+
+  await page.goto(transferUrl);
+  await page.getByRole("button", { name: "Receive" }).click();
+  await expect(page.getByText("Received", { exact: true })).toBeVisible({ timeout: 45000 });
+
+  await page.goto(productUrl);
+  await expect(page.getByRole("row", { name: new RegExp(branchName) }).getByRole("cell").nth(1)).toHaveText("4");
+  await expect(page.getByText("Stock quantity").locator("xpath=following-sibling::p[1]")).toHaveText("10");
+  // The lot kept its number: OPENING now sits at both branches.
+  const lotRows = page.locator("li", { hasText: "OPENING" });
+  await expect(lotRows.filter({ hasText: branchName })).toContainText("4");
+  await expect(lotRows.filter({ hasText: "Main branch" })).toContainText("6");
+
+  // East can't send more than it holds.
+  await page.goto("/dashboard/transfers/new");
+  await page.selectOption('select[name="fromBranchId"]', { label: `${branchName} (${code})` });
+  await page.selectOption('select[name="toBranchId"]', { label: "Main branch (MAIN)" });
+  await page.getByRole("button", { name: "Create transfer" }).click();
+  await page.waitForURL(/\/dashboard\/transfers\/(?!new$)[^/]+$/, { timeout: 45000 });
+  const back = page.locator('select[name="productId"] option', { hasText: `${productName} (${sku})` });
+  await page.selectOption('select[name="productId"]', (await back.getAttribute("value"))!);
+  await page.fill('input[name="quantity"]', "5");
+  await page.getByRole("button", { name: "Add product" }).click();
+  await expect(page.getByText(`4 at ${branchName}`).first()).toBeVisible({ timeout: 45000 });
+  await page.getByRole("button", { name: "Send" }).click();
+  await expect(page.getByText(`Not enough stock to send: ${productName} (4 at ${branchName}, 6 more at other branches, 5 requested).`)).toBeVisible({ timeout: 45000 });
+});

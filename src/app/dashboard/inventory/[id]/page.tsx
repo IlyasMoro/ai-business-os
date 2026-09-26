@@ -73,6 +73,13 @@ export default async function ProductDetailPage({
       stock: { where: { productId: product.id }, select: { quantity: true, reorderLevel: true } },
     },
   });
+  const arriving = await db.stockTransferItem.findMany({
+    where: { productId: product.id, transfer: { companyId: session.companyId, status: "SENT" } },
+    select: { quantity: true, transfer: { select: { toBranchId: true } } },
+  });
+  const arrivingAt = new Map<string, number>();
+  for (const a of arriving) arrivingAt.set(a.transfer.toBranchId, (arrivingAt.get(a.transfer.toBranchId) ?? 0) + a.quantity);
+
   const branchStock = branches
     .filter((b) => b.active || b.stock.length > 0)
     .map((b) => {
@@ -82,6 +89,7 @@ export default async function ProductDetailPage({
         id: b.id,
         name: b.name,
         stocked: !!row,
+        arriving: arrivingAt.get(b.id) ?? 0,
         quantity: row?.quantity ?? 0,
         reorderLevel: row?.reorderLevel ?? null,
         effectiveLevel: effectiveReorderLevel(level),
@@ -156,7 +164,7 @@ export default async function ProductDetailPage({
       <div className="max-w-3xl">
         {error === "in-use" ? (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
-            This product can&apos;t be deleted because it&apos;s used in an order, a bill of materials, or a work order.
+            This product can&apos;t be deleted because it&apos;s used in an order, a bill of materials, a work order or a stock transfer.
           </p>
         ) : (
           <ErrorBanner code={error} />
@@ -240,7 +248,12 @@ export default async function ProductDetailPage({
                         {b.low && <Badge tone="red" className="ml-2">Low</Badge>}
                         {!b.stocked && <span className="ml-2 text-xs text-slate-500">not stocked</span>}
                       </td>
-                      <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{b.quantity}</td>
+                      <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">
+                        {b.quantity}
+                        {b.arriving > 0 && (
+                          <span className="ml-2 font-sans text-xs text-blue-300 light:text-blue-700">+{b.arriving} arriving</span>
+                        )}
+                      </td>
                       <td className="py-2 pl-6">
                         {canSetLevels ? (
                           <form action={setBranchReorderLevel.bind(null, product.id, b.id)} className="flex items-center gap-2">
