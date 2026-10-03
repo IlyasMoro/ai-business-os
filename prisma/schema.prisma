@@ -63,6 +63,53 @@ model Company {
   branches            Branch[]
   branchStock         BranchStock[]
   stockTransfers      StockTransfer[]
+  aiUsage             AiUsage[]
+  aiTopUps            AiTopUp[]
+
+  // The subscription plan (lib/plans.ts) whose limits apply: users,
+  // branches, Growth/Scale modules and AI requests. Defaults to SCALE so
+  // trials get everything and companies from before plans keep everything
+  // until checkout records the plan they actually pay for.
+  plan CompanyPlan @default(SCALE)
+
+  // Bought AI requests (top-ups) not used yet. Spent only once the plan's
+  // monthly requests run out, and they never expire.
+  aiCredits Int @default(0)
+}
+
+enum CompanyPlan {
+  STARTER
+  GROWTH
+  SCALE
+}
+
+// AI requests a company has used in one calendar month (UTC), for the
+// plan's monthly allowance. A counter rather than counting chat messages,
+// because people can clear their chat history.
+model AiUsage {
+  id       String @id @default(cuid())
+  month    String // "2026-10"
+  requests Int    @default(0)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, month])
+}
+
+// One paid AI top-up. The unique Stripe Checkout session makes crediting
+// safe to repeat: the return from Checkout and the webhook both try.
+model AiTopUp {
+  id              String   @id @default(cuid())
+  stripeSessionId String   @unique
+  requests        Int
+  amountCents     Int
+  createdAt       DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, createdAt])
 }
 
 enum UserRole {
@@ -1108,6 +1155,9 @@ model Subscription {
   trialEndsAt          DateTime?
   currentPeriodEnd     DateTime?
   cancelAtPeriodEnd    Boolean            @default(false)
+  // "monthly" or "yearly", from the Stripe price's lookup key (lib/plans.ts).
+  // Null for trials and the old single $49 price.
+  billingInterval      String?
   stripeCustomerId     String?            @unique
   stripeSubscriptionId String?            @unique
   createdAt            DateTime           @default(now())

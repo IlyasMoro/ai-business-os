@@ -7,6 +7,7 @@ import * as z from "zod";
 import { db } from "@/lib/db";
 import { verifySession, hasRole } from "@/lib/dal";
 import { logAudit } from "@/lib/audit";
+import { canAddBranch } from "@/lib/plan-limits";
 import { BRANCH_COOKIE, ensureMainBranch, getBranchContext } from "@/lib/branches";
 
 const BASE = "/dashboard/branches";
@@ -48,6 +49,7 @@ export async function createBranch(formData: FormData) {
     select: { id: true },
   });
   if (exists) redirect(`${BASE}?error=branch-duplicate`);
+  if (!(await canAddBranch(session.companyId))) redirect(`${BASE}?error=branch-limit`);
 
   const branch = await db.branch.create({ data: { ...validated.data, companyId: session.companyId } });
   await logAudit(session.companyId, session.userId, "branch.created", "Branch", branch.id, { code: branch.code });
@@ -84,10 +86,11 @@ export async function setBranchActive(branchId: string, active: boolean) {
   const session = await requireAdmin(BASE);
   const branch = await db.branch.findUnique({
     where: { id: branchId, companyId: session.companyId },
-    select: { isMain: true },
+    select: { isMain: true, active: true },
   });
   if (!branch) redirect(`${BASE}?error=invalid`);
   if (branch.isMain && !active) redirect(`${BASE}?error=branch-main`);
+  if (active && !branch.active && !(await canAddBranch(session.companyId))) redirect(`${BASE}?error=branch-limit`);
 
   await db.branch.update({ where: { id: branchId, companyId: session.companyId }, data: { active } });
   await logAudit(session.companyId, session.userId, active ? "branch.activated" : "branch.deactivated", "Branch", branchId, {});

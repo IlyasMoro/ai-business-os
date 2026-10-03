@@ -9,11 +9,13 @@ export function Sidebar({
   userName,
   isPlatformAdmin = false,
   hiddenHrefs,
+  lockedHrefs,
 }: {
   role: Role;
   userName: string;
   isPlatformAdmin?: boolean;
   hiddenHrefs?: string[];
+  lockedHrefs?: string[];
 }) {
   return (
     <aside className="relative z-30 hidden w-64 shrink-0 flex-col border-r border-white/[0.09] sm:flex light:border-white/80 glass-panel">
@@ -22,7 +24,7 @@ export function Sidebar({
           <Logo />
         </Link>
       </div>
-      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} />
+      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
       <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
         <UserMenu userName={userName} />
       </div>

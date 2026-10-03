@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { requireFeature } from "@/lib/plan-limits";
 import { logAudit } from "@/lib/audit";
 import { getControllingSettings, internalOrderActual, loadCostLines } from "@/lib/controlling";
 import { CONTROLLING_PRESETS, isControllingPreset } from "@/lib/controlling-presets";
@@ -31,6 +32,7 @@ const BASE = "/dashboard/controlling";
 async function requireAdmin(back: string) {
   const session = await verifySession();
   if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`${back}?error=forbidden`);
+  await requireFeature(session.companyId, "controlling", BASE);
   return session;
 }
 

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { requireFeature } from "@/lib/plan-limits";
 import { runAutomations } from "@/lib/automations";
 import { sendWebhookNotification } from "@/lib/webhook";
 import { WebhookUrlSchema } from "@/lib/validation/webhook";
@@ -23,6 +24,7 @@ type ToggleKey = (typeof TOGGLE_KEYS)[number];
 
 export async function toggleAutomation(key: ToggleKey, formData: FormData) {
   const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "automation", "/dashboard/automation");
 
   if (!TOGGLE_KEYS.includes(key)) {
     redirect("/dashboard/automation?error=invalid");
@@ -41,6 +43,7 @@ export async function toggleAutomation(key: ToggleKey, formData: FormData) {
 
 export async function updateReportFrequency(formData: FormData) {
   const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "automation", "/dashboard/automation");
 
   const frequency = formData.get("reportFrequency");
   if (typeof frequency !== "string" || !REPORT_FREQUENCIES.includes(frequency as ReportFrequency)) {
@@ -58,6 +61,7 @@ export async function updateReportFrequency(formData: FormData) {
 
 export async function updateWebhookUrl(formData: FormData) {
   const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "automation", "/dashboard/automation");
 
   const validated = WebhookUrlSchema.safeParse({ webhookUrl: formData.get("webhookUrl") });
   if (!validated.success) {
@@ -80,6 +84,7 @@ export async function updateWebhookUrl(formData: FormData) {
 
 export async function clearWebhookUrl() {
   const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "automation", "/dashboard/automation");
 
   await db.automationSettings.upsert({
     where: { companyId: session.companyId },
@@ -92,6 +97,7 @@ export async function clearWebhookUrl() {
 
 export async function sendTestWebhook() {
   const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "automation", "/dashboard/automation");
 
   const settings = await db.automationSettings.findUnique({ where: { companyId: session.companyId } });
   if (!settings?.webhookUrl) {
@@ -106,7 +112,8 @@ export async function sendTestWebhook() {
 }
 
 export async function runAutomationsNow() {
-  await requireRole(["OWNER", "ADMIN"]);
+  const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "automation", "/dashboard/automation");
 
   await runAutomations();
 

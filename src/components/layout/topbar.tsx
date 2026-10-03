@@ -12,6 +12,7 @@ export function Topbar({
   role,
   isPlatformAdmin = false,
   hiddenHrefs,
+  lockedHrefs,
   notifications,
   subscription,
   branch,
@@ -21,6 +22,7 @@ export function Topbar({
   role: Role;
   isPlatformAdmin?: boolean;
   hiddenHrefs?: string[];
+  lockedHrefs?: string[];
   notifications: Notification[];
   subscription: { status: string; trialEndsAt: Date | null; cancelAtPeriodEnd: boolean } | null;
   branch: { options: { id: string; name: string; code: string }[]; currentId: string | null; locked: boolean };
@@ -28,7 +30,7 @@ export function Topbar({
   return (
     <header className="relative z-30 flex h-16 items-center justify-between border-b border-white/[0.09] px-4 sm:px-6 light:border-white/80 glass-panel">
       <div className="flex items-center gap-3">
-        <MobileNav role={role} userName={userName} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} />
+        <MobileNav role={role} userName={userName} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
         <CompanyStatusBadge companyName={companyName} subscription={subscription} />
         <BranchSwitcher branches={branch.options} currentId={branch.currentId} locked={branch.locked} />
       </div>

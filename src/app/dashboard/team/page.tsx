@@ -10,6 +10,8 @@ import { setUserBranchAccess } from "@/lib/actions/branches";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { InviteForm } from "@/components/team/invite-form";
 import { revokeInvite, removeTeamMember } from "@/lib/actions/team";
+import { canBillExtraUsers, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
+import { EXTRA_USER_PRICE, MAX_SCALE_USERS } from "@/lib/plans";
 
 const roleTone = { OWNER: "purple", ADMIN: "blue", EMPLOYEE: "slate" } as const;
 
@@ -21,7 +23,7 @@ export default async function TeamPage({
   const { error } = await searchParams;
   const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const [members, invites, branches] = await Promise.all([
+  const [members, invites, branches, plan, seats, billable] = await Promise.all([
     db.user.findMany({
       where: { companyId: session.companyId },
       select: { id: true, name: true, email: true, role: true, branchId: true, createdAt: true },
@@ -32,13 +34,16 @@ export default async function TeamPage({
       orderBy: { createdAt: "desc" },
     }),
     getCompanyBranches(session.companyId),
+    getCompanyPlan(session.companyId),
+    seatsUsed(session.companyId),
+    canBillExtraUsers(session.companyId),
   ]);
   // Only offer the branch control once there is more than one branch to pick.
   const showBranchAccess = branches.length > 1;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           {members.length} member{members.length === 1 ? "" : "s"} in {session.name ? "your company" : "this workspace"}.
@@ -53,6 +58,17 @@ export default async function TeamPage({
             <CardTitle>Invite a teammate</CardTitle>
           </CardHeader>
           <CardContent>
+            {/* Seats count open invites; past the plan's users each new member is billed. */}
+            <p className="mb-4 text-sm text-slate-400 light:text-slate-500">
+              {seats} {seats === 1 ? "user" : "users"}, counting open invites. The {plan.name} plan includes {plan.users}.{" "}
+              {seats >= MAX_SCALE_USERS || plan.users >= MAX_SCALE_USERS
+                ? `For more than ${MAX_SCALE_USERS}, ask us about an Enterprise plan.`
+                : billable
+                  ? `More are $${EXTRA_USER_PRICE} each a month, charged from the day they join.`
+                  : seats >= plan.users
+                    ? "To add more, the owner can subscribe to a plan on the Billing page."
+                    : `After that, extra users are $${EXTRA_USER_PRICE} each a month.`}
+            </p>
             <InviteForm />
           </CardContent>
         </Card>
@@ -96,7 +112,7 @@ export default async function TeamPage({
                 <li key={member.id} className="flex items-center justify-between py-2.5 text-sm">
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <span className="font-medium text-slate-50 light:text-slate-900">{member.name}</span>
+                      <span className="font-semibold text-slate-50 light:text-slate-900">{member.name}</span>
                       <StatusBadge status={member.role} tone={roleTone[member.role]} />
                     </div>
                     <p className="text-slate-400 light:text-slate-500">{member.email}</p>

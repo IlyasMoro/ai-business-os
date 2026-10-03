@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { requireFeature } from "@/lib/plan-limits";
 import { changeStock, quantitiesAt } from "@/lib/stock";
 import { resolveNewRecordBranch, systemBranchId } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
@@ -38,6 +39,7 @@ async function requireMrpEnabled(companyId: string, back: string) {
 
 export async function addBomLine(productId: string, formData: FormData) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   const back = `/dashboard/inventory/${productId}`;
 
   const validated = BomLineSchema.safeParse({
@@ -79,6 +81,7 @@ export async function addBomLine(productId: string, formData: FormData) {
 
 export async function removeBomLine(productId: string, lineId: string) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   await db.bomLine.delete({ where: { id: lineId, parentId: productId, companyId: session.companyId } });
   revalidatePath(`/dashboard/inventory/${productId}`);
   revalidatePath("/dashboard/mrp");
@@ -86,6 +89,7 @@ export async function removeBomLine(productId: string, lineId: string) {
 
 export async function updatePlanningFields(productId: string, formData: FormData) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   const back = `/dashboard/inventory/${productId}`;
 
   const validated = PlanningFieldsSchema.safeParse({
@@ -134,6 +138,7 @@ async function insertWorkOrder(
 
 export async function createWorkOrder(formData: FormData) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   await requireMrpEnabled(session.companyId, "/dashboard/mrp/work-orders");
 
   const validated = WorkOrderSchema.safeParse({
@@ -165,6 +170,7 @@ export async function createWorkOrder(formData: FormData) {
 
 export async function updateWorkOrderStatus(workOrderId: string, formData: FormData) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   const back = `/dashboard/mrp/work-orders/${workOrderId}`;
 
   const status = formData.get("status");
@@ -296,6 +302,7 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
 
 export async function deleteWorkOrder(workOrderId: string) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   const back = `/dashboard/mrp/work-orders/${workOrderId}`;
   if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`${back}?error=forbidden`);
 
@@ -320,6 +327,7 @@ export async function deleteWorkOrder(workOrderId: string) {
 
 export async function createWorkOrderFromPlan(productId: string) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   const settings = await requireMrpEnabled(session.companyId, "/dashboard/mrp");
 
   const row = (await buildMrpPlan(session.companyId, settings)).find((r) => r.productId === productId);
@@ -342,6 +350,7 @@ export async function createWorkOrderFromPlan(productId: string) {
  */
 export async function createPurchaseOrdersFromPlan(productId: string | null) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   const settings = await requireMrpEnabled(session.companyId, "/dashboard/mrp");
 
   const rows = (await buildMrpPlan(session.companyId, settings)).filter(
@@ -400,6 +409,7 @@ export async function createPurchaseOrdersFromPlan(productId: string | null) {
 
 export async function updateMrpSettings(formData: FormData) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   if (!hasRole(session, ["OWNER", "ADMIN"])) redirect("/dashboard/mrp/settings?error=forbidden");
 
   const validated = MrpSettingsSchema.safeParse({
@@ -423,6 +433,7 @@ export async function updateMrpSettings(formData: FormData) {
 
 export async function applyMrpPreset(preset: string) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "mrp", "/dashboard/mrp");
   if (!hasRole(session, ["OWNER", "ADMIN"])) redirect("/dashboard/mrp/settings?error=forbidden");
   if (!isMrpPreset(preset)) redirect("/dashboard/mrp/settings?error=invalid");
 

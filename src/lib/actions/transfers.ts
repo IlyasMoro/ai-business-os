@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as z from "zod";
 import { db } from "@/lib/db";
+import { requireFeature } from "@/lib/plan-limits";
 import { hasRole, verifySession } from "@/lib/dal";
 import { logAudit } from "@/lib/audit";
 import { getBranchContext } from "@/lib/branches";
@@ -35,6 +36,7 @@ class BranchWentNegative extends Error {}
  */
 async function loadTransfer(transferId: string, action: TransferAction) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "transfers", BASE);
   const ctx = await getBranchContext();
   const transfer = await db.stockTransfer.findUnique({
     where: { id: transferId, companyId: session.companyId },
@@ -62,6 +64,7 @@ const CreateSchema = z.object({
 
 export async function createTransfer(formData: FormData) {
   const session = await verifySession();
+  await requireFeature(session.companyId, "transfers", BASE);
   const ctx = await getBranchContext();
   const parsed = CreateSchema.safeParse({
     fromBranchId: formData.get("fromBranchId"),

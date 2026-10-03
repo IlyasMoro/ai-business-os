@@ -14,6 +14,7 @@ import {
 } from "@/lib/validation/support";
 import { suggestTicketPriority } from "@/lib/ai-categorize";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { takeAiRequest } from "@/lib/plan-limits";
 import { sendWebhookNotification } from "@/lib/webhook";
 
 export async function suggestPriority(subject: string, description: string) {
@@ -26,6 +27,8 @@ export async function suggestPriority(subject: string, description: string) {
     windowMs: 60 * 60 * 1000,
   });
   if (!allowed) return null;
+  // Suggestions are optional, so a used up plan allowance just skips them.
+  if (!(await takeAiRequest(session.companyId))) return null;
 
   try {
     return await suggestTicketPriority(subject, description);

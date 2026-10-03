@@ -1,52 +1,16 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
-import { db } from "@/lib/db";
-import type { SubscriptionStatus } from "@/generated/prisma/client";
+import { syncSubscription } from "@/lib/stripe-sync";
+import { syncExtraUsers } from "@/lib/billing-seats";
+import { creditAiTopUp } from "@/lib/ai-topups";
 
-function mapStatus(status: Stripe.Subscription.Status): SubscriptionStatus {
-  switch (status) {
-    case "trialing":
-      return "TRIALING";
-    case "active":
-      return "ACTIVE";
-    case "past_due":
-    case "unpaid":
-      return "PAST_DUE";
-    case "canceled":
-      return "CANCELED";
-    default:
-      return "INCOMPLETE";
-  }
-}
-
-async function syncSubscription(subscription: Stripe.Subscription) {
+/** Records the subscription, then corrects the extra users line if it
+ * drifted from the team (a missed sync heals here). */
+async function syncAll(subscription: Stripe.Subscription) {
+  await syncSubscription(subscription);
   const companyId = subscription.metadata?.companyId;
-  if (!companyId) {
-    console.error("[stripe webhook] subscription has no companyId metadata:", subscription.id);
-    return;
-  }
-
-  const periodEnd = subscription.items.data[0]?.current_period_end;
-
-  await db.subscription.upsert({
-    where: { companyId },
-    create: {
-      companyId,
-      stripeCustomerId: subscription.customer as string,
-      stripeSubscriptionId: subscription.id,
-      status: mapStatus(subscription.status),
-      currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : undefined,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    },
-    update: {
-      stripeCustomerId: subscription.customer as string,
-      stripeSubscriptionId: subscription.id,
-      status: mapStatus(subscription.status),
-      currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : undefined,
-      cancelAtPeriodEnd: subscription.cancel_at_period_end,
-    },
-  });
+  if (companyId && subscription.status !== "canceled") await syncExtraUsers(companyId);
 }
 
 export async function POST(request: Request) {
@@ -70,9 +34,14 @@ export async function POST(request: Request) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+      // A one-time AI top-up purchase.
+      if (session.mode === "payment") {
+        await creditAiTopUp(session);
+        break;
+      }
       if (session.subscription) {
         const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
-        await syncSubscription(subscription);
+        await syncAll(subscription);
       }
       break;
     }
@@ -80,7 +49,7 @@ export async function POST(request: Request) {
     case "customer.subscription.updated":
     case "customer.subscription.deleted": {
       const subscription = event.data.object as Stripe.Subscription;
-      await syncSubscription(subscription);
+      await syncAll(subscription);
       break;
     }
     default:

@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { getBranchContext, resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { getCompanyPlan, takeAiRequest } from "@/lib/plan-limits";
 import { generateAssistantReply } from "@/lib/ai";
 import { getBusinessSnapshot, formatSnapshotForPrompt } from "@/lib/business-snapshot";
 import { ChatMessageSchema, type ChatMessageFormState } from "@/lib/validation/assistant";
@@ -36,6 +37,14 @@ export async function sendChatMessage(
   });
   if (!allowed) {
     return { message: "You've sent a lot of messages in the last hour. Please try again later." };
+  }
+
+  // The plan's monthly allowance, shared by everyone in the company.
+  if (!(await takeAiRequest(session.companyId))) {
+    const plan = await getCompanyPlan(session.companyId);
+    return {
+      message: `Your company has used all ${plan.aiRequests.toLocaleString("en-US")} AI requests in the ${plan.name} plan this month. They reset on the 1st. An owner can buy more on the Billing page, or move to a bigger plan.`,
+    };
   }
 
   const { content } = validated.data;

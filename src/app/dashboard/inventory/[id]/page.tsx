@@ -13,6 +13,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { BomLineForm } from "@/components/mrp/bom-line-form";
 import { PlanningFieldsForm } from "@/components/mrp/planning-fields-form";
 import { getMrpSettings } from "@/lib/mrp";
+import { hasFeature } from "@/lib/plan-limits";
 import { getInventorySettings } from "@/lib/lots";
 import { isExpired, isExpiringSoon } from "@/lib/lot-math";
 import { setProductTracking } from "@/lib/actions/lots";
@@ -51,6 +52,8 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const mrpSettings = await getMrpSettings(session.companyId);
+  // Bills of materials and planning fields belong to Planning / MRP (Growth).
+  const mrpOn = mrpSettings.enabled && (await hasFeature(session.companyId, "mrp"));
   const inventory = await getInventorySettings(session.companyId);
   const lots =
     product.trackingMode === "NONE"
@@ -100,7 +103,7 @@ export default async function ProductDetailPage({
   const multiBranch = branchStock.length > 1;
   const lowAnywhere = branchStock.some((b) => b.low);
   const canSetLevels = hasRole(session, ["OWNER", "ADMIN"]);
-  const [otherProducts, suppliers] = mrpSettings.enabled
+  const [otherProducts, suppliers] = mrpOn
     ? await Promise.all([
         db.product.findMany({
           where: { companyId: session.companyId, id: { not: product.id } },
@@ -386,7 +389,7 @@ export default async function ProductDetailPage({
 
           </div>
           <div className="space-y-6">
-            {mrpSettings.enabled && (
+            {mrpOn && (
               <>
                 <Card>
                   <CardHeader>
@@ -418,7 +421,7 @@ export default async function ProductDetailPage({
                             <div>
                               <Link
                                 href={`/dashboard/inventory/${line.component.id}`}
-                                className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                                className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                               >
                                 {line.component.name}
                               </Link>

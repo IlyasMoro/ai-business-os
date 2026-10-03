@@ -10,6 +10,9 @@ import { createSession } from "@/lib/session";
 import { hashPassword } from "@/lib/password";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { logAudit } from "@/lib/audit";
+import { getCompanyPlan, userRoom } from "@/lib/plan-limits";
+import { syncExtraUsers } from "@/lib/billing-seats";
+import { EXTRA_USER_PRICE, MAX_SCALE_USERS } from "@/lib/plans";
 import {
   InviteTeamMemberSchema,
   AcceptInviteSchema,
@@ -48,6 +51,24 @@ export async function inviteTeamMember(
   const existingUser = await db.user.findUnique({ where: { email } });
   if (existingUser) {
     return { message: "Someone with this email already has an account." };
+  }
+
+  // Re-sending an open invite keeps the seat it already holds.
+  const openInvite = await db.teamInvite.findFirst({
+    where: { companyId: session.companyId, email, acceptedAt: null, expiresAt: { gt: new Date() } },
+    select: { id: true },
+  });
+  const room = await userRoom(session.companyId, { pendingInvite: Boolean(openInvite) });
+  if (room === "full") {
+    return {
+      message: `AIBOS plans go up to ${MAX_SCALE_USERS} users, counting open invites. Remove someone or revoke an invite, or ask us about an Enterprise plan.`,
+    };
+  }
+  if (room === "needs-plan") {
+    const plan = await getCompanyPlan(session.companyId);
+    return {
+      message: `Your plan includes ${plan.users} users, counting open invites. To add more, the owner can subscribe to a plan on the Billing page; extra users are then $${EXTRA_USER_PRICE} each a month.`,
+    };
   }
 
   const company = await db.company.findUnique({
@@ -92,7 +113,12 @@ export async function inviteTeamMember(
   await logAudit(session.companyId, session.userId, "team.invited", "TeamInvite", email, { role });
 
   revalidatePath("/dashboard/team");
-  return { message: `Invite sent to ${email}.` };
+  return {
+    message:
+      room === "extra"
+        ? `Invite sent to ${email}. Once they join they're an extra user, $${EXTRA_USER_PRICE} a month, charged from that day.`
+        : `Invite sent to ${email}.`,
+  };
 }
 
 export async function revokeInvite(inviteId: string) {
@@ -128,6 +154,8 @@ export async function removeTeamMember(userId: string) {
   }
 
   await db.user.delete({ where: { id: userId, companyId: session.companyId } });
+  // Credits the rest of the period if they were an extra user.
+  await syncExtraUsers(session.companyId);
 
   await logAudit(session.companyId, session.userId, "team.member_removed", "User", userId, {});
 
@@ -160,6 +188,13 @@ export async function acceptInvite(
     return { message: "An account with this email already exists. Try signing in instead." };
   }
 
+  // The invite already holds a seat, unless it was revoked and resent or
+  // the plan changed since it was sent.
+  const room = await userRoom(invite.companyId, { pendingInvite: true });
+  if (room === "full" || room === "needs-plan") {
+    return { message: "This team is full on its current plan. Ask whoever invited you to make room, then try again." };
+  }
+
   const passwordHash = await hashPassword(validated.data.password);
 
   const user = await db.$transaction(async (tx) => {
@@ -175,6 +210,8 @@ export async function acceptInvite(
     await tx.teamInvite.update({ where: { id: invite.id }, data: { acceptedAt: new Date() } });
     return created;
   });
+  // A member above the plan's included users is billed from today.
+  await syncExtraUsers(invite.companyId);
 
   await createSession({
     userId: user.id,

@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore, type MouseEvent } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navGroups, type NavItem, type Role } from "./nav-config";
 
@@ -66,12 +66,15 @@ export function NavLinks({
   role,
   isPlatformAdmin = false,
   hiddenHrefs = [],
+  lockedHrefs = [],
   onNavigate,
 }: {
   role: Role;
   isPlatformAdmin?: boolean;
   /** Modules this company has switched off, e.g. Returns for a service business. */
   hiddenHrefs?: string[];
+  /** Modules the company's plan doesn't include; they open an upgrade page. */
+  lockedHrefs?: string[];
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
@@ -144,7 +147,7 @@ export function NavLinks({
               aria-expanded={open}
               aria-controls={panelId}
               className={cn(
-                "group/heading flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[14px] font-semibold leading-5 transition-colors duration-150",
+                "group/heading flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-[14px] font-medium leading-5 transition-colors duration-150",
                 containsActive
                   ? "text-white light:text-slate-950"
                   : "text-slate-200 hover:bg-white/[0.07] hover:text-white light:text-slate-700 light:hover:bg-slate-900/5 light:hover:text-slate-950"
@@ -160,7 +163,7 @@ export function NavLinks({
               />
               <span className="flex-1 truncate text-left">{group.label}</span>
               {!open && (
-                <span aria-hidden className="text-[11px] font-medium tabular-nums text-slate-500">
+                <span aria-hidden className="text-[11px] tabular-nums text-slate-500">
                   {group.items.length}
                 </span>
               )}
@@ -196,9 +199,10 @@ export function NavLinks({
                         }}
                         aria-current={active ? "page" : undefined}
                         className={cn(
-                          "relative flex items-center rounded-md px-3 py-1.5 text-[13.5px] font-medium leading-5 transition-colors duration-150",
+                          "relative flex items-center rounded-md px-3 py-1.5 text-[13.5px] leading-5 transition-colors duration-150",
+                          // Only the open page is medium weight; the rest stay regular.
                           active
-                            ? "bg-blue-500/15 text-white light:bg-blue-500/10 light:text-blue-700"
+                            ? "bg-blue-500/15 font-medium text-white light:bg-blue-500/10 light:text-blue-700"
                             : "text-slate-300 hover:bg-white/[0.07] hover:text-white light:text-slate-600 light:hover:bg-slate-900/5 light:hover:text-slate-950"
                         )}
                       >
@@ -206,6 +210,9 @@ export function NavLinks({
                           <span className="absolute -left-[9px] top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-blue-500" />
                         )}
                         {item.label}
+                        {lockedHrefs.includes(item.href) && (
+                          <Lock aria-label="Not on your plan" className="ml-auto h-3 w-3 shrink-0 text-slate-500" />
+                        )}
                         <PendingDot />
                       </Link>
                     );

@@ -9,6 +9,8 @@ import { getMrpSettings } from "@/lib/mrp";
 import { getEdiSettings } from "@/lib/edi/settings";
 import { getControllingSettings } from "@/lib/controlling";
 import { getBranchContext } from "@/lib/branches";
+import { getCompanyPlan } from "@/lib/plan-limits";
+import { planIncludes, type PlanFeature } from "@/lib/plans";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { SubscriptionBlocked } from "@/components/billing/subscription-blocked";
@@ -19,7 +21,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  const [notifications, subscription, returnPolicy, mrpSettings, ediSettings, controlling, branchCtx] = await Promise.all([
+  const [notifications, subscription, returnPolicy, mrpSettings, ediSettings, controlling, branchCtx, plan] = await Promise.all([
     getNotifications(user.companyId),
     db.subscription.findUnique({ where: { companyId: user.companyId } }),
     getReturnPolicy(user.companyId),
@@ -27,6 +29,7 @@ export default async function DashboardLayout({
     getEdiSettings(user.companyId),
     getControllingSettings(user.companyId),
     getBranchContext(),
+    getCompanyPlan(user.companyId),
   ]);
   const hiddenHrefs = [
     ...(returnPolicy.enabled ? [] : ["/dashboard/returns"]),
@@ -37,6 +40,10 @@ export default async function DashboardLayout({
     // Transfers only make sense once there is somewhere to move stock to.
     ...(branchCtx.branches.filter((b) => b.active).length > 1 ? [] : ["/dashboard/transfers"]),
   ];
+  // Growth and Scale modules stay in the menu with a lock on smaller plans.
+  const lockedHrefs = (["transfers", "mrp", "controlling", "automation", "edi"] as PlanFeature[])
+    .filter((feature) => !planIncludes(plan.id, feature))
+    .map((feature) => `/dashboard/${feature}`);
   const platformAdmin = isPlatformAdmin(user.email);
 
   const headersList = await headers();
@@ -46,7 +53,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar role={user.role} userName={user.name} isPlatformAdmin={platformAdmin} hiddenHrefs={hiddenHrefs} />
+      <Sidebar role={user.role} userName={user.name} isPlatformAdmin={platformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           companyName={user.company.name}
@@ -54,6 +61,7 @@ export default async function DashboardLayout({
           role={user.role}
           isPlatformAdmin={platformAdmin}
           hiddenHrefs={hiddenHrefs}
+          lockedHrefs={lockedHrefs}
           notifications={notifications}
           subscription={subscription}
           branch={{

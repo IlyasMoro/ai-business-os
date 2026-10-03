@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { TransactionSchema, type TransactionFormState } from "@/lib/validation/accounting";
 import { suggestTransactionCategory } from "@/lib/ai-categorize";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { takeAiRequest } from "@/lib/plan-limits";
 import { checkCostObject, getControllingSettings } from "@/lib/controlling";
 
 /** Cost object and budget check shared by create and update. */
@@ -73,6 +74,8 @@ export async function suggestCategory(description: string, type: "INCOME" | "EXP
     windowMs: 60 * 60 * 1000,
   });
   if (!allowed) return null;
+  // Suggestions are optional, so a used up plan allowance just skips them.
+  if (!(await takeAiRequest(session.companyId))) return null;
 
   const existing = await db.transaction.findMany({
     where: { companyId: session.companyId },

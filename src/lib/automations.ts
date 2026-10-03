@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { hasFeature } from "@/lib/plan-limits";
 import { systemBranchId } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { stockRows } from "@/lib/stock";
@@ -344,6 +345,8 @@ export async function runAutomations() {
 
     for (const settings of companies) {
       try {
+        // Automations and scheduled reports come with Growth and up.
+        if (!(await hasFeature(settings.companyId, "automation"))) continue;
         if (settings.overdueInvoiceReminders) await runOverdueInvoiceReminders(settings.companyId, settings.webhookUrl);
         if (settings.lowStockReorder) await runLowStockReorder(settings.companyId, settings.webhookUrl);
         if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId, settings.webhookUrl);

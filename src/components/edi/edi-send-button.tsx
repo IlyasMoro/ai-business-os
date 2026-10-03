@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { hasRole, verifySession } from "@/lib/dal";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { getEdiSettings } from "@/lib/edi/settings";
+import { hasFeature } from "@/lib/plan-limits";
 import { generateInvoice810, generatePurchaseOrder850, generateShipNotice856 } from "@/lib/actions/edi";
 
 const KINDS = {
@@ -31,6 +32,7 @@ export async function EdiSendButton({
   if (!hasRole(session, ["OWNER", "ADMIN"])) return null;
   const settings = await getEdiSettings(session.companyId);
   if (!settings?.enabled) return null;
+  if (!(await hasFeature(session.companyId, "edi"))) return null;
 
   const kind = KINDS[docType];
   const [partner, last] = await Promise.all([

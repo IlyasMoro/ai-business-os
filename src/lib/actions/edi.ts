@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { requireFeature } from "@/lib/plan-limits";
 import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { formatOf, getEdiSettings, ourParty, reserveControlNumber, shortRef } from "@/lib/edi/settings";
@@ -25,6 +26,7 @@ import { EdiPartnerFlagsSchema, EdiPartnerSchema, EdiSettingsSchema, MAX_EDI_FIL
 async function requireAdmin(back: string) {
   const session = await verifySession();
   if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`${back}?error=forbidden`);
+  await requireFeature(session.companyId, "edi", "/dashboard/edi");
   return session;
 }
 
