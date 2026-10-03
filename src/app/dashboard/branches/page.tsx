@@ -43,83 +43,86 @@ export default async function BranchesPage({
           )}
         </div>
 
-        <div className="mt-4 space-y-3">
-          {branches.map((b) => {
-            const records = b._count.orders + b._count.invoices + b._count.purchaseOrders;
-            return (
-              <details key={b.id} className="group rounded-2xl border border-white/[0.09] glass light:border-white/80">
-                <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 [&::-webkit-details-marker]:hidden">
-                  <span className="font-mono text-xs text-slate-400">{b.code}</span>
-                  <span className="font-semibold text-slate-50 light:text-slate-900">{b.name}</span>
-                  {b.isMain && <Badge tone="blue">Main</Badge>}
-                  {!b.active && <Badge tone="slate">Inactive</Badge>}
-                  <span className="ml-auto text-xs text-slate-500">
-                    {records} records · {b._count.employees} employees · {b._count.users} limited users
-                  </span>
-                </summary>
+        {/* Wide screens: the new branch form in a narrow column beside the list. */}
+        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <div className="space-y-3">
+            {branches.map((b) => {
+              const records = b._count.orders + b._count.invoices + b._count.purchaseOrders;
+              return (
+                <details key={b.id} className="group rounded-2xl border border-white/[0.09] glass light:border-white/80">
+                  <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 [&::-webkit-details-marker]:hidden">
+                    <span className="font-mono text-xs text-slate-400">{b.code}</span>
+                    <span className="font-semibold text-slate-50 light:text-slate-900">{b.name}</span>
+                    {b.isMain && <Badge tone="blue">Main</Badge>}
+                    {!b.active && <Badge tone="slate">Inactive</Badge>}
+                    <span className="ml-auto text-xs text-slate-500">
+                      {records} records · {b._count.employees} employees · {b._count.users} limited users
+                    </span>
+                  </summary>
 
-                <div className="border-t border-white/[0.06] px-5 py-4 light:border-slate-200">
-                  <form action={updateBranch.bind(null, b.id)} className="grid gap-4 sm:grid-cols-6">
-                    <div className="sm:col-span-1">
-                      <Label htmlFor={`code-${b.id}`}>Code</Label>
-                      <Input id={`code-${b.id}`} name="code" defaultValue={b.code} maxLength={12} required className="font-mono uppercase" />
-                    </div>
-                    <div className="sm:col-span-2">
-                      <Label htmlFor={`name-${b.id}`}>Name</Label>
-                      <Input id={`name-${b.id}`} name="name" defaultValue={b.name} maxLength={100} required />
-                    </div>
-                    <div className="sm:col-span-3">
-                      <Label htmlFor={`address-${b.id}`}>Address (optional)</Label>
-                      <Input id={`address-${b.id}`} name="address" defaultValue={b.address ?? ""} maxLength={300} />
-                    </div>
-                    <div className="sm:col-span-6">
-                      <SubmitButton pendingText="Saving...">Save changes</SubmitButton>
-                    </div>
-                  </form>
+                  <div className="border-t border-white/[0.06] px-5 py-4 light:border-slate-200">
+                    <form action={updateBranch.bind(null, b.id)} className="grid gap-4 sm:grid-cols-6">
+                      <div className="sm:col-span-1">
+                        <Label htmlFor={`code-${b.id}`}>Code</Label>
+                        <Input id={`code-${b.id}`} name="code" defaultValue={b.code} maxLength={12} required className="font-mono uppercase" />
+                      </div>
+                      <div className="sm:col-span-2">
+                        <Label htmlFor={`name-${b.id}`}>Name</Label>
+                        <Input id={`name-${b.id}`} name="name" defaultValue={b.name} maxLength={100} required />
+                      </div>
+                      <div className="sm:col-span-3">
+                        <Label htmlFor={`address-${b.id}`}>Address (optional)</Label>
+                        <Input id={`address-${b.id}`} name="address" defaultValue={b.address ?? ""} maxLength={300} />
+                      </div>
+                      <div className="sm:col-span-6">
+                        <SubmitButton pendingText="Saving...">Save changes</SubmitButton>
+                      </div>
+                    </form>
 
-                  <div className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4 light:border-slate-200">
-                    {!b.isMain && b.active && (
-                      <form action={makeMainBranch.bind(null, b.id)}>
-                        <Button type="submit" variant="secondary" size="sm">Make main branch</Button>
-                      </form>
-                    )}
-                    {!b.isMain && (
-                      <form action={setBranchActive.bind(null, b.id, !b.active)}>
-                        <Button type="submit" variant={b.active ? "ghost" : "secondary"} size="sm">
-                          {b.active ? "Deactivate" : "Reactivate"}
-                        </Button>
-                      </form>
-                    )}
-                    {b.isMain && (
-                      <p className="text-xs text-slate-500">
-                        The main branch is used for records created automatically, such as reorders and EDI orders.
-                      </p>
-                    )}
+                    <div className="mt-4 flex flex-wrap gap-2 border-t border-white/[0.06] pt-4 light:border-slate-200">
+                      {!b.isMain && b.active && (
+                        <form action={makeMainBranch.bind(null, b.id)}>
+                          <Button type="submit" variant="secondary" size="sm">Make main branch</Button>
+                        </form>
+                      )}
+                      {!b.isMain && (
+                        <form action={setBranchActive.bind(null, b.id, !b.active)}>
+                          <Button type="submit" variant={b.active ? "ghost" : "secondary"} size="sm">
+                            {b.active ? "Deactivate" : "Reactivate"}
+                          </Button>
+                        </form>
+                      )}
+                      {b.isMain && (
+                        <p className="text-xs text-slate-500">
+                          The main branch is used for records created automatically, such as reorders and EDI orders.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </details>
-            );
-          })}
-        </div>
-
-        <form action={createBranch} className="mt-6 space-y-4 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
-          <p className="font-semibold text-slate-50 light:text-slate-900">New branch</p>
-          <div className="grid gap-4 sm:grid-cols-6">
-            <div className="sm:col-span-1">
-              <Label htmlFor="code">Code</Label>
-              <Input id="code" name="code" placeholder="CPT" maxLength={12} required className="font-mono uppercase" />
-            </div>
-            <div className="sm:col-span-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" name="name" placeholder="Cape Town" maxLength={100} required />
-            </div>
-            <div className="sm:col-span-3">
-              <Label htmlFor="address">Address (optional)</Label>
-              <Input id="address" name="address" maxLength={300} />
-            </div>
+                </details>
+              );
+            })}
           </div>
-          <SubmitButton pendingText="Creating...">Create branch</SubmitButton>
-        </form>
+
+          <form action={createBranch} className="space-y-4 rounded-2xl border border-white/[0.09] p-5 glass lg:order-first light:border-white/80">
+            <p className="font-semibold text-slate-50 light:text-slate-900">New branch</p>
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="code">Code</Label>
+                <Input id="code" name="code" placeholder="CPT" maxLength={12} required className="font-mono uppercase" />
+              </div>
+              <div>
+                <Label htmlFor="name">Name</Label>
+                <Input id="name" name="name" placeholder="Cape Town" maxLength={100} required />
+              </div>
+              <div>
+                <Label htmlFor="address">Address (optional)</Label>
+                <Input id="address" name="address" maxLength={300} />
+              </div>
+            </div>
+            <SubmitButton pendingText="Creating...">Create branch</SubmitButton>
+          </form>
+        </div>
       </div>
     </div>
   );

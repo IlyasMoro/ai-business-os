@@ -53,106 +53,111 @@ export default async function TeamPage({
           <ErrorBanner code={error} />
         </div>
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Invite a teammate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Seats count open invites; past the plan's users each new member is billed. */}
-            <p className="mb-4 text-sm text-slate-400 light:text-slate-500">
-              {seats} {seats === 1 ? "user" : "users"}, counting open invites. The {plan.name} plan includes {plan.users}.{" "}
-              {seats >= MAX_SCALE_USERS || plan.users >= MAX_SCALE_USERS
-                ? `For more than ${MAX_SCALE_USERS}, ask us about an Enterprise plan.`
-                : billable
-                  ? `More are $${EXTRA_USER_PRICE} each a month, charged from the day they join.`
-                  : seats >= plan.users
-                    ? "To add more, the owner can subscribe to a plan on the Billing page."
-                    : `After that, extra users are $${EXTRA_USER_PRICE} each a month.`}
-            </p>
-            <InviteForm />
-          </CardContent>
-        </Card>
-
-        {invites.length > 0 && (
-          <Card className="mt-6">
+        {/* Wide screens: the invite form in a narrow column beside the lists. */}
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <Card>
             <CardHeader>
-              <CardTitle>Pending invites</CardTitle>
+              <CardTitle>Invite a teammate</CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-                {invites.map((invite) => {
-                  const expired = invite.expiresAt < new Date();
-                  return (
-                    <li key={invite.id} className="flex items-center justify-between py-2.5 text-sm">
-                      <div className="flex items-center gap-2.5">
-                        <span className="text-slate-50 light:text-slate-900">{invite.email}</span>
-                        <StatusBadge status={invite.role} tone={roleTone[invite.role]} />
-                        {expired && <Badge tone="red">Expired</Badge>}
-                      </div>
-                      <DeleteButton
-                        action={revokeInvite.bind(null, invite.id)}
-                        confirmMessage="Revoke this invite?"
-                        label="Revoke"
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
+              {/* Seats count open invites; past the plan's users each new member is billed. */}
+              <p className="mb-4 text-sm text-slate-400 light:text-slate-500">
+                {seats} {seats === 1 ? "user" : "users"}, counting open invites. The {plan.name} plan includes {plan.users}.{" "}
+                {seats >= MAX_SCALE_USERS || plan.users >= MAX_SCALE_USERS
+                  ? `For more than ${MAX_SCALE_USERS}, ask us about an Enterprise plan.`
+                  : billable
+                    ? `More are $${EXTRA_USER_PRICE} each a month, charged from the day they join.`
+                    : seats >= plan.users
+                      ? "To add more, the owner can subscribe to a plan on the Billing page."
+                      : `After that, extra users are $${EXTRA_USER_PRICE} each a month.`}
+              </p>
+              <InviteForm />
             </CardContent>
           </Card>
-        )}
 
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Members</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-              {members.map((member) => (
-                <li key={member.id} className="flex items-center justify-between py-2.5 text-sm">
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <span className="font-semibold text-slate-50 light:text-slate-900">{member.name}</span>
-                      <StatusBadge status={member.role} tone={roleTone[member.role]} />
-                    </div>
-                    <p className="text-slate-400 light:text-slate-500">{member.email}</p>
-                  </div>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    {showBranchAccess && member.role === "EMPLOYEE" && (
-                      <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
-                        <Select
-                          name="branchId"
-                          defaultValue={member.branchId ?? ""}
-                          aria-label={`Branch access for ${member.name}`}
-                          className="w-44"
-                        >
-                          <option value="">All branches</option>
-                          {branches
-                            .filter((b) => b.active || b.id === member.branchId)
-                            .map((b) => (
-                              <option key={b.id} value={b.id}>
-                                Only {b.name}
-                              </option>
-                            ))}
-                        </Select>
-                        <SubmitButton pendingText="Saving..." variant="secondary">
-                          Save
-                        </SubmitButton>
-                      </form>
-                    )}
-                    {session.role === "OWNER" && member.id !== session.userId && (
-                      <DeleteButton
-                        action={removeTeamMember.bind(null, member.id)}
-                        confirmMessage={`Remove ${member.name} from this company?`}
-                        label="Remove"
-                      />
-                    )}
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+          <div className="space-y-6">
+            {invites.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Pending invites</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                    {invites.map((invite) => {
+                      const expired = invite.expiresAt < new Date();
+                      return (
+                        <li key={invite.id} className="flex items-center justify-between py-2.5 text-sm">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-slate-50 light:text-slate-900">{invite.email}</span>
+                            <StatusBadge status={invite.role} tone={roleTone[invite.role]} />
+                            {expired && <Badge tone="red">Expired</Badge>}
+                          </div>
+                          <DeleteButton
+                            action={revokeInvite.bind(null, invite.id)}
+                            confirmMessage="Revoke this invite?"
+                            label="Revoke"
+                          />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Members</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                  {members.map((member) => (
+                    <li key={member.id} className="flex items-center justify-between py-2.5 text-sm">
+                      <div>
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-semibold text-slate-50 light:text-slate-900">{member.name}</span>
+                          <StatusBadge status={member.role} tone={roleTone[member.role]} />
+                        </div>
+                        <p className="text-slate-400 light:text-slate-500">{member.email}</p>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-end gap-2">
+                        {showBranchAccess && member.role === "EMPLOYEE" && (
+                          <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
+                            <Select
+                              name="branchId"
+                              defaultValue={member.branchId ?? ""}
+                              aria-label={`Branch access for ${member.name}`}
+                              className="w-44"
+                            >
+                              <option value="">All branches</option>
+                              {branches
+                                .filter((b) => b.active || b.id === member.branchId)
+                                .map((b) => (
+                                  <option key={b.id} value={b.id}>
+                                    Only {b.name}
+                                  </option>
+                                ))}
+                            </Select>
+                            <SubmitButton pendingText="Saving..." variant="secondary">
+                              Save
+                            </SubmitButton>
+                          </form>
+                        )}
+                        {session.role === "OWNER" && member.id !== session.userId && (
+                          <DeleteButton
+                            action={removeTeamMember.bind(null, member.id)}
+                            confirmMessage={`Remove ${member.name} from this company?`}
+                            label="Remove"
+                          />
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

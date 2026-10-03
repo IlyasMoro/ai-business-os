@@ -89,10 +89,11 @@ export default async function InternalOrdersPage({ searchParams }: { searchParam
 
       <form
         action={createInternalOrder}
-        className="mt-6 max-w-2xl space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
+        className="mt-6 space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
       >
         <p className="font-semibold text-slate-50 light:text-slate-900">New internal order</p>
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Full width like the table above, with the fields in one row on wide screens. */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" placeholder="Spring trade fair" maxLength={100} required />
@@ -101,21 +102,21 @@ export default async function InternalOrdersPage({ searchParams }: { searchParam
             <Label htmlFor="budget">Budget</Label>
             <Input id="budget" name="budget" type="number" min="0" step="0.01" defaultValue={0} required />
           </div>
-        </div>
-        <div>
-          <Label htmlFor="settleToId">Settle to cost center</Label>
-          <Select id="settleToId" name="settleToId" defaultValue="">
-            <option value="">Choose later</option>
-            {centers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.code} {c.name}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="description">Description (optional)</Label>
-          <Input id="description" name="description" maxLength={500} />
+          <div>
+            <Label htmlFor="settleToId">Settle to cost center</Label>
+            <Select id="settleToId" name="settleToId" defaultValue="">
+              <option value="">Choose later</option>
+              {centers.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.code} {c.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="description">Description (optional)</Label>
+            <Input id="description" name="description" maxLength={500} />
+          </div>
         </div>
         <SubmitButton pendingText="Creating...">Create internal order</SubmitButton>
       </form>

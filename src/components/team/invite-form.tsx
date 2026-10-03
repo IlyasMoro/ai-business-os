@@ -9,21 +9,21 @@ export function InviteForm() {
   const [state, formAction, pending] = useActionState(inviteTeamMember, undefined);
 
   return (
-    <form action={formAction} className="flex flex-wrap items-end gap-3">
+    <form action={formAction} className="space-y-3">
       <div>
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="teammate@company.com" required className="w-64" />
+        <Input id="email" name="email" type="email" placeholder="teammate@company.com" required className="w-full" />
         <FieldError messages={state?.errors?.email} />
       </div>
       <div>
         <Label htmlFor="role">Role</Label>
-        <Select id="role" name="role" defaultValue="EMPLOYEE" className="w-36">
+        <Select id="role" name="role" defaultValue="EMPLOYEE" className="w-full">
           <option value="ADMIN">Admin</option>
           <option value="EMPLOYEE">Employee</option>
         </Select>
         <FieldError messages={state?.errors?.role} />
       </div>
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} className="w-full">
         {pending ? "Sending..." : "Send invite"}
       </Button>
 
@@ -31,8 +31,8 @@ export function InviteForm() {
         <p
           className={
             state.message.startsWith("Invite sent")
-              ? "w-full text-sm text-emerald-400"
-              : "w-full text-sm text-red-400"
+              ? "text-sm text-emerald-400"
+              : "text-sm text-red-400"
           }
         >
           {state.message}

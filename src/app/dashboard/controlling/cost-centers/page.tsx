@@ -89,24 +89,25 @@ export default async function CostCentersPage({
 
       <form
         action={createCostCenter}
-        className="mt-6 max-w-2xl space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
+        className="mt-6 space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
       >
         <p className="font-semibold text-slate-50 light:text-slate-900">New cost center</p>
-        <div className="grid gap-4 sm:grid-cols-3">
+        {/* Full width like the table above, with the fields in one row on wide screens. */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Label htmlFor="code">Code</Label>
             <Input id="code" name="code" placeholder="1000" maxLength={10} required className="font-mono" />
           </div>
-          <div className="sm:col-span-2">
+          <div>
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" placeholder="Administration" maxLength={100} required />
           </div>
+          <div>
+            <Label htmlFor="description">Description (optional)</Label>
+            <Input id="description" name="description" maxLength={500} />
+          </div>
+          {branchOptions && <OptionalBranchSelect {...branchOptions} emptyLabel="No branch (company wide)" label="Branch (optional)" />}
         </div>
-        <div>
-          <Label htmlFor="description">Description (optional)</Label>
-          <Input id="description" name="description" maxLength={500} />
-        </div>
-        {branchOptions && <OptionalBranchSelect {...branchOptions} emptyLabel="No branch (company wide)" label="Branch (optional)" />}
         <SubmitButton pendingText="Creating...">Create cost center</SubmitButton>
       </form>
     </div>

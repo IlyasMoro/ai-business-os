@@ -62,101 +62,103 @@ export default async function EdiPartnersPage({
           )}
         </div>
 
-        <div className="mt-4 space-y-4">
-          {partners.length === 0 && <p className="text-sm text-slate-500">No trading partners yet. Add the first one below.</p>}
-          {partners.map((p) => (
-            <div key={p.id} className={card}>
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="flex items-center gap-2 font-medium text-slate-50 light:text-slate-900">
-                    {p.name}
-                    {!p.enabled && <Badge tone="slate">Off</Badge>}
-                  </p>
-                  <p className="font-mono text-xs text-slate-500">
-                    ISA {p.isaQualifier}:{p.isaId} · GS {p.gsId}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400 light:text-slate-500">
-                    {p.customer && (
-                      <>
-                        Customer{" "}
-                        <Link href={`/dashboard/crm/${p.customer.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-                          {p.customer.name}
-                        </Link>
-                      </>
-                    )}
-                    {p.customer && p.supplier && " · "}
-                    {p.supplier && <>Supplier {p.supplier.name}</>}
-                  </p>
+        {/* Wide screens: the add form in a narrow column beside the partners. */}
+        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+          <div className="space-y-4">
+            {partners.length === 0 && <p className={`${card} text-sm text-slate-500`}>No trading partners yet. Add the first one with the form.</p>}
+            {partners.map((p) => (
+              <div key={p.id} className={card}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="flex items-center gap-2 font-semibold text-slate-50 light:text-slate-900">
+                      {p.name}
+                      {!p.enabled && <Badge tone="slate">Off</Badge>}
+                    </p>
+                    <p className="font-mono text-xs text-slate-500">
+                      ISA {p.isaQualifier}:{p.isaId} · GS {p.gsId}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-400 light:text-slate-500">
+                      {p.customer && (
+                        <>
+                          Customer{" "}
+                          <Link href={`/dashboard/crm/${p.customer.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            {p.customer.name}
+                          </Link>
+                        </>
+                      )}
+                      {p.customer && p.supplier && " · "}
+                      {p.supplier && <>Supplier {p.supplier.name}</>}
+                    </p>
+                  </div>
+                  <DeleteButton action={deleteEdiPartner.bind(null, p.id)} confirmMessage={`Remove ${p.name}?`} label="" />
                 </div>
-                <DeleteButton action={deleteEdiPartner.bind(null, p.id)} confirmMessage={`Remove ${p.name}?`} label="" />
+                <form action={updateEdiPartnerFlags.bind(null, p.id)} className="mt-4 grid gap-2 sm:grid-cols-2">
+                  <Check name="enabled" label="Partner is active" defaultChecked={p.enabled} />
+                  {FLAGS.map((f) => (
+                    <Check key={f.name} name={f.name} label={f.label} defaultChecked={p[f.name]} />
+                  ))}
+                  <div className="sm:col-span-2">
+                    <SubmitButton variant="secondary" pendingText="Saving...">
+                      Save
+                    </SubmitButton>
+                  </div>
+                </form>
               </div>
-              <form action={updateEdiPartnerFlags.bind(null, p.id)} className="mt-4 grid gap-2 sm:grid-cols-2">
-                <Check name="enabled" label="Partner is active" defaultChecked={p.enabled} />
-                {FLAGS.map((f) => (
-                  <Check key={f.name} name={f.name} label={f.label} defaultChecked={p[f.name]} />
-                ))}
-                <div className="sm:col-span-2">
-                  <SubmitButton variant="secondary" pendingText="Saving...">
-                    Save
-                  </SubmitButton>
-                </div>
-              </form>
-            </div>
-          ))}
-        </div>
-
-        <form action={createEdiPartner} className={`mt-6 max-w-3xl space-y-4 ${card}`}>
-          <p className="font-semibold text-slate-50 light:text-slate-900">Add a trading partner</p>
-          <div>
-            <Label htmlFor="name">Name</Label>
-            <Input id="name" name="name" required maxLength={200} />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div>
-              <Label htmlFor="isaQualifier">ISA qualifier</Label>
-              <Input id="isaQualifier" name="isaQualifier" defaultValue="ZZ" maxLength={2} required />
-            </div>
-            <div>
-              <Label htmlFor="isaId">ISA ID</Label>
-              <Input id="isaId" name="isaId" maxLength={15} required />
-            </div>
-            <div>
-              <Label htmlFor="gsId">GS ID</Label>
-              <Input id="gsId" name="gsId" maxLength={15} required />
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="customerId">Customer (they send you orders)</Label>
-              <Select id="customerId" name="customerId" defaultValue="">
-                <option value="">None</option>
-                {customers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="supplierId">Supplier (you send them orders)</Label>
-              <Select id="supplierId" name="supplierId" defaultValue="">
-                <option value="">None</option>
-                {suppliers.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {FLAGS.map((f) => (
-              <Check key={f.name} name={f.name} label={f.label} defaultChecked />
             ))}
           </div>
-          <SubmitButton pendingText="Adding...">Add partner</SubmitButton>
-        </form>
 
+          <form action={createEdiPartner} className={`space-y-4 lg:order-first ${card}`}>
+            <p className="font-semibold text-slate-50 light:text-slate-900">Add a trading partner</p>
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input id="name" name="name" required maxLength={200} />
+            </div>
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="isaQualifier">ISA qualifier</Label>
+                <Input id="isaQualifier" name="isaQualifier" defaultValue="ZZ" maxLength={2} required />
+              </div>
+              <div>
+                <Label htmlFor="isaId">ISA ID</Label>
+                <Input id="isaId" name="isaId" maxLength={15} required />
+              </div>
+              <div>
+                <Label htmlFor="gsId">GS ID</Label>
+                <Input id="gsId" name="gsId" maxLength={15} required />
+              </div>
+            </div>
+            <div className="grid gap-4">
+              <div>
+                <Label htmlFor="customerId">Customer (they send you orders)</Label>
+                <Select id="customerId" name="customerId" defaultValue="">
+                  <option value="">None</option>
+                  {customers.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="supplierId">Supplier (you send them orders)</Label>
+                <Select id="supplierId" name="supplierId" defaultValue="">
+                  <option value="">None</option>
+                  {suppliers.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+            <div className="grid gap-2">
+              {FLAGS.map((f) => (
+                <Check key={f.name} name={f.name} label={f.label} defaultChecked />
+              ))}
+            </div>
+            <SubmitButton pendingText="Adding...">Add partner</SubmitButton>
+          </form>
+        </div>
       </div>
     </div>
   );
