@@ -15,7 +15,7 @@ export async function PlanGate({ feature, children }: { feature: PlanFeature; ch
   const needed = planById(FEATURE_MIN_PLAN[feature]);
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center text-center">
-      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-400/10 text-cyan-400 ring-1 ring-cyan-400/30">
+      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-400 ring-1 ring-blue-500/30 light:text-blue-600">
         <Lock aria-hidden className="h-5 w-5" />
       </span>
       <h1 className="mt-5 text-xl font-semibold text-slate-50 light:text-slate-900">

@@ -26,7 +26,7 @@ function Meter({ label, used, limit, extendable = false }: { label: string; used
       </div>
       {limit !== null && (
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10 light:bg-slate-200">
-          <div className={full ? "h-full bg-amber-400" : "h-full bg-cyan-400"} style={{ width: `${share}%` }} />
+          <div className={full ? "h-full bg-amber-400" : "h-full bg-blue-500"} style={{ width: `${share}%` }} />
         </div>
       )}
     </div>

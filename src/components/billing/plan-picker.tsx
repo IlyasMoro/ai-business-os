@@ -35,7 +35,7 @@ export function PlanPicker({
             className={cn(
               "rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
               interval === value
-                ? "bg-cyan-400 text-[#0a1428]"
+                ? "bg-blue-600 text-white"
                 : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
             )}
           >
@@ -56,7 +56,7 @@ export function PlanPicker({
               className={cn(
                 "flex flex-col rounded-xl border p-4",
                 isCurrent
-                  ? "border-cyan-400/50 bg-cyan-400/[0.06]"
+                  ? "border-blue-500/50 bg-blue-500/[0.06]"
                   : "border-white/[0.09] bg-white/[0.02] light:border-slate-200 light:bg-white"
               )}
             >
@@ -65,9 +65,9 @@ export function PlanPicker({
               <div className="flex items-center justify-between gap-2">
                 <p className="font-semibold text-slate-50 light:text-slate-900">{plan.name}</p>
                 {isCurrent ? (
-                  <span className="rounded-full bg-cyan-400 px-2 py-0.5 text-[11px] font-semibold text-[#0a1428]">Current</span>
+                  <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">Current</span>
                 ) : (
-                  plan.popular && <span className="text-[11px] font-semibold text-cyan-400">Most popular</span>
+                  plan.popular && <span className="text-[11px] font-semibold text-blue-400 light:text-blue-600">Most popular</span>
                 )}
               </div>
               <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
@@ -82,7 +82,7 @@ export function PlanPicker({
                   `${plan.aiRequests.toLocaleString("en-US")} AI requests a month`,
                 ].map((line) => (
                   <li key={line} className="flex items-center gap-2">
-                    <Check aria-hidden className="h-3.5 w-3.5 shrink-0 text-cyan-400" />
+                    <Check aria-hidden className="h-3.5 w-3.5 shrink-0 text-blue-400 light:text-blue-600" />
                     {line}
                   </li>
                 ))}
