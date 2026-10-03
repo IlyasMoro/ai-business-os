@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
  *
  * `alwaysDark` is for surfaces that stay dark in the light theme too, such as
  * the public landing pages, so the wordmark does not switch to near black.
+ * `onLight` is the opposite: a surface that is always white (the landing
+ * page header), so the wordmark is always the brand navy.
  *
  * The PNG has wide transparent padding around the mark; the negative margins
  * trim it so the mark sits tight to the name and lines up with nearby content.
@@ -17,10 +19,12 @@ import { cn } from "@/lib/utils";
 export function Logo({
   layout = "inline",
   alwaysDark = false,
+  onLight = false,
   className,
 }: {
   layout?: "inline" | "stacked";
   alwaysDark?: boolean;
+  onLight?: boolean;
   className?: string;
 }) {
   const stacked = layout === "stacked";
@@ -36,9 +40,10 @@ export function Logo({
       />
       <span
         className={cn(
-          "font-display font-extrabold tracking-tight text-white",
+          "font-display font-extrabold tracking-tight",
+          onLight ? "text-[#0b1f5e]" : "text-white",
           stacked ? "text-2xl" : "text-lg",
-          !alwaysDark && "light:text-slate-900"
+          !alwaysDark && !onLight && "light:text-slate-900"
         )}
       >
         AIBOS

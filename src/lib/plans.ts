@@ -76,6 +76,35 @@ export const PLANS: Plan[] = [
   },
 ];
 
+/** The promises every plan keeps, strongest first. Shown on the pricing
+ * page and in the landing page pricing preview. */
+export const ON_EVERY_PLAN = [
+  "AI Copilot that asks before it acts",
+  "Owner, admin and employee roles for every user",
+  "Email for invoices, reminders and notifications",
+  "Export your data anytime, cancel anytime",
+];
+
+/** Everything a business gets on any plan, for the landing page's "Every
+ * plan includes" panel. Growth and Scale are "Everything in Starter, plus",
+ * so these are Starter's modules plus the promises above. What differs by
+ * plan (users, branches, AI requests, support level) is left out. Twelve
+ * lines so the four column grid fills evenly. */
+export const EVERY_PLAN_INCLUDES = [
+  "CRM, Sales and Marketing",
+  "Invoicing, Returns and Support",
+  "Inventory and Procurement",
+  "Projects and Accounting",
+  "HR, Payroll and Team",
+  "Google integration for Gmail and Calendar",
+  ON_EVERY_PLAN[0],
+  ON_EVERY_PLAN[1],
+  ON_EVERY_PLAN[2],
+  "Export your data anytime",
+  "Cancel anytime from the Billing page",
+  "14 day free trial with every module",
+];
+
 /** Monthly price for each user beyond a plan's included users. */
 export const EXTRA_USER_PRICE = 15;
 

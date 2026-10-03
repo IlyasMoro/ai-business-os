@@ -1,19 +1,19 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { BarChart3, Boxes, Check, Receipt, Sparkles, Users, Wallet, Zap, type LucideIcon } from "lucide-react";
-import { Reveal } from "@/components/landing/reveal";
 import { cn } from "@/lib/utils";
 
-/* Landing page feature grid. Each card pairs the pitch with a small, static
-   preview of the feature so visitors see what it does, not just read it.
-   Accent colors match the department colors in ModuleConstellation. */
+/* The landing page features, shown one at a time by FeatureSlider. Each
+   pairs the pitch with a small, static preview of the feature so visitors
+   see what it does, not just read it. Accent colors match the department
+   colors in ModuleConstellation. */
 
-type Feature = {
+export type Feature = {
   name: string;
+  /** Short eyebrow above the slide title. */
+  label: string;
   description: string;
   icon: LucideIcon;
   color: string;
-  /** wide: two columns on tablet and desktop. full: whole row, preview beside the text. */
-  span?: "wide" | "full";
   preview: ReactNode;
 };
 
@@ -37,13 +37,13 @@ const pipeline = [
 
 const automations = ["Overdue invoice reminders", "Low stock reorders", "Stale ticket escalation", "Dead lead cleanup"];
 
-const features: Feature[] = [
+export const FEATURES: Feature[] = [
   {
     name: "CRM and Sales",
+    label: "Sales",
     description: "Every lead, quote, and customer conversation in one pipeline, from first contact to signed deal.",
     icon: Users,
     color: "#60a5fa",
-    span: "wide",
     preview: (
       <Panel className="space-y-2.5">
         {pipeline.map((row) => (
@@ -60,6 +60,7 @@ const features: Feature[] = [
   },
   {
     name: "Inventory",
+    label: "Stock",
     description: "Set a reorder point once. Get flagged the moment stock dips below it, before you run out.",
     icon: Boxes,
     color: "#fbbf24",
@@ -84,6 +85,7 @@ const features: Feature[] = [
   },
   {
     name: "Invoicing",
+    label: "Invoices",
     description: "Line items, tax, and totals calculated automatically. Send a professional invoice in one click.",
     icon: Receipt,
     color: "#38bdf8",
@@ -101,6 +103,7 @@ const features: Feature[] = [
   },
   {
     name: "Accounting and Payroll",
+    label: "Finance",
     description: "Income and expenses linked back to the invoice or project that created them, so the books reconcile themselves.",
     icon: Wallet,
     color: "#34d399",
@@ -123,6 +126,7 @@ const features: Feature[] = [
   },
   {
     name: "Reports",
+    label: "Insights",
     description: "Trends over six months and the numbers at risk, plus an AI summary of what actually needs your attention this week.",
     icon: BarChart3,
     color: "#22d3ee",
@@ -148,10 +152,10 @@ const features: Feature[] = [
   },
   {
     name: "Automation",
+    label: "Automation",
     description: "Overdue invoice reminders, low stock reorders, escalating stale tickets, and clearing out dead leads, running every day without you lifting a finger.",
     icon: Zap,
     color: "#a78bfa",
-    span: "full",
     preview: (
       <Panel className="grid gap-2 sm:grid-cols-2">
         {automations.map((name) => (
@@ -170,37 +174,3 @@ const features: Feature[] = [
     ),
   },
 ];
-
-export function FeatureBento() {
-  return (
-    <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-      {features.map((feature, i) => (
-        <Reveal
-          key={feature.name}
-          delay={i * 75}
-          className={cn(
-            feature.span === "wide" && "sm:col-span-2",
-            feature.span === "full" && "sm:col-span-2 lg:col-span-3"
-          )}
-        >
-          <article
-            style={{ "--accent": feature.color } as CSSProperties}
-            className={cn(
-              "group flex h-full flex-col gap-6 rounded-2xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-(color:--accent)/40 hover:bg-white/[0.05] hover:shadow-[0_18px_50px_-24px_var(--accent)]",
-              feature.span === "full" && "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:items-center lg:gap-10"
-            )}
-          >
-            <div>
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-(color:--accent)/30 bg-(color:--accent)/10 text-(--accent)">
-                <feature.icon className="h-5 w-5" />
-              </span>
-              <h3 className="mt-4 text-lg font-semibold text-slate-50">{feature.name}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-400">{feature.description}</p>
-            </div>
-            <div className="mt-auto">{feature.preview}</div>
-          </article>
-        </Reveal>
-      ))}
-    </div>
-  );
-}

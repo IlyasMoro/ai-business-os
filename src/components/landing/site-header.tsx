@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
+import styles from "@/components/landing/landing.module.css";
 
 /* Landing page sections, in page order so the scroll highlight moves left
    to right as you read. Each id is set on its <section> in app/page.tsx. */
@@ -20,7 +21,9 @@ const SECTIONS = [
 const CTA_CLASS =
   "rounded-full border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
 
-export function SiteHeader() {
+/** `light`: the landing page's white bar with a dark glass link pill and a
+ * cyan call to action. Other public pages keep the dark header. */
+export function SiteHeader({ light = false }: { light?: boolean }) {
   const pathname = usePathname();
   const onLanding = pathname === "/";
   const [activeSection, setActiveSection] = useState<string | null>(null);
@@ -59,6 +62,75 @@ export function SiteHeader() {
       "rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
       active ? "text-white" : "text-slate-400 hover:text-slate-50"
     );
+
+  if (light) {
+    return (
+      <header className="sticky top-0 z-50 border-b border-[#e6e9ee] bg-white">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-[4vw] py-3 xl:px-0">
+          <Link
+            href="/"
+            onClick={() => setMenuOpen(false)}
+            className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+          >
+            <Logo onLight className="drop-shadow-[0_3px_6px_rgba(24,67,111,0.28)]" />
+          </Link>
+
+          <nav aria-label="Main" className={cn(styles.glass, styles.navPill, "hidden lg:flex")}>
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={link.active ? "true" : undefined}
+                className={cn(styles.navLink, link.active && styles.navLinkActive)}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-4">
+            <Link
+              href="/login"
+              className="hidden text-[0.8rem] font-extrabold uppercase tracking-[0.04em] text-[#0b1f5e] transition-colors hover:text-cyan-500 sm:block"
+            >
+              Sign in
+            </Link>
+            <Link href="/register" className={cn(styles.btn, "whitespace-nowrap px-4 py-2 text-[0.7rem] sm:px-5 sm:text-[0.76rem]")}>
+              Start free trial
+            </Link>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((open) => !open)}
+              aria-expanded={menuOpen}
+              aria-controls="site-menu"
+              aria-label={menuOpen ? "Close menu" : "Open menu"}
+              className="flex h-9 w-9 items-center justify-center rounded-md text-[#0b1f5e] transition-colors hover:bg-slate-100 lg:hidden"
+            >
+              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
+        </div>
+
+        {menuOpen && (
+          <nav id="site-menu" aria-label="Main" className="border-t border-[#e6e9ee] px-6 pb-4 pt-2 lg:hidden">
+            {[...links, { href: "/login", label: "Sign in", active: false }].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className={cn(
+                  "block rounded-md px-3 py-2.5 text-sm font-extrabold uppercase tracking-[0.04em]",
+                  link.active ? "text-cyan-600" : "text-[#0b1f5e] hover:bg-slate-100"
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        )}
+      </header>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/60 backdrop-blur-xl">

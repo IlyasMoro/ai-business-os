@@ -8,18 +8,14 @@ import { PricingCompare } from "@/components/landing/pricing-compare";
 import { PricingPlans } from "@/components/landing/pricing-plans";
 import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 import { PRICING_FAQ } from "@/components/landing/faq-data";
+import { ON_EVERY_PLAN } from "@/lib/plans";
 
 export const metadata = {
   title: "Pricing",
 };
 
 // The promises that decide a purchase, strongest first.
-const INCLUDED = [
-  "AI Copilot that asks before it acts",
-  "Owner, admin and employee roles for every user",
-  "Email for invoices, reminders and notifications",
-  "Export your data anytime, cancel anytime",
-];
+const INCLUDED = ON_EVERY_PLAN;
 
 const FAQ = PRICING_FAQ;
 

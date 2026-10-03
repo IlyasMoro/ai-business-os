@@ -1,142 +1,166 @@
-import Link from "next/link";
-import { LinkButton } from "@/components/ui/button";
+import { Download, Lock, ShieldCheck, UserCog } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
-import { SiteFooter } from "@/components/landing/site-footer";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { AiTerminalPreview } from "@/components/landing/ai-terminal-preview";
 import { ProductPreview } from "@/components/landing/product-preview";
 import { ModuleConstellation } from "@/components/landing/module-constellation";
-import { FeatureBento } from "@/components/landing/feature-bento";
+import { FeatureSlider } from "@/components/landing/feature-slider";
+import { LandingPricing } from "@/components/landing/landing-pricing";
 import { FaqSection } from "@/components/landing/faq-section";
-import { ArrowRight } from "lucide-react";
-import { AuroraBackdrop } from "@/components/landing/aurora-backdrop";
 import { STARTING_PRICE } from "@/lib/plans";
+import { cn } from "@/lib/utils";
+import styles from "@/components/landing/landing.module.css";
 
-const CTA_CLASS =
-  "border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
+/* A white page with dark glass accents: a black glass hero over the
+   blurred dashboard, the product shot overlapping it, then How it works,
+   Features, the trust panel, pricing and the FAQ, closing on a dark glass
+   footer. Styles live in components/landing/landing.module.css. */
+
+// Each point restates an answer in faq-data.ts, so the two never disagree.
+const TRUST = [
+  {
+    icon: ShieldCheck,
+    title: "AI that asks first",
+    text: "Every action the AI Copilot proposes waits for an owner or admin to approve it.",
+  },
+  {
+    icon: Lock,
+    title: "Your data stays private",
+    text: "Kept separate from every other company, never sold, and never used to train AI for other customers.",
+  },
+  {
+    icon: UserCog,
+    title: "Roles for every user",
+    text: "Employees see the modules they work in, while HR, payroll and accounting stay with owners and admins.",
+  },
+  {
+    icon: Download,
+    title: "Export anytime",
+    text: "Export any list as a CSV file or download a full backup, and cancel from the Billing page.",
+  },
+];
+
+const STATS = [
+  [`From $${STARTING_PRICE}`, "Per month"],
+  ["14 days", "Free trial"],
+  ["24/7", "Always on"],
+];
+
+function SectionHead({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) {
+  return (
+    <Reveal>
+      <p className={styles.eyebrow}>{eyebrow}</p>
+      <h2 className={styles.title}>{title}</h2>
+      {sub && <p className={styles.sub}>{sub}</p>}
+    </Reveal>
+  );
+}
 
 export default function Home() {
   return (
-    <div className="relative isolate min-h-screen overflow-x-clip text-slate-50">
-      <AuroraBackdrop />
-      {/* Ambient background: a single, static, understated glow for depth */}
-      <div aria-hidden className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-dot-grid opacity-[0.12] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,black,transparent)]" />
-        <div className="absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-blue-700/10 blur-[140px]" />
-      </div>
+    <div className={styles.page}>
+      <SiteHeader light />
 
-      <SiteHeader />
-
-      <main className="relative">
-        {/* Hero */}
-        <section className="mx-auto max-w-6xl px-6 pt-20 pb-16 text-center sm:pt-28">
-          {/* Exactly two lines from lg up: each half is its own line, kept on one
-              line and sized to the viewport so it always fits. Smaller screens
-              let each half wrap naturally. */}
-          <h1 className="animate-fade-up animate-fade-up-2 mx-auto text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-[clamp(2.25rem,3.3vw,3.2rem)]">
-            <span className="block lg:whitespace-nowrap">Run your business. Let AI handle the busywork,</span>
-            <span className="block bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent lg:whitespace-nowrap">
-              with your approval on everything that matters.
-            </span>
-          </h1>
-
-          <p className="animate-fade-up animate-fade-up-3 mx-auto mt-6 max-w-2xl text-balance text-lg leading-relaxed text-slate-300">
-            CRM, sales, inventory, accounting, HR, payroll, invoicing, projects, and support, all
-            unified, with an AI assistant that looks up real data, proposes actions, and executes
-            them once you approve.
-          </p>
-
-          <div className="animate-fade-up animate-fade-up-4 mt-8 flex flex-wrap items-center justify-center gap-3">
-            <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} rounded-full`}>
-              Start free trial
-              <ArrowRight className="h-4 w-4" />
-            </LinkButton>
-          </div>
-
-          <div className="animate-fade-up animate-fade-up-5 mx-auto mt-16 flex w-full max-w-4xl items-start justify-between border-t border-white/10 pt-12">
-            {[
-              [`From $${STARTING_PRICE}`, "Per month"],
-              ["14 days", "Free trial"],
-              ["24/7", "Always on"],
-            ].map(([value, label]) => (
-              <div key={label} className="px-4 py-5">
-                <p className="font-mono text-2xl font-semibold text-slate-50">{value}</p>
-                <p className="mt-1 text-xs text-slate-400">{label}</p>
-              </div>
-            ))}
+      <main>
+        {/* Hero: black glass over the dashboard, blurred the way a photo would sit */}
+        <section className={styles.hero}>
+          <div
+            aria-hidden
+            className={styles.heroBg}
+            style={{ backgroundImage: "url(/screenshots/dashboard-overview.png)" }}
+          />
+          <div className={styles.heroIn}>
+            <h1 className={cn(styles.heroH, "animate-fade-up animate-fade-up-2")}>
+              Run your business. Let AI handle the busywork, with your approval on everything that matters.
+            </h1>
+            <p className={cn(styles.heroSub, "animate-fade-up animate-fade-up-3")}>
+              CRM, sales, inventory, accounting, HR, payroll, invoicing, projects, and support, all unified, with an
+              AI assistant that looks up real data, proposes actions, and executes them once you approve.
+            </p>
+            <p className={cn(styles.heroNote, "animate-fade-up animate-fade-up-4")}>
+              14 day free trial &nbsp;·&nbsp; No credit card required
+            </p>
           </div>
         </section>
 
-        {/* Product screenshot, with the AI Copilot shown as a live widget on top of it.
-            From sm up the widget hangs 3rem (md: 4rem) below the screenshot, so the
-            bottom padding adds that overhang back to keep the usual 8rem gap. */}
-        <section id="copilot" className="scroll-mt-24 px-6 pb-24 sm:pb-44 md:pb-48">
-          <Reveal className="relative mx-auto max-w-4xl">
+        {/* Product shot overlapping the hero, with the AI Copilot shown as a
+            live widget on top of it. */}
+        <section id="copilot" className="scroll-mt-24">
+          <div className={styles.shot}>
             <ProductPreview />
             <div className="relative mt-6 sm:absolute sm:-bottom-12 sm:-right-6 sm:mt-0 sm:w-80 md:-bottom-16 md:-right-10 md:w-[26rem]">
               <AiTerminalPreview />
             </div>
-          </Reveal>
+          </div>
         </section>
 
+        <div className={styles.stats}>
+          {STATS.map(([value, label], i) => (
+            <Reveal key={label} delay={i * 75}>
+              <div className={cn(styles.stat, i === 0 && cn(styles.glass, styles.statFeat))}>
+                <p className={styles.statValue}>{value}</p>
+                <p className={styles.statLabel}>{label}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
         {/* The AIBOS mark as a map of the product: eight departments around one AI */}
-        <section id="how" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24 sm:pb-32">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Eight departments, one AI at the center
-            </h2>
-            <p className="mt-3 text-slate-400">
-              Every point of the AIBOS logo is a part of your business. They all feed the AI Copilot in the
-              middle, so it sees the whole picture and can act across all of them.
-            </p>
-          </Reveal>
-          <Reveal className="mt-12">
+        <section id="how" className={styles.section}>
+          <SectionHead
+            eyebrow="How it works"
+            title="Eight departments, one AI at the center"
+            sub="Every point of the AIBOS logo is a part of your business. They all feed the AI Copilot in the middle, so it sees the whole picture and can act across all of them."
+          />
+          <Reveal className={cn(styles.glass, styles.constellationPanel)}>
             <ModuleConstellation />
           </Reveal>
         </section>
 
-        {/* Feature grid */}
-        <section id="features" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24 sm:pb-32">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-2xl font-semibold tracking-tight sm:text-3xl">
-              Every department, one workspace
-            </h2>
-            <p className="mt-3 text-slate-400">
-              Purpose built modules that share the same customers, data, and AI assistant.
-            </p>
-          </Reveal>
-
-          <FeatureBento />
+        <section id="features" className={styles.section}>
+          <SectionHead
+            eyebrow="Features"
+            title="Every department, one workspace"
+            sub="Purpose built modules that share the same customers, data, and AI assistant."
+          />
+          <FeatureSlider />
         </section>
 
-        <section id="faq" className="mx-auto max-w-6xl scroll-mt-24 px-6 pb-24 sm:pb-32">
-          <FaqSection />
-        </section>
-
-        {/* Closing call to action: the last doubts are answered right above. */}
-        <section className="px-6 pb-24 sm:pb-32">
-          <Reveal className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] px-6 py-14 text-center backdrop-blur-xl sm:px-12 sm:py-16">
-            <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-blue-600/20 blur-[100px]" />
-            <h2 className="font-display relative text-3xl font-semibold tracking-tight sm:text-4xl">
-              Your whole business, one AI that asks first.
-            </h2>
-            <p className="relative mx-auto mt-4 max-w-xl text-slate-300">
-              Start with every module and the AI Copilot included. 14 days free, no credit card needed.
-            </p>
-            <div className="relative mt-8 flex flex-wrap items-center justify-center gap-3">
-              <LinkButton href="/register" variant="glass" size="lg" className={`${CTA_CLASS} rounded-full`}>
-                Start free trial
-                <ArrowRight className="h-4 w-4" />
-              </LinkButton>
-              <Link href="/pricing" className="rounded-full px-5 py-2.5 text-sm font-medium text-slate-300 transition-colors hover:text-white">
-                See pricing
-              </Link>
+        <section className={styles.section}>
+          <Reveal className={cn(styles.glass, styles.trustbox)}>
+            <p className={styles.trustEyebrow}>What you can count on</p>
+            <div className={styles.trustGrid}>
+              {TRUST.map((item) => (
+                <div key={item.title} className={styles.trust}>
+                  <span className={styles.trustIc} aria-hidden>
+                    <item.icon />
+                  </span>
+                  <p className={styles.trustT}>{item.title}</p>
+                  <p className={styles.trustD}>{item.text}</p>
+                </div>
+              ))}
             </div>
           </Reveal>
         </section>
+
+        <section id="plans" className={styles.section}>
+          <SectionHead
+            eyebrow="Pricing"
+            title="Simple plans that grow with you"
+            sub="Every plan includes a team of users and a 14 day free trial. Pick a plan by how many branches you run and how big your team is."
+          />
+          <Reveal>
+            <LandingPricing />
+          </Reveal>
+        </section>
+
+        <section id="faq" className={styles.section}>
+          <FaqSection light />
+        </section>
       </main>
 
-      <SiteFooter />
+      <LandingFooter />
     </div>
   );
 }
