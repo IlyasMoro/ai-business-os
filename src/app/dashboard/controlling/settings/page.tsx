@@ -18,7 +18,7 @@ export default async function ControllingSettingsPage({ searchParams }: { search
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Controlling settings</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">How budgets are checked and costs are counted for your business.</p>
         <ControllingTabs active="/dashboard/controlling/settings" />
@@ -29,13 +29,13 @@ export default async function ControllingSettingsPage({ searchParams }: { search
         </div>
 
         <div className={`${card} mt-2 max-w-2xl p-5`}>
-          <p className="font-medium text-slate-50 light:text-slate-900">Start from a template</p>
+          <p className="font-semibold text-slate-50 light:text-slate-900">Start from a template</p>
           <p className="text-sm text-slate-400 light:text-slate-500">Your fiscal year start stays as it is.</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
             {Object.entries(CONTROLLING_PRESETS).map(([key, preset]) => (
               <form key={key} action={applyControllingPreset.bind(null, key)} className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] light:border-slate-200 p-3">
                 <div>
-                  <p className="text-sm font-medium text-slate-50 light:text-slate-900">{preset.label}</p>
+                  <p className="text-sm font-semibold text-slate-50 light:text-slate-900">{preset.label}</p>
                   <p className="text-xs text-slate-400 light:text-slate-500">{preset.description}</p>
                 </div>
                 <SubmitButton variant="secondary" pendingText="Applying...">

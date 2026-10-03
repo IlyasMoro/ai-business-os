@@ -65,7 +65,7 @@ export default async function InternalOrdersPage({ searchParams }: { searchParam
                 return (
                   <tr key={o.id} className="border-b border-white/[0.04] last:border-0">
                     <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/orders/${o.id}`} className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400">
+                      <Link href={`/dashboard/controlling/orders/${o.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                         <span className="font-mono">{o.orderNumber}</span> {o.name}
                       </Link>
                     </td>
@@ -91,7 +91,7 @@ export default async function InternalOrdersPage({ searchParams }: { searchParam
         action={createInternalOrder}
         className="mt-6 max-w-2xl space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
       >
-        <p className="font-medium text-slate-50 light:text-slate-900">New internal order</p>
+        <p className="font-semibold text-slate-50 light:text-slate-900">New internal order</p>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <Label htmlFor="name">Name</Label>

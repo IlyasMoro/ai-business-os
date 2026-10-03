@@ -145,7 +145,7 @@ export default async function InternalOrderPage({
 
         {io.status !== "SETTLED" && (
           <form action={updateInternalOrder.bind(null, io.id)} className={`${card} mt-6 max-w-2xl space-y-4 p-5`}>
-            <p className="font-medium text-slate-50 light:text-slate-900">Details</p>
+            <p className="font-semibold text-slate-50 light:text-slate-900">Details</p>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label htmlFor="name">Name</Label>

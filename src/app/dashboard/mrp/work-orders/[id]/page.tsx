@@ -141,7 +141,7 @@ export default async function WorkOrderDetailPage({
                   {requirements.map((r) => (
                     <tr key={r.componentId} className="border-t border-white/[0.04] light:border-slate-100">
                       <td className="py-2 font-sans">
-                        <Link href={`/dashboard/inventory/${r.line.component.id}`} className="text-slate-50 light:text-slate-900 hover:text-blue-400">
+                        <Link href={`/dashboard/inventory/${r.line.component.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                           {r.line.component.name}
                         </Link>
                       </td>

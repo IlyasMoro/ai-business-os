@@ -156,7 +156,7 @@ export default async function PlanningPage({
                   <td className="px-4 py-3 font-sans">
                     <Link
                       href={`/dashboard/inventory/${row.productId}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {row.name}
                     </Link>

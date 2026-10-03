@@ -219,7 +219,7 @@ function ActionCard({ action, canDecide }: { action: CopilotAction; canDecide: b
       )}
     >
       <div className="min-w-0">
-        <p className="text-sm font-medium text-slate-50 light:text-slate-900">{action.summary}</p>
+        <p className="text-sm font-semibold text-slate-50 light:text-slate-900">{action.summary}</p>
         <Badge tone={statusTone[action.status]} className="mt-1.5">
           {statusLabel[action.status]}
         </Badge>

@@ -183,7 +183,7 @@ export default async function InventoryPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/inventory/${product.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {product.name}
                     </Link>

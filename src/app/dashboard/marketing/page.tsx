@@ -140,7 +140,7 @@ export default async function MarketingPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/marketing/${campaign.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {campaign.name}
                     </Link>

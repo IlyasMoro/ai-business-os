@@ -16,7 +16,7 @@ export function ReportFrequencySelect({ value }: { value: string }) {
   return (
     <form ref={formRef} action={updateReportFrequency} className="flex items-center justify-between gap-4 py-4">
       <div>
-        <p className="font-medium text-slate-50 light:text-slate-900">Scheduled PDF business report</p>
+        <p className="font-semibold text-slate-50 light:text-slate-900">Scheduled PDF business report</p>
         <p className="mt-0.5 text-sm text-slate-400 light:text-slate-500">
           Emails every Owner and Admin a PDF report (revenue, expenses, order and invoice status) on this cadence.
         </p>

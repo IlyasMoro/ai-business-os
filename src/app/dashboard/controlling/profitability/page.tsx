@@ -27,7 +27,7 @@ function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnTyp
             {rows.map((r) => (
               <tr key={r.key} className="border-b border-white/[0.04] last:border-0">
                 <td className="px-5 py-2 font-sans">
-                  <Link href={`${hrefBase}/${r.key}`} className="text-slate-50 light:text-slate-900 hover:text-blue-400">
+                  <Link href={`${hrefBase}/${r.key}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                     {r.label}
                   </Link>
                 </td>

@@ -134,7 +134,7 @@ export default async function EdiPage({
                     </Badge>
                   </td>
                   <td className="px-5 py-3">
-                    <Link href={`/dashboard/edi/${doc.id}`} className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400">
+                    <Link href={`/dashboard/edi/${doc.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                       <span className="font-mono">{doc.docType === "unknown" ? "?" : doc.docType}</span>{" "}
                       {DOC_TYPE_LABEL[doc.docType] ?? doc.docType}
                     </Link>

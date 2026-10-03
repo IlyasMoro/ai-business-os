@@ -160,7 +160,7 @@ export default async function ControllingPage({
                 return (
                   <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
                     <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400">
+                      <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                         <span className="font-mono">{r.code}</span> {r.name}
                       </Link>
                     </td>
@@ -212,7 +212,7 @@ export default async function ControllingPage({
                 return (
                   <tr key={o.id} className="border-b border-white/[0.04] last:border-0">
                     <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/orders/${o.id}`} className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400">
+                      <Link href={`/dashboard/controlling/orders/${o.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                         <span className="font-mono">{o.orderNumber}</span> {o.name}
                       </Link>
                     </td>

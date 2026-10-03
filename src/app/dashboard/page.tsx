@@ -506,7 +506,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
                   <div className="flex items-center gap-3">
                     <Icon className={`h-4 w-4 shrink-0 ${overdue ? "text-red-400" : "text-slate-500"}`} />
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-50 light:text-slate-900">{item.title}</p>
+                      <p className="truncate text-sm font-semibold text-slate-50 light:text-slate-900">{item.title}</p>
                       <p className="text-xs text-slate-500">
                         {overdue ? "Overdue · " : ""}
                         {item.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}

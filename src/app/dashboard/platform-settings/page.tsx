@@ -35,7 +35,7 @@ export default async function PlatformSettingsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Platform settings</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Platform wide configuration, visible only to the platform operator, not exposed to any
@@ -67,7 +67,7 @@ export default async function PlatformSettingsPage({
               <Mail className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">Transactional email (Resend)</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">Transactional email (Resend)</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 {configured
                   ? "Configured. Used for password resets, invoice reminders, and notifications for every company on this platform."
@@ -121,7 +121,7 @@ export default async function PlatformSettingsPage({
               <Sparkles className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot (Groq)</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">AI Copilot (Groq)</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 {groqConfigured
                   ? "Configured. Used by every company's AI Copilot chat and by automatic transaction/ticket categorization."
@@ -166,7 +166,7 @@ export default async function PlatformSettingsPage({
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">AI Copilot fallback (OpenAI)</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">AI Copilot fallback (OpenAI)</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 {openaiConfigured
                   ? "Configured. If a Groq request fails (e.g. an outage), it automatically retries once against OpenAI (gpt-4o-mini) instead of failing outright."

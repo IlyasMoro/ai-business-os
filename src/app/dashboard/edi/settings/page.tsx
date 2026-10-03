@@ -19,7 +19,7 @@ export default async function EdiSettingsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <BackButton href="/dashboard/edi" label="Back to EDI" />
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">EDI settings</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
@@ -45,7 +45,7 @@ export default async function EdiSettingsPage({
           />
 
           <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">Your identity</p>
+            <p className="font-semibold text-slate-50 light:text-slate-900">Your identity</p>
             <p className="text-sm text-slate-400 light:text-slate-500">Your partners address files to these IDs.</p>
             <div className="mt-3 grid gap-4 sm:grid-cols-3">
               <div>
@@ -83,7 +83,7 @@ export default async function EdiSettingsPage({
           </div>
 
           <div>
-            <p className="font-medium text-slate-50 light:text-slate-900">Separators</p>
+            <p className="font-semibold text-slate-50 light:text-slate-900">Separators</p>
             <div className="mt-3 grid gap-4 sm:grid-cols-3">
               <div>
                 <Label htmlFor="elementSeparator">Element</Label>

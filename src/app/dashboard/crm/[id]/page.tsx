@@ -156,7 +156,7 @@ export default async function CustomerDetailPage({
                 {customer.contacts.map((contact) => (
                   <li key={contact.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50 light:text-slate-900">
+                      <p className="font-semibold text-slate-50 light:text-slate-900">
                         {contact.name}{" "}
                         {contact.role && (
                           <span className="font-normal text-slate-500">— {contact.role}</span>

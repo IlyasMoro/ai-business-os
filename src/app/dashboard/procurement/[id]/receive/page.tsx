@@ -53,7 +53,7 @@ export default async function ReceivePurchaseOrderPage({
             return (
               <div key={item.id} className={card}>
                 <div className="flex items-center justify-between gap-3">
-                  <p className="font-medium text-slate-50 light:text-slate-900">
+                  <p className="font-semibold text-slate-50 light:text-slate-900">
                     {p.name} <span className="font-mono text-xs text-slate-500">{p.sku}</span>
                   </p>
                   <div className="flex items-center gap-2">

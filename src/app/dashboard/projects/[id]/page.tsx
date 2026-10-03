@@ -111,7 +111,7 @@ export default async function ProjectDetailPage({
                       <div className="flex items-center gap-2">
                         <Link
                           href={`/dashboard/projects/${project.id}/tasks/${task.id}`}
-                          className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                          className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                         >
                           {task.title}
                         </Link>

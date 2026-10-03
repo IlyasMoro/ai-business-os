@@ -22,7 +22,7 @@ export default async function SettingsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Settings</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Your company&apos;s profile.</p>
 
@@ -41,7 +41,7 @@ export default async function SettingsPage({
               <Building2 className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">Company profile</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">Company profile</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 Shown across invoices, reports, and emails sent on your behalf.
               </p>
@@ -73,7 +73,7 @@ export default async function SettingsPage({
               <ImageIcon className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">Company logo</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">Company logo</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 Replaces the AIBOS mark on invoices, payslips, business reports, and emails sent to your
                 customers. PNG or JPEG, up to 2MB.

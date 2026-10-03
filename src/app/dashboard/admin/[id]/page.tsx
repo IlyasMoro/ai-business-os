@@ -34,7 +34,7 @@ export default async function AdminCompanyDetailPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <BackButton href="/dashboard/admin" label="Back to companies" />
         <h1 className="mt-3 text-2xl font-semibold text-slate-50 light:text-slate-900">{company.name}</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
@@ -46,7 +46,7 @@ export default async function AdminCompanyDetailPage({
         </div>
 
         <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <h2 className="font-medium text-slate-50 light:text-slate-900">Users ({company.users.length})</h2>
+          <h2 className="font-semibold text-slate-50 light:text-slate-900">Users ({company.users.length})</h2>
           <ul className="mt-3 divide-y divide-white/[0.06] light:divide-slate-200">
             {company.users.map((u) => (
               <li key={u.id} className="flex items-center justify-between py-2 text-sm">
@@ -66,7 +66,7 @@ export default async function AdminCompanyDetailPage({
         </div>
 
         <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
-          <h2 className="font-medium text-red-400">Danger zone</h2>
+          <h2 className="font-semibold text-red-400">Danger zone</h2>
           <div className="mt-3">
             <DeleteCompanyForm companyName={company.name} action={deleteAction} />
           </div>

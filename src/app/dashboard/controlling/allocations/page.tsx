@@ -60,7 +60,7 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
           <div key={a.id} className={`${card} p-5`}>
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-medium text-slate-50 light:text-slate-900">{a.name}</p>
+                <p className="font-semibold text-slate-50 light:text-slate-900">{a.name}</p>
                 <p className="text-sm text-slate-400 light:text-slate-500">
                   From <span className="font-mono">{a.sender.code}</span> {a.sender.name} to{" "}
                   {a.receivers.map((r, i) => (
@@ -104,7 +104,7 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
       </div>
 
       <form action={createAllocation} className={`${card} mt-6 max-w-4xl space-y-4 p-5`}>
-        <p className="font-medium text-slate-50 light:text-slate-900">New allocation cycle</p>
+        <p className="font-semibold text-slate-50 light:text-slate-900">New allocation cycle</p>
         {centers.length < 2 ? (
           <p className="text-sm text-slate-500">You need at least two active cost centers.</p>
         ) : (

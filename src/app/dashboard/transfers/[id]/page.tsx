@@ -151,7 +151,7 @@ export default async function TransferDetailPage({
                   return (
                     <li key={item.id} className="flex items-center justify-between gap-4 py-2 text-sm">
                       <div>
-                        <p className="font-medium text-slate-50 light:text-slate-900">
+                        <p className="font-semibold text-slate-50 light:text-slate-900">
                           {item.product.name} <span className="font-mono text-xs text-slate-500">{item.product.sku}</span>
                         </p>
                         {isDraft && (

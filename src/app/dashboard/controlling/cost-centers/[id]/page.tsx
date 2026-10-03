@@ -104,7 +104,7 @@ export default async function CostCenterPage({
         <form action={saveBudgets.bind(null, cc.id, period.fiscalYear)} className={`${card} mt-6 p-5`}>
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">Budget</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">Budget</p>
               <p className="text-sm text-slate-400 light:text-slate-500">Planned cost per month. Leave a month empty for no budget.</p>
             </div>
             <div className="flex items-end gap-2">
@@ -164,7 +164,7 @@ export default async function CostCenterPage({
 
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
           <form action={updateCostCenter.bind(null, cc.id)} className={`${card} space-y-4 p-5`}>
-            <p className="font-medium text-slate-50 light:text-slate-900">Details</p>
+            <p className="font-semibold text-slate-50 light:text-slate-900">Details</p>
             <div>
               <Label htmlFor="name">Name</Label>
               <Input id="name" name="name" defaultValue={cc.name} required maxLength={100} />
@@ -180,7 +180,7 @@ export default async function CostCenterPage({
             </SubmitButton>
           </form>
           <div className={`${card} p-5`}>
-            <p className="font-medium text-slate-50 light:text-slate-900">People ({cc.employees.length})</p>
+            <p className="font-semibold text-slate-50 light:text-slate-900">People ({cc.employees.length})</p>
             {cc.employees.length === 0 ? (
               <p className="mt-2 text-sm text-slate-500">No active employees. Set the cost center on an employee in HR.</p>
             ) : (

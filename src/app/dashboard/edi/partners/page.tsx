@@ -48,7 +48,7 @@ export default async function EdiPartnersPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <BackButton href="/dashboard/edi" label="Back to EDI" />
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Trading partners</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
@@ -106,7 +106,7 @@ export default async function EdiPartnersPage({
         </div>
 
         <form action={createEdiPartner} className={`mt-6 max-w-3xl space-y-4 ${card}`}>
-          <p className="font-medium text-slate-50 light:text-slate-900">Add a trading partner</p>
+          <p className="font-semibold text-slate-50 light:text-slate-900">Add a trading partner</p>
           <div>
             <Label htmlFor="name">Name</Label>
             <Input id="name" name="name" required maxLength={200} />

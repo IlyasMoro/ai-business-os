@@ -115,7 +115,7 @@ export default async function CampaignDetailPage({
                   <li key={lead.id} className="flex items-center justify-between py-2 text-sm">
                     <Link
                       href={`/dashboard/crm/${lead.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {lead.name}
                     </Link>

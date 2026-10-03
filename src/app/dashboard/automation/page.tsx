@@ -23,7 +23,7 @@ export default async function AutomationPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Automation rules</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Rules that run automatically against your data. Stock transfers and purchase orders they draft wait for an owner or admin to approve them.
@@ -101,7 +101,7 @@ export default async function AutomationPage({
               <Webhook className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-medium text-slate-50 light:text-slate-900">Webhook notifications</p>
+              <p className="font-semibold text-slate-50 light:text-slate-900">Webhook notifications</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 Posts a JSON notification whenever an enabled automation rule above fires, and on every
                 new support ticket. Paste a Slack &quot;Incoming Webhook&quot; URL, a Zapier/Make catch

@@ -156,7 +156,7 @@ export default async function PayrollPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/payroll/${run.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {run.periodStart.toLocaleDateString()} – {run.periodEnd.toLocaleDateString()}
                     </Link>

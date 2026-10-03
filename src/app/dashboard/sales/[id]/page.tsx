@@ -141,7 +141,7 @@ export default async function OrderDetailPage({
                 {order.items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50 light:text-slate-900">{item.product.name}</p>
+                      <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="font-mono text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
@@ -200,7 +200,7 @@ export default async function OrderDetailPage({
                 <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
                   {order.returns.map((rma) => (
                     <li key={rma.id} className="flex items-center justify-between py-2 text-sm">
-                      <Link href={`/dashboard/returns/${rma.id}`} className="font-mono font-medium text-slate-50 light:text-slate-900 hover:text-blue-400">
+                      <Link href={`/dashboard/returns/${rma.id}`} className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                         {rma.rmaNumber}
                       </Link>
                       <span className="flex items-center gap-3">

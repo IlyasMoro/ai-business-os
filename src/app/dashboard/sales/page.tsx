@@ -178,7 +178,7 @@ export default async function SalesPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/sales/${order.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {order.customer.name}
                     </Link>

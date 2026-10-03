@@ -65,7 +65,7 @@ export default async function CostCentersPage({
                   <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
                     <td className="px-5 py-3 font-mono text-slate-300 light:text-slate-600">{r.code}</td>
                     <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400">
+                      <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
                         {r.name}
                       </Link>
                       {!r.active && <Badge tone="slate" className="ml-2">Inactive</Badge>}
@@ -91,7 +91,7 @@ export default async function CostCentersPage({
         action={createCostCenter}
         className="mt-6 max-w-2xl space-y-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass"
       >
-        <p className="font-medium text-slate-50 light:text-slate-900">New cost center</p>
+        <p className="font-semibold text-slate-50 light:text-slate-900">New cost center</p>
         <div className="grid gap-4 sm:grid-cols-3">
           <div>
             <Label htmlFor="code">Code</Label>

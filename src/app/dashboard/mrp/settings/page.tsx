@@ -19,7 +19,7 @@ export default async function PlanningSettingsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <BackButton href="/dashboard/mrp" label="Back to planning" />
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Planning settings</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
@@ -36,7 +36,7 @@ export default async function PlanningSettingsPage({
         </div>
 
         <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="font-medium text-slate-50 light:text-slate-900">Start from a template</p>
+          <p className="font-semibold text-slate-50 light:text-slate-900">Start from a template</p>
           <p className="text-sm text-slate-400 light:text-slate-500">
             Pick the one closest to how you work, then fine tune it below.
           </p>
@@ -48,7 +48,7 @@ export default async function PlanningSettingsPage({
                 className="flex items-center justify-between gap-3 rounded-lg border border-white/[0.06] light:border-slate-200 p-3"
               >
                 <div>
-                  <p className="text-sm font-medium text-slate-50 light:text-slate-900">{preset.label}</p>
+                  <p className="text-sm font-semibold text-slate-50 light:text-slate-900">{preset.label}</p>
                   <p className="text-xs text-slate-400 light:text-slate-500">{preset.description}</p>
                 </div>
                 <SubmitButton variant="secondary" pendingText="Applying...">

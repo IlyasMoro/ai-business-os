@@ -172,7 +172,7 @@ export default async function SupportPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/support/${ticket.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {ticket.subject}
                     </Link>

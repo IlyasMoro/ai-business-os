@@ -159,7 +159,7 @@ export default async function CrmPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/crm/${customer.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {customer.name}
                     </Link>

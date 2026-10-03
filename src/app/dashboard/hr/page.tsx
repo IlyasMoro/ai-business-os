@@ -177,7 +177,7 @@ export default async function HrPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/hr/${employee.id}`}
-                      className="font-medium text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
                       {employee.name}
                     </Link>

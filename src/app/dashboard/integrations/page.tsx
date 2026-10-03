@@ -20,7 +20,7 @@ export default async function IntegrationsPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Integrations</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Connect third-party accounts so this app can act on your behalf.
@@ -47,7 +47,7 @@ export default async function IntegrationsPage({
                 <Mail className="h-5 w-5" />
               </span>
               <div>
-                <p className="font-medium text-slate-50 light:text-slate-900">Gmail</p>
+                <p className="font-semibold text-slate-50 light:text-slate-900">Gmail</p>
                 {integration ? (
                   <p className="text-sm text-emerald-400">Connected as {integration.email}</p>
                 ) : (

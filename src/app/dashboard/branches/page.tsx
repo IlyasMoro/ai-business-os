@@ -27,7 +27,7 @@ export default async function BranchesPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-3xl">
+      <div className="mx-auto max-w-5xl">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Branches</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Each shop, office, warehouse or site your business runs. Orders, invoices, purchase orders and employees
@@ -50,7 +50,7 @@ export default async function BranchesPage({
               <details key={b.id} className="group rounded-2xl border border-white/[0.09] glass light:border-white/80">
                 <summary className="flex cursor-pointer list-none flex-wrap items-center gap-x-4 gap-y-2 px-5 py-4 [&::-webkit-details-marker]:hidden">
                   <span className="font-mono text-xs text-slate-400">{b.code}</span>
-                  <span className="font-medium text-slate-50 light:text-slate-900">{b.name}</span>
+                  <span className="font-semibold text-slate-50 light:text-slate-900">{b.name}</span>
                   {b.isMain && <Badge tone="blue">Main</Badge>}
                   {!b.active && <Badge tone="slate">Inactive</Badge>}
                   <span className="ml-auto text-xs text-slate-500">
@@ -103,7 +103,7 @@ export default async function BranchesPage({
         </div>
 
         <form action={createBranch} className="mt-6 space-y-4 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
-          <p className="font-medium text-slate-50 light:text-slate-900">New branch</p>
+          <p className="font-semibold text-slate-50 light:text-slate-900">New branch</p>
           <div className="grid gap-4 sm:grid-cols-6">
             <div className="sm:col-span-1">
               <Label htmlFor="code">Code</Label>

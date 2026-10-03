@@ -116,7 +116,7 @@ export default async function PurchaseOrderDetailPage({
                 {purchaseOrder.items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
-                      <p className="font-medium text-slate-50 light:text-slate-900">{item.product.name}</p>
+                      <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="font-mono text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitCost.toFixed(2)} = $
                         {(item.quantity * item.unitCost).toFixed(2)}
