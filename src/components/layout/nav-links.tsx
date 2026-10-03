@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore, type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { navGroups, type NavItem, type Role } from "./nav-config";
-
-const STORAGE_KEY = "aibos:nav-open-groups";
+import { navGroups, navPinned, type NavItem, type Role } from "./nav-config";
 
 function isActive(href: string, pathname: string) {
   return href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
@@ -30,36 +28,6 @@ function PendingDot() {
 
 function isPlainClick(e: MouseEvent) {
   return e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
-}
-
-function parseGroups(raw: string | null): string[] {
-  try {
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
-  } catch {
-    return [];
-  }
-}
-
-function readStoredRaw(): string | null {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY);
-  } catch {
-    return null;
-  }
-}
-
-function subscribeToStorage(onChange: () => void) {
-  window.addEventListener("storage", onChange);
-  return () => window.removeEventListener("storage", onChange);
-}
-
-function storeGroups(groups: string[]) {
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(groups));
-  } catch {
-    // Private windows or blocked storage: the menu still works, it just won't remember.
-  }
 }
 
 export function NavLinks({
@@ -100,47 +68,70 @@ export function NavLinks({
     .map((group) => ({ ...group, items: group.items.filter(visible) }))
     .filter((group) => group.items.length > 0);
 
+  const pinned = navPinned.filter(visible);
   const activeGroup = groups.find((g) => g.items.some((i) => isActive(i.href, currentPath)))?.label;
 
-  // Groups the user left open are remembered in localStorage. The server
-  // snapshot is null, so the first render only opens the active group and
-  // hydration stays consistent; the saved groups are merged in right after.
-  const storedRaw = useSyncExternalStore(subscribeToStorage, readStoredRaw, () => null);
-  const [chosenGroups, setChosenGroups] = useState<string[] | null>(null);
-
-  const withActive = (list: string[]) => {
-    const merged = activeGroup && !list.includes(activeGroup) ? [...list, activeGroup] : list;
-    return merged.length > 0 ? merged : [navGroups[0].label];
-  };
-  const openGroups = chosenGroups ?? withActive(parseGroups(storedRaw));
-
-  // Navigating to a page in a closed group opens that group.
+  // One group open at a time. Until the visitor picks one, the group of the
+  // current page is open; moving to another page resets to its group.
+  const [chosenGroup, setChosenGroup] = useState<string | null | undefined>(undefined);
   const [lastActiveGroup, setLastActiveGroup] = useState(activeGroup);
   if (activeGroup !== lastActiveGroup) {
     setLastActiveGroup(activeGroup);
-    if (chosenGroups) setChosenGroups(withActive(chosenGroups));
+    setChosenGroup(undefined);
   }
+  const openGroup = chosenGroup === undefined ? activeGroup : chosenGroup;
+  const toggle = (label: string) => setChosenGroup(openGroup === label ? null : label);
 
-  const toggle = (label: string) => {
-    const next = openGroups.includes(label)
-      ? openGroups.filter((g) => g !== label)
-      : [...openGroups, label];
-    setChosenGroups(next);
-    storeGroups(next);
+  const linkClick = (href: string) => (e: MouseEvent) => {
+    if (isPlainClick(e) && !isActive(href, pathname)) setPendingHref(href);
+    onNavigate?.();
   };
 
   return (
     <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 antialiased">
+      {/* The everyday pages, always one click away. */}
+      {pinned.map((item) => {
+        const active = isActive(item.href, currentPath);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={linkClick(item.href)}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "group/pin flex items-center gap-2.5 rounded-md px-3 py-2 text-[14px] leading-5 transition-colors duration-150",
+              active
+                ? "bg-blue-500/15 font-medium text-white light:bg-blue-500/10 light:text-blue-700"
+                : "text-slate-200 hover:bg-white/[0.07] hover:text-white light:text-slate-700 light:hover:bg-slate-900/5 light:hover:text-slate-950"
+            )}
+          >
+            <item.icon
+              className={cn(
+                "h-4 w-4 shrink-0 transition-colors",
+                active
+                  ? "text-blue-400 light:text-blue-600"
+                  : "text-slate-400 group-hover/pin:text-white light:text-slate-500 light:group-hover/pin:text-slate-800"
+              )}
+            />
+            {item.label}
+            <PendingDot />
+          </Link>
+        );
+      })}
+
+      {pinned.length > 0 && groups.length > 0 && (
+        <div aria-hidden className="mx-3 !my-2.5 border-t border-white/[0.08] light:border-slate-900/10" />
+      )}
+
       {groups.map((group) => {
-        const open = openGroups.includes(group.label);
+        const open = openGroup === group.label;
         const containsActive = group.label === activeGroup;
         const panelId = `nav-group-${group.label.toLowerCase().replace(/[^a-z]+/g, "_")}`;
 
         return (
           <div key={group.label}>
-            {/* Group headings are the main menu while groups are collapsed, so
-                they read as items: icon, name, a count of what's inside, and
-                an arrow that turns down when open. */}
+            {/* Group headings read as items: icon, name, and an arrow that
+                turns down when open. */}
             <button
               type="button"
               onClick={() => toggle(group.label)}
@@ -162,11 +153,6 @@ export function NavLinks({
                 )}
               />
               <span className="flex-1 truncate text-left">{group.label}</span>
-              {!open && (
-                <span aria-hidden className="text-[11px] tabular-nums text-slate-500">
-                  {group.items.length}
-                </span>
-              )}
               <ChevronRight
                 className={cn(
                   "h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform duration-200 ease-out",
@@ -193,10 +179,7 @@ export function NavLinks({
                       <Link
                         key={item.href}
                         href={item.href}
-                        onClick={(e) => {
-                          if (isPlainClick(e) && !isActive(item.href, pathname)) setPendingHref(item.href);
-                          onNavigate?.();
-                        }}
+                        onClick={linkClick(item.href)}
                         aria-current={active ? "page" : undefined}
                         className={cn(
                           "relative flex items-center rounded-md px-3 py-1.5 text-[13.5px] leading-5 transition-colors duration-150",

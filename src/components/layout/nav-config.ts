@@ -1,5 +1,4 @@
 import {
-  House,
   ArrowRightLeft,
   MapPin,
   LayoutDashboard,
@@ -44,6 +43,15 @@ export type NavItem = {
  * landing page constellation (components/landing/module-constellation.tsx). */
 export type NavGroup = { label: string; icon: typeof LayoutDashboard; items: NavItem[] };
 
+/** The everyday pages, always visible at the top of the menu above the
+ * department groups. Reports is here rather than in a group of its own. */
+export const navPinned: NavItem[] = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/assistant", label: "AI Copilot", icon: Sparkles },
+  { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
+  { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
+];
+
 /** Modules with no `roles` are visible to everyone; HR/Payroll/Accounting
  * are back-office modules restricted to OWNER/ADMIN. Items with
  * `platformAdminOnly` are hidden from every regular company user, including
@@ -51,16 +59,7 @@ export type NavGroup = { label: string; icon: typeof LayoutDashboard; items: Nav
  * A group whose items are all hidden for the current user is hidden too. */
 export const navGroups: NavGroup[] = [
   {
-    label: "Workspace",
-    icon: House,
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/dashboard/assistant", label: "AI Copilot", icon: Sparkles },
-      { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
-    ],
-  },
-  {
-    label: "Customers & Sales",
+    label: "Customers and Sales",
     icon: Users,
     items: [
       { href: "/dashboard/crm", label: "CRM", icon: Users },
@@ -104,13 +103,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
       { href: "/dashboard/automation", label: "Automation", icon: Zap, roles: ["OWNER", "ADMIN"] },
-    ],
-  },
-  {
-    label: "Insights",
-    icon: BarChart3,
-    items: [
-      { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
     ],
   },
   {
