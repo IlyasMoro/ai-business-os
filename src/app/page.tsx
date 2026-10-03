@@ -6,7 +6,6 @@ import { AiTerminalPreview } from "@/components/landing/ai-terminal-preview";
 import { ProductPreview } from "@/components/landing/product-preview";
 import { ModuleConstellation } from "@/components/landing/module-constellation";
 import { FeatureSlider } from "@/components/landing/feature-slider";
-import { LandingPricing } from "@/components/landing/landing-pricing";
 import { FaqSection } from "@/components/landing/faq-section";
 import { STARTING_PRICE } from "@/lib/plans";
 import { cn } from "@/lib/utils";
@@ -14,7 +13,7 @@ import styles from "@/components/landing/landing.module.css";
 
 /* A white page with dark glass accents: a black glass hero over the
    blurred dashboard, the product shot overlapping it, then How it works,
-   Features, the trust panel, pricing and the FAQ, closing on a dark glass
+   Features, the trust panel and the FAQ, closing on a dark glass
    footer. Styles live in components/landing/landing.module.css. */
 
 // Each point restates an answer in faq-data.ts, so the two never disagree.
@@ -141,17 +140,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </Reveal>
-        </section>
-
-        <section id="plans" className={styles.section}>
-          <SectionHead
-            eyebrow="Pricing"
-            title="Simple plans that grow with you"
-            sub="Every plan includes a team of users and a 14 day free trial. Pick a plan by how many branches you run and how big your team is."
-          />
-          <Reveal>
-            <LandingPricing />
           </Reveal>
         </section>
 

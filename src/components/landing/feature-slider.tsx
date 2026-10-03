@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState, type CSSProperties } from "react";
-import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 import { FEATURES } from "@/components/landing/feature-bento";
 import { cn } from "@/lib/utils";
@@ -56,7 +55,6 @@ export function FeatureSlider() {
       >
         <div className={styles.track} style={{ transform: `translateX(-${index * 100}%)` }}>
           {FEATURES.map((feature, i) => {
-            const [first, ...rest] = feature.name.split(" ");
             const active = i === index;
             return (
               <div
@@ -75,12 +73,6 @@ export function FeatureSlider() {
                       </div>
                     </div>
                   </div>
-                  <p className={styles.slideName}>
-                    <b>{first}</b> {rest.join(" ")}
-                  </p>
-                  <Link href="/pricing" className={styles.btnDark}>
-                    See pricing
-                  </Link>
                 </div>
                 <div className={cn(styles.glass, styles.slideR)}>
                   <div className={styles.slideCopy}>

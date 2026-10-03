@@ -1,10 +1,8 @@
-/* FAQ copy shared by the landing page and the pricing page, so the same
-   question never gets two different answers. Keep answers factual: the
+/* FAQ copy: product and privacy questions on the landing page, billing
+   questions on the pricing page, so each question appears in one place. Keep answers factual: the
    privacy answer mirrors app/privacy/page.tsx, and the billing answers
    mirror how subscriptions work in lib/subscription-access.ts. Public copy
    uses no hyphens. */
-
-import { EXTRA_USER_PRICE, MAX_SCALE_USERS } from "@/lib/plans";
 
 export type FaqItem = { q: string; a: string };
 export type FaqGroup = { title: string; items: FaqItem[] };
@@ -17,18 +15,6 @@ export const PRICING_FAQ: FaqItem[] = [
   {
     q: "What happens after the 14 days?",
     a: "If you haven't subscribed, the dashboard pauses until you do. Nothing is deleted, and everything is exactly where you left it.",
-  },
-  {
-    q: "Is it priced per user?",
-    a: `Not like most apps. Each plan includes users: up to 10 on Starter, up to 50 on Growth and up to ${MAX_SCALE_USERS} on Scale. Need more? Add extra users on any plan for $${EXTRA_USER_PRICE} each a month, or move up a plan. Larger companies can ask us about an Enterprise plan.`,
-  },
-  {
-    q: "Which plan should I choose?",
-    a: "Starter suits a business with one location. Growth adds up to 3 branches, stock transfers, planning and automations, and is the best fit for most growing businesses. Scale adds unlimited branches and EDI for larger distributors.",
-  },
-  {
-    q: "Is there a discount for paying yearly?",
-    a: "Yes. Paying yearly gives you 2 months free on every plan.",
   },
   {
     q: "Can I cancel anytime?",
@@ -77,5 +63,4 @@ export const FAQ_GROUPS: FaqGroup[] = [
       },
     ],
   },
-  { title: "Billing", items: PRICING_FAQ },
 ];

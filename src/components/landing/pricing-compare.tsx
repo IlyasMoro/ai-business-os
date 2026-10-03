@@ -1,142 +1,99 @@
+import Link from "next/link";
 import { Check, Minus } from "lucide-react";
-import { navGroups } from "@/components/layout/nav-config";
-import { EXTRA_USER_PRICE, MODULE_MIN_PLAN, STARTING_PRICE } from "@/lib/plans";
+import { PLAN_MATRIX, PLANS, type PlanCell } from "@/lib/plans";
+import { cn } from "@/lib/utils";
+import styles from "@/components/landing/landing.module.css";
 
-/* Pricing comparison: AIBOS against running a separate app per department.
-   Department rows come from the sidebar config, so the table always lists
-   what the product really has. The "separate apps" column stays general and
-   fair on purpose: no competitor names and no invented prices. Public copy
-   uses no hyphens. */
+/* Every feature by plan, side by side. Rows come from PLAN_MATRIX in
+   lib/plans.ts, so the table and the plan cards read the same source.
+   Growth's column is tinted to match its highlighted card. */
 
-export const PLAN_DEPARTMENTS = navGroups
-  .filter((group) => group.label !== "Workspace")
-  .map((group) => ({
-    label: group.label,
-    icon: group.icon,
-    modules: group.items.filter((item) => !item.platformAdminOnly).map((item) => item.label),
-  }));
-
-const ACROSS_THE_BUSINESS = [
-  { feature: "One sign in for every department", others: "A separate login per app" },
-  { feature: "Customers, orders and invoices shared everywhere", others: "Copied or synced between apps" },
-  { feature: "AI that reads across every department", others: "Limited to each app's own data" },
-  { feature: "Every AI action waits for your approval", others: "Varies by app" },
-  { feature: `Users included in every plan, extra users $${EXTRA_USER_PRICE} a month`, others: "Usually charged for every user" },
-  { feature: "Export any list or download a full backup", others: "Varies by app" },
-];
-
-function Included() {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-300">
-      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-400/15">
-        <Check aria-hidden className="h-3 w-3" />
+function Cell({ value }: { value: PlanCell }) {
+  if (value === true) {
+    return (
+      <span className={cn(styles.planTick, "mx-auto")}>
+        <Check aria-hidden />
+        <span className="sr-only">Included</span>
       </span>
-      {/* Phones show only the check to keep the column narrow. */}
-      <span className="sr-only sm:not-sr-only">Included</span>
-    </span>
-  );
+    );
+  }
+  if (value === false) {
+    return (
+      <>
+        <Minus aria-hidden className="mx-auto h-4 w-4 text-[#c3ccd8]" />
+        <span className="sr-only">Not included</span>
+      </>
+    );
+  }
+  return <span className="text-[13px] font-bold text-[#0b1f5e] sm:text-sm">{value}</span>;
 }
 
-function Others({ children }: { children: string }) {
-  return (
-    <span className="inline-flex items-start gap-1.5 text-sm text-slate-400">
-      <Minus className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-600" />
-      {children}
-    </span>
-  );
-}
-
-const rowClass = "border-t border-white/[0.07]";
-const aibosCell = "bg-blue-500/[0.06] px-4 py-4 align-middle sm:px-5";
-// On phones the third column is hidden and its text becomes a note under
-// each feature, so the table fits the screen instead of scrolling sideways.
-const othersCell = "hidden px-5 py-4 align-middle sm:table-cell";
-
-function OthersNote({ children }: { children: string }) {
-  return <span className="mt-1.5 block text-xs text-slate-500 sm:hidden">Separate apps: {children}</span>;
-}
+const growthCol = "bg-[#f0f9fc]";
 
 export function PricingCompare() {
   return (
-    <div className="overflow-x-auto rounded-3xl border border-white/10 bg-white/[0.02] backdrop-blur-xl">
-      <table className="w-full border-collapse text-left">
-        <caption className="sr-only">AIBOS compared with running a separate app for each department</caption>
+    <div className="overflow-hidden border border-[#d5dce5] bg-white shadow-[0_18px_38px_-26px_rgba(24,67,111,0.45)]">
+      <table className="w-full table-fixed border-collapse text-left">
+        <caption className="sr-only">Every feature by plan</caption>
+        <colgroup>
+          <col className="w-[40%] sm:w-[46%]" />
+          <col />
+          <col />
+          <col />
+        </colgroup>
         <thead>
           <tr>
-            <th scope="col" className="px-5 py-5 text-xs sm:w-[44%] sm:px-6 font-semibold uppercase tracking-[0.14em] text-slate-400">
-              What you get
+            <th scope="col" className="px-3 py-5 align-bottom sm:px-6">
+              <span className="sr-only">Feature</span>
             </th>
-            <th scope="col" className="w-24 border-x border-blue-400/20 bg-blue-500/[0.1] px-4 py-5 sm:w-[28%] sm:px-5">
-              <span className="block text-base font-semibold text-white">AIBOS</span>
-              <span className="mt-0.5 hidden text-xs font-normal text-blue-200/80 sm:block">From ${STARTING_PRICE} a month, 10 users included</span>
-            </th>
-            <th scope="col" className="hidden px-5 py-5 sm:table-cell">
-              <span className="block text-base font-semibold text-slate-300">Separate apps</span>
-              <span className="mt-0.5 block text-xs font-normal text-slate-500">One tool per department</span>
-            </th>
+            {PLANS.map((plan) => (
+              <th key={plan.id} scope="col" className={cn("px-1.5 pb-5 pt-6 text-center align-bottom sm:px-3", plan.popular && growthCol)}>
+                {plan.popular && (
+                  <span className="mb-2 hidden rounded-full bg-cyan-400 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#0a1428] sm:inline-block">
+                    Most popular
+                  </span>
+                )}
+                <span className="block text-xs font-extrabold uppercase tracking-[0.06em] text-[#0b1f5e] sm:text-sm">
+                  {plan.name}
+                </span>
+                <span className="mt-1 block text-lg font-extrabold text-[#0b1f5e] sm:text-2xl">
+                  ${plan.monthly}
+                  {/* On phones "/mo" drops below the price so the three columns fit. */}
+                  <span className="block text-[11px] font-semibold text-[#8a93a3] sm:inline sm:text-xs"> /mo</span>
+                </span>
+                {/* The wrapper hides it on phones: the button class sets its
+                    own display, which would beat a utility on the link. */}
+                <span className="mt-3 hidden sm:block">
+                  <Link href="/register" className={cn(plan.popular ? styles.btn : styles.btnDark, "px-4 py-2 text-[11px]")}>
+                    Start trial
+                  </Link>
+                </span>
+              </th>
+            ))}
           </tr>
         </thead>
 
-        <tbody>
-          <tr className={rowClass}>
-            <th scope="colgroup" colSpan={3} className="px-6 pb-2 pt-6 text-xs font-semibold uppercase tracking-[0.14em] text-blue-400">
-              {PLAN_DEPARTMENTS.length} departments
-            </th>
-          </tr>
-          {PLAN_DEPARTMENTS.map((dept) => (
-            <tr key={dept.label} className={rowClass}>
-              <th scope="row" className="px-5 py-4 font-normal sm:px-6">
-                <span className="flex items-center gap-2.5 text-sm font-semibold text-slate-100">
-                  <dept.icon aria-hidden className="h-4 w-4 shrink-0 text-blue-400" />
-                  {dept.label}
-                </span>
-                <span className="mt-1 block pl-[1.625rem] text-xs leading-relaxed text-slate-400">
-                  {dept.modules.map((module, i) => (
-                    <span key={module}>
-                      {i > 0 && " · "}
-                      {module}
-                      {/* Modules that need more than Starter say which plan. */}
-                      {MODULE_MIN_PLAN[module] && (
-                        <span className="ml-1 rounded bg-blue-500/15 px-1 py-px text-[10px] font-semibold text-blue-200">
-                          {MODULE_MIN_PLAN[module]}
-                        </span>
-                      )}
-                    </span>
-                  ))}
-                </span>
-                <span className="block pl-[1.625rem]">
-                  <OthersNote>Usually a separate app</OthersNote>
-                </span>
+        {PLAN_MATRIX.map((group) => (
+          <tbody key={group.title}>
+            <tr>
+              <th scope="colgroup" colSpan={4} className="bg-[#0b0f17] px-3 py-3 text-xs font-extrabold uppercase tracking-[0.06em] text-cyan-400 sm:px-6">
+                {group.title}
               </th>
-              <td className={`${aibosCell} border-x border-blue-400/20`}>
-                <Included />
-              </td>
-              <td className={othersCell}>
-                <Others>Usually a separate app</Others>
-              </td>
             </tr>
-          ))}
-
-          <tr className={rowClass}>
-            <th scope="colgroup" colSpan={3} className="px-6 pb-2 pt-8 text-xs font-semibold uppercase tracking-[0.14em] text-blue-400">
-              Across the business
-            </th>
-          </tr>
-          {ACROSS_THE_BUSINESS.map((row) => (
-            <tr key={row.feature} className={rowClass}>
-              <th scope="row" className="px-5 py-4 text-sm font-medium text-slate-100 sm:px-6">
-                {row.feature}
-                <OthersNote>{row.others}</OthersNote>
-              </th>
-              <td className={`${aibosCell} border-x border-blue-400/20`}>
-                <Included />
-              </td>
-              <td className={othersCell}>
-                <Others>{row.others}</Others>
-              </td>
-            </tr>
-          ))}
-        </tbody>
+            {group.rows.map((row) => (
+              <tr key={row.label} className="border-t border-[#e6e9ee]">
+                <th scope="row" className="px-3 py-3.5 text-[13px] font-semibold leading-snug text-[#3b4a63] sm:px-6 sm:text-sm">
+                  {row.label}
+                </th>
+                {row.values.map((value, i) => (
+                  <td key={PLANS[i].id} className={cn("px-1.5 py-3.5 text-center align-middle sm:px-3", PLANS[i].popular && growthCol)}>
+                    <Cell value={value} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        ))}
       </table>
     </div>
   );

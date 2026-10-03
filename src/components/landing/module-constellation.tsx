@@ -191,31 +191,52 @@ export function ModuleConstellation() {
         })}
       </div>
 
-      <div className="relative flex min-h-[18rem] flex-col rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur-xl sm:min-h-[21rem] sm:p-9">
+      {/* Editorial text straight on the glass panel: eyebrow and counter,
+          a capital title in the landing heading style, an accent rule in the
+          node's colour, then its modules as one quiet line. */}
+      <div className="flex min-h-[17rem] flex-col sm:min-h-[19rem]">
         <div key={current.name} className="animate-fade-up">
-          <div className="flex items-center gap-3">
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: current.color, boxShadow: `0 0 12px ${current.color}` }} />
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">
-              {active === 0 ? "At the center" : `Department ${active} of 8`}
+          <div className="flex items-baseline justify-between gap-4">
+            <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cyan-400">
+              {active === 0 ? "At the center" : "Department"}
+            </p>
+            <p className="text-xs tabular-nums text-white/60">
+              <b className="font-extrabold text-white">{String(active + 1).padStart(2, "0")}</b> /{" "}
+              {String(NODES.length).padStart(2, "0")}
             </p>
           </div>
-          <h3 className="font-display mt-4 text-3xl font-semibold text-slate-50">{current.name}</h3>
-          <p className="mt-3 text-base leading-relaxed text-slate-300">{current.tagline}</p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {current.modules.map((m) => (
-              <span
-                key={m}
-                className="rounded-full border px-3.5 py-1.5 text-sm text-slate-200"
-                style={{ borderColor: `${current.color}55`, backgroundColor: `${current.color}14` }}
-              >
-                {m}
-              </span>
-            ))}
-          </div>
+          <h3 className="font-display mt-3 text-3xl font-extrabold uppercase leading-[1.05] text-white sm:text-[2.1rem]">
+            {current.name}
+          </h3>
+          <span aria-hidden className="mt-4 block h-1 w-11 rounded-full" style={{ backgroundColor: current.color }} />
+          <p className="mt-4 max-w-md text-base leading-relaxed text-white/70">{current.tagline}</p>
+          {/* The core's own name is one of its modules; listing it again
+              under the title would repeat it. */}
+          <p className="mt-5 text-sm font-semibold tracking-wide text-white/85">
+            {current.modules.filter((m) => m !== current.name).join("  ·  ")}
+          </p>
         </div>
-        <p className="mt-auto pt-8 text-xs text-slate-500">
-          Hover or tap any point of the logo to explore.
-        </p>
+
+        {/* Progress through the tour; each dash also jumps to its point. */}
+        <div className="mt-auto flex gap-1.5 pt-8">
+          {NODES.map((node, i) => (
+            <button
+              key={node.name}
+              type="button"
+              aria-label={`Show ${node.name}`}
+              aria-current={i === active ? "true" : undefined}
+              onClick={() => select(i)}
+              className="group flex-1 py-2 focus-visible:outline-none"
+            >
+              <span
+                className={cn(
+                  "block h-[3px] rounded-full transition-colors duration-300 group-focus-visible:ring-2 group-focus-visible:ring-cyan-400",
+                  i === active ? "bg-cyan-400" : "bg-white/15 group-hover:bg-white/35"
+                )}
+              />
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

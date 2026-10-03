@@ -3,13 +3,13 @@ import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
-/* The landing page's closing band: full width dark glass carrying the
-   brand lockup, the final call to action and the site links. Other public
-   pages keep SiteFooter. */
+/* The closing band of the landing and pricing pages: full width dark glass
+   carrying the brand lockup, the final call to action and the site links.
+   Other public pages keep SiteFooter. */
 
 const LINKS = [
-  { href: "#features", label: "Features" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#features", label: "Features" },
+  { href: "/#faq", label: "FAQ" },
   { href: "/pricing", label: "Pricing" },
   { href: "/privacy", label: "Privacy" },
   { href: "/terms", label: "Terms" },
@@ -27,7 +27,6 @@ export function LandingFooter() {
                   light outline and a faint cyan glow trace it. */}
               <Logo alwaysDark className={styles.footMark} />
             </Link>
-            <p className={styles.footTagline}>Run your business, with AI that asks before it acts.</p>
 
             <h2 className={styles.footH}>Your whole business, one AI that asks first.</h2>
             <p className={styles.footP}>
@@ -36,9 +35,6 @@ export function LandingFooter() {
             <div className={styles.footCta}>
               <Link href="/register" className={styles.btn}>
                 Start free trial
-              </Link>
-              <Link href="/pricing" className={styles.footLink}>
-                See pricing
               </Link>
             </div>
           </div>
