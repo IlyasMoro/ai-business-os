@@ -1,56 +1,117 @@
 import Link from "next/link";
-import { Building2 } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { daysLeft } from "@/lib/date-utils";
+import { cn } from "@/lib/utils";
 
-/** Topbar badge for the signed-in company: name, plus either the trial
- * countdown or the paid-package status when a Subscription row applies.
- * Replaces the old bare company-initial pill so the trial/billing state
- * that used to live in its own dashboard-body card is visible everywhere,
- * not just the overview page. */
+type Subscription = {
+  status: string;
+  trialEndsAt: Date | null;
+  currentPeriodEnd?: Date | null;
+  cancelAtPeriodEnd: boolean;
+} | null;
+
+/** "AB" from "Acme Brands (Pty) Ltd": the first letters of the first two words. */
+function initials(name: string) {
+  const words = name.replace(/[^\p{L}\p{N}\s]/gu, " ").trim().split(/\s+/).filter(Boolean);
+  return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
+}
+
+/** One short line on where the company stands: trial countdown, plan, or a
+ * problem to fix. `tone` colours it: warn when attention is needed soon,
+ * bad when access is at risk. */
+function statusLine(subscription: Subscription, planName: string): { text: string; tone: "ok" | "warn" | "bad" } {
+  const now = new Date();
+  if (subscription?.status === "TRIALING") {
+    if (subscription.trialEndsAt && subscription.trialEndsAt <= now) return { text: "Trial ended", tone: "bad" };
+    if (!subscription.trialEndsAt) return { text: "Free trial", tone: "ok" };
+    const left = daysLeft(subscription.trialEndsAt);
+    if (left <= 1) return { text: left === 0 ? "Trial ends today" : "Trial ends tomorrow", tone: "warn" };
+    return { text: `Trial · ${left} days left`, tone: left <= 3 ? "warn" : "ok" };
+  }
+  if (subscription?.status === "PAST_DUE") return { text: "Payment failed", tone: "bad" };
+  if (subscription?.status === "CANCELED" || subscription?.status === "INCOMPLETE") {
+    return { text: "No active plan", tone: "bad" };
+  }
+  if (subscription?.status === "ACTIVE" && subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd) {
+    const date = subscription.currentPeriodEnd.toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
+    return { text: `${planName} plan · cancels ${date}`, tone: "warn" };
+  }
+  return { text: `${planName} plan`, tone: "ok" };
+}
+
+/**
+ * Top bar badge for the signed-in company: its logo (or initials), name,
+ * and one status line. For owners the whole badge opens Billing; other
+ * roles can't open Billing, so for them it is information only.
+ */
 export function CompanyStatusBadge({
   companyName,
   subscription,
+  planName,
+  logoUrl,
+  canManage,
 }: {
   companyName: string;
-  subscription: {
-    status: string;
-    trialEndsAt: Date | null;
-    cancelAtPeriodEnd: boolean;
-  } | null;
+  subscription: Subscription;
+  planName: string;
+  /** The uploaded logo, or null to show initials. */
+  logoUrl: string | null;
+  /** Owners can open Billing. */
+  canManage: boolean;
 }) {
-  const isTrialing =
-    subscription?.status === "TRIALING" && (!subscription.trialEndsAt || subscription.trialEndsAt > new Date());
-  const isActive = subscription?.status === "ACTIVE";
-  const isPastDue = subscription?.status === "PAST_DUE";
-  const hasStatus = isTrialing || isActive || isPastDue;
+  const status = statusLine(subscription, planName);
+  const toneClass = {
+    ok: "text-slate-400 light:text-slate-500",
+    warn: "text-amber-400 light:text-amber-600",
+    bad: "text-red-400 light:text-red-600",
+  }[status.tone];
 
-  return (
-    <div className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-3 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70">
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-blue-400/30 bg-blue-500/10 text-blue-300 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700">
-        <Building2 className="h-3.5 w-3.5" />
-      </span>
-      <div className="min-w-0 leading-tight">
-        <p className="truncate text-sm font-semibold text-slate-50 light:text-slate-900">{companyName}</p>
-        {isTrialing && subscription?.trialEndsAt && (
-          <p className="text-[11px] text-amber-400">
-            {daysLeft(subscription.trialEndsAt)} day{daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left
-          </p>
-        )}
-        {isActive && (
-          <p className="text-[11px] text-emerald-400">
-            Active{subscription?.cancelAtPeriodEnd && " (cancels soon)"}
-          </p>
-        )}
-        {isPastDue && <p className="text-[11px] text-red-400">Payment failed</p>}
-      </div>
-      {hasStatus && (
-        <Link
-          href="/dashboard/billing"
-          className="hidden shrink-0 text-[11px] font-medium text-blue-400 underline hover:text-blue-300 sm:inline light:text-blue-600 light:hover:text-blue-700"
+  const body = (
+    <>
+      {logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-md bg-white object-contain p-0.5" />
+      ) : (
+        <span
+          aria-hidden
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-600 text-xs font-semibold text-white"
         >
-          Manage
-        </Link>
+          {initials(companyName)}
+        </span>
       )}
-    </div>
+      <span className="min-w-0 leading-tight">
+        <span className="block max-w-[11rem] truncate text-sm font-semibold text-slate-50 sm:max-w-[16rem] light:text-slate-900">
+          {companyName}
+        </span>
+        <span className={cn("flex items-center gap-1.5 text-[11.5px]", toneClass)}>
+          {status.tone !== "ok" && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />}
+          {status.text}
+        </span>
+      </span>
+      {canManage && (
+        <ChevronRight
+          aria-hidden
+          className="h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 light:text-slate-400"
+        />
+      )}
+    </>
+  );
+
+  const shell =
+    "group flex min-w-0 items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-2.5 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70";
+
+  return canManage ? (
+    <Link
+      href="/dashboard/billing"
+      title="Plan and billing"
+      className={cn(
+        shell,
+        "transition-colors hover:border-white/20 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:hover:border-slate-300"
+      )}
+    >
+      {body}
+    </Link>
+  ) : (
+    <div className={shell}>{body}</div>
   );
 }

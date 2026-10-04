@@ -21,7 +21,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  const [notifications, subscription, returnPolicy, mrpSettings, ediSettings, controlling, branchCtx, plan] = await Promise.all([
+  const [notifications, subscription, returnPolicy, mrpSettings, ediSettings, controlling, branchCtx, plan, logoRows] = await Promise.all([
     getNotifications(user.companyId),
     db.subscription.findUnique({ where: { companyId: user.companyId } }),
     getReturnPolicy(user.companyId),
@@ -30,7 +30,11 @@ export default async function DashboardLayout({
     getControllingSettings(user.companyId),
     getBranchContext(),
     getCompanyPlan(user.companyId),
+    // The logo's size only, as a cache version; the image itself loads from /api/company-logo.
+    db.$queryRaw<{ size: number | null }[]>`SELECT octet_length("logoData") AS size FROM "Company" WHERE id = ${user.companyId}`,
   ]);
+  const logoSize = logoRows[0]?.size ?? null;
+  const logoUrl = logoSize ? `/api/company-logo/${user.companyId}?v=${logoSize}` : null;
   const hiddenHrefs = [
     ...(returnPolicy.enabled ? [] : ["/dashboard/returns"]),
     ...(mrpSettings.enabled ? [] : ["/dashboard/mrp"]),
@@ -65,6 +69,8 @@ export default async function DashboardLayout({
           lockedHrefs={lockedHrefs}
           notifications={notifications}
           subscription={subscription}
+          planName={plan.name}
+          logoUrl={logoUrl}
           branch={{
             options: branchCtx.branches.filter((b) => b.active || b.id === branchCtx.viewBranchId).map(({ id, name, code }) => ({ id, name, code })),
             currentId: branchCtx.viewBranchId,

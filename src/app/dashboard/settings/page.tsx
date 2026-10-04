@@ -5,6 +5,7 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { Input, Label } from "@/components/ui-dark/input";
 import { updateCompanyProfile, updateCompanyLogo, removeCompanyLogo } from "@/lib/actions/company";
 import { Building2, ImageIcon } from "lucide-react";
+import { LogoUpload } from "@/components/settings/logo-upload";
 
 export default async function SettingsPage({
   searchParams,
@@ -16,9 +17,11 @@ export default async function SettingsPage({
 
   const company = await db.company.findUnique({
     where: { id: session.companyId },
-    select: { name: true, industry: true, logoMimeType: true },
+    select: { name: true, industry: true, logoMimeType: true, logoData: true },
   });
   const hasLogo = Boolean(company?.logoMimeType);
+  // Changes whenever the logo does, so the upload box starts fresh after each upload.
+  const logoVersion = `${company?.logoData?.length ?? 0}-${error ?? ""}`;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -27,7 +30,8 @@ export default async function SettingsPage({
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Your company&apos;s profile.</p>
 
         <div className="mt-4 space-y-3">
-          <ErrorBanner code={error} />
+          {/* Logo problems show on the logo card instead. */}
+          <ErrorBanner code={error?.startsWith("logo-") ? undefined : error} />
           {saved && (
             <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
               Saved.
@@ -75,8 +79,7 @@ export default async function SettingsPage({
             <div>
               <p className="font-semibold text-slate-50 light:text-slate-900">Company logo</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
-                Replaces the AIBOS mark on invoices, payslips, business reports, and emails sent to your
-                customers. PNG or JPEG, up to 2MB.
+                Shown on invoices, payslips, business reports and customer emails instead of the AIBOS mark.
               </p>
             </div>
           </div>
@@ -85,10 +88,14 @@ export default async function SettingsPage({
             <div className="mt-4 flex items-center gap-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={`/api/company-logo/${session.companyId}`}
+                src={`/api/company-logo/${session.companyId}?v=${company?.logoData?.length ?? 0}`}
                 alt="Current company logo"
                 className="h-16 w-16 rounded-md border border-white/[0.06] light:border-slate-200 object-contain bg-white p-1"
               />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-slate-50 light:text-slate-900">Current logo</p>
+                <p className="text-xs text-slate-400 light:text-slate-500">Upload a new one below to replace it.</p>
+              </div>
               <form action={removeCompanyLogo}>
                 <SubmitButton variant="ghost" pendingText="Removing...">
                   Remove
@@ -97,18 +104,7 @@ export default async function SettingsPage({
             </div>
           )}
 
-          <form action={updateCompanyLogo} className="mt-4 flex items-center gap-3">
-            <input
-              type="file"
-              name="logo"
-              accept="image/png,image/jpeg"
-              required
-              className="block w-full text-sm text-slate-400 light:text-slate-500 file:mr-3 file:rounded-md file:border file:border-white/[0.09] light:file:border-slate-300 file:bg-white/5 light:file:bg-white/70 file:px-3 file:py-1.5 file:text-sm file:text-slate-300 light:text-slate-600 file:transition-colors hover:file:bg-white/5"
-            />
-            <SubmitButton variant="secondary" pendingText="Uploading...">
-              {hasLogo ? "Replace" : "Upload"}
-            </SubmitButton>
-          </form>
+          <LogoUpload key={logoVersion} action={updateCompanyLogo} hasLogo={hasLogo} serverError={error?.startsWith("logo-") ? error : undefined} />
         </div>
       </div>
     </div>

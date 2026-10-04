@@ -36,12 +36,17 @@ export async function updateCompanyProfile(formData: FormData) {
 export async function updateCompanyLogo(formData: FormData) {
   const session = await requireRole(["OWNER", "ADMIN"]);
 
+  // The page checks these first (components/settings/logo-upload.tsx); the
+  // server checks again and names the problem so the logo card can show it.
   const file = formData.get("logo");
   if (!(file instanceof File) || file.size === 0) {
-    redirect("/dashboard/settings?error=invalid");
+    redirect("/dashboard/settings?error=logo-missing");
   }
-  if (file.size > LOGO_MAX_SIZE_BYTES || !LOGO_ALLOWED_TYPES.includes(file.type)) {
-    redirect("/dashboard/settings?error=invalid");
+  if (!LOGO_ALLOWED_TYPES.includes(file.type)) {
+    redirect("/dashboard/settings?error=logo-type");
+  }
+  if (file.size > LOGO_MAX_SIZE_BYTES) {
+    redirect("/dashboard/settings?error=logo-size");
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
