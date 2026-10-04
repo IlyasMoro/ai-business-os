@@ -5,6 +5,7 @@ import { TicketStatusValues, TicketPriorityValues } from "@/lib/validation/suppo
 export const CustomerStatusValues = ["LEAD", "ACTIVE", "INACTIVE"] as const;
 export const SalesPeriodValues = ["this_month", "last_month"] as const;
 export const PipelineClosingValues = ["this_month", "next_month", "this_quarter", "overdue"] as const;
+export const CampaignReportStatusValues = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
 
 // ---------- Tool definitions (Groq / OpenAI-compatible function schema) ----------
 
@@ -162,6 +163,23 @@ export const TOOL_DEFINITIONS: Groq.Chat.ChatCompletionTool[] = [
   {
     type: "function",
     function: {
+      name: "campaign_report",
+      description:
+        "Get marketing campaign results: for each campaign its channel, status, budget, amount spent, leads, how many became customers, deals won, revenue from paid invoices, cost per lead and return on spend (null until spend is recorded), plus totals for all campaigns. Use for questions like 'which campaign works best', 'what did the spring promo bring in', or 'what is our cost per lead'. Read-only, runs immediately.",
+      parameters: {
+        type: "object",
+        properties: {
+          // Nullable: models often send null for filters they don't use,
+          // and Groq rejects that against a plain string schema.
+          name: { type: ["string", "null"], description: "Only campaigns whose name contains this text. Omit or null for all campaigns." },
+          status: { type: ["string", "null"], enum: [...CampaignReportStatusValues, null], description: "Only campaigns with this status. Omit or null for every status." },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "create_invoice",
       description:
         "Propose creating a new draft invoice for a customer. Requires a customer id from find_customer.",
@@ -200,6 +218,7 @@ const READ_TOOL_NAMES = new Set([
   "summarize_sales",
   "forecast_next_month_revenue",
   "pipeline_report",
+  "campaign_report",
 ]);
 
 export function isReadTool(name: string) {
@@ -234,6 +253,10 @@ export const UpdateTicketPriorityArgs = z.object({
 export const UpdateCustomerStatusArgs = z.object({
   customerId: z.string().min(1),
   status: z.enum(CustomerStatusValues),
+});
+export const CampaignReportArgs = z.object({
+  name: z.string().trim().max(200).nullish(),
+  status: z.enum(CampaignReportStatusValues).nullish(),
 });
 export const PipelineReportArgs = z.object({
   closing: z.enum(PipelineClosingValues).optional(),

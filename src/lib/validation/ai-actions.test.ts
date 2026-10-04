@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   FindCustomerArgs,
+  CampaignReportArgs,
   CreateTaskArgs,
   UpdateTicketStatusArgs,
   UpdateTicketPriorityArgs,
@@ -71,6 +72,7 @@ describe("tool name classification", () => {
   it("recognizes read tools", () => {
     expect(isReadTool("find_customer")).toBe(true);
     expect(isReadTool("list_open_tickets")).toBe(true);
+    expect(isReadTool("campaign_report")).toBe(true);
   });
 
   it("does not classify write tools as read tools", () => {
@@ -114,5 +116,14 @@ describe("summary formatters", () => {
     expect(summarizeUpdateCustomerStatus("Acme Corp", "INACTIVE")).toBe(
       'Set customer "Acme Corp" status to INACTIVE'
     );
+  });
+});
+
+describe("CampaignReportArgs", () => {
+  it("accepts nulls for unused filters, as models send them", () => {
+    expect(CampaignReportArgs.safeParse({ name: null, status: null }).success).toBe(true);
+    expect(CampaignReportArgs.safeParse({}).success).toBe(true);
+    expect(CampaignReportArgs.safeParse({ status: "ACTIVE" }).success).toBe(true);
+    expect(CampaignReportArgs.safeParse({ status: "RUNNING" }).success).toBe(false);
   });
 });

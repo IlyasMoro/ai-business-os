@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Download } from "lucide-react";
 import { verifySession, hasRole } from "@/lib/dal";
+import { db } from "@/lib/db";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -13,6 +14,11 @@ export default async function ImportCustomersPage({ searchParams }: { searchPara
   const session = await verifySession();
   if (!hasRole(session, ["OWNER", "ADMIN"])) redirect("/dashboard/crm?error=forbidden");
   const { error } = await searchParams;
+  const campaigns = await db.campaign.findMany({
+    where: { companyId: session.companyId, status: { not: "COMPLETED" } },
+    select: { id: true, name: true },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -47,7 +53,7 @@ export default async function ImportCustomersPage({ searchParams }: { searchPara
         </div>
 
         <div className="mt-6">
-          <CustomerImport />
+          <CustomerImport campaigns={campaigns} />
         </div>
       </div>
     </div>

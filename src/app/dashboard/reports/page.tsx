@@ -15,6 +15,8 @@ import { forecastNextMonthRevenue } from "@/lib/ai-tools";
 import { Sparkles, Download } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { StatusBadge } from "@/components/ui-dark/badge";
+import { getCampaignsWithStats } from "@/lib/campaign-data";
+import { formatRoi, totalStats } from "@/lib/campaign-stats";
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
@@ -86,10 +88,17 @@ export default async function ReportsPage() {
     }),
   ]);
 
-  const [forecast, profit] = await Promise.all([
+  const [forecast, profit, allCampaigns] = await Promise.all([
     forecastNextMonthRevenue(companyId, viewBranch?.id ?? null),
     multiBranch ? getProfitByBranch(companyId) : Promise.resolve(null),
+    getCampaignsWithStats(companyId),
   ]);
+  // Campaigns that have spent money or brought leads, best revenue first.
+  const reportCampaigns = allCampaigns
+    .filter((c) => c.stats.spent > 0 || c.stats.leads > 0)
+    .sort((a, b) => b.stats.revenue - a.stats.revenue || b.stats.leads - a.stats.leads);
+  const campaignTotals = totalStats(reportCampaigns.map((c) => c.stats));
+  const CAMPAIGN_ROWS = 8;
 
   const orderCountByStatus = new Map(orderGroups.map((g) => [g.status, g._count._all]));
   const invoiceCountByStatus = new Map(invoiceGroups.map((g) => [g.status, g._count._all]));
@@ -304,6 +313,83 @@ export default async function ReportsPage() {
               </li>
             ))}
           </ol>
+        )}
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Campaigns</h2>
+            <p className="text-xs text-slate-500">
+              What each campaign spent and what its leads went on to buy. Company wide, as campaigns have no branch.
+            </p>
+          </div>
+          <a href="/api/export/campaigns" className={buttonStyles("secondary", "sm", "shrink-0")}>
+            <Download className="h-4 w-4" />
+            CSV
+          </a>
+        </div>
+        {reportCampaigns.length === 0 ? (
+          <p className="text-sm text-slate-500">
+            No campaign has recorded spend or leads yet.{" "}
+            <Link href="/dashboard/marketing" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+              Open Marketing
+            </Link>
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                  <th className="py-2 pr-4 font-medium">Campaign</th>
+                  <th className="py-2 pr-4 text-right font-medium">Spent</th>
+                  <th className="py-2 pr-4 text-right font-medium">Leads</th>
+                  <th className="py-2 pr-4 text-right font-medium">Cost per lead</th>
+                  <th className="py-2 pr-4 text-right font-medium">Customers</th>
+                  <th className="py-2 pr-4 text-right font-medium">Revenue</th>
+                  <th className="py-2 text-right font-medium">Return</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ...reportCampaigns.slice(0, CAMPAIGN_ROWS).map((c) => ({ key: c.id, name: c.name, href: `/dashboard/marketing/${c.id}`, s: c.stats })),
+                  { key: "total", name: reportCampaigns.length > CAMPAIGN_ROWS ? `All ${reportCampaigns.length} campaigns` : "Total", href: null, s: campaignTotals },
+                ].map((r) => {
+                  const isTotal = r.href === null;
+                  return (
+                    <tr
+                      key={r.key}
+                      className={isTotal ? "border-t border-white/[0.12] font-semibold light:border-slate-300" : "border-b border-white/[0.04]"}
+                    >
+                      <td className="max-w-[16rem] truncate py-2 pr-4 text-slate-50 light:text-slate-900">
+                        {r.href ? (
+                          <Link href={r.href} className="hover:text-blue-400">
+                            {r.name}
+                          </Link>
+                        ) : (
+                          r.name
+                        )}
+                      </td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(r.s.spent)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{r.s.leads}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">
+                        {r.s.costPerLead === null ? "n/a" : formatCompactCurrency(r.s.costPerLead)}
+                      </td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{r.s.converted}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-emerald-400">{formatCompactCurrency(r.s.revenue)}</td>
+                      <td
+                        className={`py-2 text-right tabular-nums ${
+                          r.s.roiPct === null ? "text-slate-500" : r.s.roiPct >= 0 ? "text-emerald-400" : "text-red-400"
+                        }`}
+                      >
+                        {formatRoi(r.s.roiPct)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

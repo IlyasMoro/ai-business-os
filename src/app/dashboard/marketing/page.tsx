@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
-import { db } from "@/lib/db";
-import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
@@ -10,6 +8,9 @@ import { Plus, Search, Download, Megaphone } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+import { getCampaignsWithStats } from "@/lib/campaign-data";
+import { formatRoi, totalStats } from "@/lib/campaign-stats";
+import { formatCurrency } from "@/lib/utils";
 
 const statusOrder = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -27,29 +28,16 @@ export default async function MarketingPage({
   const { q } = await searchParams;
   const session = await verifySession();
 
-  const where: Prisma.CampaignWhereInput = {
-    companyId: session.companyId,
-    ...(q ? { name: { contains: q } } : {}),
-  };
+  // Totals and the status chart cover every campaign; the search only
+  // narrows the table.
+  const all = await getCampaignsWithStats(session.companyId);
+  const needle = q?.trim().toLowerCase();
+  const campaigns = needle ? all.filter((c) => c.name.toLowerCase().includes(needle)) : all;
 
-  const [campaigns, statusGroups] = await Promise.all([
-    db.campaign.findMany({
-      where,
-      include: { _count: { select: { leads: true } } },
-      orderBy: { createdAt: "desc" },
-    }),
-    db.campaign.groupBy({
-      by: ["status"],
-      where: { companyId: session.companyId },
-      _count: { _all: true },
-      _sum: { budget: true },
-    }),
-  ]);
-
-  const totalAll = statusGroups.reduce((s, g) => s + g._count._all, 0);
-  const statusMap = new Map(statusGroups.map((g) => [g.status, g._count._all]));
-  const totalBudget = statusGroups.reduce((s, g) => s + (g._sum.budget ?? 0), 0);
-  const totalLeads = campaigns.reduce((s, c) => s + c._count.leads, 0);
+  const totalAll = all.length;
+  const statusMap = new Map<string, number>();
+  for (const c of all) statusMap.set(c.status, (statusMap.get(c.status) ?? 0) + 1);
+  const totals = totalStats(all.map((c) => c.stats));
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -90,13 +78,32 @@ export default async function MarketingPage({
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Total budget</p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-400">
-            <AnimatedCounter value={totalBudget} prefix="$" decimals={0} />
-          </p>
-          <p className="mt-4 text-sm text-slate-400 light:text-slate-500">Total leads generated</p>
+          <p className="text-sm text-slate-400 light:text-slate-500">Spent</p>
           <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalLeads} decimals={0} />
+            <AnimatedCounter value={totals.spent} prefix="$" decimals={0} />
+          </p>
+          <p className="text-xs text-slate-500">of {formatCurrency(totals.budget)} budgeted</p>
+          <div className="mt-4 grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-slate-400 light:text-slate-500">Leads</p>
+              <p className="mt-1 text-xl font-semibold text-slate-50 light:text-slate-900">
+                <AnimatedCounter value={totals.leads} decimals={0} />
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-400 light:text-slate-500">Revenue</p>
+              <p className="mt-1 text-xl font-semibold text-emerald-400">
+                <AnimatedCounter value={totals.revenue} prefix="$" decimals={0} />
+              </p>
+            </div>
+          </div>
+          <p className="mt-4 text-sm text-slate-400 light:text-slate-500">Return on spend</p>
+          <p
+            className={`mt-1 text-xl font-semibold ${
+              totals.roiPct === null ? "text-slate-50 light:text-slate-900" : totals.roiPct >= 0 ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            {formatRoi(totals.roiPct)}
           </p>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-2 glass">
@@ -124,14 +131,17 @@ export default async function MarketingPage({
             action={q ? { href: "/dashboard/marketing", label: "Clear search", variant: "secondary" } : { href: "/dashboard/marketing/new", label: "New campaign" }}
           />
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
                 <th className="px-5 py-3 font-medium">Campaign</th>
                 <th className="px-5 py-3 font-medium">Channel</th>
                 <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Budget</th>
-                <th className="px-5 py-3 font-medium">Leads</th>
+                <th className="px-5 py-3 text-right font-medium">Spent</th>
+                <th className="px-5 py-3 text-right font-medium">Leads</th>
+                <th className="px-5 py-3 text-right font-medium">Revenue</th>
+                <th className="px-5 py-3 text-right font-medium">Return</th>
               </tr>
             </thead>
             <tbody>
@@ -151,14 +161,28 @@ export default async function MarketingPage({
                   <td className="px-5 py-3">
                     <StatusBadge status={campaign.status} color={statusColor[campaign.status]} />
                   </td>
-                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    ${campaign.budget.toFixed(2)}
+                  <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">
+                    {formatCurrency(campaign.stats.spent)}
+                    <span className="block text-xs text-slate-500">of {formatCurrency(campaign.stats.budget)}</span>
                   </td>
-                  <td className="px-5 py-3 text-slate-300 light:text-slate-600">{campaign._count.leads}</td>
+                  <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{campaign.stats.leads}</td>
+                  <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(campaign.stats.revenue)}</td>
+                  <td
+                    className={`px-5 py-3 text-right tabular-nums ${
+                      campaign.stats.roiPct === null
+                        ? "text-slate-500"
+                        : campaign.stats.roiPct >= 0
+                          ? "text-emerald-400 light:text-emerald-700"
+                          : "text-red-400 light:text-red-700"
+                    }`}
+                  >
+                    {formatRoi(campaign.stats.roiPct)}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

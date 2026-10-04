@@ -6,18 +6,22 @@ import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { CampaignSchema, CampaignStatusValues } from "@/lib/validation/marketing";
 
-export async function createCampaign(formData: FormData) {
-  const session = await verifySession();
-
-  const validated = CampaignSchema.safeParse({
+function readCampaign(formData: FormData) {
+  return CampaignSchema.safeParse({
     name: formData.get("name"),
     channel: formData.get("channel"),
     budget: formData.get("budget"),
-    startDate: formData.get("startDate"),
-    endDate: formData.get("endDate"),
-    notes: formData.get("notes"),
+    spent: formData.get("spent"),
+    startDate: formData.get("startDate") || undefined,
+    endDate: formData.get("endDate") || undefined,
+    notes: formData.get("notes") || undefined,
   });
+}
 
+export async function createCampaign(formData: FormData) {
+  const session = await verifySession();
+
+  const validated = readCampaign(formData);
   if (!validated.success) {
     redirect("/dashboard/marketing/new?error=invalid");
   }
@@ -35,6 +39,32 @@ export async function createCampaign(formData: FormData) {
 
   revalidatePath("/dashboard/marketing");
   redirect(`/dashboard/marketing/${campaign.id}`);
+}
+
+/** Saves the edit form. A blank date or note clears it. */
+export async function updateCampaign(campaignId: string, formData: FormData) {
+  const session = await verifySession();
+
+  const validated = readCampaign(formData);
+  if (!validated.success) {
+    redirect(`/dashboard/marketing/${campaignId}/edit?error=invalid`);
+  }
+
+  const { startDate, endDate, notes, ...rest } = validated.data;
+  const { count } = await db.campaign.updateMany({
+    where: { id: campaignId, companyId: session.companyId },
+    data: {
+      ...rest,
+      notes: notes ?? null,
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
+    },
+  });
+  if (count === 0) redirect("/dashboard/marketing");
+
+  revalidatePath("/dashboard/marketing");
+  revalidatePath(`/dashboard/marketing/${campaignId}`);
+  redirect(`/dashboard/marketing/${campaignId}`);
 }
 
 export async function updateCampaignStatus(campaignId: string, formData: FormData) {

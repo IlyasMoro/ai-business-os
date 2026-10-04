@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { customerScope, dealScope } from "@/lib/crm-access";
 import { isOpenStage, pipelineSummary, stageInfo } from "@/lib/crm-pipeline";
 import { closedIn, forecastByMonth, openByStage, periodRange } from "@/lib/sales-report";
+import { getCampaignsWithStats } from "@/lib/campaign-data";
+import { totalStats } from "@/lib/campaign-stats";
 import {
   FindCustomerArgs,
   CreateTaskArgs,
@@ -12,6 +14,7 @@ import {
   UpdateCustomerStatusArgs,
   SummarizeSalesArgs,
   PipelineReportArgs,
+  CampaignReportArgs,
   CreateInvoiceArgs,
   SendOverdueReminderArgs,
   summarizeCreateTask,
@@ -136,9 +139,38 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
       if (!parsed.success) return { error: "Invalid arguments for pipeline_report." };
       return pipelineReport(companyId, parsed.data.closing);
     }
+    case "campaign_report": {
+      const parsed = CampaignReportArgs.safeParse(rawArgs ?? {});
+      if (!parsed.success) return { error: "Invalid arguments for campaign_report." };
+      return campaignReport(companyId, parsed.data);
+    }
     default:
       return { error: `Unknown read tool: ${name}` };
   }
+}
+
+/** Campaign results for the Copilot, best revenue first. Company wide:
+ * campaigns have no branch. */
+async function campaignReport(companyId: string, filter: { name?: string | null; status?: "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED" | null }) {
+  const campaigns = await getCampaignsWithStats(companyId, {
+    ...(filter.name ? { name: { contains: filter.name, mode: "insensitive" } } : {}),
+    ...(filter.status ? { status: filter.status } : {}),
+  });
+  const sorted = [...campaigns].sort((a, b) => b.stats.revenue - a.stats.revenue || b.stats.leads - a.stats.leads);
+  return {
+    note: "Revenue is paid invoices from each campaign's leads, issued on or after its start date. Return on spend is (revenue - spent) / spent and is null until spend is recorded on the campaign.",
+    campaignCount: campaigns.length,
+    totals: totalStats(campaigns.map((c) => c.stats)),
+    campaigns: sorted.slice(0, 15).map((c) => ({
+      name: c.name,
+      channel: c.channel,
+      status: c.status,
+      startDate: c.startDate?.toISOString().slice(0, 10) ?? null,
+      endDate: c.endDate?.toISOString().slice(0, 10) ?? null,
+      ...c.stats,
+    })),
+    link: "/dashboard/marketing",
+  };
 }
 
 /** The CRM pipeline for the Copilot. Deals have no branch, so this is

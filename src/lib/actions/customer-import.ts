@@ -57,6 +57,14 @@ export async function importCustomers(formData: FormData) {
   const plan = await planFor(session.companyId, csv);
   if (plan.fatal || plan.ready.length === 0) redirect("/dashboard/crm/import?error=invalid");
 
+  // Optional campaign for everyone in the file, only if it is this company's.
+  const campaignField = formData.get("campaignId");
+  const campaign =
+    typeof campaignField === "string" && campaignField
+      ? await db.campaign.findFirst({ where: { id: campaignField, companyId: session.companyId }, select: { id: true, name: true } })
+      : null;
+  if (typeof campaignField === "string" && campaignField && !campaign) redirect("/dashboard/crm/import?error=invalid");
+
   const result = await db.customer.createMany({
     data: plan.ready.map((c) => ({
       name: c.name,
@@ -68,13 +76,16 @@ export async function importCustomers(formData: FormData) {
       notes: c.notes,
       creditLimit: c.creditLimit,
       ownerId: c.ownerId ?? session.userId,
+      campaignId: campaign?.id ?? null,
       companyId: session.companyId,
     })),
   });
   await logAudit(session.companyId, session.userId, "customers.imported", "Customer", "", {
     imported: result.count,
     skipped: plan.duplicates.length + plan.problems.length,
+    ...(campaign ? { campaign: campaign.name } : {}),
   });
   revalidatePath("/dashboard/crm");
+  if (campaign) revalidatePath(`/dashboard/marketing/${campaign.id}`);
   redirect(`/dashboard/crm?imported=${result.count}`);
 }

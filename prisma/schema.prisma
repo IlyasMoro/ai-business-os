@@ -1535,6 +1535,9 @@ model Campaign {
   channel   CampaignChannel @default(OTHER)
   status    CampaignStatus  @default(DRAFT)
   budget    Float           @default(0)
+  // What was actually spent so far (budget is the plan). Cost per lead and
+  // return on spend use this; see lib/campaign-stats.ts.
+  spent     Float           @default(0)
   startDate DateTime?
   endDate   DateTime?
   notes     String?

@@ -9,16 +9,19 @@ import { LeadForm } from "./lead-form";
 export const metadata: Metadata = { title: "Contact us", robots: { index: false, follow: false } };
 
 /** The company's web lead form, as its own page or (with ?embed=1) inside
- * an iframe on the company's website. */
+ * an iframe on the company's website. ?c=<campaign id> (the link on a
+ * campaign's page) attributes new leads to that campaign; the action checks
+ * it belongs to the same company. */
 export default async function LeadFormPage({
   params,
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ embed?: string }>;
+  searchParams: Promise<{ embed?: string; c?: string }>;
 }) {
   const { token } = await params;
-  const { embed } = await searchParams;
+  const { embed, c } = await searchParams;
+  const campaignId = typeof c === "string" && /^[a-z0-9]{1,40}$/i.test(c) ? c : null;
   const settings = await db.crmSettings.findUnique({
     where: { formToken: token },
     include: { companyRef: { select: { id: true, name: true, logoMimeType: true } } },
@@ -33,7 +36,7 @@ export default async function LeadFormPage({
       <h1 className="text-xl font-semibold tracking-tight text-slate-900">{settings.formTitle || FORM_DEFAULTS.title}</h1>
       <p className="mb-6 mt-1.5 text-sm leading-relaxed text-slate-500">{settings.formIntro || FORM_DEFAULTS.intro}</p>
       {settings.formEnabled ? (
-        <LeadForm action={submitLeadForm.bind(null, token)} thanks={settings.formThanks || FORM_DEFAULTS.thanks} />
+        <LeadForm action={submitLeadForm.bind(null, token, campaignId)} thanks={settings.formThanks || FORM_DEFAULTS.thanks} />
       ) : (
         <p className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">This form isn&apos;t taking messages right now. Please contact {company.name} directly.</p>
       )}

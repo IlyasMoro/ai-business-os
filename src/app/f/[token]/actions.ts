@@ -11,7 +11,9 @@ import { revalidatePath } from "next/cache";
 /* A visitor sends the web lead form. A new email becomes a lead (source
    Website) owned by the form's chosen person; a known email adds to that
    customer instead of making a duplicate. Either way the message goes on
-   the history and the owner gets a reminder for the next working day. */
+   the history and the owner gets a reminder for the next working day.
+   Sent from a campaign's form link, a new lead (or a known customer with no
+   campaign yet) is attributed to that campaign: first campaign wins. */
 
 export type LeadFormState = { ok?: true; errors?: Record<string, string[]>; message?: string } | undefined;
 
@@ -29,7 +31,12 @@ function nextWorkingMorning(now = new Date()) {
 
 const opt = (v: FormDataEntryValue | null) => (typeof v === "string" && v.trim() ? v : undefined);
 
-export async function submitLeadForm(token: string, _state: LeadFormState, formData: FormData): Promise<LeadFormState> {
+export async function submitLeadForm(
+  token: string,
+  campaignIdArg: string | null,
+  _state: LeadFormState,
+  formData: FormData
+): Promise<LeadFormState> {
   const settings = await db.crmSettings.findUnique({ where: { formToken: token }, include: { companyRef: { select: { name: true } } } });
   if (!settings?.formEnabled) return { message: "This form isn't taking messages right now." };
 
@@ -66,10 +73,19 @@ export async function submitLeadForm(token: string, _state: LeadFormState, formD
     (settings.formOwnerId && (await db.user.findFirst({ where: { id: settings.formOwnerId, companyId }, select: { id: true, email: true, name: true } }))) ||
     (await db.user.findFirst({ where: { companyId, role: "OWNER" }, orderBy: { createdAt: "asc" }, select: { id: true, email: true, name: true } }));
 
+  // The bound campaign id comes from the page URL, so it is only trusted
+  // once it is found in this company.
+  const campaign = campaignIdArg
+    ? await db.campaign.findFirst({ where: { id: campaignIdArg, companyId }, select: { id: true } })
+    : null;
+
   const existing = await db.customer.findFirst({
     where: { companyId, email: { equals: email, mode: "insensitive" } },
-    select: { id: true, ownerId: true },
+    select: { id: true, ownerId: true, campaignId: true },
   });
+  if (existing && campaign && !existing.campaignId) {
+    await db.customer.update({ where: { id: existing.id }, data: { campaignId: campaign.id } });
+  }
   const customer =
     existing ??
     (await db.customer.create({
@@ -80,10 +96,11 @@ export async function submitLeadForm(token: string, _state: LeadFormState, formD
         phone: input.phone || null,
         company: input.company || null,
         status: "LEAD",
-        source: "WEBSITE",
+        source: campaign ? "CAMPAIGN" : "WEBSITE",
+        campaignId: campaign?.id ?? null,
         ownerId: owner?.id ?? null,
       },
-      select: { id: true, ownerId: true },
+      select: { id: true, ownerId: true, campaignId: true },
     }));
   const assigneeId = customer.ownerId ?? owner?.id ?? null;
 
@@ -126,5 +143,6 @@ export async function submitLeadForm(token: string, _state: LeadFormState, formD
 
   revalidatePath("/dashboard/crm");
   revalidatePath("/dashboard/crm/reminders");
+  if (campaign) revalidatePath(`/dashboard/marketing/${campaign.id}`);
   return { ok: true };
 }

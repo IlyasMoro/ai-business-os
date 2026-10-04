@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui-dark/button";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { Label, Select } from "@/components/ui-dark/input";
 import { importCustomers, previewCustomerImport, type ImportPreviewState } from "@/lib/actions/customer-import";
 import { sourceLabel } from "@/lib/crm-pipeline";
 
@@ -28,8 +29,9 @@ function Issues({ title, tone, items }: { title: string; tone: "red" | "amber" |
   );
 }
 
-/** Step 1 picks a file and shows what will happen; step 2 imports it. */
-export function CustomerImport() {
+/** Step 1 picks a file and shows what will happen; step 2 imports it,
+ * optionally adding everyone to one campaign. */
+export function CustomerImport({ campaigns = [] }: { campaigns?: { id: string; name: string }[] }) {
   const [state, formAction, pending] = useActionState<ImportPreviewState, FormData>(previewCustomerImport, undefined);
   const plan = state?.plan;
 
@@ -110,8 +112,22 @@ export function CustomerImport() {
           <Issues title="Imported with changes" tone="amber" items={plan.warnings} />
 
           {plan.readyCount > 0 ? (
-            <form action={importCustomers}>
+            <form action={importCustomers} className="space-y-4">
               <input type="hidden" name="csv" value={state.csv} />
+              {campaigns.length > 0 && (
+                <div className="max-w-sm">
+                  <Label htmlFor="campaignId">Campaign</Label>
+                  <Select id="campaignId" name="campaignId" defaultValue="">
+                    <option value="">No campaign</option>
+                    {campaigns.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
+                  </Select>
+                  <p className="mt-1 text-xs text-slate-500">Everyone imported is counted as a lead of this campaign.</p>
+                </div>
+              )}
               <SubmitButton pendingText="Importing...">
                 Import {plan.readyCount} {plan.readyCount === 1 ? "customer" : "customers"}
               </SubmitButton>

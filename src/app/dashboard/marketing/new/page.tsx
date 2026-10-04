@@ -1,6 +1,7 @@
 import { CampaignForm } from "@/components/marketing/campaign-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { createCampaign } from "@/lib/actions/marketing";
 
 export default async function NewCampaignPage({
   searchParams,
@@ -16,7 +17,7 @@ export default async function NewCampaignPage({
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">New campaign</h1>
         <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
           <ErrorBanner code={error} />
-          <CampaignForm />
+          <CampaignForm action={createCampaign} />
         </div>
       </div>
     </div>
