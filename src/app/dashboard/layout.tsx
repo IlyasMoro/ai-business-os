@@ -56,7 +56,7 @@ export default async function DashboardLayout({
   const access = onBillingPage ? { blocked: false as const } : await checkSubscriptionAccess(user.companyId);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="app-text flex min-h-screen">
       <Sidebar role={user.role} userName={user.name} email={user.email} companyName={user.company.name} isPlatformAdmin={platformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar

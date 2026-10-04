@@ -42,7 +42,7 @@ export function MobileNav({
       {/* Portaled to <body>: the glass top bar uses backdrop-filter, which would
           otherwise trap this fixed overlay inside the bar's own box. */}
       {open && createPortal(
-        <div className="fixed inset-0 z-50 sm:hidden">
+        <div className="app-text fixed inset-0 z-50 sm:hidden">
           <div
             className="absolute inset-0 bg-black/60"
             onClick={() => setOpen(false)}

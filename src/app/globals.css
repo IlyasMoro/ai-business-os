@@ -465,3 +465,23 @@ html.light body::after {
   .spotlight::before,
   .spotlight::after { transition: none; }
 }
+
+/* Dashboard text (not the landing page or the customer facing pages).
+   Regular text gets a touch more weight than Inter's 400, which reads thin
+   at dashboard sizes; nothing becomes bold, since font-medium and up keep
+   their own weights. Light text on a dark background looks thinner and
+   dimmer than dark text on white, so the dark theme adds a little more
+   weight and lifts the muted greys used for labels and hints (slate-500
+   goes from about 4:1 contrast to about 6:1 on the dark panels). */
+.app-text {
+  font-weight: 420;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html:not(.light) .app-text {
+  font-weight: 440;
+  --color-slate-400: #a8b3c4;
+  --color-slate-500: #8c97aa;
+}

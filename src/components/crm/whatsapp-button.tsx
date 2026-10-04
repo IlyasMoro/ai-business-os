@@ -137,7 +137,7 @@ export function WhatsAppButton({
           role="dialog"
           aria-label={`WhatsApp ${customerName}`}
           style={{ top: pos.top, left: pos.left }}
-          className="fixed z-50 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-white/10 bg-slate-900 p-4 shadow-2xl light:border-slate-200 light:bg-white"
+          className="app-text fixed z-50 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-white/10 bg-slate-900 p-4 shadow-2xl light:border-slate-200 light:bg-white"
         >
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-slate-50 light:text-slate-900">WhatsApp {customerName.split(" ")[0]}</p>
