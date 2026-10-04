@@ -540,11 +540,11 @@
   color: var(--btn-ink);
   opacity: 0.7;
 }
-/* Five plans side by side on wide screens, three a row below that. */
+/* Starter, Growth and Enterprise side by side; stacked on phones. */
 .plans {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
   align-items: stretch;
   margin-top: 2.6rem;
 }
@@ -553,7 +553,7 @@
   flex-direction: column;
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 1.6rem 1.25rem;
+  padding: 2rem 1.8rem;
   box-shadow: 0 18px 38px -26px rgba(24, 67, 111, 0.45);
 }
 .plan:not(.glass) {
@@ -601,7 +601,7 @@
 }
 .planAmt {
   margin-top: 1.4rem;
-  font-size: 2.3rem;
+  font-size: 3rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.02em;
@@ -772,11 +772,6 @@
 }
 
 /* ── Smaller screens ── */
-@media (max-width: 1100px) {
-  .plans {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
 @media (max-width: 900px) {
   .plans {
     grid-template-columns: 1fr;

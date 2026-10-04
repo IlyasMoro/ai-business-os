@@ -1,20 +1,35 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { MAX_USERS, planById, planIncludes, type Plan, type PlanFeature, type PlanId } from "@/lib/plans";
+import { MAX_USERS, planAllows, planById, type Plan, type PlanFeature, type PlanId } from "@/lib/plans";
 
 /* Applies each company's plan (Company.plan, numbers in lib/plans.ts):
-   users, branches, the Growth and Scale modules, and AI requests a month.
+   users, branches, the Growth and Enterprise modules, and AI requests a month.
    Every check reads the database, so a limit holds no matter which page or
    action asks. */
 
+/** The company's plan with its limits. An Enterprise plan the client built
+ * (lib/enterprise.ts) brings its own users, branches, AI requests and EDI;
+ * its users are bought, so more need a change on Billing, not extra users. */
 export async function getCompanyPlan(companyId: string): Promise<Plan> {
-  const company = await db.company.findUnique({ where: { id: companyId }, select: { plan: true } });
-  return planById((company?.plan.toLowerCase() ?? "scale") as PlanId);
+  const company = await db.company.findUnique({
+    where: { id: companyId },
+    select: { plan: true, customUsers: true, customBranches: true, customAiRequests: true, customEdi: true },
+  });
+  const plan = planById((company?.plan.toLowerCase() ?? "scale") as PlanId);
+  if (plan.id !== "scale" || company?.customUsers == null) return plan;
+  return {
+    ...plan,
+    users: company.customUsers,
+    extraUsers: false,
+    branches: company.customBranches ?? plan.branches,
+    aiRequests: company.customAiRequests ?? plan.aiRequests,
+    edi: company.customEdi,
+  };
 }
 
 export async function hasFeature(companyId: string, feature: PlanFeature): Promise<boolean> {
-  return planIncludes((await getCompanyPlan(companyId)).id, feature);
+  return planAllows(await getCompanyPlan(companyId), feature);
 }
 
 /** For server actions: stop when the plan lacks the module. The module's
@@ -58,7 +73,8 @@ export async function canBillExtraUsers(companyId: string): Promise<boolean> {
  * Room for one more user:
  * - "included": within the plan's users.
  * - "extra": past them, billed as an extra user ($15 a month).
- * - "plan-full": past them on a plan without extra users (Solo).
+ * - "plan-full": past them on a plan without extra users (Solo, or a built
+ *   Enterprise plan, which has room for exactly the users bought).
  * - "needs-plan": past them, but not on a paid plan price yet.
  * - "full": at MAX_USERS; bigger teams need an Enterprise plan.
  * Seats count open invites. `pendingInvite`: the seat checked is already
@@ -69,9 +85,9 @@ export type UserRoom = "included" | "extra" | "plan-full" | "needs-plan" | "full
 export async function userRoom(companyId: string, { pendingInvite = false } = {}): Promise<UserRoom> {
   const [plan, seats] = await Promise.all([getCompanyPlan(companyId), seatsUsed(companyId)]);
   const used = seats - (pendingInvite ? 1 : 0);
-  if (used >= MAX_USERS) return "full";
   if (used < plan.users) return "included";
   if (!plan.extraUsers) return "plan-full";
+  if (used >= MAX_USERS) return "full";
   return (await canBillExtraUsers(companyId)) ? "extra" : "needs-plan";
 }
 

@@ -79,6 +79,14 @@ model Company {
   // Bought AI requests (top-ups) not used yet. Spent only once the plan's
   // monthly requests run out, and they never expire.
   aiCredits Int @default(0)
+
+  // An Enterprise plan the client built (lib/enterprise.ts), copied from the
+  // Stripe subscription's quantities. Null users means none: a plain plan,
+  // or Enterprise on its standard limits (trials, earlier Scale customers).
+  customUsers      Int?
+  customBranches   Int?
+  customAiRequests Int?
+  customEdi        Boolean @default(false)
 }
 
 enum CompanyPlan {

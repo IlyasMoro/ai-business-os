@@ -9,9 +9,16 @@ import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
 import { syncSubscription } from "@/lib/stripe-sync";
 import { logAudit } from "@/lib/audit";
-import { activeBranchCount, memberCount, seatsUsed } from "@/lib/plan-limits";
+import { activeBranchCount, getCompanyPlan, memberCount, seatsUsed } from "@/lib/plan-limits";
 import { findPriceId, isExtraUserItem } from "@/lib/billing-seats";
 import { AI_TOPUP_KIND, creditAiTopUp } from "@/lib/ai-topups";
+import {
+  enterpriseLookupKey,
+  enterpriseQuantities,
+  normalizeEnterprise,
+  parseEnterpriseLookupKey,
+  type EnterprisePart,
+} from "@/lib/enterprise";
 import {
   AI_TOPUP_LOOKUP_KEY,
   MAX_USERS,
@@ -79,6 +86,16 @@ async function withStripe<T>(work: () => Promise<T>): Promise<T> {
  * fine too, their data stays and only locks. */
 async function requireFits(companyId: string, planId: PlanId) {
   const plan = planById(planId);
+  // Only plans on sale can be bought online. A paying company may stay on
+  // an older or Enterprise plan it already has (e.g. to change period).
+  if (!plan.listed) {
+    const [current, subscription] = await Promise.all([
+      getCompanyPlan(companyId),
+      db.subscription.findUnique({ where: { companyId }, select: { status: true } }),
+    ]);
+    const paying = subscription?.status === "ACTIVE" || subscription?.status === "PAST_DUE";
+    if (!paying || current.id !== planId) redirect(`${BASE}?error=plan-not-on-sale`);
+  }
   const [seats, branches] = await Promise.all([seatsUsed(companyId), activeBranchCount(companyId)]);
   if (seats > MAX_USERS) redirect(`${BASE}?error=plan-too-small-users`);
   // Solo has no extra users, so the whole team has to fit.
@@ -162,13 +179,18 @@ export async function changePlan(formData: FormData) {
       pricesFor(session.companyId, plan, interval),
     ]);
     if (prices.missing) return "plan-price-missing";
-    const planItem = subscription.items.data.find((i) => !isExtraUserItem(i));
+    const enterpriseItems = subscription.items.data.filter((i) => parseEnterpriseLookupKey(i.price.lookup_key));
+    const planItem = subscription.items.data.find((i) => !isExtraUserItem(i) && !parseEnterpriseLookupKey(i.price.lookup_key));
     const extraItem = subscription.items.data.find(isExtraUserItem);
-    if (!planItem) return "plan-not-active";
-    if (planItem.price.id === prices.plan) return "plan-same";
+    if (!planItem && enterpriseItems.length === 0) return "plan-not-active";
+    if (planItem?.price.id === prices.plan) return "plan-same";
     // Every line must share the new period, so the extra users line moves
     // with the plan in the same update (or goes, if the new plan covers them).
-    const items: Stripe.SubscriptionUpdateParams.Item[] = [{ id: planItem.id, price: prices.plan! }];
+    // Leaving a built Enterprise plan removes all of its lines.
+    const items: Stripe.SubscriptionUpdateParams.Item[] = [
+      planItem ? { id: planItem.id, price: prices.plan! } : { price: prices.plan!, quantity: 1 },
+      ...enterpriseItems.map((i) => ({ id: i.id, deleted: true })),
+    ];
     if (prices.extraUsers > 0) {
       items.push(
         extraItem
@@ -188,6 +210,103 @@ export async function changePlan(formData: FormData) {
   });
   if (outcome !== "changed") redirect(`${BASE}?error=${outcome}`);
   await logAudit(session.companyId, session.userId, "billing.plan_changed", "Subscription", subscriptionId, { plan, interval });
+
+  revalidatePath("/dashboard", "layout");
+  redirect(`${BASE}?changed=1`);
+}
+
+// ---------- Enterprise, built by the client ----------
+
+const ENTERPRISE_PARTS: EnterprisePart[] = ["user", "branch", "edi", "ai"];
+
+function parseEnterprise(formData: FormData) {
+  const interval = formData.get("interval") === "yearly" ? "yearly" : "monthly";
+  const config = normalizeEnterprise({
+    users: formData.get("users"),
+    branches: formData.get("branches"),
+    edi: formData.get("edi"),
+    aiPacks: formData.get("aiPacks"),
+  });
+  return { config, interval } as const;
+}
+
+/** The Stripe price for each part with a quantity above 0, or null when
+ * one hasn't been created yet (scripts/stripe-plans.ts). */
+async function enterprisePrices(quantities: Record<EnterprisePart, number>, interval: "monthly" | "yearly") {
+  const wanted = ENTERPRISE_PARTS.filter((part) => quantities[part] > 0);
+  const ids = await Promise.all(wanted.map((part) => findPriceId(enterpriseLookupKey(part, interval))));
+  if (ids.some((id) => !id)) return null;
+  return wanted.map((part, i) => ({ part, price: ids[i]!, quantity: quantities[part] }));
+}
+
+/**
+ * Buy or change a built Enterprise plan. Without a paid subscription this
+ * opens Stripe Checkout; with one it changes the lines in place, and Stripe
+ * charges or credits the difference straight away. The team must fit: at
+ * least as many users as people (counting open invites) and branches as
+ * active branches.
+ */
+export async function buyEnterprise(formData: FormData) {
+  const session = await requireRole(["OWNER"]);
+  const { config, interval } = parseEnterprise(formData);
+  const [seats, branches] = await Promise.all([seatsUsed(session.companyId), activeBranchCount(session.companyId)]);
+  if (seats > config.users) redirect(`${BASE}?error=enterprise-users`);
+  if (branches > config.branches) redirect(`${BASE}?error=enterprise-branches`);
+
+  const quantities = enterpriseQuantities(config);
+  const current = await db.subscription.findUnique({ where: { companyId: session.companyId } });
+  const paying = Boolean(current?.stripeSubscriptionId && (current.status === "ACTIVE" || current.status === "PAST_DUE"));
+  const baseUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
+
+  if (!paying || !current?.stripeSubscriptionId) {
+    const url = await withStripe(async () => {
+      const lines = await enterprisePrices(quantities, interval);
+      if (!lines) return `${BASE}?error=plan-price-missing`;
+      const customerId = await getOrCreateStripeCustomerId(session.companyId, session.email, session.name);
+      const checkoutSession = await stripe.checkout.sessions.create({
+        mode: "subscription",
+        customer: customerId,
+        line_items: lines.map((l) => ({ price: l.price, quantity: l.quantity })),
+        success_url: `${baseUrl}${BASE}?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${baseUrl}${BASE}?checkout=cancelled`,
+        metadata: { companyId: session.companyId },
+        subscription_data: { metadata: { companyId: session.companyId } },
+      });
+      return checkoutSession.url ?? `${BASE}?error=invalid`;
+    });
+    redirect(url);
+  }
+
+  if (current.status !== "ACTIVE") redirect(`${BASE}?error=plan-not-active`);
+  const subscriptionId = current.stripeSubscriptionId;
+  const outcome = await withStripe(async () => {
+    const [subscription, lines] = await Promise.all([stripe.subscriptions.retrieve(subscriptionId), enterprisePrices(quantities, interval)]);
+    if (!lines) return "plan-price-missing";
+    // Keep each Enterprise line that is still wanted (new price and
+    // quantity), add the missing ones, and remove everything else: an
+    // earlier plan line, extra users, or parts no longer chosen.
+    const existing = new Map(
+      subscription.items.data.flatMap((i) => {
+        const key = parseEnterpriseLookupKey(i.price.lookup_key);
+        return key ? [[key.part, i] as const] : [];
+      })
+    );
+    const items: Stripe.SubscriptionUpdateParams.Item[] = lines.map((l) => {
+      const item = existing.get(l.part);
+      return item ? { id: item.id, price: l.price, quantity: l.quantity } : { price: l.price, quantity: l.quantity };
+    });
+    const kept = new Set(lines.map((l) => existing.get(l.part)?.id).filter(Boolean));
+    for (const item of subscription.items.data) if (!kept.has(item.id)) items.push({ id: item.id, deleted: true });
+    const updated = await stripe.subscriptions.update(subscription.id, {
+      items,
+      proration_behavior: "always_invoice",
+      metadata: { ...subscription.metadata, companyId: session.companyId },
+    });
+    await syncSubscription(updated);
+    return "changed";
+  });
+  if (outcome !== "changed") redirect(`${BASE}?error=${outcome}`);
+  await logAudit(session.companyId, session.userId, "billing.enterprise_changed", "Subscription", subscriptionId, { ...config, interval });
 
   revalidatePath("/dashboard", "layout");
   redirect(`${BASE}?changed=1`);

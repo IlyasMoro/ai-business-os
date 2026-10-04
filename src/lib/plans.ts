@@ -7,6 +7,8 @@
    the single $49 Stripe price (lib/actions/billing.ts), so every company is
    on SCALE until checkout records a real plan. */
 
+import { ENTERPRISE, ENTERPRISE_FROM } from "@/lib/enterprise";
+
 export type PlanId = "solo" | "starter" | "growth" | "business" | "scale";
 
 export type Plan = {
@@ -18,6 +20,11 @@ export type Plan = {
   /** Price per year when paid yearly (two months free). */
   yearly: number;
   popular?: boolean;
+  /** Bought online: a pricing card with a price and offered on Billing.
+   * Unlisted plans (Solo, Business, and Enterprise, which is agreed with
+   * sales) still work for companies already on them, and Billing still
+   * shows a company its own plan. */
+  listed: boolean;
   /** Users included before extra users are charged. */
   users: number;
   /** Whether more users can be added at EXTRA_USER_PRICE. Off on Solo, so
@@ -27,6 +34,9 @@ export type Plan = {
   branches: number | null;
   /** AI Copilot requests a month. */
   aiRequests: number;
+  /** Set to false on an Enterprise plan bought without the EDI add on
+   * (lib/plan-limits.ts getCompanyPlan); otherwise EDI follows the plan. */
+  edi?: boolean;
   /** Support level shown in the comparison table. */
   support: string;
   /** One line on what this plan adds over the one before, if anything
@@ -44,6 +54,7 @@ export const PLANS: Plan[] = [
     tagline: "For very small teams getting started.",
     monthly: 79,
     yearly: 790,
+    listed: false,
     users: 3,
     extraUsers: false,
     branches: 1,
@@ -66,14 +77,26 @@ export const PLANS: Plan[] = [
     tagline: "For one location getting everything in one place.",
     monthly: 229,
     yearly: 2290,
+    listed: true,
     users: 10,
     extraUsers: true,
     branches: 1,
     aiRequests: 500,
     support: "Email",
     adds: "Google integration",
-    includesLabel: "Everything in Solo, plus",
-    features: ["Up to 10 users", "Google integration for Gmail and Calendar", "AI Copilot with 500 requests a month"],
+    // The first card on the pricing page, so it lists everything.
+    includesLabel: "What's included",
+    features: [
+      "Up to 10 users with owner, admin and employee roles",
+      "1 branch",
+      "CRM with deals, quotes and a sales report",
+      "Sales, Invoicing, Returns, Support and Marketing",
+      "Inventory, Procurement, Projects and Accounting",
+      "HR, Payroll and Team",
+      "Google integration for Gmail and Calendar",
+      "AI Copilot with 500 requests a month",
+      "Email support",
+    ],
   },
   {
     id: "growth",
@@ -82,6 +105,7 @@ export const PLANS: Plan[] = [
     monthly: 599,
     yearly: 5990,
     popular: true,
+    listed: true,
     users: 30,
     extraUsers: true,
     branches: 3,
@@ -105,6 +129,7 @@ export const PLANS: Plan[] = [
     tagline: "For established teams across several sites.",
     monthly: 899,
     yearly: 8990,
+    listed: false,
     users: 50,
     extraUsers: true,
     branches: 5,
@@ -114,18 +139,21 @@ export const PLANS: Plan[] = [
     features: ["Up to 50 users", "Up to 5 branches", "AI Copilot with 2,500 requests a month"],
   },
   {
+    // Sold as Enterprise through sales (CUSTOM_PLAN); the id stays "scale"
+    // so existing companies, Stripe prices and plan checks keep working.
     id: "scale",
-    name: "Scale",
+    name: "Enterprise",
     tagline: "For distributors and larger teams across many sites.",
     monthly: 1599,
     yearly: 15990,
+    listed: false,
     users: 100,
     extraUsers: true,
     branches: null,
     aiRequests: 5000,
     support: "Priority",
     adds: "EDI, priority support",
-    includesLabel: "Everything in Business, plus",
+    includesLabel: "Everything in Growth, plus",
     features: [
       "Up to 100 users",
       "Unlimited branches",
@@ -136,14 +164,48 @@ export const PLANS: Plan[] = [
   },
 ];
 
+/** The plans bought online: the priced pricing cards and the choices on
+ * Billing. */
+export const LISTED_PLANS = PLANS.filter((p) => p.listed);
+
+/** The last pricing card: Enterprise (the "scale" plan), which the client
+ * builds from per unit prices (lib/enterprise.ts) and buys on Billing. */
+export const CUSTOM_PLAN = {
+  id: "scale" as const,
+  name: "Enterprise",
+  tagline: "For larger teams and distributors. Build the plan you need.",
+  priceLabel: `From $${ENTERPRISE_FROM}`,
+  priceNote: `$${ENTERPRISE.perUser} per user a month, ${ENTERPRISE.minUsers} users or more`,
+  includesLabel: "Everything in Growth, plus",
+  features: [
+    `As many users as you need, up to ${ENTERPRISE.maxUsers} online`,
+    `${ENTERPRISE.includedBranches} branches included, then $${ENTERPRISE.perBranch} each`,
+    `EDI with your trading partners, $${ENTERPRISE.ediPrice} a month`,
+    `${ENTERPRISE.aiIncluded.toLocaleString("en-US")} AI Copilot requests a month, more in packs`,
+    "Change users and branches yourself, anytime",
+    "Priority support",
+  ],
+};
+
+/** Where Enterprise questions go: contracts, invoicing, very large teams.
+ * Null until there is a real address; the "Talk to us" links stay hidden. */
+export const SALES_EMAIL: string | null = null;
+
+export function salesMailto(subject = "AIBOS Enterprise plan"): string | null {
+  return SALES_EMAIL ? `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}` : null;
+}
+
 /** The cheapest plan a month for a team of `users` (counting open
  * invites) and `branches` active branches, counting extra users above a
- * plan's included ones. Branches are a hard limit; Scale when none fits. */
+ * plan's included ones, among the plans on sale. Branches are a hard
+ * limit; Enterprise when none fits. */
 export function recommendedPlan(users: number, branches: number): Plan {
   const monthlyCost = (p: Plan) => p.monthly + Math.max(0, users - p.users) * EXTRA_USER_PRICE;
-  const fitting = PLANS.filter(
+  const fitting = LISTED_PLANS.filter(
     (p) => (p.branches === null || p.branches >= branches) && (p.extraUsers || users <= p.users)
   );
+  // Bigger than any plan on sale (more branches than Growth): Enterprise.
+  if (fitting.length === 0) return planById(CUSTOM_PLAN.id);
   return fitting.reduce((best, p) => (monthlyCost(p) < monthlyCost(best) ? p : best), fitting[fitting.length - 1]);
 }
 
@@ -172,10 +234,17 @@ export function planById(id: PlanId): Plan {
   return PLANS.find((p) => p.id === id)!;
 }
 
-/** Whether a plan includes a Growth or Scale module. */
+/** Whether a plan includes a Growth or Enterprise module. */
 export function planIncludes(planId: PlanId, feature: PlanFeature): boolean {
   const rank = (id: PlanId) => PLANS.findIndex((p) => p.id === id);
   return rank(planId) >= rank(FEATURE_MIN_PLAN[feature]);
+}
+
+/** Like planIncludes, for a company's own plan: a built Enterprise plan
+ * has EDI only when the add on was bought. */
+export function planAllows(plan: Plan, feature: PlanFeature): boolean {
+  if (feature === "edi" && plan.edi === false) return false;
+  return planIncludes(plan.id, feature);
 }
 
 // ---------- Stripe prices ----------
@@ -226,7 +295,7 @@ export function aboutRand(usd: number): string {
 }
 
 /** The lowest monthly price, for "From $200" style copy. */
-export const STARTING_PRICE = Math.min(...PLANS.map((p) => p.monthly));
+export const STARTING_PRICE = Math.min(...LISTED_PLANS.map((p) => p.monthly));
 
 /** One cell of the plan comparison: included, not included, or a value. */
 export type PlanCell = boolean | string;
@@ -234,8 +303,12 @@ export type PlanRow = { label: string; values: PlanCell[] };
 export type PlanRowGroup = { title: string; rows: PlanRow[] };
 
 type Row = PlanCell[];
-const ALL: Row = PLANS.map(() => true);
-const perPlan = (f: (plan: Plan) => PlanCell): Row => PLANS.map(f);
+// One cell per pricing card: the plans on sale, then Enterprise.
+const COMPARE_PLANS = [...LISTED_PLANS, planById(CUSTOM_PLAN.id)];
+const ALL: Row = COMPARE_PLANS.map(() => true);
+const perPlan = (f: (plan: Plan) => PlanCell): Row => COMPARE_PLANS.map(f);
+/** Enterprise is built per client, so some of its cells give its unit prices. */
+const enterprise = (row: Row, value: PlanCell): Row => [...row.slice(0, -1), value];
 const withFeature = (feature: PlanFeature) => perPlan((p) => planIncludes(p.id, feature));
 
 /** Every feature by plan (in PLANS order), for the pricing page's
@@ -244,11 +317,17 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
   {
     title: "Team and locations",
     rows: [
-      { label: "Users included", values: perPlan((p) => String(p.users)) },
-      { label: "Extra users, each a month", values: perPlan((p) => (p.extraUsers ? `$${EXTRA_USER_PRICE}` : false)) },
+      { label: "Users included", values: enterprise(perPlan((p) => String(p.users)), `${ENTERPRISE.minUsers} to ${ENTERPRISE.maxUsers}`) },
+      {
+        label: "Extra users, each a month",
+        values: enterprise(perPlan((p) => (p.extraUsers ? `$${EXTRA_USER_PRICE}` : false)), `$${ENTERPRISE.perUser}`),
+      },
       {
         label: "Branches",
-        values: perPlan((p) => (p.branches === null ? "Unlimited" : p.branches === 1 ? "1" : `Up to ${p.branches}`)),
+        values: enterprise(
+          perPlan((p) => (p.branches === null ? "Unlimited" : p.branches === 1 ? "1" : `Up to ${p.branches}`)),
+          `${ENTERPRISE.includedBranches}, then $${ENTERPRISE.perBranch} each`
+        ),
       },
       { label: "Owner, admin and employee roles", values: ALL },
     ],
@@ -268,7 +347,7 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
       { label: "Planning / MRP", values: withFeature("mrp") },
       { label: "Controlling", values: withFeature("controlling") },
       { label: "Automations and scheduled report emails", values: withFeature("automation") },
-      { label: "EDI with your trading partners", values: withFeature("edi") },
+      { label: "EDI with your trading partners", values: enterprise(withFeature("edi"), `$${ENTERPRISE.ediPrice} add on`) },
     ],
   },
   {
@@ -286,7 +365,10 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
   {
     title: "AI and integrations",
     rows: [
-      { label: "AI Copilot requests a month", values: perPlan((p) => p.aiRequests.toLocaleString("en-US")) },
+      {
+        label: "AI Copilot requests a month",
+        values: enterprise(perPlan((p) => p.aiRequests.toLocaleString("en-US")), `${ENTERPRISE.aiIncluded.toLocaleString("en-US")} and up`),
+      },
       { label: "AI asks before it acts", values: ALL },
       { label: "Extra AI requests, never expire", values: perPlan(() => `$${AI_TOPUP_PRICE} per ${AI_TOPUP_REQUESTS}`) },
       { label: "Google integration for Gmail and Calendar", values: withFeature("integrations") },

@@ -3,14 +3,16 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
-import { aboutRand, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, PLANS, planById, type BillingInterval, type PlanId } from "@/lib/plans";
+import { aboutRand, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, LISTED_PLANS, PLANS, planById, type BillingInterval, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
 /**
  * The plans as one selectable list with a single button, for the Billing
  * page. Each row shows users, branches and AI requests in short, plus what
  * the plan adds. `recommended` (the smallest plan that fits the team) is
- * tagged and picked first. `mode` decides what the button does: "checkout"
+ * tagged and picked first. Only plans on sale are offered, plus the
+ * company's own plan if it's on an older one; a team too big for any plan
+ * on sale is pointed to the Enterprise builder below it. `mode` decides what the button does: "checkout"
  * starts a subscription, "change" moves an active one; the current plan and
  * period are marked and can't be submitted again.
  */
@@ -28,9 +30,11 @@ export function PlanPicker({
   /** e.g. "You have 7 users and 1 branch". */
   teamSummary: string;
 }) {
+  const offered = PLANS.filter((p) => p.listed || p.id === current?.planId);
+  const needsSales = !offered.some((p) => p.id === recommended);
   const [interval, setBillingInterval] = useState<BillingInterval>(current?.interval ?? "monthly");
   const [selected, setSelected] = useState<PlanId>(
-    current && current.planId !== recommended ? current.planId : recommended
+    current && current.planId !== recommended ? current.planId : needsSales ? (offered[offered.length - 1] ?? LISTED_PLANS[0]).id : recommended
   );
 
   const isCurrent = (id: PlanId) => current?.planId === id && current.interval === interval;
@@ -74,7 +78,7 @@ export function PlanPicker({
 
       <fieldset className="mt-4 space-y-2">
         <legend className="sr-only">Choose a plan</legend>
-        {PLANS.map((plan) => {
+        {offered.map((plan) => {
           const on = selected === plan.id;
           const price = priceOf(plan.id);
           const branches =
@@ -128,6 +132,15 @@ export function PlanPicker({
           );
         })}
       </fieldset>
+
+      {needsSales && (
+        <p className="mt-3 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 light:text-blue-800">
+          Your team is bigger than the plans above allow, so it needs the {planById(recommended).name} plan.{" "}
+          <a href="#enterprise" className="font-medium underline">
+            Build it below
+          </a>
+        </p>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-400 light:text-slate-500">

@@ -2,7 +2,8 @@
  * Creates the Stripe products and prices for the plans in src/lib/plans.ts:
  * one product per plan, with a monthly and a yearly price, each tagged with
  * its lookup key (aibos_growth_yearly, ...), plus the "extra user" product
- * with its own monthly and yearly price, and the one-time AI top-up pack.
+ * with its own monthly and yearly price, the per unit Enterprise parts
+ * (user, branch, EDI, AI pack), and the one-time AI top-up pack.
  * Checkout and the webhook find prices by those keys.
  *
  * Safe to run again: existing prices are kept when the amount still
@@ -27,6 +28,7 @@ import {
   priceLookupKey,
   type BillingInterval,
 } from "../src/lib/plans";
+import { ENTERPRISE, enterpriseLookupKey, enterpriseUnitPrice, type EnterprisePart } from "../src/lib/enterprise";
 
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) throw new Error("STRIPE_SECRET_KEY is not set");
@@ -83,6 +85,19 @@ async function main() {
   const extra = await ensureProduct("aibos_extra_user", "AIBOS extra user", "Each user above the plan's included users.");
   await ensurePrice(extra.id, extraUserLookupKey("monthly"), "Extra user monthly", EXTRA_USER_PRICE, "month");
   await ensurePrice(extra.id, extraUserLookupKey("yearly"), "Extra user yearly", EXTRA_USER_YEARLY_PRICE, "year");
+
+  // Enterprise, built by the client: one product per part, priced per unit.
+  const parts: [EnterprisePart, string, string][] = [
+    ["user", "AIBOS Enterprise user", "Each user on a built Enterprise plan."],
+    ["branch", "AIBOS Enterprise branch", `Each branch above the ${ENTERPRISE.includedBranches} included on Enterprise.`],
+    ["edi", "AIBOS Enterprise EDI", "EDI with your trading partners, added to Enterprise."],
+    ["ai", "AIBOS Enterprise AI requests", `${ENTERPRISE.aiPackSize} more AI requests a month on Enterprise.`],
+  ];
+  for (const [part, name, description] of parts) {
+    const product = await ensureProduct(`aibos_ent_${part}`, name, description);
+    await ensurePrice(product.id, enterpriseLookupKey(part, "monthly"), `${name} monthly`, enterpriseUnitPrice(part, "monthly"), "month");
+    await ensurePrice(product.id, enterpriseLookupKey(part, "yearly"), `${name} yearly`, enterpriseUnitPrice(part, "yearly"), "year");
+  }
 
   // One-time AI top-up pack, bought on the Billing page.
   const topUp = await ensureProduct("aibos_ai_topup", "AIBOS AI requests", `${AI_TOPUP_REQUESTS} extra AI requests that never expire.`);

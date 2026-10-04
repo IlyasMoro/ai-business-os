@@ -5,8 +5,11 @@ import {
   extraUserLookupKey,
   FEATURE_MIN_PLAN,
   MAX_USERS,
+  CUSTOM_PLAN,
+  LISTED_PLANS,
   PLAN_MATRIX,
   PLANS,
+  planById,
   parsePriceLookupKey,
   planIncludes,
   priceLookupKey,
@@ -21,13 +24,13 @@ const fmt = (n: number) => n.toLocaleString("en-US");
 
 describe("plans", () => {
   it("quotes each plan's users, branches and AI requests on its card", () => {
-    PLANS.forEach((plan, i) => {
+    LISTED_PLANS.forEach((plan, i) => {
       const text = plan.features.join(" | ");
       expect(text).toContain(`Up to ${fmt(plan.users)} users`);
       expect(text).toContain(`AI Copilot with ${fmt(plan.aiRequests)} requests a month`);
       // Cards list what's new over the plan before, so branches appear
       // only where the allowance changes.
-      if (i === 0 || plan.branches !== PLANS[i - 1].branches) {
+      if (i === 0 || plan.branches !== LISTED_PLANS[i - 1].branches) {
         const branches =
           plan.branches === null ? "Unlimited branches" : plan.branches === 1 ? "1 branch" : `Up to ${plan.branches} branches`;
         expect(text).toContain(branches);
@@ -36,10 +39,11 @@ describe("plans", () => {
   });
 
   it("shows the same numbers in the comparison table", () => {
-    expect(row("Users included").values).toEqual(PLANS.map((p) => String(p.users)));
-    expect(row("AI Copilot requests a month").values).toEqual(PLANS.map((p) => fmt(p.aiRequests)));
-    expect(row("Branches").values).toEqual(["1", "1", "Up to 3", "Up to 5", "Unlimited"]);
-    expect(row("Extra users, each a month").values).toEqual(PLANS.map((p) => (p.extraUsers ? `$${EXTRA_USER_PRICE}` : false)));
+    // The last column is Enterprise, built per client from unit prices.
+    expect(row("Users included").values).toEqual([...LISTED_PLANS.map((p) => String(p.users)), "40 to 500"]);
+    expect(row("AI Copilot requests a month").values).toEqual([...LISTED_PLANS.map((p) => fmt(p.aiRequests)), "1,000 and up"]);
+    expect(row("Branches").values).toEqual(["1", "Up to 3", "3, then $25 each"]);
+    expect(row("Extra users, each a month").values).toEqual([...LISTED_PLANS.map(() => `$${EXTRA_USER_PRICE}`), "$16"]);
   });
 
   it("gives more on every step up and keeps yearly at 10 months", () => {
@@ -57,7 +61,7 @@ describe("plans", () => {
   });
 
   it("gives every table row one value per plan", () => {
-    for (const r of PLAN_MATRIX.flatMap((g) => g.rows)) expect(r.values).toHaveLength(PLANS.length);
+    for (const r of PLAN_MATRIX.flatMap((g) => g.rows)) expect(r.values).toHaveLength(LISTED_PLANS.length + 1);
   });
 
   it("puts each Growth and Scale module on the right plans", () => {
@@ -96,19 +100,26 @@ describe("plans", () => {
     expect(parsePriceLookupKey(extraUserLookupKey("yearly"))).toBeNull();
   });
 
-  it("recommends the cheapest plan that fits the team, counting extra users", () => {
-    expect(recommendedPlan(1, 1).id).toBe("solo");
+  it("sells Starter and Growth online, Enterprise through sales; Solo and Business stay for existing companies", () => {
+    expect(LISTED_PLANS.map((p) => p.id)).toEqual(["starter", "growth"]);
+    expect(planById(CUSTOM_PLAN.id).name).toBe("Enterprise");
+    expect(PLANS.map((p) => p.id)).toEqual(["solo", "starter", "growth", "business", "scale"]);
+  });
+
+  it("recommends the cheapest plan on sale that fits the team, counting extra users", () => {
+    // Solo isn't on sale, so even one person is offered Starter.
+    expect(recommendedPlan(1, 1).id).toBe("starter");
     expect(recommendedPlan(7, 1).id).toBe("starter");
-    // Solo has no extra users, so 4 or more people start at Starter.
-    expect(recommendedPlan(4, 1).id).toBe("starter");
     // Starter with 2 extra users ($267) beats Growth ($599).
     expect(recommendedPlan(12, 1).id).toBe("starter");
     // At 30 people Growth is cheaper than Starter plus 20 extras.
     expect(recommendedPlan(30, 1).id).toBe("growth");
     expect(recommendedPlan(7, 2).id).toBe("growth");
-    expect(recommendedPlan(40, 4).id).toBe("business");
+    // More branches than Growth allows: Enterprise (the "scale" plan).
+    expect(recommendedPlan(40, 4).id).toBe("scale");
     expect(recommendedPlan(40, 8).id).toBe("scale");
-    expect(recommendedPlan(140, 1).id).toBe("scale");
+    // One branch fits Growth, with extra users, at any team size.
+    expect(recommendedPlan(140, 1).id).toBe("growth");
   });
 
   it("never lets a smaller plan plus extra users undercut the next plan up", () => {

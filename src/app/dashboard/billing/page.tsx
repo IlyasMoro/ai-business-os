@@ -1,6 +1,8 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { startCheckout, changePlan, confirmCheckout, confirmAiTopUp, startAiTopUp, openBillingPortal } from "@/lib/actions/billing";
+import { startCheckout, changePlan, confirmCheckout, confirmAiTopUp, startAiTopUp, openBillingPortal, buyEnterprise } from "@/lib/actions/billing";
+import { EnterpriseBuyForm } from "@/components/billing/enterprise-builder";
+import { ENTERPRISE, enterpriseFor, enterpriseQuote, type EnterpriseConfig } from "@/lib/enterprise";
 import { PlanPicker } from "@/components/billing/plan-picker";
 import type { BillingInterval } from "@/lib/plans";
 import { updateDefaultTaxRate } from "@/lib/actions/invoicing";
@@ -9,7 +11,7 @@ import { Input, Label } from "@/components/ui-dark/input";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { CreditCard, Gauge, Percent } from "lucide-react";
 import { activeBranchCount, aiCreditsLeft, aiRequestsUsed, extraUsersBilled, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
-import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan } from "@/lib/plans";
+import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan, salesMailto } from "@/lib/plans";
 
 /** One plan allowance as "used of limit" with a bar. `limit` null means unlimited. */
 /** One allowance: "used of limit" with a bar that turns amber near the
@@ -87,6 +89,24 @@ export default async function BillingPage({
   const interval = (subscription?.billingInterval ?? null) as BillingInterval | null;
   // Paying on the old single $49 price: no plan price yet, but switching moves them onto one.
   const legacyPrice = isActive && !interval;
+  // An Enterprise plan the company built: its own users, branches, AI and
+  // EDI (lib/plan-limits.ts getCompanyPlan), priced from lib/enterprise.ts.
+  const builtEnterprise = plan.id === "scale" && !plan.extraUsers;
+  const builtConfig: EnterpriseConfig | null = builtEnterprise
+    ? {
+        users: plan.users,
+        branches: plan.branches ?? ENTERPRISE.includedBranches,
+        edi: plan.edi !== false,
+        aiPacks: Math.max(0, Math.round((plan.aiRequests - ENTERPRISE.aiIncluded) / ENTERPRISE.aiPackSize)),
+      }
+    : null;
+  const planPrice = interval
+    ? builtConfig
+      ? enterpriseQuote(builtConfig, interval).total
+      : interval === "monthly"
+        ? plan.monthly
+        : plan.yearly
+    : 0;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -133,7 +153,7 @@ export default async function BillingPage({
             <div>
               <p className="font-semibold text-slate-50 light:text-slate-900">
                 {isActive && interval
-                  ? `${plan.name} plan, $${(interval === "monthly" ? plan.monthly : plan.yearly).toLocaleString("en-US")} a ${interval === "monthly" ? "month" : "year"}`
+                  ? `${plan.name} plan${builtConfig ? ` for ${builtConfig.users} users` : ""}, $${planPrice.toLocaleString("en-US")} a ${interval === "monthly" ? "month" : "year"}`
                   : legacyPrice
                     ? "AIBOS, $49 a month (earlier price)"
                     : isTrialing
@@ -175,9 +195,36 @@ export default async function BillingPage({
             <PlanPicker
               action={isActive ? changePlan : startCheckout}
               mode={isActive ? "change" : "checkout"}
-              current={isActive && interval ? { planId: plan.id, interval } : null}
+              current={isActive && interval && !builtEnterprise ? { planId: plan.id, interval } : null}
               recommended={recommendedPlan(seats, branches).id}
               teamSummary={`You have ${seats} ${seats === 1 ? "user" : "users"}, ${branches} active ${branches === 1 ? "branch" : "branches"} and used ${aiUsed.toLocaleString("en-US")} AI ${aiUsed === 1 ? "request" : "requests"} this month`}
+            />
+          </div>
+
+          <div id="enterprise" className="mt-5 scroll-mt-24 border-t border-white/[0.06] pt-4 light:border-slate-200">
+            <h2 className="font-semibold text-slate-50 light:text-slate-900">
+              {builtEnterprise ? "Your Enterprise plan" : "Or build an Enterprise plan"}
+            </h2>
+            <p className="mb-3 mt-1 text-sm text-slate-400 light:text-slate-500">
+              {builtEnterprise
+                ? "Change users, branches, AI requests or EDI. Stripe charges or credits the difference straight away."
+                : `For bigger teams: everything in Growth, as many users and branches as you need, and the EDI add on, from $${ENTERPRISE.minUsers * ENTERPRISE.perUser} a month.`}{" "}
+              {salesMailto() && (
+                <>
+                  Contracts or invoicing instead of a card?{" "}
+                  <a href={salesMailto()!} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                    Talk to us
+                  </a>
+                </>
+              )}
+            </p>
+            <EnterpriseBuyForm
+              action={buyEnterprise}
+              initial={builtConfig ?? enterpriseFor(seats, branches)}
+              initialInterval={interval ?? "monthly"}
+              minUsers={seats}
+              minBranches={branches}
+              submitLabel={builtEnterprise ? "Update my plan" : isActive ? "Switch to Enterprise" : "Subscribe to Enterprise"}
             />
           </div>
 

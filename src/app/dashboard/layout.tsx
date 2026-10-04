@@ -10,7 +10,7 @@ import { getEdiSettings } from "@/lib/edi/settings";
 import { getControllingSettings } from "@/lib/controlling";
 import { getBranchContext } from "@/lib/branches";
 import { getCompanyPlan } from "@/lib/plan-limits";
-import { FEATURE_MIN_PLAN, planIncludes, type PlanFeature } from "@/lib/plans";
+import { FEATURE_MIN_PLAN, planAllows, type PlanFeature } from "@/lib/plans";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { SubscriptionBlocked } from "@/components/billing/subscription-blocked";
@@ -46,7 +46,7 @@ export default async function DashboardLayout({
   ];
   // Modules a plan lacks stay in the menu, labelled with the plan that has them.
   const lockedHrefs = (Object.keys(FEATURE_MIN_PLAN) as PlanFeature[])
-    .filter((feature) => !planIncludes(plan.id, feature))
+    .filter((feature) => !planAllows(plan, feature))
     .map((feature) => `/dashboard/${feature}`);
   const platformAdmin = isPlatformAdmin(user.email);
 

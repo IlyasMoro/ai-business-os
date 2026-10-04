@@ -63,8 +63,10 @@ export default async function TeamPage({
               {/* Seats count open invites; past the plan's users each new member is billed. */}
               <p className="mb-4 text-sm text-slate-400 light:text-slate-500">
                 {seats} {seats === 1 ? "user" : "users"}, counting open invites. The {plan.name} plan includes {plan.users}.{" "}
-                {seats >= MAX_USERS || plan.users >= MAX_USERS
-                  ? `For more than ${MAX_USERS}, ask us about an Enterprise plan.`
+                {plan.id === "scale" && !plan.extraUsers
+                  ? "For more, the owner can add users to the plan on the Billing page."
+                  : seats >= MAX_USERS || plan.users >= MAX_USERS
+                  ? `For more than ${MAX_USERS}, the owner can build an Enterprise plan on the Billing page.`
                   : !plan.extraUsers
                     ? "For more, the owner can move to Starter on the Billing page."
                     : billable

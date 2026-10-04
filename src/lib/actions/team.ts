@@ -61,13 +61,16 @@ export async function inviteTeamMember(
   const room = await userRoom(session.companyId, { pendingInvite: Boolean(openInvite) });
   if (room === "full") {
     return {
-      message: `AIBOS plans go up to ${MAX_USERS} users, counting open invites. Remove someone or revoke an invite, or ask us about an Enterprise plan.`,
+      message: `AIBOS plans go up to ${MAX_USERS} users, counting open invites. Remove someone or revoke an invite, or move to Enterprise on the Billing page, which takes more.`,
     };
   }
   if (room === "plan-full") {
     const plan = await getCompanyPlan(session.companyId);
     return {
-      message: `The ${plan.name} plan includes ${plan.users} users, counting open invites. To add more, the owner can move to Starter on the Billing page.`,
+      message:
+        plan.id === "scale"
+          ? `Your ${plan.name} plan has room for ${plan.users} users, counting open invites. To add more, the owner can add users to the plan on the Billing page.`
+          : `The ${plan.name} plan includes ${plan.users} users, counting open invites. To add more, the owner can move to Starter on the Billing page.`,
     };
   }
   if (room === "needs-plan") {

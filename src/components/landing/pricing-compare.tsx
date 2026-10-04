@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Check, Minus } from "lucide-react";
-import { PLAN_MATRIX, PLANS, type PlanCell } from "@/lib/plans";
+import { CUSTOM_PLAN, PLAN_MATRIX, LISTED_PLANS, type PlanCell } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
-/* Every feature by plan, side by side. Rows come from PLAN_MATRIX in
-   lib/plans.ts, so the table and the plan cards read the same source.
-   Growth's column is tinted to match its highlighted card. */
+/* Every feature by plan, side by side: Starter, Growth, then Enterprise.
+   Rows come from PLAN_MATRIX in lib/plans.ts, so the table and the plan
+   cards read the same source. Growth's column is tinted to match its
+   highlighted card. */
 
 function Cell({ value }: { value: PlanCell }) {
   if (value === true) {
@@ -32,23 +33,24 @@ const growthCol = "bg-[#f0f9fc]";
 
 export function PricingCompare() {
   return (
-    // Five plan columns: on narrow screens the table scrolls sideways inside
-    // its card instead of squeezing the columns.
+    // The plans on sale as columns: on narrow screens the table scrolls
+    // sideways inside its card instead of squeezing the columns.
     <div className="overflow-x-auto border border-[#d5dce5] bg-white shadow-[0_18px_38px_-26px_rgba(24,67,111,0.45)]">
-      <table className="w-full min-w-[720px] table-fixed border-collapse text-left">
+      <table className="w-full min-w-[560px] table-fixed border-collapse text-left">
         <caption className="sr-only">Every feature by plan</caption>
         <colgroup>
           <col className="w-[30%]" />
-          {PLANS.map((plan) => (
+          {LISTED_PLANS.map((plan) => (
             <col key={plan.id} />
           ))}
+          <col />
         </colgroup>
         <thead>
           <tr>
             <th scope="col" className="px-3 py-5 align-bottom sm:px-6">
               <span className="sr-only">Feature</span>
             </th>
-            {PLANS.map((plan) => (
+            {LISTED_PLANS.map((plan) => (
               <th key={plan.id} scope="col" className={cn("px-1.5 pb-5 pt-6 text-center align-bottom sm:px-3", plan.popular && growthCol)}>
                 {plan.popular && (
                   <span className="mb-2 hidden rounded-full bg-cyan-400 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-[#0a1428] sm:inline-block">
@@ -72,13 +74,28 @@ export function PricingCompare() {
                 </span>
               </th>
             ))}
+            {/* Enterprise is built by the client: a starting price, and a link to the builder. */}
+            <th scope="col" className="px-1.5 pb-5 pt-6 text-center align-bottom sm:px-3">
+              <span className="block text-xs font-extrabold uppercase tracking-[0.06em] text-[#0b1f5e] sm:text-sm">
+                {CUSTOM_PLAN.name}
+              </span>
+              <span className="mt-1 block text-lg font-extrabold text-[#0b1f5e] sm:text-2xl">
+                {CUSTOM_PLAN.priceLabel}
+                <span className="block text-[11px] font-semibold text-[#8a93a3] sm:inline sm:text-xs"> /mo</span>
+              </span>
+              <span className="mt-3 hidden sm:block">
+                <a href="#enterprise" className={cn(styles.btnDark, "px-4 py-2 text-[11px]")}>
+                  Build yours
+                </a>
+              </span>
+            </th>
           </tr>
         </thead>
 
         {PLAN_MATRIX.map((group) => (
           <tbody key={group.title}>
             <tr>
-              <th scope="colgroup" colSpan={PLANS.length + 1} className="bg-[#0b0f17] px-3 py-3 text-xs font-extrabold uppercase tracking-[0.06em] text-cyan-400 sm:px-6">
+              <th scope="colgroup" colSpan={LISTED_PLANS.length + 2} className="bg-[#0b0f17] px-3 py-3 text-xs font-extrabold uppercase tracking-[0.06em] text-cyan-400 sm:px-6">
                 {group.title}
               </th>
             </tr>
@@ -88,7 +105,7 @@ export function PricingCompare() {
                   {row.label}
                 </th>
                 {row.values.map((value, i) => (
-                  <td key={PLANS[i].id} className={cn("px-1.5 py-3.5 text-center align-middle sm:px-3", PLANS[i].popular && growthCol)}>
+                  <td key={i} className={cn("px-1.5 py-3.5 text-center align-middle sm:px-3", LISTED_PLANS[i]?.popular && growthCol)}>
                     <Cell value={value} />
                   </td>
                 ))}
