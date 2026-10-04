@@ -160,6 +160,32 @@ export async function saveVisibility(formData: FormData) {
   done("visibility");
 }
 
+// ---------- Automatic steps ----------
+
+export async function saveAutoSteps(formData: FormData) {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+  const data = {
+    autoQuoteOpened: formData.get("autoQuoteOpened") === "on",
+    autoQuoteExpiry: formData.get("autoQuoteExpiry") === "on",
+    autoDealOverdue: formData.get("autoDealOverdue") === "on",
+    dailyDigest: formData.get("dailyDigest") === "on",
+  };
+  await upsertSettings(session.companyId, data);
+  await logAudit(session.companyId, session.userId, "crm.auto_steps_changed", "CrmSettings", session.companyId, data);
+  done("auto-steps");
+}
+
+// ---------- WhatsApp ----------
+
+/** The dialling code put in front of local numbers like 082 123 4567. */
+export async function saveWhatsApp(formData: FormData) {
+  const session = await requireRole(["OWNER", "ADMIN"]);
+  const code = String(formData.get("whatsappCountryCode") ?? "").replace(/\D/g, "");
+  if (code.length < 1 || code.length > 4) failed("whatsapp-code", "whatsapp");
+  await upsertSettings(session.companyId, { whatsappCountryCode: code });
+  done("whatsapp");
+}
+
 // ---------- Web lead form ----------
 
 const newFormToken = () => randomBytes(18).toString("base64url");

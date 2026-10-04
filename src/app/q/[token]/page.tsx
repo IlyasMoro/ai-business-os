@@ -6,6 +6,7 @@ import { CustomerShell } from "@/components/public/customer-shell";
 import { displayStatus } from "@/lib/quotes";
 import { acceptQuoteOnline, declineQuoteOnline } from "./actions";
 import { QuoteAnswer } from "./quote-answer";
+import { onQuoteOpened } from "@/lib/crm-auto";
 
 export const metadata: Metadata = { title: "Your quote", robots: { index: false, follow: false } };
 
@@ -48,6 +49,7 @@ export default async function PublicQuotePage({
           dealId: quote.dealId,
         },
       });
+      await onQuoteOpened(quote);
     }
   }
 

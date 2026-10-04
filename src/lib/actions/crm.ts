@@ -9,6 +9,7 @@ import type { LeadSource } from "@/generated/prisma/client";
 import { readCustomValues } from "@/lib/custom-fields";
 import { customerScope } from "@/lib/crm-access";
 import { touchLeadScore } from "@/lib/lead-score-data";
+import { fireRules } from "@/lib/crm-rules-runner";
 
 /** Whether a user belongs to this company, before making them an owner or assignee. */
 async function isCompanyUser(companyId: string, userId: string) {
@@ -80,6 +81,9 @@ export async function createCustomer(formData: FormData) {
     },
   });
   await touchLeadScore(session.companyId, customer.id);
+  if (customer.status === "LEAD") {
+    await fireRules({ trigger: "NEW_LEAD", companyId: session.companyId, customerId: customer.id, key: `customer:${customer.id}` });
+  }
 
   revalidatePath("/dashboard/crm");
   redirect(`/dashboard/crm/${customer.id}`);

@@ -16,6 +16,9 @@ import {
 } from "@/lib/crm-pipeline";
 import { customerScope, dealScope, followUpScope } from "@/lib/crm-access";
 import { touchLeadScore } from "@/lib/lead-score-data";
+import { dealStageChanged } from "@/lib/crm-rules-runner";
+import { QuoteItemSchema, quoteTotal } from "@/lib/quotes";
+import type { QuoteItemFormState } from "@/lib/actions/quotes";
 
 /* Deals (the pipeline board), activity history and follow-ups. Every record
    is scoped to the signed-in company; ids from forms are checked before use. */
@@ -124,6 +127,7 @@ export async function createDeal(formData: FormData) {
     },
   });
   await logAudit(session.companyId, session.userId, "deal.created", "Deal", deal.id, { stage, value: rest.value });
+  await dealStageChanged(session.companyId, deal, stage);
   await revalidateCrm(session.companyId, customer.id);
   redirect(back === BOARD ? `${BOARD}/${deal.id}` : back);
 }
@@ -161,6 +165,7 @@ export async function updateDeal(dealId: string, formData: FormData) {
   });
   if (stageChanged) {
     await logAudit(session.companyId, session.userId, "deal.stage_changed", "Deal", dealId, { from: current.stage, to: stage });
+    await dealStageChanged(session.companyId, { id: dealId, customerId: current.customerId }, stage);
   }
   await revalidateCrm(session.companyId, current.customerId, dealId);
   redirect(`${back}?saved=1`);
@@ -192,6 +197,7 @@ export async function moveDeal(dealId: string, stage: DealStage, beforeId: strin
   });
   if (stageChanged) {
     await logAudit(session.companyId, session.userId, "deal.stage_changed", "Deal", dealId, { from: deal.stage, to: stage });
+    await dealStageChanged(session.companyId, { id: dealId, customerId: deal.customerId }, stage);
   }
   await revalidateCrm(session.companyId, deal.customerId, dealId);
 }
@@ -205,6 +211,44 @@ export async function deleteDeal(dealId: string) {
   await logAudit(session.companyId, session.userId, "deal.deleted", "Deal", dealId, {});
   await revalidateCrm(session.companyId, deal.customerId);
   redirect(BOARD);
+}
+
+// ---------- Products on a deal ----------
+
+/** With products listed, the deal is worth their total. */
+async function syncDealValue(dealId: string) {
+  const items = await db.dealItem.findMany({ where: { dealId }, select: { quantity: true, unitPrice: true } });
+  if (items.length > 0) await db.deal.update({ where: { id: dealId }, data: { value: quoteTotal(items) } });
+}
+
+export async function addDealItem(dealId: string, _state: QuoteItemFormState, formData: FormData): Promise<QuoteItemFormState> {
+  const session = await verifySession();
+  const parsed = QuoteItemSchema.safeParse({
+    productId: formData.get("productId"),
+    quantity: formData.get("quantity"),
+    unitPrice: text(formData, "unitPrice"),
+  });
+  if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
+  const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId, ...(await dealScope()) }, select: { id: true, customerId: true } });
+  if (!deal) return { message: "Deal not found." };
+  const product = await db.product.findFirst({ where: { id: parsed.data.productId, companyId: session.companyId }, select: { id: true, unitPrice: true } });
+  if (!product) return { errors: { productId: ["Select a valid product."] } };
+
+  await db.dealItem.create({
+    data: { dealId, productId: product.id, quantity: parsed.data.quantity, unitPrice: parsed.data.unitPrice ?? product.unitPrice },
+  });
+  await syncDealValue(dealId);
+  await revalidateCrm(session.companyId, deal.customerId, dealId);
+  return undefined;
+}
+
+export async function removeDealItem(dealId: string, itemId: string) {
+  const session = await verifySession();
+  const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId, ...(await dealScope()) }, select: { id: true, customerId: true } });
+  if (!deal) return;
+  await db.dealItem.deleteMany({ where: { id: itemId, dealId } });
+  await syncDealValue(dealId);
+  await revalidateCrm(session.companyId, deal.customerId, dealId);
 }
 
 // ---------- Activity history ----------

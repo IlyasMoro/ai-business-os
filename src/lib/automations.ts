@@ -16,6 +16,8 @@ import { isApproachingCreditLimit } from "@/lib/credit-math";
 import { runSequences } from "@/lib/sequence-runner";
 import { runMailSync } from "@/lib/mail-sync";
 import { refreshLeadScores } from "@/lib/lead-score-data";
+import { runQuietRules } from "@/lib/crm-rules-runner";
+import { runAutoSteps } from "@/lib/crm-auto";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -350,6 +352,16 @@ async function runCrmJobs() {
     out.sequences = await runSequences();
   } catch (err) {
     console.error("[automations] sequences failed:", err);
+  }
+  try {
+    out.autoSteps = await runAutoSteps();
+  } catch (err) {
+    console.error("[automations] automatic steps failed:", err);
+  }
+  try {
+    out.quietRules = await runQuietRules();
+  } catch (err) {
+    console.error("[automations] quiet rules failed:", err);
   }
   try {
     out.mailSync = await runMailSync();

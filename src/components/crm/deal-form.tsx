@@ -30,6 +30,7 @@ export function DealForm({
   currentUserId,
   back,
   submitLabel,
+  valueFromProducts = false,
 }: {
   action: (formData: FormData) => Promise<void>;
   /** Existing deal when editing. */
@@ -42,6 +43,8 @@ export function DealForm({
   currentUserId: string;
   back?: string;
   submitLabel: string;
+  /** The deal lists products, so its value is their total. */
+  valueFromProducts?: boolean;
 }) {
   return (
     <form action={action} className="space-y-4">
@@ -68,7 +71,18 @@ export function DealForm({
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <Label htmlFor="value">Value ($)</Label>
-          <Input id="value" name="value" type="number" min="0" step="0.01" defaultValue={deal?.value ?? ""} placeholder="0" />
+          <Input
+            id="value"
+            name="value"
+            type="number"
+            min="0"
+            step="0.01"
+            defaultValue={deal?.value ?? ""}
+            placeholder="0"
+            readOnly={valueFromProducts}
+            className={valueFromProducts ? "opacity-70" : undefined}
+          />
+          {valueFromProducts && <p className="mt-1 text-xs text-slate-500">The total of the products below.</p>}
         </div>
         <div>
           <Label htmlFor="stage">Stage</Label>

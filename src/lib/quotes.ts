@@ -1,6 +1,8 @@
 /* Quote rules shared by the quote pages, actions and tests. No database
    access here. */
 
+import * as z from "zod";
+
 export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED";
 /** What a quote shows as: its stored status, or Expired for a sent quote
  * whose valid until date has passed. */
@@ -67,3 +69,15 @@ export function defaultValidUntil(from = new Date()): Date {
   date.setDate(date.getDate() + DEFAULT_VALID_DAYS);
   return date;
 }
+
+/** A product line typed on a quote or a deal. Leaving the price empty
+ * means the product's own price. */
+export const QuoteItemSchema = z.object({
+  productId: z.string().min(1, { error: "Select a product." }),
+  quantity: z.coerce
+    .number({ error: "Enter a valid quantity." })
+    .int({ error: "Quantity must be a whole number." })
+    .min(1, { error: "Quantity must be at least 1." })
+    .max(1_000_000),
+  unitPrice: z.coerce.number({ error: "Enter a valid price." }).min(0, { error: "Price can't be negative." }).max(1_000_000_000).optional(),
+});

@@ -67,6 +67,7 @@ const MESSAGES: Record<string, string> = {
   "quote-no-email": "This customer has no email address on file. Add one on the customer page first.",
   "quote-send-failed": "The quote couldn't be emailed. Check your email setup and try again.",
   "quote-cannot-accept": "This quote can't be accepted right now. It needs products and must not be expired or already decided.",
+  "whatsapp-code": "Enter the country code as 1 to 4 digits, for example 27.",
   "custom-field-invalid": "One of the custom fields has a value it can't take. Check numbers, dates and dropdown choices.",
   "tag-invalid": "Give the tag a name of up to 40 characters.",
   "tag-duplicate": "A tag with that name already exists.",

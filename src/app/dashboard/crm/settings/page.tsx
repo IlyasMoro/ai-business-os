@@ -28,6 +28,8 @@ import {
   saveEmailLogging,
   saveLeadForm,
   saveVisibility,
+  saveAutoSteps,
+  saveWhatsApp,
   syncMailNow,
   updateCustomField,
   updateTag,
@@ -192,6 +194,41 @@ export default async function CrmSettingsPage({
             <NewFieldForm action={createCustomField} />
           </Section>
 
+          <Section
+            id="auto-steps"
+            title="Automatic steps"
+            description="Things AIBOS does for you, with nothing to set up. Each adds a reminder for the person who owns the quote, deal or customer."
+          >
+            <form action={saveAutoSteps} className="space-y-4">
+              <SettingToggle
+                name="autoQuoteOpened"
+                label="Call when a quote is opened"
+                description="When a customer opens their quote online, a reminder to call them now, while it's on their mind."
+                defaultChecked={settings?.autoQuoteOpened ?? true}
+              />
+              <SettingToggle
+                name="autoQuoteExpiry"
+                label="Quote about to expire"
+                description="Two days before a sent quote runs out without an answer, a reminder to follow up."
+                defaultChecked={settings?.autoQuoteExpiry ?? true}
+              />
+              <SettingToggle
+                name="autoDealOverdue"
+                label="Deal past its close date"
+                description="When an open deal passes its expected close date, a reminder to win it, lose it or move the date."
+                defaultChecked={settings?.autoDealOverdue ?? true}
+              />
+              <SettingToggle
+                name="dailyDigest"
+                label="Morning summary email"
+                description="Each morning at about 07:00 South African time, everyone gets an email of their reminders due today and any overdue. Nothing is sent on a day with none."
+                defaultChecked={settings?.dailyDigest ?? true}
+              />
+              <SubmitButton pendingText="Saving...">Save</SubmitButton>
+            </form>
+            <p className="mt-3 text-xs text-slate-500">Also automatic: a lead becomes an active customer when they accept a quote or place an order.</p>
+          </Section>
+
           <Section id="visibility" title="Who sees which customers" description="Owners and admins always see every customer.">
             <form action={saveVisibility} className="space-y-4">
               <SettingToggle
@@ -202,6 +239,29 @@ export default async function CrmSettingsPage({
               />
               <SubmitButton pendingText="Saving...">Save</SubmitButton>
             </form>
+          </Section>
+
+          <Section id="whatsapp" title="WhatsApp" description="The WhatsApp button on customers, deals and quotes opens a chat with a ready written message. Numbers saved without a country code get this one.">
+            <form action={saveWhatsApp} className="flex flex-wrap items-end gap-3">
+              <div>
+                <Label htmlFor="whatsappCountryCode">Country code</Label>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-400">+</span>
+                  <Input
+                    id="whatsappCountryCode"
+                    name="whatsappCountryCode"
+                    inputMode="numeric"
+                    maxLength={4}
+                    defaultValue={settings?.whatsappCountryCode ?? "27"}
+                    className="w-20"
+                  />
+                </div>
+              </div>
+              <SubmitButton variant="secondary" pendingText="Saving...">
+                Save
+              </SubmitButton>
+            </form>
+            <p className="mt-2 text-xs text-slate-500">27 for South Africa: 082 123 4567 becomes +27 82 123 4567.</p>
           </Section>
         </div>
 

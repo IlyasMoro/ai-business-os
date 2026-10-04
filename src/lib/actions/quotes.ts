@@ -2,7 +2,6 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import * as z from "zod";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { logAudit } from "@/lib/audit";
@@ -10,7 +9,7 @@ import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
 import { Prisma } from "@/generated/prisma/client";
-import { defaultValidUntil, isEditable, nextQuoteNumber, quoteTotal } from "@/lib/quotes";
+import { defaultValidUntil, isEditable, nextQuoteNumber, QuoteItemSchema, quoteTotal } from "@/lib/quotes";
 import { customerScope, quoteScope } from "@/lib/crm-access";
 import { acceptQuoteRecord, declineQuoteRecord, ensureQuoteToken, quoteLink } from "@/lib/quote-accept";
 import { touchLeadScore } from "@/lib/lead-score-data";
@@ -83,7 +82,10 @@ export async function createQuote(formData: FormData) {
 
   const dealId = text(formData, "dealId");
   const deal = dealId
-    ? await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId, customerId: customer.id }, select: { id: true } })
+    ? await db.deal.findFirst({
+        where: { id: dealId, companyId: session.companyId, customerId: customer.id },
+        select: { id: true, items: { select: { productId: true, quantity: true, unitPrice: true } } },
+      })
     : null;
 
   const quote = await createWithNumber(session.companyId, {
@@ -93,6 +95,8 @@ export async function createQuote(formData: FormData) {
     branchId: await resolveNewRecordBranch(formData),
     validUntil: dateOrNull(text(formData, "validUntil")) ?? defaultValidUntil(),
     notes: text(formData, "notes")?.slice(0, 5000) ?? null,
+    // A deal's products become the quote's lines, ready to send.
+    ...(deal?.items.length ? { items: { create: deal.items }, totalAmount: quoteTotal(deal.items) } : {}),
   });
   await logAudit(session.companyId, session.userId, "quote.created", "Quote", quote.id, { quoteNumber: quote.quoteNumber });
   await touchLeadScore(session.companyId, customer.id);
@@ -116,16 +120,6 @@ export async function updateQuoteDetails(quoteId: string, formData: FormData) {
   revalidateQuote(quoteId, quote.customerId, quote.dealId);
   redirect(`${LIST}/${quoteId}?saved=1`);
 }
-
-const QuoteItemSchema = z.object({
-  productId: z.string().min(1, { error: "Select a product." }),
-  quantity: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(1, { error: "Quantity must be at least 1." })
-    .max(1_000_000),
-  unitPrice: z.coerce.number({ error: "Enter a valid price." }).min(0, { error: "Price can't be negative." }).max(1_000_000_000).optional(),
-});
 
 export async function addQuoteItem(quoteId: string, _state: QuoteItemFormState, formData: FormData): Promise<QuoteItemFormState> {
   const session = await verifySession();

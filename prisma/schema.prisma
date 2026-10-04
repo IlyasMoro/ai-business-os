@@ -75,6 +75,7 @@ model Company {
   duplicateDismissals DuplicateDismissal[]
   emailSequences      EmailSequence[]
   sequenceEnrollments SequenceEnrollment[]
+  crmRules            CrmRule[]
 
   // The subscription plan (lib/plans.ts) whose limits apply: users,
   // branches, Growth/Scale modules and AI requests. Defaults to SCALE so
@@ -150,6 +151,8 @@ model User {
   // Sign-ins issued before this are rejected (lib/dal.ts verifySession).
   // Set when the password changes, which signs out every other device.
   sessionsValidAfter  DateTime?
+  // The day ("2026-10-05") the morning reminder summary was last emailed.
+  digestSentOn        String?
 
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -436,6 +439,9 @@ model Deal {
   closedAt      DateTime?
   // Order within its stage column on the board.
   position      Float     @default(0)
+  // The expected close date an "overdue" reminder was made for, so a
+  // deal gets one reminder per date it misses.
+  closeNudgedFor DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -451,6 +457,8 @@ model Deal {
   activities CrmActivity[]
   followUps  FollowUp[]
   quotes     Quote[]
+  // What the customer is interested in; when set, the deal's value is their total.
+  items      DealItem[]
 
   @@index([companyId, stage])
   @@index([customerId])
@@ -461,6 +469,7 @@ enum CrmActivityType {
   CALL
   MEETING
   EMAIL
+  WHATSAPP
 }
 
 // Something that happened with a customer: a call, meeting, email or note.
@@ -566,6 +575,7 @@ model Product {
 
   orderItems         OrderItem[]
   quoteItems         QuoteItem[]
+  dealItems          DealItem[]
   invoiceLineItems   InvoiceLineItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        ReturnItem[]
@@ -729,6 +739,8 @@ model Quote {
   // first opened it, and who accepted (typed name) from where.
   publicToken   String?   @unique
   viewedAt      DateTime?
+  // When the "expires soon" reminder was made, so it's made once.
+  expiryNudgedAt DateTime?
   signedName    String?
   signedIp      String?
   declineReason String?
@@ -760,6 +772,21 @@ model Quote {
   @@unique([companyId, quoteNumber])
   @@index([companyId, status])
   @@index([customerId])
+  @@index([dealId])
+}
+
+// A product on a deal, before any quote exists.
+model DealItem {
+  id        String @id @default(cuid())
+  quantity  Int
+  unitPrice Float
+
+  dealId String
+  deal   Deal   @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
   @@index([dealId])
 }
 
@@ -1377,6 +1404,15 @@ model CrmSettings {
   formThanks  String?
   // Who new leads go to; falls back to the company owner.
   formOwnerId String?
+
+  // Dialling code added to local numbers ("082...") for WhatsApp links.
+  whatsappCountryCode String @default("27")
+
+  // Built in automatic steps (lib/crm-auto.ts), on unless switched off.
+  autoQuoteOpened  Boolean @default(true)
+  autoQuoteExpiry  Boolean @default(true)
+  autoDealOverdue  Boolean @default(true)
+  dailyDigest      Boolean @default(true)
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -2018,4 +2054,70 @@ model InventorySettings {
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ---------- CRM rules ----------
+
+enum CrmRuleTrigger {
+  DEAL_WON
+  DEAL_LOST
+  DEAL_STAGE
+  QUOTE_ACCEPTED
+  QUOTE_DECLINED
+  NEW_LEAD
+  CUSTOMER_QUIET
+}
+
+enum CrmRuleAction {
+  CREATE_REMINDER
+  ADD_TAG
+  ADD_TO_SEQUENCE
+  SET_STATUS
+  EMAIL_PERSON
+}
+
+// "When this happens, do that", run by lib/crm-rules.ts.
+model CrmRule {
+  id      String         @id @default(cuid())
+  name    String
+  active  Boolean        @default(true)
+  trigger CrmRuleTrigger
+  // DEAL_STAGE: the stage entered. CUSTOMER_QUIET: days without contact.
+  stage     DealStage?
+  quietDays Int?
+
+  action CrmRuleAction
+  // What the action needs, depending on its type: a reminder title and
+  // days, a tag, a sequence, a status, a person and a message.
+  title      String?
+  dueInDays  Int?
+  // A user id, or null for the customer's owner.
+  assigneeId String?
+  tagId      String?
+  sequenceId String?
+  status     CustomerStatus?
+  message    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  runs CrmRuleRun[]
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, trigger])
+}
+
+// Each time a rule fired, so it fires once per thing ("deal:<id>") and the
+// rules page can show when it last ran.
+model CrmRuleRun {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  ruleId String
+  rule   CrmRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@unique([ruleId, key])
 }

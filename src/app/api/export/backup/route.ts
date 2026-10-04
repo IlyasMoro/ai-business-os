@@ -44,6 +44,7 @@ export async function GET() {
     crmSettings,
     emailSequences,
     sequenceEnrollments,
+    crmRules,
   ] = await Promise.all([
     db.company.findUnique({ where: { id: companyId } }),
     db.user.findMany({
@@ -108,7 +109,7 @@ export async function GET() {
     db.aiChatMessage.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
     db.auditLog.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
     // CRM pipeline: deals, activity history and reminders.
-    db.deal.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
+    db.deal.findMany({ where: { companyId }, include: { items: true }, orderBy: { createdAt: "asc" } }),
     db.crmActivity.findMany({ where: { companyId }, orderBy: { occurredAt: "asc" } }),
     db.followUp.findMany({ where: { companyId }, orderBy: { dueAt: "asc" } }),
     db.quote.findMany({ where: { companyId }, include: { items: true }, orderBy: { createdAt: "asc" } }),
@@ -119,6 +120,7 @@ export async function GET() {
     db.crmSettings.findUnique({ where: { companyId }, omit: { formToken: true } }),
     db.emailSequence.findMany({ where: { companyId }, include: { steps: { orderBy: { position: "asc" } } }, orderBy: { createdAt: "asc" } }),
     db.sequenceEnrollment.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
+    db.crmRule.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
   ]);
 
   const backup = {
@@ -156,6 +158,7 @@ export async function GET() {
     crmSettings,
     emailSequences,
     sequenceEnrollments,
+    crmRules,
   };
 
   const json = JSON.stringify(backup, null, 2);

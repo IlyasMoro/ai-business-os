@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { acceptBlocker, quoteTotal } from "@/lib/quotes";
 import { isOpenStage } from "@/lib/crm-pipeline";
 import { touchLeadScore } from "@/lib/lead-score-data";
+import { dealStageChanged, fireRules } from "@/lib/crm-rules-runner";
+import { markCustomerActive } from "@/lib/crm-auto";
 
 /* Accepting and declining a quote, shared by the staff buttons on the quote
    page and the customer's own page at /q/<token>. */
@@ -81,7 +83,10 @@ export async function acceptQuoteRecord(quoteId: string, companyId: string, sign
   });
   if (!orderId) return { ok: false, reason: "taken" };
 
+  await markCustomerActive(quote.customerId);
   await touchLeadScore(companyId, quote.customerId);
+  await fireRules({ trigger: "QUOTE_ACCEPTED", companyId, customerId: quote.customerId, dealId: quote.dealId, key: `quote:${quote.id}` });
+  if (quote.deal && isOpenStage(quote.deal.stage)) await dealStageChanged(companyId, { id: quote.deal.id, customerId: quote.customerId }, "WON");
   return { ok: true, orderId, dealWon: quote.deal && isOpenStage(quote.deal.stage) ? { id: quote.deal.id, from: quote.deal.stage } : null };
 }
 
@@ -109,5 +114,6 @@ export async function declineQuoteRecord(
     },
   });
   await touchLeadScore(companyId, quote.customerId);
+  await fireRules({ trigger: "QUOTE_DECLINED", companyId, customerId: quote.customerId, dealId: quote.dealId, key: `quote:${quoteId}` });
   return true;
 }

@@ -10,6 +10,7 @@ import { evaluateCreditCheck } from "@/lib/credit-math";
 import { changeStock, quantitiesAt, stockBranchFor } from "@/lib/stock";
 import { describeShortfalls, findBranchShortfalls } from "@/lib/stock-levels";
 import { LotShortageError, getInventorySettings, takeFromLots } from "@/lib/lots";
+import { markCustomerActive } from "@/lib/crm-auto";
 import {
   OrderSchema,
   OrderItemSchema,
@@ -54,6 +55,7 @@ export async function createOrder(
     data: { customerId: customer.id, companyId: session.companyId, branchId: await resolveNewRecordBranch(formData) },
   });
 
+  await markCustomerActive(order.customerId);
   revalidatePath("/dashboard/sales");
   redirect(`/dashboard/sales/${order.id}`);
 }

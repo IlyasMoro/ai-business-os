@@ -3,7 +3,7 @@
 
 export type DealStage = "NEW" | "QUALIFIED" | "PROPOSAL" | "NEGOTIATION" | "WON" | "LOST";
 export type LeadSource = "WEBSITE" | "REFERRAL" | "CAMPAIGN" | "EVENT" | "OUTREACH" | "SOCIAL" | "OTHER";
-export type CrmActivityType = "NOTE" | "CALL" | "MEETING" | "EMAIL";
+export type CrmActivityType = "NOTE" | "CALL" | "MEETING" | "EMAIL" | "WHATSAPP";
 
 /** Board columns, left to right. `probability` is the default chance of
  * winning when a deal enters the stage; it can be changed per deal. */
@@ -47,6 +47,7 @@ export const ACTIVITY_TYPES: { id: CrmActivityType; label: string; verb: string 
   { id: "CALL", label: "Call", verb: "logged a call" },
   { id: "MEETING", label: "Meeting", verb: "logged a meeting" },
   { id: "EMAIL", label: "Email", verb: "logged an email" },
+  { id: "WHATSAPP", label: "WhatsApp", verb: "sent a WhatsApp" },
 ];
 
 export const ACTIVITY_TYPE_IDS = ACTIVITY_TYPES.map((t) => t.id);

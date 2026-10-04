@@ -118,7 +118,7 @@ export const PLANS: Plan[] = [
       "Up to 3 branches",
       "Stock transfers between branches",
       "Planning / MRP and Controlling",
-      "Automations, scheduled reports and email sequences",
+      "Automations, CRM rules, scheduled reports and email sequences",
       "AI Copilot with 1,500 requests a month",
       "Faster email support",
     ],
@@ -351,13 +351,16 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
     ],
   },
   {
-    // Every CRM feature comes with every plan, except the two that run on
-    // Automations (sequences) and the Google integration (email logging).
+    // Every CRM feature comes with every plan, except the ones that run on
+    // Automations (sequences, rules) and the Google integration (email logging).
     title: "CRM and sales",
     rows: [
       { label: "Deals pipeline board with win chances", values: ALL },
       { label: "Activity history and reminders on the calendar", values: ALL },
       { label: "Account owners and lead sources", values: ALL },
+      { label: "Products and amounts on deals", values: ALL },
+      { label: "WhatsApp customers with ready written messages", values: ALL },
+      { label: "Automatic follow up reminders and a morning summary", values: ALL },
       { label: "Tags, custom fields and lead scoring", values: ALL },
       { label: "Quotes that become orders, with PDF and email", values: ALL },
       { label: "Customers accept quotes online", values: ALL },
@@ -368,6 +371,7 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
       { label: "Import customers from a CSV file", values: ALL },
       { label: "Log customer emails from Gmail", values: withFeature("integrations") },
       { label: "Email sequences that stop when they reply", values: withFeature("automation") },
+      { label: "Rules: when a deal is won, do the next step for you", values: withFeature("automation") },
     ],
   },
   {

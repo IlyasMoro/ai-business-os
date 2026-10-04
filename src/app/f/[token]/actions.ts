@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { HONEYPOT_FIELD, LeadFormSchema, spamReason } from "@/lib/lead-form";
 import { touchLeadScore } from "@/lib/lead-score-data";
+import { fireRules } from "@/lib/crm-rules-runner";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { revalidatePath } from "next/cache";
 
@@ -105,6 +106,7 @@ export async function submitLeadForm(token: string, _state: LeadFormState, formD
     },
   });
   await touchLeadScore(companyId, customer.id);
+  if (!existing) await fireRules({ trigger: "NEW_LEAD", companyId, customerId: customer.id, key: `customer:${customer.id}` });
 
   const base = process.env.APP_BASE_URL;
   const notify = assigneeId ? await db.user.findUnique({ where: { id: assigneeId }, select: { email: true, name: true } }) : null;

@@ -55,9 +55,14 @@ export const FAQ_GROUPS: FaqGroup[] = [
         a: "Yes. Put the AIBOS contact form on your website or share its link. Each message becomes a lead with a reminder for the right person, and every customer gets a lead score so you know who to call first.",
       },
       {
+        // Mirrors the WhatsApp button (components/crm/whatsapp-button.tsx).
+        q: "Can I reach customers on WhatsApp?",
+        a: "Yes. The WhatsApp button on a customer, deal or quote opens a chat with a ready written message, such as the quote with its link to accept online, and notes it on the customer's history.",
+      },
+      {
         // Mirrors email sequences (lib/sequence-runner.ts).
         q: "Can AIBOS follow up with leads for me?",
-        a: "On Growth and up, yes. Write a few emails sent days apart and add customers to the sequence. It stops on its own when they reply or unsubscribe.",
+        a: "On Growth and up, yes. Write a few emails sent days apart and add customers to the sequence. It stops on its own when they reply or unsubscribe. Rules handle the next steps too, like a delivery reminder when a deal is won.",
       },
       {
         q: "Can I turn off modules I don't need?",

@@ -5,17 +5,19 @@ import { Button } from "@/components/ui-dark/button";
 import { FieldError, Input, Select } from "@/components/ui-dark/input";
 import { addQuoteItem, type QuoteItemFormState } from "@/lib/actions/quotes";
 
-/** Adds a product line. The price starts as the product's own and can be
- * typed over, e.g. for a discount. */
+/** Adds a product line to a quote, or (with `action`) to a deal. The price
+ * starts as the product's own and can be typed over, e.g. for a discount. */
 export function QuoteItemForm({
   quoteId,
+  action,
   products,
 }: {
-  quoteId: string;
+  quoteId?: string;
+  action?: (state: QuoteItemFormState, formData: FormData) => Promise<QuoteItemFormState>;
   products: { id: string; name: string; sku: string; unitPrice: number }[];
 }) {
   const [state, formAction, pending] = useActionState<QuoteItemFormState, FormData>(
-    addQuoteItem.bind(null, quoteId),
+    action ?? addQuoteItem.bind(null, quoteId ?? ""),
     undefined
   );
   const formRef = useRef<HTMLFormElement>(null);

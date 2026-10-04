@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { deleteDeal, updateDeal } from "@/lib/actions/pipeline";
+import { addDealItem, deleteDeal, removeDealItem, updateDeal } from "@/lib/actions/pipeline";
 import { DealForm } from "@/components/crm/deal-form";
 import { ActivityTimeline } from "@/components/crm/activity-timeline";
 import { FollowUpList } from "@/components/crm/follow-up-list";
@@ -15,6 +15,9 @@ import { stageInfo } from "@/lib/crm-pipeline";
 import { lockedWhere } from "@/lib/branches";
 import { QuoteListCard } from "@/components/quotes/quote-list-card";
 import { dealScope } from "@/lib/crm-access";
+import { WhatsAppButton } from "@/components/crm/whatsapp-button";
+import { getWhatsAppContext } from "@/lib/whatsapp-context";
+import { QuoteItemForm } from "@/components/quotes/quote-item-form";
 
 const STAGE_TONE = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
@@ -31,11 +34,11 @@ export default async function DealPage({
 
   const deal = await db.deal.findFirst({
     where: { id, companyId: session.companyId, ...(await dealScope()) },
-    include: { customer: { select: { id: true, name: true } } },
+    include: { customer: { select: { id: true, name: true, phone: true } } },
   });
   if (!deal) notFound();
 
-  const [activities, followUps, users, quotes] = await Promise.all([
+  const [activities, followUps, users, quotes, items, products] = await Promise.all([
     db.crmActivity.findMany({
       where: { dealId: deal.id },
       orderBy: { occurredAt: "desc" },
@@ -53,9 +56,12 @@ export default async function DealPage({
       orderBy: { createdAt: "desc" },
       select: { id: true, quoteNumber: true, status: true, validUntil: true, totalAmount: true, createdAt: true },
     }),
+    db.dealItem.findMany({ where: { dealId: deal.id }, orderBy: { id: "asc" }, include: { product: { select: { name: true, sku: true } } } }),
+    db.product.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true, sku: true, unitPrice: true }, orderBy: { name: "asc" } }),
   ]);
 
   const back = `/dashboard/crm/deals/${deal.id}`;
+  const wa = await getWhatsAppContext();
   const isAdmin = hasRole(session, ["OWNER", "ADMIN"]);
   const canDelete = isAdmin || deal.ownerId === session.userId;
 
@@ -82,24 +88,72 @@ export default async function DealPage({
               {deal.closedAt && ` · closed ${deal.closedAt.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })}`}
             </p>
           </div>
-          {canDelete && <DeleteButton action={deleteDeal.bind(null, deal.id)} confirmMessage={`Delete the deal "${deal.title}"?`} label="Delete deal" />}
+          <div className="flex items-center gap-2">
+            <WhatsAppButton
+              number={wa.number(deal.customer.phone)}
+              customerId={deal.customer.id}
+              customerName={deal.customer.name}
+              senderName={wa.senderName}
+              myCompany={wa.myCompany}
+              dealId={deal.id}
+            />
+            {canDelete && <DeleteButton action={deleteDeal.bind(null, deal.id)} confirmMessage={`Delete the deal "${deal.title}"?`} label="Delete deal" />}
+          </div>
         </div>
 
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <Card>
-            <CardHeader>
-              <CardTitle>Details</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DealForm
-                action={updateDeal.bind(null, deal.id)}
-                deal={deal}
-                users={users}
-                currentUserId={session.userId}
-                submitLabel="Save deal"
-              />
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DealForm
+                  action={updateDeal.bind(null, deal.id)}
+                  deal={deal}
+                  users={users}
+                  currentUserId={session.userId}
+                  submitLabel="Save deal"
+                  valueFromProducts={items.length > 0}
+                />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Products</CardTitle>
+                <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+                  What they&apos;re interested in. The deal is worth the total, and a new quote from this deal starts with these lines.
+                </p>
+              </CardHeader>
+              <CardContent>
+                {items.length > 0 && (
+                  <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
+                    {items.map((item) => (
+                      <li key={item.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
+                          <p className="text-xs tabular-nums text-slate-500">
+                            {item.quantity} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
+                          </p>
+                        </div>
+                        <DeleteButton action={removeDealItem.bind(null, deal.id, item.id)} confirmMessage="Remove this product from the deal?" label="" />
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {products.length === 0 ? (
+                  <p className="text-sm text-slate-500">Add products in Inventory first.</p>
+                ) : (
+                  <QuoteItemForm action={addDealItem.bind(null, deal.id)} products={products} />
+                )}
+                {items.length > 0 && (
+                  <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-700">
+                    Total: ${deal.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
           <div className="space-y-6">
             <QuoteListCard quotes={quotes} newHref={`/dashboard/quotes/new?deal=${deal.id}`} />
             <FollowUpList

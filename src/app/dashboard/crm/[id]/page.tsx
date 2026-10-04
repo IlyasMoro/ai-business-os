@@ -26,6 +26,8 @@ import { asCustomValues, formatCustomValue } from "@/lib/custom-fields";
 import { TagChips, ScoreBadge } from "@/components/crm/crm-chips";
 import { LeadScoreCard } from "@/components/crm/lead-score-card";
 import { CustomerSequences } from "@/components/crm/customer-sequences";
+import { WhatsAppButton } from "@/components/crm/whatsapp-button";
+import { getWhatsAppContext } from "@/lib/whatsapp-context";
 
 const dealStageTone = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
@@ -150,6 +152,7 @@ export default async function CustomerDetailPage({
     }),
   ]);
   const score = scores.get(customer.id) ?? { score: customer.leadScore, reasons: [] };
+  const wa = await getWhatsAppContext();
   const customValues = asCustomValues(customer.customFields);
   const back = `/dashboard/crm/${customer.id}`;
 
@@ -182,6 +185,13 @@ export default async function CustomerDetailPage({
             <TagChips tags={customer.tags} className="mt-2 flex" />
           </div>
           <div className="flex items-center gap-2">
+            <WhatsAppButton
+              number={wa.number(customer.phone)}
+              customerId={customer.id}
+              customerName={customer.name}
+              senderName={wa.senderName}
+              myCompany={wa.myCompany}
+            />
             <LinkButton href={`/dashboard/crm/${customer.id}/edit`} variant="secondary" size="sm">
               <Pencil className="h-4 w-4" />
               Edit
@@ -317,11 +327,22 @@ export default async function CustomerDetailPage({
                         {[contact.email, contact.phone].filter(Boolean).join(" · ") || "—"}
                       </p>
                     </div>
-                    <DeleteButton
-                      action={deleteContact.bind(null, customer.id, contact.id)}
-                      confirmMessage="Remove this contact?"
-                      label=""
-                    />
+                    <span className="flex shrink-0 items-center gap-1">
+                      {wa.number(contact.phone) && (
+                        <WhatsAppButton
+                          number={wa.number(contact.phone)}
+                          customerId={customer.id}
+                          customerName={contact.name}
+                          senderName={wa.senderName}
+                          myCompany={wa.myCompany}
+                        />
+                      )}
+                      <DeleteButton
+                        action={deleteContact.bind(null, customer.id, contact.id)}
+                        confirmMessage="Remove this contact?"
+                        label=""
+                      />
+                    </span>
                   </li>
                 ))}
               </ul>

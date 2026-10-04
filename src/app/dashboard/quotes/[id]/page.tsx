@@ -30,6 +30,8 @@ import { acceptBlocker, displayStatus, isEditable } from "@/lib/quotes";
 import { quoteScope } from "@/lib/crm-access";
 import { quoteLink } from "@/lib/quote-accept";
 import { CopyField } from "@/components/ui-dark/copy-field";
+import { WhatsAppButton } from "@/components/crm/whatsapp-button";
+import { getWhatsAppContext } from "@/lib/whatsapp-context";
 
 export default async function QuotePage({
   params,
@@ -45,7 +47,7 @@ export default async function QuotePage({
   const quote = await db.quote.findFirst({
     where: { id, companyId: session.companyId, ...(await lockedWhere()), ...(await quoteScope()) },
     include: {
-      customer: { select: { id: true, name: true, email: true } },
+      customer: { select: { id: true, name: true, email: true, phone: true } },
       deal: { select: { id: true, title: true } },
       owner: { select: { name: true } },
       branch: { select: { name: true } },
@@ -68,6 +70,7 @@ export default async function QuotePage({
   const blocker = acceptBlocker({ status: quote.status, validUntil: quote.validUntil, itemCount: quote.items.length });
   const canDelete = quote.ownerId === session.userId || hasRole(session, ["OWNER", "ADMIN"]);
   const customerLink = quote.publicToken ? quoteLink(quote.publicToken) : null;
+  const wa = await getWhatsAppContext();
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -144,6 +147,19 @@ export default async function QuotePage({
               </ActionButton>
             ) : (
               <span className="text-xs text-slate-500">Add an email to the customer to send it from here.</span>
+            )}
+            {quote.items.length > 0 && shown !== "EXPIRED" && (
+              <WhatsAppButton
+                number={wa.number(quote.customer.phone)}
+                customerId={quote.customer.id}
+                customerName={quote.customer.name}
+                senderName={wa.senderName}
+                myCompany={wa.myCompany}
+                dealId={quote.dealId ?? undefined}
+                quote={{ id: quote.id, number: quote.quoteNumber }}
+                size="md"
+                label="Send on WhatsApp"
+              />
             )}
             {quote.status === "DRAFT" && <ActionButton action={markQuoteSent.bind(null, quote.id)}>Mark as sent</ActionButton>}
             {!customerLink && quote.items.length > 0 && shown !== "EXPIRED" && (

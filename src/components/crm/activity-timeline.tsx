@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail, MessageSquareText, Phone, Users } from "lucide-react";
+import { Mail, MessageCircle, MessageSquareText, Phone, Users } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { Input, Label, Select, Textarea } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
@@ -12,6 +12,7 @@ const ICONS: Record<CrmActivityType, typeof Phone> = {
   CALL: Phone,
   MEETING: Users,
   EMAIL: Mail,
+  WHATSAPP: MessageCircle,
 };
 
 export type TimelineActivity = {

@@ -7,13 +7,14 @@ const TABS = [
   { href: "/dashboard/crm/deals", label: "Deals", adminOnly: false },
   { href: "/dashboard/crm/reminders", label: "Reminders", adminOnly: false },
   { href: "/dashboard/crm/sequences", label: "Sequences", adminOnly: false },
+  { href: "/dashboard/crm/rules", label: "Rules", adminOnly: true },
   { href: "/dashboard/crm/report", label: "Sales report", adminOnly: false },
   { href: "/dashboard/crm/settings", label: "Settings", adminOnly: true },
 ] as const;
 
 export type CrmTab = (typeof TABS)[number]["href"];
 
-/** The CRM's views. Settings shows for owners and admins only. */
+/** The CRM's views. Rules and Settings show for owners and admins only. */
 export async function CrmTabs({ active }: { active: CrmTab }) {
   const session = await verifySession();
   const isAdmin = hasRole(session, ["OWNER", "ADMIN"]);
