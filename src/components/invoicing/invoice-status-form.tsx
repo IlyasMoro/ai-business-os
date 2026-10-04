@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 import { Select } from "@/components/ui-dark/input";
 import { updateInvoiceStatus } from "@/lib/actions/invoicing";
+import { INVOICE_STATUS_LABEL, nextInvoiceStatuses, type InvoiceStatus } from "@/lib/invoice-rules";
 
 export function InvoiceStatusForm({
   invoiceId,
   status,
 }: {
   invoiceId: string;
-  status: string;
+  status: InvoiceStatus;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -33,10 +34,13 @@ export function InvoiceStatusForm({
         className="w-auto"
         onChange={() => formRef.current?.requestSubmit()}
       >
-        <option value="DRAFT">Draft</option>
-        <option value="SENT">Sent</option>
-        <option value="PAID">Paid</option>
-        <option value="OVERDUE">Overdue</option>
+        {/* Only the steps allowed from here (lib/invoice-rules.ts). */}
+        <option value={status}>{INVOICE_STATUS_LABEL[status]}</option>
+        {nextInvoiceStatuses(status).map((next) => (
+          <option key={next} value={next}>
+            {next === "PAID" ? "Mark paid" : next === "DRAFT" ? "Back to draft" : INVOICE_STATUS_LABEL[next]}
+          </option>
+        ))}
       </Select>
     </form>
   );

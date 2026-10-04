@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { markOverdueInvoices } from "@/lib/invoice-number";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { branchWhere } from "@/lib/branches";
@@ -39,6 +40,7 @@ export default async function InvoicingPage({
   const { page: pageParam, q } = await searchParams;
   const page = parsePage(pageParam);
   const session = await verifySession();
+  await markOverdueInvoices(session.companyId);
   const inBranch = await branchWhere();
 
   const where: Prisma.InvoiceWhereInput = {

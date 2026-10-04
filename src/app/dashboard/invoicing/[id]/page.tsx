@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { lockedWhere } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
@@ -11,7 +11,10 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { InvoiceLineItemForm } from "@/components/invoicing/invoice-line-item-form";
 import { InvoiceStatusForm } from "@/components/invoicing/invoice-status-form";
 import { DocumentsSection } from "@/components/documents/documents-section";
-import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail } from "@/lib/actions/invoicing";
+import { deleteInvoice, removeInvoiceLineItem, sendInvoiceEmail, undoInvoicePayment } from "@/lib/actions/invoicing";
+import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { markOverdueInvoices } from "@/lib/invoice-number";
+import { canDeleteInvoice, canEditInvoice } from "@/lib/invoice-rules";
 import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import { Download, Send } from "lucide-react";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
@@ -35,6 +38,8 @@ export default async function InvoiceDetailPage({
   const { id } = await params;
   const { error } = await searchParams;
   const session = await verifySession();
+  // Late invoices show as Overdue even between scheduler runs.
+  await markOverdueInvoices(session.companyId);
 
   const invoice = await db.invoice.findUnique({
     where: { id, companyId: session.companyId, ...(await lockedWhere()) },
@@ -43,11 +48,15 @@ export default async function InvoiceDetailPage({
       customer: true,
       lineItems: true,
       order: { select: { id: true, orderNumber: true } },
+      _count: { select: { transactions: true } },
     },
   });
 
   if (!invoice) notFound();
 
+  const editable = canEditInvoice(invoice.status);
+  const isManager = hasRole(session, ["OWNER", "ADMIN"]);
+  const deletable = canDeleteInvoice({ status: invoice.status, hasBookedIncome: invoice._count.transactions > 0 });
   const subtotal = computeInvoiceSubtotal(invoice.lineItems);
   const taxAmount = computeInvoiceTax(subtotal, invoice.taxRate);
 
@@ -101,8 +110,18 @@ export default async function InvoiceDetailPage({
               PDF
             </LinkButton>
             <EdiSendButton docType="810" recordId={invoice.id} customerId={invoice.customerId} />
-            <InvoiceStatusForm invoiceId={invoice.id} status={invoice.status} />
-            <DeleteButton action={deleteInvoice.bind(null, invoice.id)} />
+            {invoice.status === "PAID" ? (
+              isManager && (
+                <form action={undoInvoicePayment.bind(null, invoice.id)}>
+                  <SubmitButton variant="secondary" pendingText="Undoing...">
+                    Undo payment
+                  </SubmitButton>
+                </form>
+              )
+            ) : (
+              <InvoiceStatusForm invoiceId={invoice.id} status={invoice.status} />
+            )}
+            {isManager && deletable && <DeleteButton action={deleteInvoice.bind(null, invoice.id)} />}
           </div>
         </div>
 
@@ -124,16 +143,22 @@ export default async function InvoiceDetailPage({
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
                     </div>
-                    <DeleteButton
-                      action={removeInvoiceLineItem.bind(null, invoice.id, item.id)}
-                      confirmMessage="Remove this line item?"
-                      label=""
-                    />
+                    {editable && (
+                      <DeleteButton
+                        action={removeInvoiceLineItem.bind(null, invoice.id, item.id)}
+                        confirmMessage="Remove this line item?"
+                        label=""
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
             )}
-            <InvoiceLineItemForm invoiceId={invoice.id} products={products} />
+            {editable ? (
+              <InvoiceLineItemForm invoiceId={invoice.id} products={products} />
+            ) : (
+              <p className="text-xs text-slate-500">This invoice is paid, so its lines are locked to match the income in Accounting.</p>
+            )}
             <div className="mt-4 space-y-1 text-right text-sm tabular-nums">
               <p className="text-slate-400 light:text-slate-500">Subtotal: ${subtotal.toFixed(2)}</p>
               {invoice.taxRate > 0 && (

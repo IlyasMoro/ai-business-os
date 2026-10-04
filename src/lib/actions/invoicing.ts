@@ -9,6 +9,15 @@ import { logAudit } from "@/lib/audit";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { computeInvoiceTotal, computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
 import { invoiceBlocker } from "@/lib/order-rules";
+import { takeInvoiceNumber } from "@/lib/invoice-number";
+import { generateInvoicePdf } from "@/lib/invoice-pdf";
+import {
+  canChangeInvoiceStatus,
+  canDeleteInvoice,
+  canEditInvoice,
+  escapeHtml,
+  statusAfterUndoPayment,
+} from "@/lib/invoice-rules";
 import {
   InvoiceSchema,
   InvoiceLineItemSchema,
@@ -27,11 +36,6 @@ async function recomputeInvoiceTotal(invoiceId: string) {
   });
   const totalAmount = computeInvoiceTotal(items, invoice.taxRate);
   await db.invoice.update({ where: { id: invoiceId }, data: { totalAmount } });
-}
-
-async function nextInvoiceNumber(companyId: string) {
-  const count = await db.invoice.count({ where: { companyId } });
-  return `INV-${String(count + 1).padStart(4, "0")}`;
 }
 
 /** Draft invoice from a confirmed or fulfilled order: its lines at the
@@ -68,7 +72,7 @@ export async function createInvoiceFromOrder(orderId: string) {
   try {
     const invoice = await db.invoice.create({
       data: {
-        invoiceNumber: await nextInvoiceNumber(session.companyId),
+        invoiceNumber: await takeInvoiceNumber(db, session.companyId),
         customerId: order.customerId,
         companyId: session.companyId,
         branchId: order.branchId,
@@ -130,7 +134,7 @@ export async function createInvoice(
     return { errors: { dueDate: ["Enter a valid date."] } };
   }
 
-  const invoiceNumber = await nextInvoiceNumber(session.companyId);
+  const invoiceNumber = await takeInvoiceNumber(db, session.companyId);
 
   const invoice = await db.invoice.create({
     data: {
@@ -161,9 +165,12 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
 
   const current = await db.invoice.findUnique({
     where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { status: true, totalAmount: true, branchId: true },
+    select: { status: true, invoiceNumber: true, totalAmount: true, branchId: true },
   });
   if (!current) return;
+  // Only allowed steps (lib/invoice-rules.ts). Leaving Paid goes through
+  // undoInvoicePayment; Overdue is set by the sweep.
+  if (!canChangeInvoiceStatus(current.status, nextStatus)) return;
 
   // Marking PAID is what actually books the income — without this, revenue
   // recorded on the invoice never shows up in Accounting/the P&L.
@@ -187,7 +194,7 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
             type: "INCOME",
             category: "Invoice payment",
             amount: current.totalAmount,
-            description: `Payment for invoice ${invoiceId}`,
+            description: `Payment for invoice ${current.invoiceNumber}`,
             invoiceId,
             // Income belongs to the branch that raised the invoice.
             branchId: current.branchId,
@@ -213,19 +220,36 @@ export async function sendInvoiceEmail(invoiceId: string) {
     where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       customer: { select: { name: true, email: true } },
-      companyRef: { select: { name: true } },
+      companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
       lineItems: true,
     },
   });
   if (!invoice) redirect("/dashboard/invoicing?error=invalid");
   if (!invoice.customer.email) redirect(`/dashboard/invoicing/${invoiceId}?error=no-email`);
 
+  // Everything typed by people (descriptions, names) is escaped before it
+  // goes into the email's HTML.
   const lineItemsHtml = invoice.lineItems
     .map(
       (item) =>
-        `<tr><td>${item.description}</td><td>${item.quantity}</td><td>$${item.unitPrice.toFixed(2)}</td><td>$${(item.quantity * item.unitPrice).toFixed(2)}</td></tr>`
+        `<tr><td>${escapeHtml(item.description)}</td><td>${item.quantity}</td><td>$${item.unitPrice.toFixed(2)}</td><td>$${(item.quantity * item.unitPrice).toFixed(2)}</td></tr>`
     )
     .join("");
+  // Sending a draft makes it Sent, so the attached PDF says so too.
+  const pdf = await generateInvoicePdf({
+    invoiceNumber: invoice.invoiceNumber,
+    status: invoice.status === "DRAFT" ? "SENT" : invoice.status,
+    issueDate: invoice.issueDate,
+    dueDate: invoice.dueDate,
+    taxRate: invoice.taxRate,
+    totalAmount: invoice.totalAmount,
+    companyName: invoice.companyRef.name,
+    customerName: invoice.customer.name,
+    customerEmail: invoice.customer.email,
+    lineItems: invoice.lineItems,
+    logoData: invoice.companyRef.logoData ? new Uint8Array(invoice.companyRef.logoData) : undefined,
+    logoMimeType: invoice.companyRef.logoMimeType,
+  });
 
   const subtotal = computeInvoiceSubtotal(invoice.lineItems);
   const taxAmount = computeInvoiceTax(subtotal, invoice.taxRate);
@@ -238,7 +262,8 @@ export async function sendInvoiceEmail(invoiceId: string) {
     await sendEmailForCompany(session.companyId, {
       to: invoice.customer.email,
       subject: `Invoice ${invoice.invoiceNumber} from ${invoice.companyRef.name}`,
-      html: `<p>Hi ${invoice.customer.name},</p><p>Please find your invoice ${invoice.invoiceNumber} below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table>${totalsHtml}<p>Thank you.</p>`,
+      html: `<p>Hi ${escapeHtml(invoice.customer.name)},</p><p>Please find invoice ${invoice.invoiceNumber} attached as a PDF and summarised below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table>${totalsHtml}<p>Thank you.</p>`,
+      attachments: [{ filename: `${invoice.invoiceNumber}.pdf`, content: Buffer.from(pdf) }],
     });
   } catch (err) {
     console.error(`[invoicing] send failed for invoice ${invoiceId}:`, err);
@@ -259,11 +284,53 @@ export async function sendInvoiceEmail(invoiceId: string) {
   revalidatePath("/dashboard/invoicing");
 }
 
+/** Takes a paid invoice back to unpaid: removes the income its payment
+ * booked in Accounting and returns it to Sent, or Overdue when past due.
+ * Owners and admins only, as it changes the books. */
+export async function undoInvoicePayment(invoiceId: string) {
+  const session = await verifySession();
+  if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`/dashboard/invoicing/${invoiceId}?error=forbidden`);
+
+  const invoice = await db.invoice.findUnique({
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: { status: true, dueDate: true },
+  });
+  if (!invoice || invoice.status !== "PAID") redirect(`/dashboard/invoicing/${invoiceId}`);
+
+  const nextStatus = statusAfterUndoPayment(invoice.dueDate);
+  const removed = await db.$transaction(async (tx) => {
+    const { count } = await tx.transaction.deleteMany({
+      where: { invoiceId, companyId: session.companyId, type: "INCOME", category: "Invoice payment" },
+    });
+    await tx.invoice.update({ where: { id: invoiceId }, data: { status: nextStatus } });
+    return count;
+  });
+
+  await logAudit(session.companyId, session.userId, "invoice.payment_undone", "Invoice", invoiceId, {
+    status: nextStatus,
+    incomeRemoved: removed,
+  });
+  revalidatePath(`/dashboard/invoicing/${invoiceId}`);
+  revalidatePath("/dashboard/invoicing");
+  revalidatePath("/dashboard/accounting");
+}
+
 export async function deleteInvoice(invoiceId: string) {
   const session = await verifySession();
 
   if (!hasRole(session, ["OWNER", "ADMIN"])) {
     redirect("/dashboard/invoicing?error=forbidden");
+  }
+
+  // Never while income is booked against it, or Accounting would keep money
+  // with no invoice behind it.
+  const existing = await db.invoice.findUnique({
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: { status: true, _count: { select: { transactions: true } } },
+  });
+  if (!existing) redirect("/dashboard/invoicing");
+  if (!canDeleteInvoice({ status: existing.status, hasBookedIncome: existing._count.transactions > 0 })) {
+    redirect(`/dashboard/invoicing/${invoiceId}?error=invoice-delete-blocked`);
   }
 
   await db.invoice.delete({
@@ -294,10 +361,13 @@ export async function addInvoiceLineItem(
 
   const invoice = await db.invoice.findUnique({
     where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { id: true },
+    select: { id: true, status: true },
   });
   if (!invoice) {
     return { message: "Invoice not found." };
+  }
+  if (!canEditInvoice(invoice.status)) {
+    return { message: "A paid invoice can't change. Undo the payment first." };
   }
 
   const { productId, ...rest } = validated.data;
@@ -325,8 +395,9 @@ export async function addInvoiceLineItem(
 export async function removeInvoiceLineItem(invoiceId: string, itemId: string) {
   const session = await verifySession();
 
-  await db.invoiceLineItem.delete({
-    where: { id: itemId, invoice: { companyId: session.companyId, ...(await lockedWhere()) } },
+  // deleteMany: does nothing (rather than an error page) on a paid invoice.
+  await db.invoiceLineItem.deleteMany({
+    where: { id: itemId, invoiceId, invoice: { companyId: session.companyId, status: { not: "PAID" }, ...(await lockedWhere()) } },
   });
 
   await recomputeInvoiceTotal(invoiceId);

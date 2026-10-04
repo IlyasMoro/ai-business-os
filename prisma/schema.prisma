@@ -18,6 +18,9 @@ model Company {
   // Last sales order number handed out (SO-0001 = 1); bumped atomically
   // by lib/order-number.ts so two orders at once never share a number.
   orderSeq       Int      @default(0)
+  // Last invoice number handed out (INV-0001 = 1), same idea as orderSeq;
+  // see lib/invoice-number.ts.
+  invoiceSeq     Int      @default(0)
 
   // Custom logo shown on invoices, payslips, business reports, and
   // customer-facing emails in place of the default AIBOS wordmark. PNG/JPEG

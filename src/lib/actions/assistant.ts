@@ -1,5 +1,6 @@
 "use server";
 
+import { takeInvoiceNumber } from "@/lib/invoice-number";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -189,8 +190,7 @@ async function executeAiAction(
       const dueDate = new Date(args.dueDate);
       if (Number.isNaN(dueDate.getTime())) return { error: "Invalid due date." };
 
-      const count = await db.invoice.count({ where: { companyId } });
-      const invoiceNumber = `INV-${String(count + 1).padStart(4, "0")}`;
+      const invoiceNumber = await takeInvoiceNumber(db, companyId);
 
       const invoice = await db.invoice.create({
         data: { invoiceNumber, customerId: args.customerId, dueDate, companyId, branchId: await resolveNewRecordBranch() },

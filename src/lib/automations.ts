@@ -1,4 +1,5 @@
 import "server-only";
+import { markOverdueInvoices } from "@/lib/invoice-number";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/plan-limits";
 import { systemBranchId } from "@/lib/branches";
@@ -386,6 +387,14 @@ export async function runAutomations() {
   }
 
   try {
+    // Not an automation a company switches on: invoice status must be right
+    // for everyone (lib/invoice-number.ts).
+    try {
+      await markOverdueInvoices();
+    } catch (err) {
+      console.error("[automations] overdue sweep failed:", err);
+    }
+
     const companies = await db.automationSettings.findMany({
       where: {
         OR: [
