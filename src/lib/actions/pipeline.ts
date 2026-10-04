@@ -14,6 +14,8 @@ import {
   type CrmActivityType,
   type DealStage,
 } from "@/lib/crm-pipeline";
+import { customerScope, dealScope, followUpScope } from "@/lib/crm-access";
+import { touchLeadScore } from "@/lib/lead-score-data";
 
 /* Deals (the pipeline board), activity history and follow-ups. Every record
    is scoped to the signed-in company; ids from forms are checked before use. */
@@ -34,7 +36,7 @@ const text = (formData: FormData, name: string) => {
 
 async function companyCustomer(companyId: string, customerId: string | undefined) {
   if (!customerId) return null;
-  return db.customer.findFirst({ where: { id: customerId, companyId }, select: { id: true } });
+  return db.customer.findFirst({ where: { id: customerId, companyId, ...(await customerScope()) }, select: { id: true } });
 }
 
 async function companyUser(companyId: string, userId: string | undefined) {
@@ -44,10 +46,12 @@ async function companyUser(companyId: string, userId: string | undefined) {
 
 async function companyDeal(companyId: string, dealId: string | undefined) {
   if (!dealId) return null;
-  return db.deal.findFirst({ where: { id: dealId, companyId }, select: { id: true, customerId: true } });
+  return db.deal.findFirst({ where: { id: dealId, companyId, ...(await dealScope()) }, select: { id: true, customerId: true } });
 }
 
-function revalidateCrm(customerId?: string, dealId?: string) {
+/** Refreshes the CRM pages and the customer's lead score after a change. */
+async function revalidateCrm(companyId: string, customerId?: string, dealId?: string) {
+  await touchLeadScore(companyId, customerId);
   revalidatePath(BOARD);
   revalidatePath("/dashboard/crm");
   if (customerId) revalidatePath(`/dashboard/crm/${customerId}`);
@@ -120,7 +124,7 @@ export async function createDeal(formData: FormData) {
     },
   });
   await logAudit(session.companyId, session.userId, "deal.created", "Deal", deal.id, { stage, value: rest.value });
-  revalidateCrm(customer.id);
+  await revalidateCrm(session.companyId, customer.id);
   redirect(back === BOARD ? `${BOARD}/${deal.id}` : back);
 }
 
@@ -128,7 +132,7 @@ export async function updateDeal(dealId: string, formData: FormData) {
   const session = await verifySession();
   const back = `${BOARD}/${dealId}`;
   const current = await db.deal.findFirst({
-    where: { id: dealId, companyId: session.companyId },
+    where: { id: dealId, companyId: session.companyId, ...(await dealScope()) },
     select: { stage: true, customerId: true, probability: true },
   });
   if (!current) redirect(BOARD);
@@ -158,7 +162,7 @@ export async function updateDeal(dealId: string, formData: FormData) {
   if (stageChanged) {
     await logAudit(session.companyId, session.userId, "deal.stage_changed", "Deal", dealId, { from: current.stage, to: stage });
   }
-  revalidateCrm(current.customerId, dealId);
+  await revalidateCrm(session.companyId, current.customerId, dealId);
   redirect(`${back}?saved=1`);
 }
 
@@ -166,7 +170,7 @@ export async function updateDeal(dealId: string, formData: FormData) {
 export async function moveDeal(dealId: string, stage: DealStage, beforeId: string | null, afterId: string | null) {
   const session = await verifySession();
   if (!DEAL_STAGE_IDS.includes(stage)) return;
-  const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId }, select: { stage: true, customerId: true } });
+  const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId, ...(await dealScope()) }, select: { stage: true, customerId: true } });
   if (!deal) return;
 
   const neighbours = await db.deal.findMany({
@@ -189,17 +193,17 @@ export async function moveDeal(dealId: string, stage: DealStage, beforeId: strin
   if (stageChanged) {
     await logAudit(session.companyId, session.userId, "deal.stage_changed", "Deal", dealId, { from: deal.stage, to: stage });
   }
-  revalidateCrm(deal.customerId, dealId);
+  await revalidateCrm(session.companyId, deal.customerId, dealId);
 }
 
 export async function deleteDeal(dealId: string) {
   const session = await verifySession();
-  const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId }, select: { ownerId: true, customerId: true } });
+  const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId, ...(await dealScope()) }, select: { ownerId: true, customerId: true } });
   if (!deal) redirect(BOARD);
   if (deal.ownerId !== session.userId && !hasRole(session, ["OWNER", "ADMIN"])) redirect(`${BOARD}/${dealId}?error=forbidden`);
   await db.deal.delete({ where: { id: dealId, companyId: session.companyId } });
   await logAudit(session.companyId, session.userId, "deal.deleted", "Deal", dealId, {});
-  revalidateCrm(deal.customerId);
+  await revalidateCrm(session.companyId, deal.customerId);
   redirect(BOARD);
 }
 
@@ -238,7 +242,7 @@ export async function logActivity(formData: FormData) {
       authorId: session.userId,
     },
   });
-  revalidateCrm(customer.id, deal?.id);
+  await revalidateCrm(session.companyId, customer.id, deal?.id);
   redirect(back);
 }
 
@@ -251,7 +255,7 @@ export async function deleteActivity(activityId: string) {
   if (!activity) return;
   if (activity.authorId !== session.userId && !hasRole(session, ["OWNER", "ADMIN"])) return;
   await db.crmActivity.delete({ where: { id: activityId } });
-  revalidateCrm(activity.customerId, activity.dealId ?? undefined);
+  await revalidateCrm(session.companyId, activity.customerId, activity.dealId ?? undefined);
 }
 
 // ---------- Follow-ups ----------
@@ -285,7 +289,7 @@ export async function createFollowUp(formData: FormData) {
       createdById: session.userId,
     },
   });
-  revalidateCrm(customer.id, deal?.id);
+  await revalidateCrm(session.companyId, customer.id, deal?.id);
   revalidatePath("/dashboard/calendar");
   redirect(back);
 }
@@ -294,12 +298,12 @@ export async function createFollowUp(formData: FormData) {
 export async function toggleFollowUp(followUpId: string) {
   const session = await verifySession();
   const followUp = await db.followUp.findFirst({
-    where: { id: followUpId, companyId: session.companyId },
+    where: { id: followUpId, companyId: session.companyId, ...(await followUpScope()) },
     select: { doneAt: true, customerId: true, dealId: true },
   });
   if (!followUp) return;
   await db.followUp.update({ where: { id: followUpId }, data: { doneAt: followUp.doneAt ? null : new Date() } });
-  revalidateCrm(followUp.customerId, followUp.dealId ?? undefined);
+  await revalidateCrm(session.companyId, followUp.customerId, followUp.dealId ?? undefined);
   revalidatePath("/dashboard/crm/reminders");
   revalidatePath("/dashboard/calendar");
 }
@@ -307,14 +311,14 @@ export async function toggleFollowUp(followUpId: string) {
 export async function deleteFollowUp(followUpId: string) {
   const session = await verifySession();
   const followUp = await db.followUp.findFirst({
-    where: { id: followUpId, companyId: session.companyId },
+    where: { id: followUpId, companyId: session.companyId, ...(await followUpScope()) },
     select: { createdById: true, assigneeId: true, customerId: true, dealId: true },
   });
   if (!followUp) return;
   const mine = followUp.createdById === session.userId || followUp.assigneeId === session.userId;
   if (!mine && !hasRole(session, ["OWNER", "ADMIN"])) return;
   await db.followUp.delete({ where: { id: followUpId } });
-  revalidateCrm(followUp.customerId, followUp.dealId ?? undefined);
+  await revalidateCrm(session.companyId, followUp.customerId, followUp.dealId ?? undefined);
   revalidatePath("/dashboard/crm/reminders");
   revalidatePath("/dashboard/calendar");
 }

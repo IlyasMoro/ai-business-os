@@ -102,8 +102,17 @@ export function ActivityTimeline({
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-xs text-slate-400 light:text-slate-500">
-                      <span className="font-medium text-slate-200 light:text-slate-700">{activity.author?.name ?? "Someone"}</span>{" "}
-                      {activityInfo(activity.type).verb} · {when(activity.occurredAt)}
+                      {/* No author: logged by the web form, the mailbox sync,
+                          a sequence or the customer online. */}
+                      {activity.author ? (
+                        <>
+                          <span className="font-medium text-slate-200 light:text-slate-700">{activity.author.name}</span>{" "}
+                          {activityInfo(activity.type).verb}
+                        </>
+                      ) : (
+                        <span className="font-medium text-slate-200 light:text-slate-700">Added automatically</span>
+                      )}{" "}
+                      · {when(activity.occurredAt)}
                       {activity.deal && (
                         <>
                           {" · "}

@@ -30,7 +30,17 @@ export async function GET(request: Request) {
   });
 
   try {
-    return NextResponse.redirect(getGoogleAuthUrl(state));
+    // ?mail=1 comes from the CRM settings: also ask to read mail, for logging customer emails.
+    const readMail = new URL(request.url).searchParams.get("mail") === "1";
+    // Send them back where they started once Google is done.
+    cookieStore.set("google_oauth_return", readMail ? "crm" : "integrations", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 10 * 60,
+    });
+    return NextResponse.redirect(getGoogleAuthUrl(state, { readMail }));
   } catch (err) {
     console.error("[google-oauth] connect failed:", err);
     return NextResponse.redirect(new URL("/dashboard/integrations?error=invalid", base));

@@ -5,6 +5,8 @@ import { CustomerForm } from "@/components/crm/customer-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { updateCustomer } from "@/lib/actions/crm";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { customerScope } from "@/lib/crm-access";
+import { asCustomValues } from "@/lib/custom-fields";
 
 export default async function EditCustomerPage({
   params,
@@ -17,21 +19,28 @@ export default async function EditCustomerPage({
   const { error } = await searchParams;
   const session = await verifySession();
 
-  const customer = await db.customer.findUnique({
-    where: { id, companyId: session.companyId },
+  const customer = await db.customer.findFirst({
+    where: { id, companyId: session.companyId, ...(await customerScope()) },
+    include: { tags: { select: { id: true } } },
   });
 
   if (!customer) notFound();
 
   const action = updateCustomer.bind(null, customer.id);
 
-  const [campaigns, users] = await Promise.all([
+  const [campaigns, users, tags, fields] = await Promise.all([
     db.campaign.findMany({
       where: { companyId: session.companyId },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
     db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.customerTag.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true, color: true }, orderBy: { name: "asc" } }),
+    db.customField.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, label: true, type: true, options: true },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   return (
@@ -48,6 +57,10 @@ export default async function EditCustomerPage({
             users={users}
             currentUserId={session.userId}
             submitLabel="Save changes"
+            tags={tags}
+            selectedTagIds={customer.tags.map((t) => t.id)}
+            fields={fields}
+            values={asCustomValues(customer.customFields)}
           />
         </div>
       </div>

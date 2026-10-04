@@ -19,6 +19,13 @@ import { ActivityTimeline } from "@/components/crm/activity-timeline";
 import { FollowUpList } from "@/components/crm/follow-up-list";
 import { sourceLabel, stageInfo } from "@/lib/crm-pipeline";
 import { Plus } from "lucide-react";
+import { customerScope } from "@/lib/crm-access";
+import { refreshLeadScores } from "@/lib/lead-score-data";
+import { hasFeature } from "@/lib/plan-limits";
+import { asCustomValues, formatCustomValue } from "@/lib/custom-fields";
+import { TagChips, ScoreBadge } from "@/components/crm/crm-chips";
+import { LeadScoreCard } from "@/components/crm/lead-score-card";
+import { CustomerSequences } from "@/components/crm/customer-sequences";
 
 const dealStageTone = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
@@ -54,20 +61,24 @@ export default async function CustomerDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; merged?: string; enrolled?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, merged, enrolled } = await searchParams;
   const session = await verifySession();
 
-  const customer = await db.customer.findUnique({
-    where: { id, companyId: session.companyId },
-    include: { contacts: true, owner: { select: { name: true } } },
+  const customer = await db.customer.findFirst({
+    where: { id, companyId: session.companyId, ...(await customerScope()) },
+    include: {
+      contacts: true,
+      owner: { select: { name: true } },
+      tags: { select: { id: true, name: true, color: true }, orderBy: { name: "asc" } },
+    },
   });
 
   if (!customer) notFound();
 
-  const [documents, orders, invoices, tickets, outstandingBalance, deals, activities, followUps, users, quotes] = await Promise.all([
+  const [documents, orders, invoices, tickets, outstandingBalance, deals, activities, followUps, users, quotes, fields, scores, sequencesAllowed, enrollments, sequences] = await Promise.all([
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
       select: { id: true, filename: true, size: true },
@@ -112,7 +123,34 @@ export default async function CustomerDetailPage({
       take: 10,
       select: { id: true, quoteNumber: true, status: true, validUntil: true, totalAmount: true, createdAt: true },
     }),
+    db.customField.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, label: true, type: true, options: true },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    }),
+    // Scored fresh on every visit, so the page and the list never disagree.
+    refreshLeadScores(session.companyId, [customer.id]),
+    hasFeature(session.companyId, "automation"),
+    db.sequenceEnrollment.findMany({
+      where: { customerId: customer.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        status: true,
+        sent: true,
+        nextSendAt: true,
+        endReason: true,
+        sequence: { select: { id: true, name: true, active: true, _count: { select: { steps: true } } } },
+      },
+    }),
+    db.emailSequence.findMany({
+      where: { companyId: session.companyId, active: true, steps: { some: {} } },
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
   ]);
+  const score = scores.get(customer.id) ?? { score: customer.leadScore, reasons: [] };
+  const customValues = asCustomValues(customer.customFields);
   const back = `/dashboard/crm/${customer.id}`;
 
   const overLimit = customer.creditLimit != null && outstandingBalance > customer.creditLimit;
@@ -122,13 +160,26 @@ export default async function CustomerDetailPage({
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/crm" label="Back to customers" />
         <ErrorBanner code={error} />
-        <div className="flex items-start justify-between">
+        {merged && (
+          <div className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
+            Merged {Number(merged) || 1} duplicate {Number(merged) === 1 ? "record" : "records"} into this customer. Their deals, history, quotes and orders are all here now.
+          </div>
+        )}
+        {enrolled && (
+          <div className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
+            Added to the sequence. The first email goes out when it&apos;s due.
+          </div>
+        )}
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{customer.name}</h1>
               <StatusBadge status={customer.status} tone={statusTone[customer.status]} />
+              <ScoreBadge score={score.score} />
+              {customer.emailOptOut && <Badge tone="slate">Unsubscribed</Badge>}
             </div>
             {customer.company && <p className="mt-1 text-slate-400 light:text-slate-500">{customer.company}</p>}
+            <TagChips tags={customer.tags} className="mt-2 flex" />
           </div>
           <div className="flex items-center gap-2">
             <LinkButton href={`/dashboard/crm/${customer.id}/edit`} variant="secondary" size="sm">
@@ -177,6 +228,12 @@ export default async function CustomerDetailPage({
                 </Badge>
               )}
             </div>
+            {fields.map((field) => (
+              <div key={field.id}>
+                <p className="text-slate-500">{field.label}</p>
+                <p className="text-slate-50 light:text-slate-900">{formatCustomValue(field, customValues[field.id]) ?? "Not set"}</p>
+              </div>
+            ))}
             {customer.notes && (
               <div className="col-span-2">
                 <p className="text-slate-500">Notes</p>
@@ -185,6 +242,17 @@ export default async function CustomerDetailPage({
             )}
           </CardContent>
         </Card>
+
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+          <LeadScoreCard score={score.score} reasons={score.reasons} />
+          <CustomerSequences
+            customerId={customer.id}
+            enrollments={enrollments}
+            sequences={sequences}
+            allowed={sequencesAllowed}
+            blocked={customer.emailOptOut ? "unsubscribed" : customer.email ? null : "no-email"}
+          />
+        </div>
 
         {/* Sales work: deals and reminders side by side, then the history. */}
         <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">

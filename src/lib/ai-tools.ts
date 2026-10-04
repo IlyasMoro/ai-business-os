@@ -1,6 +1,7 @@
 import "server-only";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/db";
+import { customerScope, dealScope } from "@/lib/crm-access";
 import { isOpenStage, pipelineSummary, stageInfo } from "@/lib/crm-pipeline";
 import { closedIn, forecastByMonth, openByStage, periodRange } from "@/lib/sales-report";
 import {
@@ -40,12 +41,14 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
       const customers = await db.customer.findMany({
         where: {
           companyId,
+          // An employee limited to their own customers only finds those.
+          ...(await customerScope()),
           OR: [
-            { name: { contains: parsed.data.query } },
-            { email: { contains: parsed.data.query } },
+            { name: { contains: parsed.data.query, mode: "insensitive" } },
+            { email: { contains: parsed.data.query, mode: "insensitive" } },
           ],
         },
-        select: { id: true, name: true, email: true, status: true },
+        select: { id: true, name: true, email: true, status: true, leadScore: true, tags: { select: { name: true } } },
         take: 5,
       });
       return { customers };
@@ -143,7 +146,7 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
 async function pipelineReport(companyId: string, closing?: "this_month" | "next_month" | "this_quarter" | "overdue") {
   const now = new Date();
   const deals = await db.deal.findMany({
-    where: { companyId },
+    where: { companyId, ...(await dealScope()) },
     select: {
       id: true,
       title: true,

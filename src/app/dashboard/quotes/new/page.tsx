@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { defaultValidUntil } from "@/lib/quotes";
 import { DEAL_STAGES } from "@/lib/crm-pipeline";
+import { customerScope, dealScope } from "@/lib/crm-access";
 
 export const metadata = { title: "New quote" };
 
@@ -23,9 +24,9 @@ export default async function NewQuotePage({
   const { customer, deal: dealParam, error } = await searchParams;
 
   const [customers, deals, branches] = await Promise.all([
-    db.customer.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.customer.findMany({ where: { companyId: session.companyId, ...(await customerScope()) }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
     db.deal.findMany({
-      where: { companyId: session.companyId, stage: { in: DEAL_STAGES.filter((s) => s.open).map((s) => s.id) } },
+      where: { companyId: session.companyId, ...(await dealScope()), stage: { in: DEAL_STAGES.filter((s) => s.open).map((s) => s.id) } },
       select: { id: true, title: true, customerId: true, customer: { select: { name: true } } },
       orderBy: { title: "asc" },
     }),

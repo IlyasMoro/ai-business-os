@@ -4,7 +4,9 @@ const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
 const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v2/userinfo";
 
-const SCOPES = ["https://www.googleapis.com/auth/gmail.send", "openid", "email"].join(" ");
+const SEND_SCOPES = ["https://www.googleapis.com/auth/gmail.send", "openid", "email"];
+// Asked for only when the CRM's email logging is turned on.
+const READ_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";
 
 function getRedirectUri() {
   const base = process.env.APP_BASE_URL;
@@ -12,7 +14,7 @@ function getRedirectUri() {
   return `${base}/api/integrations/google/callback`;
 }
 
-export function getGoogleAuthUrl(state: string) {
+export function getGoogleAuthUrl(state: string, { readMail = false }: { readMail?: boolean } = {}) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) throw new Error("GOOGLE_CLIENT_ID environment variable is not set");
 
@@ -20,7 +22,7 @@ export function getGoogleAuthUrl(state: string) {
     client_id: clientId,
     redirect_uri: getRedirectUri(),
     response_type: "code",
-    scope: SCOPES,
+    scope: (readMail ? [...SEND_SCOPES, READ_SCOPE] : SEND_SCOPES).join(" "),
     access_type: "offline",
     prompt: "consent",
     state,

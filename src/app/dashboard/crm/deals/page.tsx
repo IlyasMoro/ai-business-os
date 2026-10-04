@@ -8,6 +8,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { LinkButton } from "@/components/ui-dark/button";
 import { isOpenStage, pipelineSummary } from "@/lib/crm-pipeline";
 import { cn } from "@/lib/utils";
+import { dealScope } from "@/lib/crm-access";
 
 export const metadata = { title: "Deals" };
 
@@ -22,7 +23,7 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
   const onlyMine = mine === "1";
 
   const deals = await db.deal.findMany({
-    where: { companyId: session.companyId, ...(onlyMine ? { ownerId: session.userId } : {}) },
+    where: { companyId: session.companyId, ...(await dealScope()), ...(onlyMine ? { ownerId: session.userId } : {}) },
     select: {
       id: true,
       title: true,

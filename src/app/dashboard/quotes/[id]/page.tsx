@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Copy, Download, Mail } from "lucide-react";
+import { Copy, Download, Eye, Link2, Mail, PenLine } from "lucide-react";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { lockedWhere } from "@/lib/branches";
@@ -12,6 +12,7 @@ import {
   emailQuote,
   markQuoteSent,
   removeQuoteItem,
+  shareQuoteLink,
   updateQuoteDetails,
 } from "@/lib/actions/quotes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui-dark/card";
@@ -26,20 +27,23 @@ import { QuoteItemForm } from "@/components/quotes/quote-item-form";
 import { ActionButton } from "@/components/quotes/confirm-action";
 import { QuoteStatusBadge, money, shortDate } from "@/components/quotes/quote-parts";
 import { acceptBlocker, displayStatus, isEditable } from "@/lib/quotes";
+import { quoteScope } from "@/lib/crm-access";
+import { quoteLink } from "@/lib/quote-accept";
+import { CopyField } from "@/components/ui-dark/copy-field";
 
 export default async function QuotePage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string; saved?: string; sent?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; sent?: string; link?: string }>;
 }) {
   const { id } = await params;
-  const { error, saved, sent } = await searchParams;
+  const { error, saved, sent, link } = await searchParams;
   const session = await verifySession();
 
   const quote = await db.quote.findFirst({
-    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()), ...(await quoteScope()) },
     include: {
       customer: { select: { id: true, name: true, email: true } },
       deal: { select: { id: true, title: true } },
@@ -63,6 +67,7 @@ export default async function QuotePage({
   const shown = displayStatus(quote);
   const blocker = acceptBlocker({ status: quote.status, validUntil: quote.validUntil, itemCount: quote.items.length });
   const canDelete = quote.ownerId === session.userId || hasRole(session, ["OWNER", "ADMIN"]);
+  const customerLink = quote.publicToken ? quoteLink(quote.publicToken) : null;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -71,7 +76,7 @@ export default async function QuotePage({
         <ErrorBanner code={error} />
         {(saved || sent) && (
           <div className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
-            {sent ? `Quote emailed to ${quote.customer.email}.` : "Saved."}
+            {sent ? `Quote emailed to ${quote.customer.email}, with a link to accept it online.` : "Saved."}
           </div>
         )}
 
@@ -100,6 +105,12 @@ export default async function QuotePage({
               {quote.owner && ` by ${quote.owner.name}`}
               {quote.sentAt && ` · sent ${shortDate(quote.sentAt)}`}
             </p>
+            {quote.viewedAt && quote.status === "SENT" && (
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-blue-300 light:text-blue-700">
+                <Eye className="h-3.5 w-3.5" aria-hidden />
+                The customer opened it online on {shortDate(quote.viewedAt)}
+              </p>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <a href={`/api/quotes/${quote.id}/pdf`} target="_blank" rel="noopener" className={buttonStyles("secondary", "sm")}>
@@ -135,6 +146,12 @@ export default async function QuotePage({
               <span className="text-xs text-slate-500">Add an email to the customer to send it from here.</span>
             )}
             {quote.status === "DRAFT" && <ActionButton action={markQuoteSent.bind(null, quote.id)}>Mark as sent</ActionButton>}
+            {!customerLink && quote.items.length > 0 && shown !== "EXPIRED" && (
+              <ActionButton action={shareQuoteLink.bind(null, quote.id)}>
+                <Link2 className="h-4 w-4" />
+                Get a link
+              </ActionButton>
+            )}
             {!blocker && (
               <ActionButton
                 action={acceptQuote.bind(null, quote.id)}
@@ -152,6 +169,14 @@ export default async function QuotePage({
           </div>
         ) : quote.order ? (
           <div className="mt-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-300 light:text-emerald-800">
+            {quote.signedName ? (
+              <span className="mb-1 flex items-center gap-1.5 font-medium">
+                <PenLine className="h-4 w-4" aria-hidden />
+                Accepted online by {quote.signedName}
+                {quote.decidedAt ? ` on ${quote.decidedAt.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}` : ""}
+                {quote.signedIp ? ` from ${quote.signedIp}` : ""}.
+              </span>
+            ) : null}
             Accepted {quote.decidedAt && shortDate(quote.decidedAt)}.{" "}
             <Link href={`/dashboard/sales/${quote.order.id}`} className="font-medium underline">
               Open the order
@@ -161,7 +186,18 @@ export default async function QuotePage({
         ) : (
           <div className="mt-6 rounded-xl border border-white/[0.09] p-4 text-sm text-slate-400 glass light:border-white/80">
             {quote.status === "ACCEPTED" ? "Accepted, but its order has since been deleted." : `Declined ${quote.decidedAt ? shortDate(quote.decidedAt) : ""}.`}{" "}
+            {quote.declineReason && <span className="text-slate-300 light:text-slate-600">Their reason: &ldquo;{quote.declineReason}&rdquo;. </span>}
             Copy it to a new quote to offer again.
+          </div>
+        )}
+
+        {editable && customerLink && (
+          <div id="share" className="mt-4 scroll-mt-24 rounded-xl border border-white/[0.09] p-4 glass light:border-white/80">
+            <p className="mb-2 text-sm font-medium text-slate-200 light:text-slate-700">
+              {link ? "Here is the customer's link. " : "Customer link. "}
+              <span className="font-normal text-slate-400 light:text-slate-500">They can view the quote and accept it online by typing their name.</span>
+            </p>
+            <CopyField value={customerLink} label="Customer link to the quote" />
           </div>
         )}
 

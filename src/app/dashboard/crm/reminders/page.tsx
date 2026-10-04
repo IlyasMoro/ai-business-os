@@ -5,6 +5,7 @@ import { CrmTabs } from "@/components/crm/crm-tabs";
 import { FollowUpRow } from "@/components/crm/follow-up-list";
 import { followUpBucket } from "@/lib/crm-pipeline";
 import { cn } from "@/lib/utils";
+import { followUpScope } from "@/lib/crm-access";
 
 export const metadata = { title: "Reminders" };
 
@@ -26,6 +27,7 @@ export default async function RemindersPage({ searchParams }: { searchParams: Pr
   const followUps = await db.followUp.findMany({
     where: {
       companyId: session.companyId,
+      ...(await followUpScope()),
       ...(everyone ? {} : { assigneeId: session.userId }),
       OR: [{ doneAt: null }, { doneAt: { gte: weekAgo } }],
     },

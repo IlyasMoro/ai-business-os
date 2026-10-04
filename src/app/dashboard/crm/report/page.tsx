@@ -19,6 +19,7 @@ import {
   type ReportPeriod,
 } from "@/lib/sales-report";
 import { cn } from "@/lib/utils";
+import { customerScope, dealScope, quoteScope } from "@/lib/crm-access";
 
 export const metadata = { title: "Sales report" };
 
@@ -60,7 +61,7 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
 
   const [dealRows, quotes, customers, users] = await Promise.all([
     db.deal.findMany({
-      where: { companyId: session.companyId },
+      where: { companyId: session.companyId, ...(await dealScope()) },
       select: {
         id: true,
         title: true,
@@ -75,10 +76,10 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
       },
     }),
     db.quote.findMany({
-      where: { companyId: session.companyId },
+      where: { companyId: session.companyId, ...(await quoteScope()) },
       select: { status: true, ownerId: true, sentAt: true, decidedAt: true, totalAmount: true },
     }),
-    db.customer.findMany({ where: { companyId: session.companyId }, select: { source: true, createdAt: true } }),
+    db.customer.findMany({ where: { companyId: session.companyId, ...(await customerScope()) }, select: { source: true, createdAt: true } }),
     db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true } }),
   ]);
 

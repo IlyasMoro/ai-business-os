@@ -4,6 +4,7 @@ import { createDeal } from "@/lib/actions/pipeline";
 import { DealForm } from "@/components/crm/deal-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { customerScope } from "@/lib/crm-access";
 
 export const metadata = { title: "New deal" };
 
@@ -16,7 +17,7 @@ export default async function NewDealPage({
   const { customer, error } = await searchParams;
 
   const [customers, users] = await Promise.all([
-    db.customer.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.customer.findMany({ where: { companyId: session.companyId, ...(await customerScope()) }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
     db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
   const preselected = customers.some((c) => c.id === customer) ? customer : undefined;

@@ -9,6 +9,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { QuoteStatusBadge, money, shortDate } from "@/components/quotes/quote-parts";
 import { QUOTE_STATUS_LABELS, displayStatus, type QuoteDisplayStatus } from "@/lib/quotes";
 import { cn } from "@/lib/utils";
+import { quoteScope } from "@/lib/crm-access";
 
 export const metadata = { title: "Quotes" };
 
@@ -21,7 +22,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const filter = FILTERS.find((f) => f === status) ?? "ALL";
 
   const quotes = await db.quote.findMany({
-    where: { companyId: session.companyId, ...(await branchWhere()) },
+    where: { companyId: session.companyId, ...(await branchWhere()), ...(await quoteScope()) },
     orderBy: { createdAt: "desc" },
     take: 500,
     select: {

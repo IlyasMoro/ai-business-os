@@ -89,7 +89,7 @@ export const PLANS: Plan[] = [
     features: [
       "Up to 10 users with owner, admin and employee roles",
       "1 branch",
-      "CRM with deals, quotes and a sales report",
+      "CRM with deals, quotes, lead scoring and a web lead form",
       "Sales, Invoicing, Returns, Support and Marketing",
       "Inventory, Procurement, Projects and Accounting",
       "HR, Payroll and Team",
@@ -118,7 +118,7 @@ export const PLANS: Plan[] = [
       "Up to 3 branches",
       "Stock transfers between branches",
       "Planning / MRP and Controlling",
-      "Automations and scheduled report emails",
+      "Automations, scheduled reports and email sequences",
       "AI Copilot with 1,500 requests a month",
       "Faster email support",
     ],
@@ -351,15 +351,23 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
     ],
   },
   {
-    // Every CRM feature comes with every plan.
+    // Every CRM feature comes with every plan, except the two that run on
+    // Automations (sequences) and the Google integration (email logging).
     title: "CRM and sales",
     rows: [
       { label: "Deals pipeline board with win chances", values: ALL },
       { label: "Activity history and reminders on the calendar", values: ALL },
       { label: "Account owners and lead sources", values: ALL },
+      { label: "Tags, custom fields and lead scoring", values: ALL },
       { label: "Quotes that become orders, with PDF and email", values: ALL },
+      { label: "Customers accept quotes online", values: ALL },
+      { label: "Web lead form for your website", values: ALL },
+      { label: "Find and merge duplicate customers", values: ALL },
+      { label: "Employees limited to their own customers", values: ALL },
       { label: "Sales report with forecast and win rate", values: ALL },
       { label: "Import customers from a CSV file", values: ALL },
+      { label: "Log customer emails from Gmail", values: withFeature("integrations") },
+      { label: "Email sequences that stop when they reply", values: withFeature("automation") },
     ],
   },
   {

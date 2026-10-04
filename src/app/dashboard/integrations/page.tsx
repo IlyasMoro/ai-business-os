@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -81,6 +82,13 @@ export default async function IntegrationsPage({
               </SubmitButton>
             </form>
           )}
+          <p className="mt-4 text-sm text-slate-400 light:text-slate-500">
+            Want customer emails logged on their history?{" "}
+            <Link href="/dashboard/crm/settings#email-logging" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+              Turn on email logging in the CRM settings
+            </Link>
+            .
+          </p>
         </div>
       </div>
     </div>

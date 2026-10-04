@@ -37,7 +37,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         // Mirrors the quote flow in lib/actions/quotes.ts.
         q: "Can I send quotes before a customer orders?",
-        a: "Yes. Build a quote from your products, change prices for a discount, and email it with a PDF attached. When the customer accepts, one click turns it into an order and marks the deal as won.",
+        a: "Yes. Build a quote from your products, change prices for a discount, and email it with a PDF attached. The customer can accept it online by typing their name, which turns it into an order and marks the deal as won.",
       },
       {
         // Mirrors the Sales report tab (app/dashboard/crm/report).
@@ -48,6 +48,16 @@ export const FAQ_GROUPS: FaqGroup[] = [
         // Mirrors the customer import (lib/customer-import.ts).
         q: "Can I bring my customers over from another system?",
         a: "Yes. Owners and admins can import customers from a CSV file. AIBOS checks the file first and shows what will happen to each row, and skips anyone whose email is already on file.",
+      },
+      {
+        // Mirrors the web lead form (app/f) and lead scoring (lib/lead-score.ts).
+        q: "Can leads come straight from my website?",
+        a: "Yes. Put the AIBOS contact form on your website or share its link. Each message becomes a lead with a reminder for the right person, and every customer gets a lead score so you know who to call first.",
+      },
+      {
+        // Mirrors email sequences (lib/sequence-runner.ts).
+        q: "Can AIBOS follow up with leads for me?",
+        a: "On Growth and up, yes. Write a few emails sent days apart and add customers to the sequence. It stops on its own when they reply or unsubscribe.",
       },
       {
         q: "Can I turn off modules I don't need?",

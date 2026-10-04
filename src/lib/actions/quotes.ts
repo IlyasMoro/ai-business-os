@@ -10,8 +10,10 @@ import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
 import { Prisma } from "@/generated/prisma/client";
-import { defaultValidUntil, acceptBlocker, isEditable, nextQuoteNumber, quoteTotal } from "@/lib/quotes";
-import { isOpenStage } from "@/lib/crm-pipeline";
+import { defaultValidUntil, isEditable, nextQuoteNumber, quoteTotal } from "@/lib/quotes";
+import { customerScope, quoteScope } from "@/lib/crm-access";
+import { acceptQuoteRecord, declineQuoteRecord, ensureQuoteToken, quoteLink } from "@/lib/quote-accept";
+import { touchLeadScore } from "@/lib/lead-score-data";
 
 /* Quotes: priced offers to a customer that become an order once accepted.
    Every record is scoped to the signed-in company (and a locked employee's
@@ -37,7 +39,7 @@ const escapeHtml = (s: string) =>
 
 async function findQuote(companyId: string, quoteId: string) {
   return db.quote.findFirst({
-    where: { id: quoteId, companyId, ...(await lockedWhere()) },
+    where: { id: quoteId, companyId, ...(await lockedWhere()), ...(await quoteScope()) },
     select: { id: true, status: true, validUntil: true, customerId: true, dealId: true, ownerId: true, quoteNumber: true },
   });
 }
@@ -75,7 +77,7 @@ export async function createQuote(formData: FormData) {
   const session = await verifySession();
   const customerId = text(formData, "customerId");
   const customer = customerId
-    ? await db.customer.findFirst({ where: { id: customerId, companyId: session.companyId }, select: { id: true } })
+    ? await db.customer.findFirst({ where: { id: customerId, companyId: session.companyId, ...(await customerScope()) }, select: { id: true } })
     : null;
   if (!customer) redirect(`${LIST}/new?error=invalid`);
 
@@ -93,6 +95,7 @@ export async function createQuote(formData: FormData) {
     notes: text(formData, "notes")?.slice(0, 5000) ?? null,
   });
   await logAudit(session.companyId, session.userId, "quote.created", "Quote", quote.id, { quoteNumber: quote.quoteNumber });
+  await touchLeadScore(session.companyId, customer.id);
   revalidateQuote(quote.id, customer.id, deal?.id);
   redirect(`${LIST}/${quote.id}`);
 }
@@ -182,7 +185,7 @@ export async function markQuoteSent(quoteId: string) {
 export async function emailQuote(quoteId: string) {
   const session = await verifySession();
   const quote = await db.quote.findFirst({
-    where: { id: quoteId, companyId: session.companyId, ...(await lockedWhere()) },
+    where: { id: quoteId, companyId: session.companyId, ...(await lockedWhere()), ...(await quoteScope()) },
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
@@ -220,11 +223,16 @@ export async function emailQuote(quoteId: string) {
     )
     .join("");
   const validText = quote.validUntil ? `, valid until ${quote.validUntil.toLocaleDateString()}` : "";
+  // The customer can accept or decline online from this link.
+  const link = quoteLink(await ensureQuoteToken(quoteId));
+  const linkHtml = link
+    ? `<p style="margin:20px 0"><a href="${link}" style="background:#2563eb;color:#ffffff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:600">View and accept online</a></p>`
+    : "";
   try {
     await sendEmailForCompany(session.companyId, {
       to: quote.customer.email,
       subject: `Quote ${quote.quoteNumber} from ${quote.companyRef.name}`,
-      html: `<p>Hi ${escapeHtml(quote.customer.name)},</p><p>Here is our quote ${quote.quoteNumber}${validText}. The PDF is attached.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${rows}</table><p><strong>Total: $${quote.totalAmount.toFixed(2)}</strong></p>${quote.notes ? `<p>${escapeHtml(quote.notes).replace(/\n/g, "<br/>")}</p>` : ""}<p>Reply to this email to accept it or ask any questions.</p>`,
+      html: `<p>Hi ${escapeHtml(quote.customer.name)},</p><p>Here is our quote ${quote.quoteNumber}${validText}. The PDF is attached.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${rows}</table><p><strong>Total: $${quote.totalAmount.toFixed(2)}</strong></p>${quote.notes ? `<p>${escapeHtml(quote.notes).replace(/\n/g, "<br/>")}</p>` : ""}${linkHtml}<p>${link ? "You can also reply to this email" : "Reply to this email"} to accept it or ask any questions.</p>`,
       attachments: [{ filename: `${quote.quoteNumber}.pdf`, content: Buffer.from(pdf) }],
     });
   } catch (err) {
@@ -244,95 +252,58 @@ export async function emailQuote(quoteId: string) {
     },
   });
   await logAudit(session.companyId, session.userId, "quote.sent", "Quote", quoteId, { by: "email" });
+  await touchLeadScore(session.companyId, quote.customerId);
   revalidateQuote(quoteId, quote.customerId, quote.dealId);
   redirect(`${back}?sent=1`);
 }
 
 // ---------- Decisions ----------
 
-/**
- * The customer said yes: make a pending order with the quote's lines and
- * prices, link the two, and win the deal it belongs to. All in one
- * transaction, and only from a quote still open, so a double click can't
- * make two orders.
- */
+/** Staff record a yes the customer gave by phone, email or in person. */
 export async function acceptQuote(quoteId: string) {
   const session = await verifySession();
-  const quote = await db.quote.findFirst({
-    where: { id: quoteId, companyId: session.companyId, ...(await lockedWhere()) },
-    include: { items: { select: { productId: true, quantity: true, unitPrice: true } }, deal: { select: { id: true, stage: true } } },
-  });
+  const quote = await findQuote(session.companyId, quoteId);
   if (!quote) redirect(LIST);
   const back = `${LIST}/${quoteId}`;
-  if (acceptBlocker({ status: quote.status, validUntil: quote.validUntil, itemCount: quote.items.length })) {
-    redirect(`${back}?error=quote-cannot-accept`);
-  }
 
-  const total = quoteTotal(quote.items);
-  const orderId = await db.$transaction(async (tx) => {
-    const claimed = await tx.quote.updateMany({
-      where: { id: quoteId, status: { in: ["DRAFT", "SENT"] } },
-      data: { status: "ACCEPTED", decidedAt: new Date() },
-    });
-    if (claimed.count === 0) return null;
-    const order = await tx.order.create({
-      data: {
-        companyId: session.companyId,
-        customerId: quote.customerId,
-        branchId: quote.branchId,
-        totalAmount: total,
-        items: { create: quote.items.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })) },
-      },
-    });
-    await tx.quote.update({ where: { id: quoteId }, data: { orderId: order.id } });
-    if (quote.deal && isOpenStage(quote.deal.stage)) {
-      await tx.deal.update({
-        where: { id: quote.deal.id },
-        data: { stage: "WON", probability: 100, value: total, closedAt: new Date(), lostReason: null },
-      });
-    }
-    await tx.crmActivity.create({
-      data: {
-        type: "NOTE",
-        body: `Quote ${quote.quoteNumber} accepted ($${total.toFixed(2)}). An order was created from it.`,
-        companyId: session.companyId,
-        customerId: quote.customerId,
-        dealId: quote.dealId,
-        authorId: session.userId,
-      },
-    });
-    return order.id;
-  });
-  if (!orderId) redirect(back);
+  const result = await acceptQuoteRecord(quoteId, session.companyId, { userId: session.userId });
+  if (!result.ok) redirect(result.reason === "blocked" ? `${back}?error=quote-cannot-accept` : back);
 
-  await logAudit(session.companyId, session.userId, "quote.accepted", "Quote", quoteId, { quoteNumber: quote.quoteNumber, total });
-  if (quote.deal && isOpenStage(quote.deal.stage)) {
-    await logAudit(session.companyId, session.userId, "deal.stage_changed", "Deal", quote.deal.id, { from: quote.deal.stage, to: "WON" });
+  await logAudit(session.companyId, session.userId, "quote.accepted", "Quote", quoteId, { quoteNumber: quote.quoteNumber });
+  if (result.dealWon) {
+    await logAudit(session.companyId, session.userId, "deal.stage_changed", "Deal", result.dealWon.id, { from: result.dealWon.from, to: "WON" });
     revalidatePath("/dashboard/crm/deals");
   }
   revalidateQuote(quoteId, quote.customerId, quote.dealId);
   revalidatePath("/dashboard/sales");
-  redirect(`/dashboard/sales/${orderId}`);
+  redirect(`/dashboard/sales/${result.orderId}`);
 }
 
 export async function declineQuote(quoteId: string) {
   const session = await verifySession();
   const quote = await findQuote(session.companyId, quoteId);
   if (!quote) redirect(LIST);
-  if (!isEditable(quote.status)) redirect(`${LIST}/${quoteId}`);
-  await db.quote.update({ where: { id: quoteId }, data: { status: "DECLINED", decidedAt: new Date() } });
-  await db.crmActivity.create({
-    data: {
-      type: "NOTE",
-      body: `Quote ${quote.quoteNumber} was declined.`,
-      companyId: session.companyId,
-      customerId: quote.customerId,
-      dealId: quote.dealId,
-      authorId: session.userId,
-    },
-  });
+  if (!(await declineQuoteRecord(quoteId, session.companyId, { userId: session.userId }))) redirect(`${LIST}/${quoteId}`);
   await logAudit(session.companyId, session.userId, "quote.declined", "Quote", quoteId, {});
   revalidateQuote(quoteId, quote.customerId, quote.dealId);
+}
+
+/** Makes the customer's accept online link, to copy into a message. A draft
+ * shared this way counts as sent. */
+export async function shareQuoteLink(quoteId: string) {
+  const session = await verifySession();
+  const quote = await findQuote(session.companyId, quoteId);
+  if (!quote) redirect(LIST);
+  if (!isEditable(quote.status)) redirect(`${LIST}/${quoteId}?error=quote-locked`);
+  const items = await db.quoteItem.count({ where: { quoteId } });
+  if (items === 0) redirect(`${LIST}/${quoteId}?error=quote-empty`);
+  await ensureQuoteToken(quoteId);
+  if (quote.status === "DRAFT") {
+    await db.quote.update({ where: { id: quoteId }, data: { status: "SENT", sentAt: new Date() } });
+    await logAudit(session.companyId, session.userId, "quote.sent", "Quote", quoteId, { by: "link" });
+  }
+  revalidateQuote(quoteId, quote.customerId, quote.dealId);
+  redirect(`${LIST}/${quoteId}?link=1#share`);
 }
 
 /** A fresh draft with the same customer, deal and lines, at today's prices
@@ -340,7 +311,7 @@ export async function declineQuote(quoteId: string) {
 export async function duplicateQuote(quoteId: string) {
   const session = await verifySession();
   const source = await db.quote.findFirst({
-    where: { id: quoteId, companyId: session.companyId, ...(await lockedWhere()) },
+    where: { id: quoteId, companyId: session.companyId, ...(await lockedWhere()), ...(await quoteScope()) },
     include: { items: { select: { productId: true, quantity: true, unitPrice: true } } },
   });
   if (!source) redirect(LIST);

@@ -69,6 +69,12 @@ model Company {
   crmActivities       CrmActivity[]
   followUps           FollowUp[]
   quotes              Quote[]
+  customerTags        CustomerTag[]
+  customFields        CustomField[]
+  crmSettings         CrmSettings?
+  duplicateDismissals DuplicateDismissal[]
+  emailSequences      EmailSequence[]
+  sequenceEnrollments SequenceEnrollment[]
 
   // The subscription plan (lib/plans.ts) whose limits apply: users,
   // branches, Growth/Scale modules and AI requests. Defaults to SCALE so
@@ -167,6 +173,7 @@ model User {
   crmActivities       CrmActivity[]        @relation("CrmActivityAuthor")
   assignedFollowUps   FollowUp[]           @relation("FollowUpAssignee")
   createdFollowUps    FollowUp[]           @relation("FollowUpCreator")
+  sequenceEnrollments SequenceEnrollment[] @relation("SequenceEnroller")
 
   @@index([companyId])
   @@index([branchId])
@@ -361,10 +368,21 @@ model Customer {
   ownerId String?
   owner   User?   @relation("CustomerOwner", fields: [ownerId], references: [id], onDelete: SetNull)
 
-  deals         Deal[]
-  crmActivities CrmActivity[]
-  followUps     FollowUp[]
-  quotes        Quote[]
+  // Labels like "VIP" or "Wholesale", for filtering.
+  tags         CustomerTag[]
+  // Values for the company's own fields (CustomField), keyed by field id.
+  customFields Json          @default("{}")
+  // 0 to 100, how warm the customer is (lib/lead-score.ts). Kept on the row
+  // so the list can sort by it; refreshed on changes and by the cron.
+  leadScore    Int           @default(0)
+  // Set when they unsubscribe from sequence emails.
+  emailOptOut  Boolean       @default(false)
+
+  deals               Deal[]
+  crmActivities       CrmActivity[]
+  followUps           FollowUp[]
+  quotes              Quote[]
+  sequenceEnrollments SequenceEnrollment[]
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -452,6 +470,9 @@ model CrmActivity {
   body       String
   occurredAt DateTime        @default(now())
   createdAt  DateTime        @default(now())
+  // The Gmail message id for emails logged by the mailbox sync, so the
+  // same email is never logged twice.
+  externalId String?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -465,6 +486,7 @@ model CrmActivity {
   authorId String?
   author   User?   @relation("CrmActivityAuthor", fields: [authorId], references: [id], onDelete: SetNull)
 
+  @@unique([companyId, externalId])
   @@index([customerId, occurredAt])
   @@index([dealId])
 }
@@ -702,6 +724,14 @@ model Quote {
   sentAt      DateTime?
   // When it was accepted or declined.
   decidedAt   DateTime?
+
+  // Online acceptance: the secret link sent to the customer, when they
+  // first opened it, and who accepted (typed name) from where.
+  publicToken   String?   @unique
+  viewedAt      DateTime?
+  signedName    String?
+  signedIp      String?
+  declineReason String?
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
@@ -1277,9 +1307,160 @@ model GoogleIntegration {
   expiresAt    DateTime
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  // Space separated Google scopes granted; reading mail needs gmail.readonly.
+  scopes       String   @default("")
+  // The mailbox sync has logged everything up to here.
+  mailSyncedAt DateTime?
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// ---------- CRM extras ----------
+
+model CustomerTag {
+  id        String   @id @default(cuid())
+  name      String
+  // A colour id from lib/crm-tags.ts.
+  color     String   @default("blue")
+  createdAt DateTime @default(now())
+
+  customers Customer[]
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, name])
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  DATE
+  SELECT
+}
+
+// A field the company adds to every customer, like "Industry".
+model CustomField {
+  id        String          @id @default(cuid())
+  label     String
+  type      CustomFieldType @default(TEXT)
+  // The choices for a SELECT field.
+  options   String[]
+  position  Int             @default(0)
+  createdAt DateTime        @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+// CRM settings per company: who sees which customers, the web lead form,
+// and logging customer emails from the connected Gmail.
+model CrmSettings {
+  id        String   @id @default(cuid())
+  updatedAt DateTime @updatedAt
+
+  // Employees see only the customers they own (and their deals, quotes and
+  // reminders). Owners and admins always see everything.
+  ownCustomersOnly Boolean @default(false)
+
+  // Log emails to and from customers found in the connected Gmail.
+  emailLogging Boolean @default(false)
+
+  // The public lead form at /f/<formToken>.
+  formEnabled Boolean @default(false)
+  formToken   String? @unique
+  formTitle   String?
+  formIntro   String?
+  formThanks  String?
+  // Who new leads go to; falls back to the company owner.
+  formOwnerId String?
+
+  companyId  String  @unique
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+// A group of customers someone marked as "not duplicates", so the
+// duplicates page stops suggesting it. `key` is the sorted ids joined.
+model DuplicateDismissal {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, key])
+}
+
+// A series of emails sent to a customer a few days apart, until they reply.
+model EmailSequence {
+  id        String   @id @default(cuid())
+  name      String
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  steps       EmailSequenceStep[]
+  enrollments SequenceEnrollment[]
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+model EmailSequenceStep {
+  id        String @id @default(cuid())
+  position  Int
+  // Days after the previous email (or after enrolling, for the first).
+  delayDays Int    @default(0)
+  subject   String
+  body      String
+
+  sequenceId String
+  sequence   EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  @@index([sequenceId])
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  REPLIED
+  STOPPED
+}
+
+// One customer going through one sequence.
+model SequenceEnrollment {
+  id         String           @id @default(cuid())
+  status     EnrollmentStatus @default(ACTIVE)
+  // How many emails have gone out; the next one is steps[sent].
+  sent       Int              @default(0)
+  nextSendAt DateTime?
+  lastSentAt DateTime?
+  endedAt    DateTime?
+  // Why it stopped, in plain words ("Unsubscribed", "Stopped by Ana").
+  endReason  String?
+  createdAt  DateTime         @default(now())
+
+  sequenceId String
+  sequence   EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  enrolledById String?
+  enrolledBy   User?   @relation("SequenceEnroller", fields: [enrolledById], references: [id], onDelete: SetNull)
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([sequenceId, customerId])
+  @@index([status, nextSendAt])
+  @@index([customerId])
 }
 
 // ---------- Automation locking ----------

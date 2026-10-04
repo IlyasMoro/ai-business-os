@@ -13,6 +13,9 @@ import { isReportDue } from "@/lib/report-schedule";
 import { sendWebhookNotification } from "@/lib/webhook";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { isApproachingCreditLimit } from "@/lib/credit-math";
+import { runSequences } from "@/lib/sequence-runner";
+import { runMailSync } from "@/lib/mail-sync";
+import { refreshLeadScores } from "@/lib/lead-score-data";
 
 const REMINDER_COOLDOWN_MS = 24 * 60 * 60 * 1000;
 const STALE_TICKET_MS = 48 * 60 * 60 * 1000;
@@ -320,6 +323,47 @@ async function acquireLock(): Promise<boolean> {
   }
 }
 
+/** Lead scores fade with time, so every customer is rescored once a day.
+ * The RunLock row "lead-scores" holds when the next daily pass is due. */
+async function runDailyLeadScores() {
+  const now = new Date();
+  const due = await db.runLock.upsert({ where: { id: "lead-scores" }, update: {}, create: { id: "lead-scores", lockedUntil: null } });
+  if (due.lockedUntil && due.lockedUntil > now) return 0;
+  await db.runLock.update({ where: { id: "lead-scores" }, data: { lockedUntil: new Date(now.getTime() + 24 * 60 * 60 * 1000) } });
+  const companies = await db.company.findMany({ select: { id: true } });
+  for (const { id } of companies) {
+    try {
+      await refreshLeadScores(id);
+    } catch (err) {
+      console.error(`[automations] lead scores failed for company ${id}:`, err);
+    }
+  }
+  return companies.length;
+}
+
+/** The CRM's timed work, for every company whatever its automation toggles:
+ * sequence emails (Growth and up, checked per enrollment), logging mailbox
+ * emails (where turned on) and the daily lead scores. */
+async function runCrmJobs() {
+  const out: Record<string, unknown> = {};
+  try {
+    out.sequences = await runSequences();
+  } catch (err) {
+    console.error("[automations] sequences failed:", err);
+  }
+  try {
+    out.mailSync = await runMailSync();
+  } catch (err) {
+    console.error("[automations] mail sync failed:", err);
+  }
+  try {
+    out.leadScoreCompanies = await runDailyLeadScores();
+  } catch (err) {
+    console.error("[automations] lead scores failed:", err);
+  }
+  return out;
+}
+
 async function releaseLock(): Promise<void> {
   await db.runLock.update({ where: { id: LOCK_ID }, data: { lockedUntil: null } });
 }
@@ -360,7 +404,8 @@ export async function runAutomations() {
       }
     }
 
-    return { companiesProcessed: companies.length };
+    const crm = await runCrmJobs();
+    return { companiesProcessed: companies.length, crm };
   } finally {
     await releaseLock();
   }

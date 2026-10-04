@@ -14,7 +14,9 @@ const authRoutes = ["/login", "/register", "/forgot-password"];
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  const isOpenRoute = openRoutes.includes(path);
+  // Customer facing pages reached by a secret link: a quote to accept
+  // (/q/), the web lead form (/f/) and unsubscribing (/u/).
+  const isOpenRoute = openRoutes.includes(path) || /^\/(q|f|u)\/[^/]+$/.test(path);
   const isAuthRoute =
     authRoutes.includes(path) || path.startsWith("/reset-password/") || path.startsWith("/invite/");
 

@@ -4,13 +4,14 @@ import { db } from "@/lib/db";
 import { lockedWhere } from "@/lib/branches";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
 import { QUOTE_STATUS_LABELS, displayStatus } from "@/lib/quotes";
+import { quoteScope } from "@/lib/crm-access";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await verifySession();
 
   const quote = await db.quote.findFirst({
-    where: { id, companyId: session.companyId, ...(await lockedWhere()) },
+    where: { id, companyId: session.companyId, ...(await lockedWhere()), ...(await quoteScope()) },
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },

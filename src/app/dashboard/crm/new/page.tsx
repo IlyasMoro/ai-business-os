@@ -13,13 +13,19 @@ export default async function NewCustomerPage({
   const { error } = await searchParams;
   const session = await verifySession();
 
-  const [campaigns, users] = await Promise.all([
+  const [campaigns, users, tags, fields] = await Promise.all([
     db.campaign.findMany({
       where: { companyId: session.companyId },
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
     db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.customerTag.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true, color: true }, orderBy: { name: "asc" } }),
+    db.customField.findMany({
+      where: { companyId: session.companyId },
+      select: { id: true, label: true, type: true, options: true },
+      orderBy: [{ position: "asc" }, { createdAt: "asc" }],
+    }),
   ]);
 
   return (
@@ -35,6 +41,8 @@ export default async function NewCustomerPage({
             users={users}
             currentUserId={session.userId}
             submitLabel="Create customer"
+            tags={tags}
+            fields={fields}
           />
         </div>
       </div>

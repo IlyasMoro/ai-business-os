@@ -3,6 +3,8 @@ import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
 import { sourceLabel } from "@/lib/crm-pipeline";
+import { customerScope } from "@/lib/crm-access";
+import { asCustomValues } from "@/lib/custom-fields";
 
 // The same headings the import reads, so an export can be imported again.
 const HEADERS = ["Name", "Email", "Phone", "Company", "Status", "Lead source", "Notes", "Credit limit", "Owner email"];
@@ -28,8 +30,9 @@ export async function GET(request: Request) {
     );
   }
 
-  const customers = await db.customer.findMany({
-    where: { companyId: session.companyId },
+  const [customers, fields] = await Promise.all([
+    db.customer.findMany({
+    where: { companyId: session.companyId, ...(await customerScope()) },
     orderBy: { createdAt: "desc" },
     select: {
       name: true,
@@ -42,12 +45,35 @@ export async function GET(request: Request) {
       creditLimit: true,
       owner: { select: { email: true } },
       createdAt: true,
+      leadScore: true,
+      customFields: true,
+      tags: { select: { name: true }, orderBy: { name: "asc" } },
     },
-  });
+  }),
+    db.customField.findMany({ where: { companyId: session.companyId }, orderBy: [{ position: "asc" }, { createdAt: "asc" }] }),
+  ]);
 
+  // Extra columns after the importable ones; the import skips them.
   const csv = toCsv(
-    [...HEADERS, "Created At"],
-    customers.map((c) => [c.name, c.email, c.phone, c.company, c.status, sourceLabel(c.source), c.notes, c.creditLimit, c.owner?.email, c.createdAt])
+    [...HEADERS, "Created At", "Tags", "Lead score", ...fields.map((f) => f.label)],
+    customers.map((c) => {
+      const values = asCustomValues(c.customFields);
+      return [
+        c.name,
+        c.email,
+        c.phone,
+        c.company,
+        c.status,
+        sourceLabel(c.source),
+        c.notes,
+        c.creditLimit,
+        c.owner?.email,
+        c.createdAt,
+        c.tags.map((t) => t.name).join("; "),
+        c.leadScore,
+        ...fields.map((f) => values[f.id] ?? ""),
+      ];
+    })
   );
   return csvResponse(csv, "customers.csv");
 }

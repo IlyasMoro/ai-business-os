@@ -14,6 +14,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { stageInfo } from "@/lib/crm-pipeline";
 import { lockedWhere } from "@/lib/branches";
 import { QuoteListCard } from "@/components/quotes/quote-list-card";
+import { dealScope } from "@/lib/crm-access";
 
 const STAGE_TONE = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
@@ -29,7 +30,7 @@ export default async function DealPage({
   const session = await verifySession();
 
   const deal = await db.deal.findFirst({
-    where: { id, companyId: session.companyId },
+    where: { id, companyId: session.companyId, ...(await dealScope()) },
     include: { customer: { select: { id: true, name: true } } },
   });
   if (!deal) notFound();

@@ -6,10 +6,30 @@ import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { CustomerSchema, ContactSchema } from "@/lib/validation/crm";
 import type { LeadSource } from "@/generated/prisma/client";
+import { readCustomValues } from "@/lib/custom-fields";
+import { customerScope } from "@/lib/crm-access";
+import { touchLeadScore } from "@/lib/lead-score-data";
 
 /** Whether a user belongs to this company, before making them an owner or assignee. */
 async function isCompanyUser(companyId: string, userId: string) {
   return Boolean(await db.user.findFirst({ where: { id: userId, companyId }, select: { id: true } }));
+}
+
+/** The tags ticked on the customer form (only this company's) and the
+ * custom field values, with the labels of any that are invalid. */
+async function readExtras(companyId: string, formData: FormData) {
+  const tickedIds = formData.getAll("tagIds").filter((v): v is string => typeof v === "string");
+  const [tags, fields] = await Promise.all([
+    tickedIds.length
+      ? db.customerTag.findMany({ where: { companyId, id: { in: tickedIds } }, select: { id: true } })
+      : Promise.resolve([]),
+    db.customField.findMany({ where: { companyId }, select: { id: true, label: true, type: true, options: true } }),
+  ]);
+  const { values, invalid } = readCustomValues(fields, (name) => {
+    const v = formData.get(name);
+    return typeof v === "string" ? v : null;
+  });
+  return { tagIds: tags.map((t) => t.id), customFields: values, invalid };
 }
 
 export async function createCustomer(formData: FormData) {
@@ -34,6 +54,8 @@ export async function createCustomer(formData: FormData) {
 
   const { email, campaignId, creditLimit, source, ownerId, ...rest } = validated.data;
   if (ownerId && !(await isCompanyUser(session.companyId, ownerId))) redirect("/dashboard/crm/new?error=invalid");
+  const extras = await readExtras(session.companyId, formData);
+  if (extras.invalid.length) redirect("/dashboard/crm/new?error=custom-field-invalid");
 
   if (campaignId) {
     const campaign = await db.campaign.findUnique({
@@ -53,8 +75,11 @@ export async function createCustomer(formData: FormData) {
       ownerId: ownerId || session.userId,
       creditLimit: creditLimit === "" || creditLimit === undefined ? undefined : creditLimit,
       companyId: session.companyId,
+      customFields: extras.customFields,
+      tags: { connect: extras.tagIds.map((id) => ({ id })) },
     },
   });
+  await touchLeadScore(session.companyId, customer.id);
 
   revalidatePath("/dashboard/crm");
   redirect(`/dashboard/crm/${customer.id}`);
@@ -82,6 +107,10 @@ export async function updateCustomer(customerId: string, formData: FormData) {
 
   const { email, campaignId, creditLimit, source, ownerId, ...rest } = validated.data;
   if (ownerId && !(await isCompanyUser(session.companyId, ownerId))) redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
+  const visible = await db.customer.findFirst({ where: { id: customerId, companyId: session.companyId, ...(await customerScope()) }, select: { id: true } });
+  if (!visible) redirect("/dashboard/crm?error=forbidden");
+  const extras = await readExtras(session.companyId, formData);
+  if (extras.invalid.length) redirect(`/dashboard/crm/${customerId}/edit?error=custom-field-invalid`);
 
   if (campaignId) {
     const campaign = await db.campaign.findUnique({
@@ -100,8 +129,11 @@ export async function updateCustomer(customerId: string, formData: FormData) {
       source: source ? (source as LeadSource) : null,
       ownerId: ownerId || null,
       creditLimit: creditLimit === "" || creditLimit === undefined ? null : creditLimit,
+      customFields: extras.customFields,
+      tags: { set: extras.tagIds.map((id) => ({ id })) },
     },
   });
+  await touchLeadScore(session.companyId, customerId);
 
   revalidatePath("/dashboard/crm");
   revalidatePath(`/dashboard/crm/${customerId}`);
@@ -137,8 +169,8 @@ export async function createContact(customerId: string, formData: FormData) {
     redirect(`/dashboard/crm/${customerId}?error=invalid`);
   }
 
-  const customer = await db.customer.findUnique({
-    where: { id: customerId, companyId: session.companyId },
+  const customer = await db.customer.findFirst({
+    where: { id: customerId, companyId: session.companyId, ...(await customerScope()) },
     select: { id: true },
   });
   if (!customer) {

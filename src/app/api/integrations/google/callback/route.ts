@@ -19,6 +19,8 @@ export async function GET(request: Request) {
   const cookieStore = await cookies();
   const expectedState = cookieStore.get(STATE_COOKIE)?.value;
   cookieStore.delete(STATE_COOKIE);
+  const fromCrm = cookieStore.get("google_oauth_return")?.value === "crm";
+  cookieStore.delete("google_oauth_return");
 
   if (errorParam) {
     return NextResponse.redirect(new URL("/dashboard/integrations?error=invalid", base));
@@ -46,16 +48,18 @@ export async function GET(request: Request) {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+        scopes: tokens.scope ?? "",
       },
       update: {
         email,
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
         expiresAt: new Date(Date.now() + tokens.expires_in * 1000),
+        scopes: tokens.scope ?? "",
       },
     });
 
-    return NextResponse.redirect(new URL("/dashboard/integrations?connected=1", base));
+    return NextResponse.redirect(new URL(fromCrm ? "/dashboard/crm/settings?connected=1#email-logging" : "/dashboard/integrations?connected=1", base));
   } catch (err) {
     console.error("[google-oauth] callback failed:", err);
     return NextResponse.redirect(new URL("/dashboard/integrations?error=invalid", base));
