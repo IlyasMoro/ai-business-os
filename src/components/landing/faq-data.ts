@@ -28,11 +28,26 @@ export const FAQ_GROUPS: FaqGroup[] = [
     items: [
       {
         q: "What can the AI Copilot do?",
-        a: "It answers questions about your live business data, such as which invoices are overdue or which products are running low, and it can draft actions like a task or a payment reminder.",
+        a: "It answers questions about your live business data, such as which invoices are overdue, which deals might close this month or which products are running low, and it can draft actions like a task or a payment reminder.",
       },
       {
         q: "Will the AI change anything on its own?",
         a: "Never. Every action it proposes waits for an owner or admin to approve it first.",
+      },
+      {
+        // Mirrors the quote flow in lib/actions/quotes.ts.
+        q: "Can I send quotes before a customer orders?",
+        a: "Yes. Build a quote from your products, change prices for a discount, and email it with a PDF attached. When the customer accepts, one click turns it into an order and marks the deal as won.",
+      },
+      {
+        // Mirrors the Sales report tab (app/dashboard/crm/report).
+        q: "What does the sales report show?",
+        a: "Your open pipeline and weighted forecast, value won and win rate, the deals that might close this month, and results per salesperson and per lead source. Owners and admins see the whole team; everyone else sees their own figures.",
+      },
+      {
+        // Mirrors the customer import (lib/customer-import.ts).
+        q: "Can I bring my customers over from another system?",
+        a: "Yes. Owners and admins can import customers from a CSV file. AIBOS checks the file first and shows what will happen to each row, and skips anyone whose email is already on file.",
       },
       {
         q: "Can I turn off modules I don't need?",
