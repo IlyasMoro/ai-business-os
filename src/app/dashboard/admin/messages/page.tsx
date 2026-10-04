@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/dal";
 import { isPlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
-import { topicLabel } from "@/lib/contact";
+import { sizeLine, topicLabel } from "@/lib/contact";
 import { setContactMessageHandled } from "@/lib/actions/contact";
 import { cn } from "@/lib/utils";
 
@@ -75,6 +75,11 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
               </div>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-violet-300 light:text-violet-700">
                 {topicLabel(m.topic)}
+                {sizeLine(m.teamSize, m.branches) && (
+                  <span className="ml-2 font-medium normal-case tracking-normal text-slate-400 light:text-slate-500">
+                    {sizeLine(m.teamSize, m.branches)}
+                  </span>
+                )}
               </p>
               <p className="mt-2 whitespace-pre-wrap text-sm text-slate-300 light:text-slate-700">{m.message}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">

@@ -17,9 +17,9 @@ const LINKS = [
   { href: "/login", label: "Sign in" },
 ];
 
-export function LandingFooter() {
+export function LandingFooter({ className }: { className?: string }) {
   return (
-    <footer className={cn(styles.glass, styles.foot)}>
+    <footer className={cn(styles.glass, styles.foot, className)}>
       <div className={styles.footIn}>
         <div className={styles.footTop}>
           <div>

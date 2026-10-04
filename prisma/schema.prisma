@@ -2311,6 +2311,9 @@ model ContactMessage {
   company   String?
   topic     ContactTopic @default(OTHER)
   message   String
+  // Only asked for Enterprise questions, so a quote can start from numbers.
+  teamSize  Int?
+  branches  Int?
   createdAt DateTime     @default(now())
   handledAt DateTime?
 

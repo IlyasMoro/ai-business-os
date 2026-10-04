@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { HONEYPOT_FIELD, spamReason } from "@/lib/lead-form";
-import { ContactSchema, topicLabel, type ContactFormState } from "@/lib/contact";
+import { ContactSchema, sizeLine, topicLabel, type ContactFormState } from "@/lib/contact";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/invoice-rules";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
@@ -34,6 +34,8 @@ export async function submitContactMessage(_state: ContactFormState, formData: F
     company: opt(formData.get("company")),
     topic: formData.get("topic"),
     message: formData.get("message"),
+    teamSize: opt(formData.get("teamSize")),
+    branches: opt(formData.get("branches")),
   });
   if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
 
@@ -43,8 +45,12 @@ export async function submitContactMessage(_state: ContactFormState, formData: F
   }
 
   const m = parsed.data;
+  // The size fields only show for Enterprise; ignore them on other topics.
+  const enterprise = m.topic === "ENTERPRISE";
+  const teamSize = enterprise ? (m.teamSize ?? null) : null;
+  const branches = enterprise ? (m.branches ?? null) : null;
   await db.contactMessage.create({
-    data: { name: m.name, email: m.email.toLowerCase(), company: m.company || null, topic: m.topic, message: m.message },
+    data: { name: m.name, email: m.email.toLowerCase(), company: m.company || null, topic: m.topic, message: m.message, teamSize, branches },
   });
 
   const admin = process.env.PLATFORM_ADMIN_EMAIL;
@@ -56,7 +62,7 @@ export async function submitContactMessage(_state: ContactFormState, formData: F
         subject: `Contact form: ${topicLabel(m.topic)} from ${m.name}`,
         html: `<p><strong>${escapeHtml(m.name)}</strong> (${escapeHtml(m.email)})${m.company ? `, ${escapeHtml(m.company)}` : ""} wrote about <em>${escapeHtml(
           topicLabel(m.topic)
-        )}</em>:</p><blockquote style="border-left:3px solid #cbd5e1;margin:0;padding-left:12px;color:#334155">${escapeHtml(m.message).replace(
+        )}</em>${sizeLine(teamSize, branches) ? ` (${sizeLine(teamSize, branches)})` : ""}:</p><blockquote style="border-left:3px solid #cbd5e1;margin:0;padding-left:12px;color:#334155">${escapeHtml(m.message).replace(
           /\n/g,
           "<br/>"
         )}</blockquote>${base ? `<p><a href="${base}/dashboard/admin/messages">Open the inbox</a></p>` : ""}`,
