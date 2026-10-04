@@ -1,4 +1,5 @@
 import { requireRole } from "@/lib/dal";
+import { getSalesReport, getStockValueReport, SALES_REPORT_DAYS } from "@/lib/report-data";
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
 import { getProfitByBranch, PROFIT_MONTHS } from "@/lib/branch-profit-data";
@@ -88,10 +89,12 @@ export default async function ReportsPage() {
     }),
   ]);
 
-  const [forecast, profit, allCampaigns] = await Promise.all([
+  const [forecast, profit, allCampaigns, stock, sales] = await Promise.all([
     forecastNextMonthRevenue(companyId, viewBranch?.id ?? null),
     multiBranch ? getProfitByBranch(companyId) : Promise.resolve(null),
     getCampaignsWithStats(companyId),
+    getStockValueReport(companyId, viewBranch?.id ?? null),
+    getSalesReport(companyId, viewBranch?.id ?? null),
   ]);
   // Campaigns that have spent money or brought leads, best revenue first.
   const reportCampaigns = allCampaigns
@@ -314,6 +317,100 @@ export default async function ReportsPage() {
             ))}
           </ol>
         )}
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Sales, last {SALES_REPORT_DAYS} days</h2>
+          <p className="text-xs text-slate-500">Orders fulfilled in that time{viewBranch ? ` at ${viewBranch.name}` : ""}.</p>
+          <div className="mt-4 grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <p className="text-slate-500">Orders</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">{sales.orderCount}</p>
+            </div>
+            <div>
+              <p className="text-slate-500">Revenue</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-400">{formatCompactCurrency(sales.revenue)}</p>
+            </div>
+            <div>
+              <p className="text-slate-500">Average order</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                {sales.averageOrder === null ? "n/a" : formatCompactCurrency(sales.averageOrder)}
+              </p>
+            </div>
+          </div>
+          {sales.products.length === 0 ? (
+            <p className="mt-4 text-sm text-slate-500">No orders fulfilled in this time.</p>
+          ) : (
+            <table className="mt-4 w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                  <th className="py-2 pr-3 font-medium">Best sellers</th>
+                  <th className="py-2 pr-3 text-right font-medium">Units</th>
+                  <th className="py-2 pr-3 text-right font-medium">Sales</th>
+                  <th className="py-2 text-right font-medium">Share</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.products.map((p) => (
+                  <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="max-w-[12rem] truncate py-2 pr-3">
+                      <Link href={`/dashboard/inventory/${p.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
+                        {p.name}
+                      </Link>
+                    </td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(p.value)}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-500">{p.sharePct}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        <div className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
+          <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Stock value at cost</h2>
+          <p className="text-xs text-slate-500">
+            What the stock on hand cost{viewBranch ? ` at ${viewBranch.name}` : ""}.
+            {stock.missingCost > 0 && ` ${stock.missingCost} product${stock.missingCost === 1 ? " has" : "s have"} stock but no cost, counted as $0.`}
+          </p>
+          <p className="mt-4 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">{formatCompactCurrency(stock.total)}</p>
+          {stock.branches.length > 1 && (
+            <ul className="mt-3 space-y-1 text-sm">
+              {stock.branches.map((b) => (
+                <li key={b.id} className="flex justify-between gap-3">
+                  <span className="text-slate-300 light:text-slate-600">{b.name}</span>
+                  <span className="tabular-nums text-slate-50 light:text-slate-900">{formatCompactCurrency(b.value)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {stock.products.length > 0 && (
+            <table className="mt-4 w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                  <th className="py-2 pr-3 font-medium">Most stock value</th>
+                  <th className="py-2 pr-3 text-right font-medium">Units</th>
+                  <th className="py-2 text-right font-medium">Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {stock.products.map((p) => (
+                  <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="max-w-[12rem] truncate py-2 pr-3">
+                      <Link href={`/dashboard/inventory/${p.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
+                        {p.name}
+                      </Link>
+                    </td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(p.value)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">

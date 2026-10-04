@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function ProductPreview() {
   return (
-    <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 bg-black/60 shadow-2xl shadow-black/40 backdrop-blur-xl">
+    <div className="mx-auto w-full overflow-hidden rounded-2xl border border-white/10 bg-black/60 shadow-2xl shadow-black/40 backdrop-blur-xl">
       <div className="flex items-center gap-3 border-b border-white/10 px-4 py-3">
         <div className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
@@ -19,6 +19,7 @@ export function ProductPreview() {
         width={1500}
         height={660}
         className="w-full"
+        sizes="(min-width: 1280px) 1216px, 100vw"
         priority
       />
     </div>

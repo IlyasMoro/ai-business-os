@@ -115,7 +115,9 @@ export function UserMenu({
         </span>
         <span className="flex-1 truncate text-left text-sm text-slate-300 light:text-slate-600">{firstName}</span>
         <ChevronDown
-          className={`h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          strokeWidth={3}
+          aria-hidden
+          className={`h-4 w-4 shrink-0 transition-transform duration-150 ${open ? "rotate-180 text-blue-400 light:text-blue-600" : "text-slate-300 light:text-slate-600"}`}
         />
       </button>
 

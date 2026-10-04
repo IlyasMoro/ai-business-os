@@ -148,6 +148,8 @@ test("buy suggestions become purchase orders; make suggestions become work order
 
   // Receive the spokes, then the wheels can be built.
   await page.goto(poUrl);
+  // Placed first, then received (lib/po-rules.ts).
+  await selectAndSave(page, 'select[name="status"]', "ORDERED");
   await selectAndSave(page, 'select[name="status"]', "RECEIVED");
   expect(await stockOf(page, urls.spoke)).toBe(210);
 

@@ -6,18 +6,23 @@ type InvoicePdfData = {
   invoiceNumber: string;
   status: string;
   issueDate: Date;
-  dueDate: Date;
+  /** The second date: due (invoice), valid until (quote), expected
+   * (purchase order). Left out on an order confirmation. */
+  dueDate?: Date | null;
   taxRate: number;
   totalAmount: number;
+  amountPaid?: number;
+  amountCredited?: number;
   companyName: string;
   customerName: string;
   customerEmail: string | null;
   lineItems: { description: string; quantity: number; unitPrice: number }[];
   logoData?: Uint8Array;
   logoMimeType?: string | null;
-  /** "Quote" reuses this layout for quotes: its own heading, "Quote for",
-   * a valid until date in place of the due date, and optional notes. */
-  kind?: "Invoice" | "Quote";
+  /** The same layout for quotes, purchase orders (to the supplier) and
+   * order confirmations (to the customer): its own heading, who it's for,
+   * and which second date it shows. */
+  kind?: "Invoice" | "Quote" | "Purchase order" | "Order";
   notes?: string | null;
 };
 
@@ -49,12 +54,18 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   text(invoice.companyName, margin, 20, bold);
   const kind = invoice.kind ?? "Invoice";
-  text(`${kind} ${invoice.invoiceNumber}`, 400, 20, bold);
+  // Right aligned, and smaller when long ("Purchase order PO-0012").
+  const heading = `${kind} ${invoice.invoiceNumber}`;
+  let headingSize = 20;
+  while (headingSize > 12 && bold.widthOfTextAtSize(heading, headingSize) > 250) headingSize -= 1;
+  text(heading, 545 - bold.widthOfTextAtSize(heading, headingSize), headingSize, bold);
   y -= 30;
   text(`Status: ${invoice.status}`, 400, 10, font, gray);
   y -= 40;
 
-  text(kind === "Quote" ? "Quote for:" : "Bill to:", margin, 10, bold);
+  const forLabel = { Invoice: "Bill to:", Quote: "Quote for:", "Purchase order": "Supplier:", Order: "Customer:" }[kind];
+  const secondDateLabel = { Invoice: "Due date", Quote: "Valid until", "Purchase order": "Expected", Order: null }[kind];
+  text(forLabel, margin, 10, bold);
   y -= 15;
   text(invoice.customerName, margin, 11);
   y -= 14;
@@ -64,8 +75,8 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
   }
 
   y -= 10;
-  text(`Issue date: ${invoice.issueDate.toLocaleDateString()}`, margin, 10, font, gray);
-  text(`${kind === "Quote" ? "Valid until" : "Due date"}: ${invoice.dueDate.toLocaleDateString()}`, 300, 10, font, gray);
+  text(`${kind === "Order" ? "Order date" : "Issue date"}: ${invoice.issueDate.toLocaleDateString()}`, margin, 10, font, gray);
+  if (secondDateLabel && invoice.dueDate) text(`${secondDateLabel}: ${invoice.dueDate.toLocaleDateString()}`, 300, 10, font, gray);
   y -= 30;
 
   text("Description", margin, 10, bold);
@@ -102,6 +113,24 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   text("Total", 400, 12, bold);
   text(`$${invoice.totalAmount.toFixed(2)}`, 490, 12, bold);
+  // Part payments and credit notes, then what's left to pay.
+  const paid = invoice.amountPaid ?? 0;
+  const credited = invoice.amountCredited ?? 0;
+  if (paid > 0 || credited > 0) {
+    if (paid > 0) {
+      y -= 16;
+      text("Paid", 400, 10, font, gray);
+      text(`-$${paid.toFixed(2)}`, 490, 10, font, gray);
+    }
+    if (credited > 0) {
+      y -= 16;
+      text("Credited", 400, 10, font, gray);
+      text(`-$${credited.toFixed(2)}`, 490, 10, font, gray);
+    }
+    y -= 18;
+    text("Balance due", 400, 12, bold);
+    text(`$${Math.max(0, invoice.totalAmount - paid - credited).toFixed(2)}`, 490, 12, bold);
+  }
 
   if (invoice.notes) {
     y -= 36;

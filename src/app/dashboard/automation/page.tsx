@@ -80,6 +80,24 @@ export default async function AutomationPage({
               label="Credit limit warnings"
               description="Email every Owner and Admin once a customer's outstanding balance reaches 90% of their credit limit, before an order actually gets blocked."
             />
+            <AutomationToggle
+              toggleKey="draftInvoiceOnFulfil"
+              enabled={settings?.draftInvoiceOnFulfil ?? false}
+              label="Draft invoice when an order is fulfilled"
+              description="Fulfilling a sales order creates its draft invoice with the same lines and prices. Nothing is sent until someone sends it."
+            />
+            <AutomationToggle
+              toggleKey="lateOrderAlerts"
+              enabled={settings?.lateOrderAlerts ?? false}
+              label="Late order alerts"
+              description="Once a day, email every Owner and Admin the purchase orders past their expected date and the confirmed sales orders not fulfilled after 7 days. They also show in the bell."
+            />
+            <AutomationToggle
+              toggleKey="lotExpiryAlerts"
+              enabled={settings?.lotExpiryAlerts ?? false}
+              label="Stock expiry alerts"
+              description="Once a day, email every Owner and Admin the lots that have expired or expire within your Inventory warning window. They also show in the bell."
+            />
             <ReportFrequencySelect value={settings?.reportFrequency ?? "OFF"} />
           </div>
         </div>

@@ -1,5 +1,9 @@
 "use server";
 
+import { orderConfirmationPdf } from "@/lib/document-pdfs";
+import { sendEmailForCompany } from "@/lib/email-for-company";
+import { escapeHtml } from "@/lib/invoice-rules";
+import { logAudit } from "@/lib/audit";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -12,10 +16,13 @@ import { describeShortfalls, findBranchShortfalls } from "@/lib/stock-levels";
 import { LotShortageError, getInventorySettings, returnToLots, takeFromLots } from "@/lib/lots";
 import { markCustomerActive } from "@/lib/crm-auto";
 import { takeOrderNumber } from "@/lib/order-number";
+import { createDraftInvoiceForOrder } from "@/lib/invoice-from-order";
+import { hasFeature } from "@/lib/plan-limits";
 import { ORDER_STATUS_LABEL, canChangeStatus, canDelete, canEditLines, cancelBlocker } from "@/lib/order-rules";
 import {
   OrderSchema,
   OrderItemSchema,
+  OrderItemEditSchema,
   OrderStatusValues,
   type OrderFormState,
   type OrderItemFormState,
@@ -208,6 +215,22 @@ export async function updateOrderStatus(
       throw e;
     }
 
+    // "Draft invoice on fulfil" automation: the invoice is only a draft, sent
+    // by a person, so nothing reaches the customer without someone looking.
+    const automation = await db.automationSettings.findUnique({
+      where: { companyId: session.companyId },
+      select: { draftInvoiceOnFulfil: true },
+    });
+    if (automation?.draftInvoiceOnFulfil && (await hasFeature(session.companyId, "automation"))) {
+      try {
+        await createDraftInvoiceForOrder(session.companyId, orderId, { userId: session.userId, automatic: true });
+        revalidatePath("/dashboard/invoicing");
+      } catch (err) {
+        // The order is fulfilled either way; the invoice can be made by hand.
+        console.error(`[automations] draft invoice on fulfil failed for order ${orderId}:`, err);
+      }
+    }
+
     revalidatePath(`/dashboard/sales/${orderId}`);
     revalidatePath("/dashboard/sales");
     revalidatePath("/dashboard/inventory");
@@ -319,14 +342,20 @@ export async function addOrderItem(
     return { errors: { productId: ["Select a valid product."] } };
   }
 
-  await db.orderItem.create({
-    data: {
-      orderId,
-      productId: product.id,
-      quantity: validated.data.quantity,
-      unitPrice: product.unitPrice,
-    },
-  });
+  // The same product again adds to its line instead of a second one.
+  const sameProduct = await db.orderItem.findFirst({ where: { orderId, productId: product.id }, select: { id: true } });
+  if (sameProduct) {
+    await db.orderItem.update({ where: { id: sameProduct.id }, data: { quantity: { increment: validated.data.quantity } } });
+  } else {
+    await db.orderItem.create({
+      data: {
+        orderId,
+        productId: product.id,
+        quantity: validated.data.quantity,
+        unitPrice: product.unitPrice,
+      },
+    });
+  }
 
   await recomputeOrderTotal(orderId);
 
@@ -346,4 +375,60 @@ export async function removeOrderItem(orderId: string, itemId: string) {
   await recomputeOrderTotal(orderId);
 
   revalidatePath(`/dashboard/sales/${orderId}`);
+}
+
+/** A pending order's line: quantity for anyone, price for owners and admins. */
+export async function updateOrderItem(orderId: string, itemId: string, formData: FormData) {
+  const session = await verifySession();
+  const back = `/dashboard/sales/${orderId}`;
+  const rawPrice = formData.get("unitPrice");
+  const parsed = OrderItemEditSchema.safeParse({
+    quantity: formData.get("quantity"),
+    unitPrice: typeof rawPrice === "string" && rawPrice.trim() !== "" ? rawPrice : undefined,
+  });
+  if (!parsed.success) redirect(`${back}?error=invalid`);
+  const canPrice = hasRole(session, ["OWNER", "ADMIN"]);
+  if (parsed.data.unitPrice !== undefined && !canPrice) redirect(`${back}?error=forbidden`);
+
+  const { count } = await db.orderItem.updateMany({
+    where: { id: itemId, orderId, order: { companyId: session.companyId, status: "PENDING", ...(await lockedWhere()) } },
+    data: { quantity: parsed.data.quantity, ...(parsed.data.unitPrice !== undefined ? { unitPrice: parsed.data.unitPrice } : {}) },
+  });
+  if (count === 0) redirect(`${back}?error=order-locked`);
+  await recomputeOrderTotal(orderId);
+  revalidatePath(back);
+  redirect(back);
+}
+
+/** Emails the order confirmation PDF to the customer. */
+export async function sendOrderConfirmation(orderId: string) {
+  const session = await verifySession();
+  const back = `/dashboard/sales/${orderId}`;
+  const order = await db.order.findUnique({
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: { status: true, _count: { select: { items: true } }, companyRef: { select: { name: true } } },
+  });
+  if (!order) redirect("/dashboard/sales");
+  if (order.status === "CANCELLED" || order._count.items === 0) redirect(`${back}?error=invalid`);
+
+  const pdf = await orderConfirmationPdf(session.companyId, orderId);
+  if (!pdf) redirect("/dashboard/sales");
+  if (!pdf.to.email) redirect(`${back}?error=customer-no-email`);
+
+  try {
+    await sendEmailForCompany(session.companyId, {
+      to: pdf.to.email,
+      subject: `Order confirmation ${pdf.number} from ${order.companyRef.name}`,
+      html: `<p>Hi ${escapeHtml(pdf.to.name)},</p><p>Thank you for your order. Order ${pdf.number} is attached with everything on it. We'll be in touch when it ships.</p>`,
+      attachments: [{ filename: pdf.filename, content: Buffer.from(pdf.bytes) }],
+    });
+  } catch (err) {
+    console.error(`[sales] confirmation failed for order ${orderId}:`, err);
+    redirect(`${back}?error=document-send-failed`);
+  }
+
+  await db.order.update({ where: { id: orderId }, data: { confirmationSentAt: new Date() } });
+  await logAudit(session.companyId, session.userId, "order.confirmation_sent", "Order", orderId, { order: pdf.number });
+  revalidatePath(back);
+  redirect(`${back}?sent=1`);
 }

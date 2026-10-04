@@ -1,5 +1,7 @@
 "use server";
 
+import { startOfDay } from "date-fns";
+import { markOverdueInvoices } from "@/lib/invoice-number";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole, requireRole } from "@/lib/dal";
@@ -8,7 +10,7 @@ import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { computeInvoiceTotal, computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
-import { invoiceBlocker } from "@/lib/order-rules";
+import { createDraftInvoiceForOrder } from "@/lib/invoice-from-order";
 import { takeInvoiceNumber } from "@/lib/invoice-number";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
 import {
@@ -16,11 +18,16 @@ import {
   canDeleteInvoice,
   canEditInvoice,
   escapeHtml,
-  statusAfterUndoPayment,
+  amountBlocker,
+  balanceDue,
+  PAYMENT_METHODS,
+  type PaymentMethod,
 } from "@/lib/invoice-rules";
+import { issueCreditNote, recordPayment, removeCreditNote, removePayment } from "@/lib/invoice-payments";
 import {
   InvoiceSchema,
   InvoiceLineItemSchema,
+  InvoiceDetailsSchema,
   InvoiceStatusValues,
   type InvoiceFormState,
   type InvoiceLineItemFormState,
@@ -38,71 +45,23 @@ async function recomputeInvoiceTotal(invoiceId: string) {
   await db.invoice.update({ where: { id: invoiceId }, data: { totalAmount } });
 }
 
-/** Draft invoice from a confirmed or fulfilled order: its lines at the
- * order's prices, the company's default tax rate, due in 30 days, the same
- * customer and branch, and linked to the order (Invoice.orderId is unique,
- * so a double click can't make two). */
+/** "Create invoice" on a confirmed or fulfilled order (lib/invoice-from-order.ts). */
 export async function createInvoiceFromOrder(orderId: string) {
   const session = await verifySession();
 
+  // Access first: locked employees only reach their own branch's orders.
   const order = await db.order.findUnique({
     where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: {
-      id: true,
-      orderNumber: true,
-      status: true,
-      customerId: true,
-      branchId: true,
-      invoice: { select: { id: true } },
-      items: { select: { quantity: true, unitPrice: true, productId: true, product: { select: { name: true } } } },
-    },
+    select: { id: true },
   });
   if (!order) redirect("/dashboard/sales");
-  if (order.invoice) redirect(`/dashboard/invoicing/${order.invoice.id}`);
-  if (invoiceBlocker({ status: order.status, hasInvoice: false, itemCount: order.items.length })) {
-    redirect(`/dashboard/sales/${orderId}?error=order-invoice-blocked`);
-  }
 
-  const company = await db.company.findUnique({ where: { id: session.companyId }, select: { defaultTaxRate: true } });
-  const taxRate = company?.defaultTaxRate ?? 0;
-  const dueDate = new Date();
-  dueDate.setDate(dueDate.getDate() + 30);
+  const result = await createDraftInvoiceForOrder(session.companyId, orderId, { userId: session.userId });
+  if (!result.ok) redirect(result.reason === "blocked" ? `/dashboard/sales/${orderId}?error=order-invoice-blocked` : "/dashboard/sales");
 
-  let invoiceId: string;
-  try {
-    const invoice = await db.invoice.create({
-      data: {
-        invoiceNumber: await takeInvoiceNumber(db, session.companyId),
-        customerId: order.customerId,
-        companyId: session.companyId,
-        branchId: order.branchId,
-        orderId: order.id,
-        dueDate,
-        taxRate,
-        totalAmount: computeInvoiceTotal(order.items, taxRate),
-        lineItems: {
-          create: order.items.map((item) => ({
-            description: item.product.name,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice,
-            productId: item.productId,
-          })),
-        },
-      },
-      select: { id: true },
-    });
-    invoiceId = invoice.id;
-  } catch (e) {
-    // Someone else invoiced it a moment ago: open that invoice instead.
-    const existing = await db.invoice.findUnique({ where: { orderId }, select: { id: true } });
-    if (existing) redirect(`/dashboard/invoicing/${existing.id}`);
-    throw e;
-  }
-
-  await logAudit(session.companyId, session.userId, "invoice.created_from_order", "Invoice", invoiceId, { order: order.orderNumber });
   revalidatePath("/dashboard/invoicing");
   revalidatePath(`/dashboard/sales/${orderId}`);
-  redirect(`/dashboard/invoicing/${invoiceId}`);
+  redirect(`/dashboard/invoicing/${result.invoiceId}`);
 }
 
 export async function createInvoice(
@@ -165,44 +124,36 @@ export async function updateInvoiceStatus(invoiceId: string, formData: FormData)
 
   const current = await db.invoice.findUnique({
     where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { status: true, invoiceNumber: true, totalAmount: true, branchId: true },
+    select: { status: true, invoiceNumber: true, totalAmount: true, amountPaid: true, amountCredited: true, branchId: true },
   });
   if (!current) return;
   // Only allowed steps (lib/invoice-rules.ts). Leaving Paid goes through
-  // undoInvoicePayment; Overdue is set by the sweep.
+  // removing payments; Overdue is set by the sweep.
   if (!canChangeInvoiceStatus(current.status, nextStatus)) return;
+  // Back to draft only before any money or credit is recorded.
+  if (nextStatus === "DRAFT" && current.amountPaid + current.amountCredited > 0) return;
 
-  // Marking PAID is what actually books the income — without this, revenue
-  // recorded on the invoice never shows up in Accounting/the P&L.
-  const isNewlyPaid = nextStatus === "PAID" && current.status !== "PAID";
-
-  await db.$transaction(async (tx) => {
-    await tx.invoice.update({
-      where: { id: invoiceId },
-      data: { status: nextStatus },
-    });
-
-    if (isNewlyPaid) {
-      const alreadyLinked = await tx.transaction.findFirst({
-        where: { invoiceId },
-        select: { id: true },
-      });
-      if (!alreadyLinked) {
-        await tx.transaction.create({
-          data: {
-            companyId: session.companyId,
-            type: "INCOME",
-            category: "Invoice payment",
-            amount: current.totalAmount,
-            description: `Payment for invoice ${current.invoiceNumber}`,
-            invoiceId,
-            // Income belongs to the branch that raised the invoice.
-            branchId: current.branchId,
-          },
+  if (nextStatus === "PAID") {
+    // "Mark paid" is a payment of whatever is still owed, dated today; it
+    // books that income (lib/invoice-payments.ts).
+    const owed = balanceDue(current);
+    await db.$transaction(async (tx) => {
+      if (owed > 0) {
+        await recordPayment(tx, {
+          companyId: session.companyId,
+          invoice: { id: invoiceId, invoiceNumber: current.invoiceNumber, branchId: current.branchId },
+          amount: owed,
+          paidAt: new Date(),
+          method: "OTHER",
+          userId: session.userId,
         });
+      } else {
+        await tx.invoice.update({ where: { id: invoiceId }, data: { status: "PAID" } });
       }
-    }
-  });
+    });
+  } else {
+    await db.invoice.update({ where: { id: invoiceId }, data: { status: nextStatus } });
+  }
 
   await logAudit(session.companyId, session.userId, "invoice.status_changed", "Invoice", invoiceId, {
     status,
@@ -243,6 +194,8 @@ export async function sendInvoiceEmail(invoiceId: string) {
     dueDate: invoice.dueDate,
     taxRate: invoice.taxRate,
     totalAmount: invoice.totalAmount,
+    amountPaid: invoice.amountPaid,
+    amountCredited: invoice.amountCredited,
     companyName: invoice.companyRef.name,
     customerName: invoice.customer.name,
     customerEmail: invoice.customer.email,
@@ -282,37 +235,6 @@ export async function sendInvoiceEmail(invoiceId: string) {
 
   revalidatePath(`/dashboard/invoicing/${invoiceId}`);
   revalidatePath("/dashboard/invoicing");
-}
-
-/** Takes a paid invoice back to unpaid: removes the income its payment
- * booked in Accounting and returns it to Sent, or Overdue when past due.
- * Owners and admins only, as it changes the books. */
-export async function undoInvoicePayment(invoiceId: string) {
-  const session = await verifySession();
-  if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`/dashboard/invoicing/${invoiceId}?error=forbidden`);
-
-  const invoice = await db.invoice.findUnique({
-    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { status: true, dueDate: true },
-  });
-  if (!invoice || invoice.status !== "PAID") redirect(`/dashboard/invoicing/${invoiceId}`);
-
-  const nextStatus = statusAfterUndoPayment(invoice.dueDate);
-  const removed = await db.$transaction(async (tx) => {
-    const { count } = await tx.transaction.deleteMany({
-      where: { invoiceId, companyId: session.companyId, type: "INCOME", category: "Invoice payment" },
-    });
-    await tx.invoice.update({ where: { id: invoiceId }, data: { status: nextStatus } });
-    return count;
-  });
-
-  await logAudit(session.companyId, session.userId, "invoice.payment_undone", "Invoice", invoiceId, {
-    status: nextStatus,
-    incomeRemoved: removed,
-  });
-  revalidatePath(`/dashboard/invoicing/${invoiceId}`);
-  revalidatePath("/dashboard/invoicing");
-  revalidatePath("/dashboard/accounting");
 }
 
 export async function deleteInvoice(invoiceId: string) {
@@ -361,13 +283,13 @@ export async function addInvoiceLineItem(
 
   const invoice = await db.invoice.findUnique({
     where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { id: true, status: true },
+    select: { id: true, status: true, amountPaid: true, amountCredited: true },
   });
   if (!invoice) {
     return { message: "Invoice not found." };
   }
-  if (!canEditInvoice(invoice.status)) {
-    return { message: "A paid invoice can't change. Undo the payment first." };
+  if (!canEditInvoice(invoice.status, invoice)) {
+    return { message: "This invoice has payments or credit notes recorded, so its lines are locked. Remove them first." };
   }
 
   const { productId, ...rest } = validated.data;
@@ -397,7 +319,11 @@ export async function removeInvoiceLineItem(invoiceId: string, itemId: string) {
 
   // deleteMany: does nothing (rather than an error page) on a paid invoice.
   await db.invoiceLineItem.deleteMany({
-    where: { id: itemId, invoiceId, invoice: { companyId: session.companyId, status: { not: "PAID" }, ...(await lockedWhere()) } },
+    where: {
+      id: itemId,
+      invoiceId,
+      invoice: { companyId: session.companyId, status: { not: "PAID" }, amountPaid: 0, amountCredited: 0, ...(await lockedWhere()) },
+    },
   });
 
   await recomputeInvoiceTotal(invoiceId);
@@ -417,4 +343,162 @@ export async function updateDefaultTaxRate(formData: FormData) {
 
   revalidatePath("/dashboard/billing");
   redirect("/dashboard/billing?tax=updated");
+}
+
+/** Due date and tax rate of an unpaid invoice; the total follows the tax. */
+export async function updateInvoiceDetails(invoiceId: string, formData: FormData) {
+  const session = await verifySession();
+  const back = `/dashboard/invoicing/${invoiceId}`;
+  const parsed = InvoiceDetailsSchema.safeParse({ dueDate: formData.get("dueDate"), taxRate: formData.get("taxRate") });
+  if (!parsed.success) redirect(`${back}?error=invalid`);
+
+  const invoice = await db.invoice.findUnique({
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: { status: true, amountPaid: true, amountCredited: true },
+  });
+  if (!invoice) redirect("/dashboard/invoicing");
+  if (!canEditInvoice(invoice.status, invoice)) redirect(`${back}?error=invoice-paid-locked`);
+
+  await db.invoice.update({
+    where: { id: invoiceId },
+    data: { dueDate: new Date(parsed.data.dueDate), taxRate: parsed.data.taxRate },
+  });
+  await recomputeInvoiceTotal(invoiceId);
+  // A new due date can make an overdue invoice current again, and back.
+  await db.invoice.updateMany({
+    where: { id: invoiceId, status: "OVERDUE", dueDate: { gte: startOfDay(new Date()) } },
+    data: { status: "SENT" },
+  });
+  await markOverdueInvoices(session.companyId);
+
+  await logAudit(session.companyId, session.userId, "invoice.details_changed", "Invoice", invoiceId, parsed.data);
+  revalidatePath(back);
+  revalidatePath("/dashboard/invoicing");
+  redirect(back);
+}
+
+/** One line of an unpaid invoice: description, quantity and price. */
+export async function updateInvoiceLineItem(invoiceId: string, itemId: string, formData: FormData) {
+  const session = await verifySession();
+  const back = `/dashboard/invoicing/${invoiceId}`;
+  const parsed = InvoiceLineItemSchema.omit({ productId: true }).safeParse({
+    description: formData.get("description"),
+    quantity: formData.get("quantity"),
+    unitPrice: formData.get("unitPrice"),
+  });
+  if (!parsed.success) redirect(`${back}?error=invalid`);
+
+  const { count } = await db.invoiceLineItem.updateMany({
+    where: {
+      id: itemId,
+      invoiceId,
+      invoice: { companyId: session.companyId, status: { not: "PAID" }, amountPaid: 0, amountCredited: 0, ...(await lockedWhere()) },
+    },
+    data: parsed.data,
+  });
+  if (count === 0) redirect(`${back}?error=invoice-paid-locked`);
+  await recomputeInvoiceTotal(invoiceId);
+  revalidatePath(back);
+  redirect(back);
+}
+
+// ---------- Payments and credit notes ----------
+
+class SettlementRejected extends Error {}
+
+/** Records money received against an invoice (part or all of what's owed). */
+export async function recordInvoicePayment(invoiceId: string, formData: FormData) {
+  const session = await verifySession();
+  const back = `/dashboard/invoicing/${invoiceId}`;
+  const amount = Number(formData.get("amount"));
+  const paidAtRaw = String(formData.get("paidAt") ?? "");
+  const method = String(formData.get("method") ?? "") as PaymentMethod;
+  const reference = String(formData.get("reference") ?? "").trim().slice(0, 100);
+  const paidAt = /^\d{4}-\d{2}-\d{2}$/.test(paidAtRaw) ? new Date(paidAtRaw) : null;
+  if (!paidAt || paidAt.getTime() > Date.now()) redirect(`${back}?why=${encodeURIComponent("Enter the date it was paid, today or earlier.")}`);
+  if (!PAYMENT_METHODS.some((m) => m.id === method)) redirect(`${back}?error=invalid`);
+
+  const invoice = await db.invoice.findUnique({
+    where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: { id: true, invoiceNumber: true, branchId: true },
+  });
+  if (!invoice) redirect("/dashboard/invoicing");
+
+  try {
+    await db.$transaction(async (tx) => {
+      // Checked inside the transaction so two people can't both take the last of it.
+      const current = await tx.invoice.findUniqueOrThrow({ where: { id: invoiceId }, select: { totalAmount: true, amountPaid: true, amountCredited: true } });
+      const blocker = amountBlocker(amount, balanceDue(current), "payment");
+      if (blocker) throw new SettlementRejected(blocker);
+      await recordPayment(tx, { companyId: session.companyId, invoice, amount, paidAt, method, reference, userId: session.userId });
+    });
+  } catch (e) {
+    if (e instanceof SettlementRejected) redirect(`${back}?why=${encodeURIComponent(e.message)}`);
+    throw e;
+  }
+  await logAudit(session.companyId, session.userId, "invoice.payment_recorded", "Invoice", invoiceId, { amount, method });
+  revalidatePath(back);
+  revalidatePath("/dashboard/invoicing");
+  revalidatePath("/dashboard/accounting");
+  redirect(back);
+}
+
+/** Removes a payment and the income it booked. Owners and admins only. */
+export async function deleteInvoicePayment(invoiceId: string, paymentId: string) {
+  const session = await verifySession();
+  const back = `/dashboard/invoicing/${invoiceId}`;
+  if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`${back}?error=forbidden`);
+  const invoice = await db.invoice.findUnique({ where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) }, select: { id: true } });
+  if (!invoice) redirect("/dashboard/invoicing");
+
+  const result = await db.$transaction((tx) => removePayment(tx, session.companyId, invoiceId, paymentId));
+  if (result) await logAudit(session.companyId, session.userId, "invoice.payment_removed", "Invoice", invoiceId, { status: result.status });
+  revalidatePath(back);
+  revalidatePath("/dashboard/invoicing");
+  revalidatePath("/dashboard/accounting");
+  redirect(back);
+}
+
+/** A credit note: lowers what the customer owes, books nothing. Owners and admins only. */
+export async function createCreditNote(invoiceId: string, formData: FormData) {
+  const session = await verifySession();
+  const back = `/dashboard/invoicing/${invoiceId}`;
+  if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`${back}?error=forbidden`);
+  const amount = Number(formData.get("amount"));
+  const reason = String(formData.get("reason") ?? "").trim().slice(0, 500);
+  if (!reason) redirect(`${back}?why=${encodeURIComponent("Give the credit note a reason the customer will see.")}`);
+
+  const invoice = await db.invoice.findUnique({ where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) }, select: { id: true } });
+  if (!invoice) redirect("/dashboard/invoicing");
+
+  let creditNumber = "";
+  try {
+    await db.$transaction(async (tx) => {
+      const current = await tx.invoice.findUniqueOrThrow({ where: { id: invoiceId }, select: { totalAmount: true, amountPaid: true, amountCredited: true } });
+      const blocker = amountBlocker(amount, balanceDue(current), "credit note");
+      if (blocker) throw new SettlementRejected(blocker);
+      creditNumber = (await issueCreditNote(tx, { companyId: session.companyId, invoiceId, amount, reason, userId: session.userId })).creditNumber;
+    });
+  } catch (e) {
+    if (e instanceof SettlementRejected) redirect(`${back}?why=${encodeURIComponent(e.message)}`);
+    throw e;
+  }
+  await logAudit(session.companyId, session.userId, "invoice.credit_note_issued", "Invoice", invoiceId, { creditNumber, amount });
+  revalidatePath(back);
+  revalidatePath("/dashboard/invoicing");
+  redirect(back);
+}
+
+export async function deleteCreditNote(invoiceId: string, creditNoteId: string) {
+  const session = await verifySession();
+  const back = `/dashboard/invoicing/${invoiceId}`;
+  if (!hasRole(session, ["OWNER", "ADMIN"])) redirect(`${back}?error=forbidden`);
+  const invoice = await db.invoice.findUnique({ where: { id: invoiceId, companyId: session.companyId, ...(await lockedWhere()) }, select: { id: true } });
+  if (!invoice) redirect("/dashboard/invoicing");
+
+  const result = await db.$transaction((tx) => removeCreditNote(tx, session.companyId, invoiceId, creditNoteId));
+  if (result) await logAudit(session.companyId, session.userId, "invoice.credit_note_removed", "Invoice", invoiceId, {});
+  revalidatePath(back);
+  revalidatePath("/dashboard/invoicing");
+  redirect(back);
 }

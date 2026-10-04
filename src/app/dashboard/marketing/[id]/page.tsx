@@ -63,7 +63,7 @@ export default async function CampaignDetailPage({
     getCampaignStats(session.companyId, campaign.id),
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "CAMPAIGN", entityId: campaign.id },
-      select: { id: true, filename: true, size: true },
+      select: { id: true, filename: true, size: true, mimeType: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),
     db.crmSettings.findUnique({ where: { companyId: session.companyId }, select: { formToken: true, formEnabled: true } }),

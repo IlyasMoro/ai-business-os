@@ -10,17 +10,21 @@ datasource db {
 // ---------- Tenancy & Auth ----------
 
 model Company {
-  id             String   @id @default(cuid())
-  name           String
-  industry       String?
-  defaultTaxRate Float    @default(0)
-  createdAt      DateTime @default(now())
+  id               String   @id @default(cuid())
+  name             String
+  industry         String?
+  defaultTaxRate   Float    @default(0)
+  createdAt        DateTime @default(now())
   // Last sales order number handed out (SO-0001 = 1); bumped atomically
   // by lib/order-number.ts so two orders at once never share a number.
-  orderSeq       Int      @default(0)
+  orderSeq         Int      @default(0)
   // Last invoice number handed out (INV-0001 = 1), same idea as orderSeq;
   // see lib/invoice-number.ts.
-  invoiceSeq     Int      @default(0)
+  invoiceSeq       Int      @default(0)
+  // Last purchase order number handed out (PO-0001 = 1).
+  purchaseOrderSeq Int      @default(0)
+  // Last credit note number handed out (CN-0001 = 1).
+  creditNoteSeq    Int      @default(0)
 
   // Custom logo shown on invoices, payslips, business reports, and
   // customer-facing emails in place of the default AIBOS wordmark. PNG/JPEG
@@ -626,6 +630,8 @@ enum PurchaseOrderStatus {
 
 model PurchaseOrder {
   id           String              @id @default(cuid())
+  // PO-0001, per company (lib/po-rules.ts, takePurchaseOrderNumber).
+  poNumber     String
   status       PurchaseOrderStatus @default(DRAFT)
   // Drafted by an automation: only an owner or admin may move it on from draft.
   autoCreated  Boolean             @default(false)
@@ -633,6 +639,8 @@ model PurchaseOrder {
   createdAt    DateTime            @default(now())
   expectedDate DateTime?
   receivedAt   DateTime?
+  // When it was last emailed to the supplier.
+  sentAt       DateTime?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -642,11 +650,15 @@ model PurchaseOrder {
   branchId String?
   branch   Branch? @relation("PurchaseOrderBranch", fields: [branchId], references: [id], onDelete: SetNull)
 
+  // Restrict: a supplier with purchase orders can't be deleted, so purchase
+  // and stock history never lose their orders.
   supplierId String
-  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Restrict)
 
-  items PurchaseOrderItem[]
+  items        PurchaseOrderItem[]
+  transactions Transaction[]
 
+  @@unique([companyId, poNumber])
   @@index([companyId])
   @@index([supplierId])
   @@index([branchId])
@@ -676,16 +688,18 @@ enum OrderStatus {
 }
 
 model Order {
-  id               String      @id @default(cuid())
+  id                 String      @id @default(cuid())
   // SO-0001, per company (lib/order-number.ts).
-  orderNumber      String
-  status           OrderStatus @default(PENDING)
-  totalAmount      Float       @default(0)
-  createdAt        DateTime    @default(now())
+  orderNumber        String
+  status             OrderStatus @default(PENDING)
+  totalAmount        Float       @default(0)
+  createdAt          DateTime    @default(now())
   // When goods left the business; the return window counts from here.
-  fulfilledAt      DateTime?
+  fulfilledAt        DateTime?
   // The customer's own PO number, e.g. from an inbound EDI 850.
-  customerPoNumber String?
+  customerPoNumber   String?
+  // When the order confirmation was last emailed to the customer.
+  confirmationSentAt DateTime?
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -918,6 +932,10 @@ model Invoice {
   createdAt          DateTime      @default(now())
   lastReminderSentAt DateTime?
   sentAt             DateTime?
+  // Running totals of the payments and credit notes below, kept in step by
+  // lib/invoice-payments.ts. Balance due = totalAmount - amountPaid - amountCredited.
+  amountPaid         Float         @default(0)
+  amountCredited     Float         @default(0)
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -934,6 +952,8 @@ model Invoice {
   order   Order?  @relation(fields: [orderId], references: [id])
 
   lineItems    InvoiceLineItem[]
+  payments     InvoicePayment[]
+  creditNotes  CreditNote[]
   transactions Transaction[]
 
   @@unique([companyId, invoiceNumber])
@@ -977,6 +997,10 @@ model Transaction {
   invoiceId String?
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
 
+  // The purchase order whose receipt booked this expense (lib/purchase-receipt.ts).
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id], onDelete: SetNull)
+
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
@@ -996,6 +1020,7 @@ model Transaction {
   @@index([costCenterId])
   @@index([internalOrderId])
   @@index([branchId])
+  @@index([purchaseOrderId])
 }
 
 // ---------- HR & Payroll ----------
@@ -1315,11 +1340,21 @@ model AutomationSettings {
   id        String   @id @default(cuid())
   updatedAt DateTime @updatedAt
 
-  overdueInvoiceReminders Boolean @default(false)
-  lowStockReorder         Boolean @default(false)
-  staleTicketEscalation   Boolean @default(false)
-  staleLeadCleanup        Boolean @default(false)
-  creditLimitWarnings     Boolean @default(false)
+  overdueInvoiceReminders Boolean   @default(false)
+  lowStockReorder         Boolean   @default(false)
+  staleTicketEscalation   Boolean   @default(false)
+  staleLeadCleanup        Boolean   @default(false)
+  creditLimitWarnings     Boolean   @default(false)
+  // Fulfilling a sales order creates its draft invoice (sent only by a person).
+  draftInvoiceOnFulfil    Boolean   @default(false)
+  // Daily email to owners and admins: purchase orders past their expected
+  // date and confirmed sales orders not fulfilled after a week.
+  lateOrderAlerts         Boolean   @default(false)
+  lateOrderAlertSentAt    DateTime?
+  // Daily email to owners and admins: lots with stock that are expiring
+  // within the inventory warning window, or already expired.
+  lotExpiryAlerts         Boolean   @default(false)
+  lotExpiryAlertSentAt    DateTime?
 
   // A single outgoing webhook URL (Slack Incoming Webhook, Zapier "Catch
   // Hook", or any custom JSON endpoint). Fires on the five automation
@@ -2062,11 +2097,22 @@ model LotMovement {
 
 // Per company picking and expiry rules. A company with no row uses the
 // defaults in lib/inventory-settings.ts.
+enum CostMethod {
+  // Cost stays as typed on the product.
+  MANUAL
+  // Cost becomes the unit cost on the latest purchase order received.
+  LAST_PRICE
+  // Moving average of stock on hand and what was just received.
+  AVERAGE
+}
+
 model InventorySettings {
   id                String      @id @default(cuid())
   pickingRule       PickingRule @default(FIFO)
   blockExpired      Boolean     @default(true)
   expiryWarningDays Int         @default(30)
+  // How receiving a purchase order changes a product's cost.
+  costMethod        CostMethod  @default(MANUAL)
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -2152,6 +2198,8 @@ enum StockMovementKind {
   TRANSFER_IN
   PRODUCTION
   CONSUMPTION
+  // A purchase order's receipt undone: the stock goes back out.
+  RECEIPT_REVERSED
 }
 
 enum StockAdjustmentReason {
@@ -2195,4 +2243,76 @@ model StockMovement {
   @@index([productId, createdAt])
   @@index([branchId])
   @@index([companyId])
+}
+
+// ---------- Invoice payments and credit notes ----------
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  OTHER
+}
+
+// Money received against an invoice; each one books its own income in
+// Accounting (transactionId), dated when it was paid.
+model InvoicePayment {
+  id        String        @id @default(cuid())
+  amount    Float
+  paidAt    DateTime
+  method    PaymentMethod @default(OTHER)
+  reference String?
+  createdAt DateTime      @default(now())
+
+  invoiceId     String
+  invoice       Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  companyId     String
+  userId        String?
+  // The income transaction this payment booked.
+  transactionId String? @unique
+
+  @@index([invoiceId])
+  @@index([companyId])
+}
+
+// Reduces what a customer owes on an invoice without money changing hands
+// (a price correction, goodwill). Books nothing in Accounting.
+model CreditNote {
+  id           String   @id @default(cuid())
+  creditNumber String
+  amount       Float
+  reason       String
+  createdAt    DateTime @default(now())
+
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  companyId String
+  userId    String?
+
+  @@unique([companyId, creditNumber])
+  @@index([invoiceId])
+}
+
+// ---------- Website contact form ----------
+
+enum ContactTopic {
+  SALES
+  SUPPORT
+  ENTERPRISE
+  OTHER
+}
+
+// A message from the public /contact page, for the platform operator (not
+// any company). Read in the platform admin area; handledAt marks it done.
+model ContactMessage {
+  id        String       @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  topic     ContactTopic @default(OTHER)
+  message   String
+  createdAt DateTime     @default(now())
+  handledAt DateTime?
+
+  @@index([createdAt])
 }

@@ -61,7 +61,7 @@ export default async function ProjectDetailPage({
 
   const documents = await db.document.findMany({
     where: { companyId: session.companyId, entityType: "PROJECT", entityId: project.id },
-    select: { id: true, filename: true, size: true },
+    select: { id: true, filename: true, size: true, mimeType: true, createdAt: true },
     orderBy: { createdAt: "desc" },
   });
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { sendOrderConfirmation } from "@/lib/actions/sales";
+import { buttonStyles } from "@/components/ui-dark/button";
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { stockBranchFor } from "@/lib/stock";
 import { lockedWhere } from "@/lib/branches";
@@ -9,7 +11,8 @@ import { StatusBadge } from "@/components/ui-dark/badge";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { OrderItemForm } from "@/components/sales/order-item-form";
 import { OrderStatusForm } from "@/components/sales/order-status-form";
-import { deleteOrder, removeOrderItem } from "@/lib/actions/sales";
+import { deleteOrder, removeOrderItem, updateOrderItem } from "@/lib/actions/sales";
+import { Input } from "@/components/ui-dark/input";
 import { createInvoiceFromOrder } from "@/lib/actions/invoicing";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { canDelete, canEditLines, invoiceBlocker } from "@/lib/order-rules";
@@ -40,10 +43,10 @@ export default async function OrderDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; sent?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, sent } = await searchParams;
   const session = await verifySession();
 
   const order = await db.order.findUnique({
@@ -74,6 +77,7 @@ export default async function OrderDetailPage({
     returnPolicy.enabled && order.status === "FULFILLED" && isWithinReturnWindow(fulfilledAt, returnPolicy.windowDays);
 
   const editable = canEditLines(order.status);
+  const canPrice = hasRole(session, ["OWNER", "ADMIN"]);
   const canInvoice = invoiceBlocker({ status: order.status, hasInvoice: Boolean(order.invoice), itemCount: order.items.length }) === null;
 
   // "In stock" means at this order's branch, where it will ship from.
@@ -111,6 +115,7 @@ export default async function OrderDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {order.createdAt.toLocaleDateString()}
+              {order.confirmationSentAt && <> · Confirmation emailed {order.confirmationSentAt.toLocaleDateString()}</>}
               {order.quote && (
                 <>
                   {" · from quote "}
@@ -135,6 +140,16 @@ export default async function OrderDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {order.status !== "CANCELLED" && order.items.length > 0 && (
+              <form action={sendOrderConfirmation.bind(null, order.id)}>
+                <SubmitButton variant="secondary" pendingText="Sending...">
+                  {order.confirmationSentAt ? "Resend confirmation" : "Email confirmation"}
+                </SubmitButton>
+              </form>
+            )}
+            <a href={`/api/orders/${order.id}/pdf`} target="_blank" rel="noreferrer" className={buttonStyles("secondary", "sm")}>
+              PDF
+            </a>
             {order.status === "FULFILLED" && (
               <EdiSendButton docType="856" recordId={order.id} customerId={order.customer.id} />
             )}
@@ -149,6 +164,11 @@ export default async function OrderDetailPage({
         </div>
 
         <div className="mt-4">
+          {sent && (
+          <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
+            Emailed with the PDF attached.
+          </p>
+        )}
           <ErrorBanner code={error} />
         </div>
 
@@ -160,13 +180,27 @@ export default async function OrderDetailPage({
             {order.items.length > 0 && (
               <ul className="mb-4 divide-y divide-white/[0.06] light:divide-slate-200">
                 {order.items.map((item) => (
-                  <li key={item.id} className="flex items-center justify-between py-2 text-sm">
-                    <div>
+                  <li key={item.id} className="flex items-start justify-between gap-3 py-2 text-sm">
+                    <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
+                      {editable && (
+                        <details className="mt-1">
+                          <summary className="cursor-pointer list-none text-xs font-medium text-blue-400 hover:text-blue-300 light:text-blue-700">Edit</summary>
+                          <form action={updateOrderItem.bind(null, order.id, item.id)} className="mt-2 flex flex-wrap items-end gap-2">
+                            <Input name="quantity" type="number" min="1" step="1" defaultValue={item.quantity} required aria-label="Quantity" className="w-24" />
+                            {canPrice && (
+                              <Input name="unitPrice" type="number" min="0" step="0.01" defaultValue={item.unitPrice} aria-label="Unit price" className="w-28" />
+                            )}
+                            <SubmitButton variant="secondary" pendingText="Saving...">
+                              Save
+                            </SubmitButton>
+                          </form>
+                        </details>
+                      )}
                       {shipped.some((m) => m.lot.productId === item.productId) && (
                         <p className="mt-0.5 text-xs text-slate-500">
                           Shipped from{" "}

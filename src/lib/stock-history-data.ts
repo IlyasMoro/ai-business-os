@@ -41,13 +41,14 @@ export async function getStockHistory(companyId: string, productId: string, take
     },
   });
 
-  const ids = (key: "orderId" | "transferId" | "returnId" | "workOrderId") =>
+  const ids = (key: "orderId" | "transferId" | "returnId" | "workOrderId" | "purchaseOrderId") =>
     [...new Set(rows.map((r) => r[key]).filter((v): v is string => Boolean(v)))];
-  const [orders, transfers, returns, workOrders] = await Promise.all([
+  const [orders, transfers, returns, workOrders, purchaseOrders] = await Promise.all([
     db.order.findMany({ where: { companyId, id: { in: ids("orderId") } }, select: { id: true, orderNumber: true } }),
     db.stockTransfer.findMany({ where: { companyId, id: { in: ids("transferId") } }, select: { id: true, transferNumber: true } }),
     db.returnAuthorization.findMany({ where: { companyId, id: { in: ids("returnId") } }, select: { id: true, rmaNumber: true } }),
     db.workOrder.findMany({ where: { companyId, id: { in: ids("workOrderId") } }, select: { id: true, woNumber: true } }),
+    db.purchaseOrder.findMany({ where: { companyId, id: { in: ids("purchaseOrderId") } }, select: { id: true, poNumber: true } }),
   ]);
   const name = <T extends { id: string }>(list: T[], id: string | null, pick: (t: T) => string) => {
     const found = id ? list.find((x) => x.id === id) : undefined;
@@ -65,7 +66,8 @@ export async function getStockHistory(companyId: string, productId: string, take
     else if (order && r.orderId) source = { label: order, href: `/dashboard/sales/${r.orderId}` };
     else if (transfer && r.transferId) source = { label: transfer, href: `/dashboard/transfers/${r.transferId}` };
     else if (wo && r.workOrderId) source = { label: wo, href: `/dashboard/mrp/work-orders/${r.workOrderId}` };
-    else if (r.purchaseOrderId) source = { label: "Purchase order", href: `/dashboard/procurement/${r.purchaseOrderId}` };
+    else if (r.purchaseOrderId)
+      source = { label: name(purchaseOrders, r.purchaseOrderId, (x) => x.poNumber) ?? "Purchase order", href: `/dashboard/procurement/${r.purchaseOrderId}` };
 
     return {
       id: r.id,

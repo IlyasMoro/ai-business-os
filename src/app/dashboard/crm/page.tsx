@@ -10,7 +10,6 @@ import { Plus, Search, ChevronLeft, ChevronRight, Copy, Download, Upload, Users 
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { cn } from "@/lib/utils";
 import { customerScope, restrictedTo } from "@/lib/crm-access";
@@ -109,10 +108,10 @@ export default async function CrmPage({
   );
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+    <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Customers</h1>
+          <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">Customers</h2>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {totalCount} customer{totalCount === 1 ? "" : "s"}
           </p>
@@ -157,7 +156,6 @@ export default async function CrmPage({
         </div>
       </div>
 
-      <CrmTabs active="/dashboard/crm" />
       {imported && (
         <div className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
           Imported {Number(imported) || 0} {Number(imported) === 1 ? "customer" : "customers"}.

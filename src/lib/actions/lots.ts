@@ -1,5 +1,6 @@
 "use server";
 
+import { bookPurchaseReceipt } from "@/lib/purchase-receipt";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import * as z from "zod";
@@ -31,23 +32,25 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
     where: { id: purchaseOrderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: {
       id: true,
+      poNumber: true,
       status: true,
       autoCreated: true,
       branchId: true,
+      supplier: { select: { name: true } },
       items: {
         select: {
           id: true,
           quantity: true,
+          unitCost: true,
           product: { select: { id: true, name: true, trackingMode: true, tracksExpiry: true } },
         },
       },
     },
   });
   if (!po) redirect("/dashboard/procurement");
-  if (po.status === "RECEIVED" || po.status === "CANCELLED") redirect(`/dashboard/procurement/${po.id}`);
-  if (po.autoCreated && po.status === "DRAFT" && !hasRole(session, ["OWNER", "ADMIN"])) {
-    redirect(`/dashboard/procurement/${po.id}?error=approval-needed`);
-  }
+  // Same rule as the status dropdown: an order is placed before it arrives.
+  // (Automation drafts are approved on the way to Ordered, by an owner or admin.)
+  if (po.status !== "ORDERED") redirect(`/dashboard/procurement/${po.id}`);
 
   type Plan = { productId: string; entries: { lotNumber: string; quantity: number; expiresAt: Date | null }[] };
   const plans: Plan[] = [];
@@ -93,6 +96,15 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
 
   const branchId = await stockBranchFor(session.companyId, po.branchId);
   await db.$transaction(async (tx) => {
+    // Expense in Accounting and product cost, before stock goes up.
+    await bookPurchaseReceipt(tx, {
+      companyId: session.companyId,
+      purchaseOrderId: po.id,
+      poNumber: po.poNumber,
+      supplierName: po.supplier.name,
+      branchId,
+      items: po.items.map((i) => ({ productId: i.product.id, quantity: i.quantity, unitCost: i.unitCost })),
+    });
     for (const item of po.items) {
       await changeStock(tx, {
         companyId: session.companyId,
@@ -199,6 +211,7 @@ const InventorySettingsSchema = z.object({
   pickingRule: z.enum(PickingRuleValues),
   blockExpired: z.boolean(),
   expiryWarningDays: z.coerce.number().int().min(0).max(3650),
+  costMethod: z.enum(["MANUAL", "LAST_PRICE", "AVERAGE"]),
 });
 
 
@@ -210,6 +223,7 @@ export async function updateInventorySettings(formData: FormData) {
     pickingRule: formData.get("pickingRule"),
     blockExpired: formData.get("blockExpired") === "on",
     expiryWarningDays: formData.get("expiryWarningDays"),
+    costMethod: formData.get("costMethod") ?? "MANUAL",
   });
   if (!validated.success) redirect(`${back}?error=invalid`);
   await db.inventorySettings.upsert({

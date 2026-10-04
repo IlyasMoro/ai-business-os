@@ -1,4 +1,5 @@
 import "server-only";
+import { getLateOrders, getLotAlerts } from "@/lib/alerts-data";
 import { db } from "@/lib/db";
 import { lowStockAt } from "@/lib/stock";
 
@@ -98,6 +99,34 @@ export async function getNotifications(companyId: string): Promise<Notification[
       severity: "medium",
       message: `Reorder${po.branch ? ` for ${po.branch.name}` : ""} drafted by automation, needs approval`,
       href: `/dashboard/procurement/${po.id}`,
+    });
+  }
+
+  // Late purchase orders, stalled sales orders and expiring lots
+  // (lib/alerts-data.ts), a few of each.
+  const [late, lotAlerts] = await Promise.all([getLateOrders(companyId, 3), getLotAlerts(companyId, 3)]);
+  for (const po of late.purchaseOrders) {
+    notifications.push({
+      id: `po-late-${po.id}`,
+      severity: "medium",
+      message: `${po.poNumber} from ${po.supplierName} is ${po.daysLate} day${po.daysLate === 1 ? "" : "s"} late`,
+      href: `/dashboard/procurement/${po.id}`,
+    });
+  }
+  for (const o of late.salesOrders) {
+    notifications.push({
+      id: `order-stalled-${o.id}`,
+      severity: "medium",
+      message: `${o.orderNumber} for ${o.customerName} confirmed but not fulfilled after ${o.daysWaiting} days`,
+      href: `/dashboard/sales/${o.id}`,
+    });
+  }
+  for (const lot of lotAlerts) {
+    notifications.push({
+      id: `lot-${lot.lotId}`,
+      severity: lot.expired ? "high" : "medium",
+      message: `${lot.productName} lot ${lot.lotNumber} (${lot.quantity} at ${lot.branchName}) ${lot.expired ? "has expired" : `expires ${lot.expiresAt.toLocaleDateString()}`}`,
+      href: `/dashboard/inventory/${lot.productId}`,
     });
   }
 

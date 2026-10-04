@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { TrendChart } from "@/components/dash-viz/trend-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui-dark/card";
@@ -125,10 +124,10 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
   const stageMax = Math.max(...stages.map((s) => s.value));
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+    <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Sales report</h1>
+          <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">Sales report</h2>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Pipeline, forecast and results from your deals and quotes.</p>
         </div>
         <nav aria-label="Period" className="inline-flex flex-wrap rounded-full border border-white/10 bg-white/[0.04] p-1 text-sm light:border-slate-200 light:bg-slate-100">
@@ -148,7 +147,6 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
         </nav>
       </div>
 
-      <CrmTabs active="/dashboard/crm/report" />
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {stats.map((s) => (

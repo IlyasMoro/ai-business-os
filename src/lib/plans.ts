@@ -188,12 +188,8 @@ export const CUSTOM_PLAN = {
 };
 
 /** Where Enterprise questions go: contracts, invoicing, very large teams.
- * Null until there is a real address; the "Talk to us" links stay hidden. */
-export const SALES_EMAIL: string | null = null;
-
-export function salesMailto(subject = "AIBOS Enterprise plan"): string | null {
-  return SALES_EMAIL ? `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}` : null;
-}
+ * The public contact form, with the Enterprise topic picked. */
+export const ENTERPRISE_CONTACT_HREF = "/contact?topic=enterprise";
 
 /** The cheapest plan a month for a team of `users` (counting open
  * invites) and `branches` active branches, counting extra users above a

@@ -48,7 +48,7 @@ export default async function TicketDetailPage({
 
   const documents = await db.document.findMany({
     where: { companyId: session.companyId, entityType: "TICKET", entityId: ticket.id },
-    select: { id: true, filename: true, size: true },
+    select: { id: true, filename: true, size: true, mimeType: true, createdAt: true },
     orderBy: { createdAt: "desc" },
   });
 

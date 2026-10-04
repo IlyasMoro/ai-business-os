@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { balanceDue } from "@/lib/invoice-rules";
 import { markOverdueInvoices } from "@/lib/invoice-number";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -85,7 +86,7 @@ export default async function InvoicingPage({
   for (const inv of outstandingInvoices) {
     outstandingByCustomer.set(
       inv.customer.name,
-      (outstandingByCustomer.get(inv.customer.name) ?? 0) + inv.totalAmount
+      (outstandingByCustomer.get(inv.customer.name) ?? 0) + balanceDue(inv)
     );
   }
   const topOutstanding = Array.from(outstandingByCustomer.entries())

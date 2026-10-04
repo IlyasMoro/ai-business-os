@@ -3,7 +3,6 @@ import { Send } from "lucide-react";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/plan-limits";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { PlanGate } from "@/components/billing/plan-gate";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { Badge } from "@/components/ui-dark/badge";
@@ -34,12 +33,11 @@ export default async function SequencesPage({ searchParams }: { searchParams: Pr
   const countOf = (sequenceId: string, status: string) => counts.find((c) => c.sequenceId === sequenceId && c.status === status)?._count._all ?? 0;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Email sequences</h1>
+    <div>
+      <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">Email sequences</h2>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
         A few emails sent days apart, stopping on their own when the customer replies or unsubscribes.
       </p>
-      <CrmTabs active="/dashboard/crm/sequences" />
 
       {!allowed ? (
         <PlanGate feature="automation">{null}</PlanGate>

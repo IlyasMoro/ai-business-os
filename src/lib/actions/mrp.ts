@@ -1,5 +1,6 @@
 "use server";
 
+import { takePurchaseOrderNumber } from "@/lib/order-number";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -397,6 +398,7 @@ export async function createPurchaseOrdersFromPlan(productId: string | null) {
     const latest = Math.max(...supplierRows.map((r) => r.availableBy.getTime()));
     const po = await db.purchaseOrder.create({
       data: {
+        poNumber: await takePurchaseOrderNumber(db, session.companyId),
         supplierId,
         companyId: session.companyId,
         branchId: await resolveNewRecordBranch(),

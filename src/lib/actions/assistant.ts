@@ -1,5 +1,6 @@
 "use server";
 
+import { balanceDue } from "@/lib/invoice-rules";
 import { takeInvoiceNumber } from "@/lib/invoice-number";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -206,14 +207,14 @@ async function executeAiAction(
 
       const invoices = await db.invoice.findMany({
         where: { companyId, customerId: args.customerId, status: { in: ["SENT", "OVERDUE"] } },
-        select: { invoiceNumber: true, totalAmount: true, dueDate: true },
+        select: { invoiceNumber: true, totalAmount: true, amountPaid: true, amountCredited: true, dueDate: true },
       });
       if (invoices.length === 0) return { error: "No outstanding invoices for this customer." };
 
       const lines = invoices
         .map(
           (inv) =>
-            `<li>${inv.invoiceNumber}: $${inv.totalAmount.toFixed(2)}, due ${inv.dueDate.toLocaleDateString()}</li>`
+            `<li>${inv.invoiceNumber}: $${balanceDue(inv).toFixed(2)} owed, due ${inv.dueDate.toLocaleDateString()}</li>`
         )
         .join("");
 

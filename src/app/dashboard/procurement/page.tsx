@@ -46,7 +46,15 @@ export default async function ProcurementPage({
   const where: Prisma.PurchaseOrderWhereInput = {
     companyId: session.companyId,
     ...inBranch,
-    ...(q ? { supplier: { name: { contains: q } } } : {}),
+    // Matches the PO number (PO-0007) or the supplier's name.
+    ...(q
+      ? {
+          OR: [
+            { poNumber: { contains: q.trim(), mode: "insensitive" } },
+            { supplier: { name: { contains: q.trim(), mode: "insensitive" } } },
+          ],
+        }
+      : {}),
   };
 
   const [purchaseOrders, totalCount, statusGroups] = await Promise.all([
@@ -104,7 +112,7 @@ export default async function ProcurementPage({
             <input
               type="search"
               name="q"
-              placeholder="Search by supplier..."
+              placeholder="Search by number or supplier..."
               defaultValue={q}
               className={fieldStyles("pl-9")}
             />
@@ -177,6 +185,7 @@ export default async function ProcurementPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                <th className="px-5 py-3 font-medium">Order</th>
                 <th className="px-5 py-3 font-medium">Supplier</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium">Total</th>
@@ -189,11 +198,12 @@ export default async function ProcurementPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/procurement/${po.id}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
-                      {po.supplier.name}
+                      {po.poNumber}
                     </Link>
                   </td>
+                  <td className="px-5 py-3 text-slate-300 light:text-slate-600">{po.supplier.name}</td>
                   <td className="px-5 py-3">
                     <span className="inline-flex flex-wrap items-center gap-1.5">
                       <StatusBadge status={po.status} color={statusColor[po.status]} />

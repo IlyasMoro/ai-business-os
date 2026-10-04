@@ -1,7 +1,6 @@
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/plan-limits";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { PlanGate } from "@/components/billing/plan-gate";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui-dark/card";
 import { RuleForm } from "@/components/crm/rule-form";
@@ -22,14 +21,13 @@ export default async function RulesPage({ searchParams }: { searchParams: Promis
 
   const header = (
     <>
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Rules</h1>
+      <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">Rules</h2>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">When something happens in the CRM, AIBOS does the next step for you.</p>
-      <CrmTabs active="/dashboard/crm/rules" />
     </>
   );
   if (!allowed) {
     return (
-      <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+      <div>
         {header}
         <PlanGate feature="automation">{null}</PlanGate>
       </div>
@@ -66,7 +64,7 @@ export default async function RulesPage({ searchParams }: { searchParams: Promis
   });
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+    <div>
       {header}
       {saved && (
         <div className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">Rule saved.</div>

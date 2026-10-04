@@ -55,6 +55,7 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
   const links = [
     ...SECTIONS.map((s) => ({ href: sectionHref(s.id), label: s.label, active: onLanding && activeSection === s.id })),
     { href: "/pricing", label: "Pricing", active: pathname.startsWith("/pricing") },
+    { href: "/contact", label: "Contact", active: pathname.startsWith("/contact") },
   ];
 
   const linkClass = (active: boolean) =>

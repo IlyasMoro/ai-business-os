@@ -11,6 +11,7 @@ export async function GET() {
     where: { companyId: session.companyId, ...(await branchWhere()) },
     orderBy: { createdAt: "desc" },
     select: {
+      poNumber: true,
       status: true,
       totalAmount: true,
       createdAt: true,
@@ -21,8 +22,8 @@ export async function GET() {
   });
 
   const csv = toCsv(
-    ["Supplier", "Status", "Total Amount", "Created At", "Expected Date", "Received At"],
-    purchaseOrders.map((p) => [p.supplier.name, p.status, p.totalAmount, p.createdAt, p.expectedDate, p.receivedAt])
+    ["PO Number", "Supplier", "Status", "Total Amount", "Created At", "Expected Date", "Received At"],
+    purchaseOrders.map((p) => [p.poNumber, p.supplier.name, p.status, p.totalAmount, p.createdAt, p.expectedDate, p.receivedAt])
   );
 
   return new NextResponse(csv, {

@@ -3,13 +3,14 @@
 import { useEffect, useRef } from "react";
 import { Select } from "@/components/ui-dark/input";
 import { updatePurchaseOrderStatus } from "@/lib/actions/procurement";
+import { PO_STATUS_LABEL, nextPoStatuses, type PurchaseOrderStatus } from "@/lib/po-rules";
 
 export function PurchaseOrderStatusForm({
   purchaseOrderId,
   status,
 }: {
   purchaseOrderId: string;
-  status: string;
+  status: PurchaseOrderStatus;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -33,10 +34,19 @@ export function PurchaseOrderStatusForm({
         className="w-auto"
         onChange={() => formRef.current?.requestSubmit()}
       >
-        <option value="DRAFT">Draft</option>
-        <option value="ORDERED">Ordered</option>
-        <option value="RECEIVED">Received</option>
-        <option value="CANCELLED">Cancelled</option>
+        {/* Only the steps allowed from here (lib/po-rules.ts). */}
+        <option value={status}>{PO_STATUS_LABEL[status]}</option>
+        {nextPoStatuses(status).map((next) => (
+          <option key={next} value={next}>
+            {status === "ORDERED" && next === "DRAFT"
+              ? "Back to draft"
+              : status === "CANCELLED" && next === "DRAFT"
+                ? "Reopen as draft"
+                : next === "RECEIVED"
+                  ? "Received, add to stock"
+                  : PO_STATUS_LABEL[next]}
+          </option>
+        ))}
       </Select>
     </form>
   );

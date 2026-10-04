@@ -1,4 +1,5 @@
 import "server-only";
+import { balanceDue } from "@/lib/invoice-rules";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/db";
 import { customerScope, dealScope } from "@/lib/crm-access";
@@ -79,6 +80,8 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
           id: true,
           invoiceNumber: true,
           totalAmount: true,
+          amountPaid: true,
+          amountCredited: true,
           dueDate: true,
           customerId: true,
           customer: { select: { name: true } },
@@ -90,6 +93,8 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
           id: i.id,
           invoiceNumber: i.invoiceNumber,
           totalAmount: i.totalAmount,
+          // What's still owed after part payments and credit notes.
+          balanceDue: balanceDue(i),
           dueDate: i.dueDate.toISOString().slice(0, 10),
           customerId: i.customerId,
           customerName: i.customer.name,

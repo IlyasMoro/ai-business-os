@@ -8,7 +8,10 @@ type ToggleKey =
   | "lowStockReorder"
   | "staleTicketEscalation"
   | "staleLeadCleanup"
-  | "creditLimitWarnings";
+  | "creditLimitWarnings"
+  | "draftInvoiceOnFulfil"
+  | "lateOrderAlerts"
+  | "lotExpiryAlerts";
 
 export function AutomationToggle({
   toggleKey,
@@ -36,6 +39,7 @@ export function AutomationToggle({
         <input
           type="checkbox"
           defaultChecked={enabled}
+          aria-label={label}
           className="peer sr-only"
           onChange={(e) => {
             if (hiddenRef.current) hiddenRef.current.value = e.target.checked ? "true" : "false";

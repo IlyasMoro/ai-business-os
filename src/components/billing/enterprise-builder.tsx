@@ -230,7 +230,12 @@ export function EnterpriseBuyForm({
         ))}
       </div>
       <EnterpriseBuilder tone="app" interval={interval} initial={initial} minUsers={minUsers} minBranches={minBranches}>
-        <SubmitButton pendingText="Working...">{submitLabel}</SubmitButton>
+        <SubmitButton
+          pendingText="Working..."
+          className="h-auto w-full rounded-xl bg-violet-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/30 hover:bg-violet-500 sm:w-auto"
+        >
+          {submitLabel}
+        </SubmitButton>
       </EnterpriseBuilder>
     </form>
   );

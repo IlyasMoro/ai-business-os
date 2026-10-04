@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { aboutRand, CUSTOM_PLAN, LISTED_PLANS, salesMailto } from "@/lib/plans";
+import { aboutRand, CUSTOM_PLAN, LISTED_PLANS, ENTERPRISE_CONTACT_HREF } from "@/lib/plans";
 import { EnterpriseBuilder } from "@/components/billing/enterprise-builder";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
@@ -97,14 +97,10 @@ export function PricingPlans() {
               </div>
               <p className="text-center text-xs text-[#6b7686]">
                 Buy it on Billing once you&apos;re in.
-                {salesMailto() && (
-                  <>
-                    {" "}Contracts, invoicing or more users?{" "}
-                    <a href={salesMailto()!} className="font-semibold text-[#0b1f5e] underline">
-                      Talk to us
-                    </a>
-                  </>
-                )}
+                {" "}Contracts, invoicing or more users?{" "}
+                <Link href={ENTERPRISE_CONTACT_HREF} className="font-semibold text-[#0b1f5e] underline">
+                  Talk to us
+                </Link>
               </p>
             </EnterpriseBuilder>
           </div>

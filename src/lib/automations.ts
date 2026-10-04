@@ -1,4 +1,8 @@
 import "server-only";
+import { getLateOrders, getLotAlerts } from "@/lib/alerts-data";
+import { isDailyAlertDue, SALES_STALL_DAYS } from "@/lib/order-alerts";
+import { balanceDue, escapeHtml } from "@/lib/invoice-rules";
+import { takePurchaseOrderNumber } from "@/lib/order-number";
 import { markOverdueInvoices } from "@/lib/invoice-number";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/plan-limits";
@@ -41,11 +45,14 @@ async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string 
 
   for (const invoice of invoices) {
     if (!invoice.customer.email) continue;
+    // What's still owed after part payments and credit notes.
+    const owed = balanceDue(invoice);
+    if (owed <= 0) continue;
     try {
       await sendEmailForCompany(companyId, {
         to: invoice.customer.email,
         subject: "Payment reminder: outstanding invoice",
-        html: `<p>Hi ${invoice.customer.name},</p><p>This is a friendly automated reminder that invoice ${invoice.invoiceNumber} for $${invoice.totalAmount.toFixed(2)} (due ${invoice.dueDate.toLocaleDateString()}) is still outstanding.</p><p>Please arrange payment at your earliest convenience.</p>`,
+        html: `<p>Hi ${escapeHtml(invoice.customer.name)},</p><p>This is a friendly automated reminder that $${owed.toFixed(2)} on invoice ${invoice.invoiceNumber} (due ${invoice.dueDate.toLocaleDateString()}) is still outstanding.</p><p>Please arrange payment at your earliest convenience.</p>`,
       });
       await db.invoice.update({
         where: { id: invoice.id },
@@ -53,8 +60,8 @@ async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string 
       });
       await sendWebhookNotification(
         webhookUrl,
-        `Payment reminder sent to ${invoice.customer.name} for invoice ${invoice.invoiceNumber} ($${invoice.totalAmount.toFixed(2)})`,
-        { event: "overdue_invoice_reminder", invoiceNumber: invoice.invoiceNumber, customer: invoice.customer.name, amount: invoice.totalAmount }
+        `Payment reminder sent to ${invoice.customer.name} for invoice ${invoice.invoiceNumber} ($${owed.toFixed(2)} owed)`,
+        { event: "overdue_invoice_reminder", invoiceNumber: invoice.invoiceNumber, customer: invoice.customer.name, amount: owed }
       );
     } catch (err) {
       console.error(`[automations] overdue reminder failed for invoice ${invoice.id}:`, err);
@@ -141,7 +148,15 @@ async function runLowStockReorder(companyId: string, webhookUrl: string | null) 
 
     const totalAmount = computePurchaseOrderTotal(items);
     const purchaseOrder = await db.purchaseOrder.create({
-      data: { companyId, supplierId: supplier.id, branchId, totalAmount, autoCreated: true, items: { create: items } },
+      data: {
+        poNumber: await takePurchaseOrderNumber(db, companyId),
+        companyId,
+        supplierId: supplier.id,
+        branchId,
+        totalAmount,
+        autoCreated: true,
+        items: { create: items },
+      },
       select: { id: true, branch: { select: { name: true } } },
     });
 
@@ -216,6 +231,79 @@ async function runStaleLeadCleanup(companyId: string, webhookUrl: string | null)
  * once a customer's outstanding balance reaches CREDIT_WARNING_THRESHOLD
  * of their limit, same cooldown convention as the overdue reminder above,
  * so it will not fire again for the same customer within 24 hours. */
+/** Emails every owner and admin; one failed address doesn't stop the rest. */
+async function emailManagers(companyId: string, subject: string, bodyHtml: string) {
+  const recipients = await db.user.findMany({
+    where: { companyId, role: { in: ["OWNER", "ADMIN"] } },
+    select: { email: true, name: true },
+  });
+  for (const r of recipients) {
+    try {
+      await sendEmailForCompany(companyId, { to: r.email, subject, html: `<p>Hi ${escapeHtml(r.name)},</p>${bodyHtml}` });
+    } catch (err) {
+      console.error(`[automations] alert email failed for ${r.email}:`, err);
+    }
+  }
+}
+
+const listHtml = (items: string[]) => `<ul>${items.map((i) => `<li>${i}</li>`).join("")}</ul>`;
+
+/** Daily: purchase orders past their expected date and confirmed sales
+ * orders not fulfilled after a week. Sends nothing when all is on time. */
+async function runLateOrderAlerts(companyId: string, webhookUrl: string | null) {
+  const late = await getLateOrders(companyId);
+  const base = process.env.APP_BASE_URL ?? "";
+  const pos = late.purchaseOrders.map(
+    (p) => `<a href="${base}/dashboard/procurement/${p.id}">${p.poNumber}</a> from ${escapeHtml(p.supplierName)}, ${p.daysLate} day${p.daysLate === 1 ? "" : "s"} late`
+  );
+  const sales = late.salesOrders.map(
+    (o) => `<a href="${base}/dashboard/sales/${o.id}">${o.orderNumber}</a> for ${escapeHtml(o.customerName)}, waiting ${o.daysWaiting} days`
+  );
+  // Stamped either way, so a quiet day is checked again tomorrow, not every 15 minutes.
+  await db.automationSettings.update({ where: { companyId }, data: { lateOrderAlertSentAt: new Date() } });
+  if (pos.length + sales.length === 0) return;
+
+  await emailManagers(
+    companyId,
+    `Late orders: ${pos.length} purchase, ${sales.length} sales`,
+    `${pos.length ? `<p>Purchase orders past their expected date:</p>${listHtml(pos)}` : ""}${
+      sales.length ? `<p>Confirmed sales orders not fulfilled after ${SALES_STALL_DAYS} days:</p>${listHtml(sales)}` : ""
+    }`
+  );
+  await sendWebhookNotification(
+    webhookUrl,
+    `${pos.length} purchase order${pos.length === 1 ? "" : "s"} late and ${sales.length} sales order${sales.length === 1 ? "" : "s"} waiting to be fulfilled`,
+    { event: "late_orders", latePurchaseOrders: pos.length, stalledSalesOrders: sales.length }
+  );
+}
+
+/** Daily: lots with stock that expired or expire within the warning window. */
+async function runLotExpiryAlerts(companyId: string, webhookUrl: string | null) {
+  const lots = await getLotAlerts(companyId);
+  const base = process.env.APP_BASE_URL ?? "";
+  await db.automationSettings.update({ where: { companyId }, data: { lotExpiryAlertSentAt: new Date() } });
+  if (lots.length === 0) return;
+
+  const line = (l: (typeof lots)[number]) =>
+    `<a href="${base}/dashboard/inventory/${l.productId}">${escapeHtml(l.productName)}</a> lot ${escapeHtml(l.lotNumber)}: ${l.quantity} at ${escapeHtml(l.branchName)}, ${
+      l.expired ? "expired" : "expires"
+    } ${l.expiresAt.toLocaleDateString()}`;
+  const expired = lots.filter((l) => l.expired);
+  const soon = lots.filter((l) => !l.expired);
+  await emailManagers(
+    companyId,
+    `Stock expiry: ${expired.length} expired, ${soon.length} expiring soon`,
+    `${expired.length ? `<p>Expired, still in stock:</p>${listHtml(expired.map(line))}` : ""}${
+      soon.length ? `<p>Expiring soon:</p>${listHtml(soon.map(line))}` : ""
+    }`
+  );
+  await sendWebhookNotification(webhookUrl, `${expired.length} expired and ${soon.length} soon to expire stock lots`, {
+    event: "lot_expiry",
+    expired: expired.length,
+    expiringSoon: soon.length,
+  });
+}
+
 async function runCreditLimitWarnings(companyId: string, webhookUrl: string | null) {
   const now = new Date();
   const cooldownCutoff = new Date(now.getTime() - REMINDER_COOLDOWN_MS);
@@ -403,6 +491,8 @@ export async function runAutomations() {
           { staleTicketEscalation: true },
           { staleLeadCleanup: true },
           { creditLimitWarnings: true },
+          { lateOrderAlerts: true },
+          { lotExpiryAlerts: true },
           { reportFrequency: { not: "OFF" } },
         ],
       },
@@ -417,6 +507,8 @@ export async function runAutomations() {
         if (settings.staleTicketEscalation) await runStaleTicketEscalation(settings.companyId, settings.webhookUrl);
         if (settings.staleLeadCleanup) await runStaleLeadCleanup(settings.companyId, settings.webhookUrl);
         if (settings.creditLimitWarnings) await runCreditLimitWarnings(settings.companyId, settings.webhookUrl);
+        if (settings.lateOrderAlerts && isDailyAlertDue(settings.lateOrderAlertSentAt)) await runLateOrderAlerts(settings.companyId, settings.webhookUrl);
+        if (settings.lotExpiryAlerts && isDailyAlertDue(settings.lotExpiryAlertSentAt)) await runLotExpiryAlerts(settings.companyId, settings.webhookUrl);
         if (isReportDue(settings.reportFrequency, settings.lastReportSentAt)) {
           await sendScheduledReport(settings.companyId);
         }

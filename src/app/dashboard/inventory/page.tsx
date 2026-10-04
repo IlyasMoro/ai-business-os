@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
 import { lowStockAt } from "@/lib/stock";
@@ -26,9 +26,9 @@ function inventoryHref(page: number, q?: string) {
 export default async function InventoryPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; imported?: string }>;
 }) {
-  const { page: pageParam, q } = await searchParams;
+  const { page: pageParam, q, imported } = await searchParams;
   const page = parsePage(pageParam);
   const session = await verifySession();
 
@@ -106,6 +106,16 @@ export default async function InventoryPage({
               className={fieldStyles("pl-9")}
             />
           </form>
+          {hasRole(session, ["OWNER", "ADMIN"]) && (
+            <>
+              <Link href="/dashboard/inventory/count" className={buttonStyles("secondary", "md", "whitespace-nowrap")}>
+                Stock count
+              </Link>
+              <Link href="/dashboard/inventory/import" className={buttonStyles("secondary", "md", "whitespace-nowrap")}>
+                Import
+              </Link>
+            </>
+          )}
           <Link
             href="/dashboard/inventory/trace"
             className={buttonStyles("secondary", "md", "whitespace-nowrap")}
@@ -127,6 +137,12 @@ export default async function InventoryPage({
           </Link>
         </div>
       </div>
+
+      {imported && (
+        <p className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
+          Imported {imported} product{imported === "1" ? "" : "s"}.
+        </p>
+      )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">

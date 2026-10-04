@@ -53,6 +53,10 @@ test("marking a purchase order Received increments the product's stock", async (
   // This is the fix under regression test: receiving a PO must atomically
   // increment the product's stock by the ordered quantity. It previously
   // did not, and stock silently drifted from what was actually on hand.
+  // An order is placed before it arrives (lib/po-rules.ts).
+  await page.selectOption('select[name="status"]', "ORDERED");
+  await expect(page.locator('select[name="status"]')).toHaveValue("ORDERED", { timeout: 45000 });
+  await expect(page.locator('select[name="status"] option[value="RECEIVED"]')).toHaveCount(1, { timeout: 45000 });
   await page.selectOption('select[name="status"]', "RECEIVED");
   await expect(page.getByText("RECEIVED").first()).toBeVisible({ timeout: 45000 });
 

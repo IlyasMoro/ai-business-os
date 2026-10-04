@@ -11,7 +11,8 @@ export type StockMovementKind =
   | "TRANSFER_OUT"
   | "TRANSFER_IN"
   | "PRODUCTION"
-  | "CONSUMPTION";
+  | "CONSUMPTION"
+  | "RECEIPT_REVERSED";
 
 export type StockAdjustmentReason = "COUNT" | "DAMAGED" | "LOST" | "FOUND" | "OTHER";
 
@@ -26,6 +27,7 @@ export const MOVEMENT_KIND_LABEL: Record<StockMovementKind, string> = {
   TRANSFER_IN: "Arrived from branch",
   PRODUCTION: "Built",
   CONSUMPTION: "Used in a build",
+  RECEIPT_REVERSED: "Receipt undone",
 };
 
 export const ADJUSTMENT_REASONS: { id: StockAdjustmentReason; label: string }[] = [

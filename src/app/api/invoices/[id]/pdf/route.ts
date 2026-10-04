@@ -31,6 +31,8 @@ export async function GET(
     dueDate: invoice.dueDate,
     taxRate: invoice.taxRate,
     totalAmount: invoice.totalAmount,
+    amountPaid: invoice.amountPaid,
+    amountCredited: invoice.amountCredited,
     companyName: invoice.companyRef.name,
     customerName: invoice.customer.name,
     customerEmail: invoice.customer.email,

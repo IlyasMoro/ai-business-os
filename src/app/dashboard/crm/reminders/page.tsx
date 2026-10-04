@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { FollowUpRow } from "@/components/crm/follow-up-list";
 import { followUpBucket } from "@/lib/crm-pipeline";
 import { cn } from "@/lib/utils";
@@ -44,10 +43,10 @@ export default async function RemindersPage({ searchParams }: { searchParams: Pr
   const openCount = followUps.filter((f) => !f.doneAt).length;
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+    <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Reminders</h1>
+          <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">Reminders</h2>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
             {openCount} open · add them from a customer or a deal.
           </p>
@@ -72,7 +71,6 @@ export default async function RemindersPage({ searchParams }: { searchParams: Pr
         </div>
       </div>
 
-      <CrmTabs active="/dashboard/crm/reminders" />
 
       {followUps.length === 0 ? (
         <div className="mx-auto mt-8 max-w-md rounded-xl border border-dashed border-white/15 p-8 text-center light:border-slate-300">

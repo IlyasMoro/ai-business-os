@@ -43,7 +43,7 @@ export default async function TeamPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-5xl">
+      <div>
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           {members.length} member{members.length === 1 ? "" : "s"} in {session.name ? "your company" : "this workspace"}.
@@ -53,8 +53,9 @@ export default async function TeamPage({
           <ErrorBanner code={error} />
         </div>
 
-        {/* Wide screens: the invite form in a narrow column beside the lists. */}
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        {/* Extra wide screens: the invite form in a narrow column beside the
+            lists. Otherwise it sits on top so the members table gets the full width. */}
+        <div className="mt-6 grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
           <Card>
             <CardHeader>
               <CardTitle>Invite a teammate</CardTitle>
@@ -114,50 +115,93 @@ export default async function TeamPage({
                 <CardTitle>Members</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
-                  {members.map((member) => (
-                    <li key={member.id} className="flex items-center justify-between py-2.5 text-sm">
-                      <div>
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-semibold text-slate-50 light:text-slate-900">{member.name}</span>
-                          <StatusBadge status={member.role} tone={roleTone[member.role]} />
-                        </div>
-                        <p className="text-slate-400 light:text-slate-500">{member.email}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-end gap-2">
-                        {showBranchAccess && member.role === "EMPLOYEE" && (
-                          <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
-                            <Select
-                              name="branchId"
-                              defaultValue={member.branchId ?? ""}
-                              aria-label={`Branch access for ${member.name}`}
-                              className="w-44"
-                            >
-                              <option value="">All branches</option>
-                              {branches
-                                .filter((b) => b.active || b.id === member.branchId)
-                                .map((b) => (
-                                  <option key={b.id} value={b.id}>
-                                    Only {b.name}
-                                  </option>
-                                ))}
-                            </Select>
-                            <SubmitButton pendingText="Saving..." variant="secondary">
-                              Save
-                            </SubmitButton>
-                          </form>
-                        )}
-                        {session.role === "OWNER" && member.id !== session.userId && (
-                          <DeleteButton
-                            action={removeTeamMember.bind(null, member.id)}
-                            confirmMessage={`Remove ${member.name} from this company?`}
-                            label="Remove"
-                          />
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                {/* A full width table: each member's details spread across
+                    the card instead of bunched on the left. */}
+                <div className="-mx-2 overflow-x-auto">
+                  <table className="w-full min-w-[520px] text-sm">
+                    <thead>
+                      <tr className="border-b border-white/[0.06] text-left text-xs uppercase tracking-wide text-slate-500 light:border-slate-200">
+                        <th className="px-2 py-2 font-medium">Member</th>
+                        <th className="px-2 py-2 font-medium">Email</th>
+                        <th className="px-2 py-2 font-medium">Role</th>
+                        <th className="px-2 py-2 font-medium">Joined</th>
+                        {showBranchAccess && <th className="px-2 py-2 font-medium">Branch access</th>}
+                        <th className="px-2 py-2" aria-label="Actions" />
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.06] light:divide-slate-200">
+                      {members.map((member) => (
+                        <tr key={member.id} className="align-middle">
+                          <td className="px-2 py-3">
+                            <span className="flex items-center gap-3">
+                              <span
+                                aria-hidden
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600/20 text-xs font-semibold text-blue-300 light:bg-blue-100 light:text-blue-700"
+                              >
+                                {member.name
+                                  .split(/\s+/)
+                                  .filter(Boolean)
+                                  .slice(0, 2)
+                                  .map((w) => w[0]!.toUpperCase())
+                                  .join("")}
+                              </span>
+                              <span className="whitespace-nowrap font-semibold text-slate-50 light:text-slate-900">
+                                {member.name}
+                                {member.id === session.userId && <span className="ml-2 text-xs font-normal text-slate-500">You</span>}
+                              </span>
+                            </span>
+                          </td>
+                          <td className="max-w-[18rem] truncate px-2 py-3 text-slate-300 light:text-slate-600">
+                            <a href={`mailto:${member.email}`} title={member.email} className="hover:text-blue-400">
+                              {member.email}
+                            </a>
+                          </td>
+                          <td className="px-2 py-3">
+                            <StatusBadge status={member.role} tone={roleTone[member.role]} />
+                          </td>
+                          <td className="px-2 py-3 whitespace-nowrap text-slate-400 light:text-slate-500">{member.createdAt.toLocaleDateString()}</td>
+                          {showBranchAccess && (
+                            <td className="px-2 py-3">
+                              {member.role === "EMPLOYEE" ? (
+                                <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
+                                  <Select
+                                    name="branchId"
+                                    defaultValue={member.branchId ?? ""}
+                                    aria-label={`Branch access for ${member.name}`}
+                                    className="w-44"
+                                  >
+                                    <option value="">All branches</option>
+                                    {branches
+                                      .filter((b) => b.active || b.id === member.branchId)
+                                      .map((b) => (
+                                        <option key={b.id} value={b.id}>
+                                          Only {b.name}
+                                        </option>
+                                      ))}
+                                  </Select>
+                                  <SubmitButton pendingText="Saving..." variant="secondary">
+                                    Save
+                                  </SubmitButton>
+                                </form>
+                              ) : (
+                                <span className="text-slate-500">All branches</span>
+                              )}
+                            </td>
+                          )}
+                          <td className="px-2 py-3 text-right">
+                            {session.role === "OWNER" && member.id !== session.userId && (
+                              <DeleteButton
+                                action={removeTeamMember.bind(null, member.id)}
+                                confirmMessage={`Remove ${member.name} from this company?`}
+                                label="Remove"
+                              />
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </CardContent>
             </Card>
           </div>

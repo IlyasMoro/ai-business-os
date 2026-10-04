@@ -27,7 +27,7 @@ export default async function BranchesPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-5xl">
+      <div>
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Branches</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Each shop, office, warehouse or site your business runs. Orders, invoices, purchase orders and employees

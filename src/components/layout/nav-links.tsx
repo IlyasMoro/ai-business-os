@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_MIN_PLAN, planById, type PlanFeature } from "@/lib/plans";
-import { navGroups, navPinned, type NavItem, type Role } from "./nav-config";
+import { navGroups, navItems, navPinned, type NavItem, type Role } from "./nav-config";
 
 // One focus outline for every menu control, drawn inside so the scrolling
 // menu never clips it.
@@ -23,8 +23,15 @@ function ActiveBar({ className }: { className?: string }) {
   return <span aria-hidden className={cn("absolute top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-blue-500", className)} />;
 }
 
-function isActive(href: string, pathname: string) {
+function matches(href: string, pathname: string) {
   return href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
+}
+
+/** The menu link for this page: the longest one that matches, so a page
+ * under another link (Messages under Companies) lights up only itself. */
+function isActive(href: string, pathname: string) {
+  if (!matches(href, pathname)) return false;
+  return ![...navPinned, ...navItems].some((i) => i.href.length > href.length && i.href.startsWith(href) && matches(i.href, pathname));
 }
 
 /** Tiny pulsing dot on a link whose page is still loading. It only shows when
@@ -173,10 +180,15 @@ export function NavLinks({
                 )}
               />
               <span className="flex-1 truncate text-left">{group.label}</span>
+              {/* Bold and high contrast so it reads as a control; blue while open. */}
               <ChevronRight
+                strokeWidth={3}
+                aria-hidden
                 className={cn(
-                  "h-3 w-3 shrink-0 text-slate-600 transition-transform duration-200 ease-out light:text-slate-400",
-                  open && "rotate-90"
+                  "h-4 w-4 shrink-0 transition-[transform,color] duration-200 ease-out",
+                  open
+                    ? "rotate-90 text-blue-400 light:text-blue-600"
+                    : "text-slate-300 group-hover/heading:text-white light:text-slate-600 light:group-hover/heading:text-slate-900"
                 )}
               />
             </button>

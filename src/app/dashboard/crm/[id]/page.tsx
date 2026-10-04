@@ -83,7 +83,7 @@ export default async function CustomerDetailPage({
   const [documents, orders, invoices, tickets, outstandingBalance, deals, activities, followUps, users, quotes, fields, scores, sequencesAllowed, enrollments, sequences] = await Promise.all([
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
-      select: { id: true, filename: true, size: true },
+      select: { id: true, filename: true, size: true, mimeType: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),
     db.order.findMany({

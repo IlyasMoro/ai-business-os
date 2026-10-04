@@ -37,7 +37,7 @@ export default async function ReceivePurchaseOrderPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <BackButton href={`/dashboard/procurement/${po.id}`} label="Back to purchase order" />
-        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Receive purchase order</h1>
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Receive {po.poNumber}</h1>
         <p className="mt-1 text-slate-400 light:text-slate-500">
           From {po.supplier.name}. Stock for every line goes up; tracked lines also need their lot number or serials.
         </p>

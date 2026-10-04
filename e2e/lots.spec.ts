@@ -50,6 +50,8 @@ async function purchase(page: Page, p: { name: string; sku: string }, qty: numbe
   await page.fill('input[name="unitCost"]', "1.00");
   await page.getByRole("button", { name: "Add item" }).click();
   await expect(page.getByText(`${qty} ×`)).toBeVisible({ timeout: 45000 });
+  // Placed, so it can be received (lib/po-rules.ts).
+  await selectAndSave(page, 'select[name="status"]', "ORDERED");
   return page.url();
 }
 

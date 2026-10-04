@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { sendPurchaseOrderEmail } from "@/lib/actions/procurement";
+import { buttonStyles } from "@/components/ui-dark/button";
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { lockedWhere } from "@/lib/branches";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
@@ -9,7 +11,9 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { PurchaseOrderItemForm } from "@/components/procurement/purchase-order-item-form";
 import { PurchaseOrderStatusForm } from "@/components/procurement/purchase-order-status-form";
-import { deletePurchaseOrder, removePurchaseOrderItem } from "@/lib/actions/procurement";
+import { deletePurchaseOrder, removePurchaseOrderItem, undoPurchaseOrderReceipt } from "@/lib/actions/procurement";
+import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { canDeletePo, canEditPoLines } from "@/lib/po-rules";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { BranchTag } from "@/components/layout/branch-tag";
@@ -26,10 +30,10 @@ export default async function PurchaseOrderDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; why?: string; sent?: string }>;
 }) {
   const { id } = await params;
-  const { error } = await searchParams;
+  const { error, why, sent } = await searchParams;
   const session = await verifySession();
 
   const purchaseOrder = await db.purchaseOrder.findUnique({
@@ -57,13 +61,16 @@ export default async function PurchaseOrderDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
-                Purchase order for {purchaseOrder.supplier.name}
+                <span className="font-mono">{purchaseOrder.poNumber}</span>
+                <span className="text-slate-500"> · </span>
+                {purchaseOrder.supplier.name}
               </h1>
               <StatusBadge status={purchaseOrder.status} tone={statusTone[purchaseOrder.status]} />
               <BranchTag name={purchaseOrder.branch?.name} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {purchaseOrder.createdAt.toLocaleDateString()}
+              {purchaseOrder.sentAt && <> · Emailed {purchaseOrder.sentAt.toLocaleDateString()}</>}
               {purchaseOrder.expectedDate && (
                 <> · Expected {purchaseOrder.expectedDate.toLocaleDateString()}</>
               )}
@@ -82,9 +89,18 @@ export default async function PurchaseOrderDetailPage({
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {purchaseOrder.status !== "CANCELLED" && purchaseOrder.items.length > 0 && (
+              <form action={sendPurchaseOrderEmail.bind(null, purchaseOrder.id)}>
+                <SubmitButton variant="secondary" pendingText="Sending...">
+                  {purchaseOrder.sentAt ? "Resend to supplier" : purchaseOrder.status === "DRAFT" ? "Send to supplier" : "Email to supplier"}
+                </SubmitButton>
+              </form>
+            )}
+            <a href={`/api/purchase-orders/${purchaseOrder.id}/pdf`} target="_blank" rel="noreferrer" className={buttonStyles("secondary", "sm")}>
+              PDF
+            </a>
             <EdiSendButton docType="850" recordId={purchaseOrder.id} supplierId={purchaseOrder.supplierId} />
-            {purchaseOrder.status !== "RECEIVED" &&
-              purchaseOrder.status !== "CANCELLED" &&
+            {purchaseOrder.status === "ORDERED" &&
               purchaseOrder.items.some((i) => i.product.trackingMode !== "NONE") && (
                 <Link
                   href={`/dashboard/procurement/${purchaseOrder.id}/receive`}
@@ -93,12 +109,28 @@ export default async function PurchaseOrderDetailPage({
                   Receive with lots
                 </Link>
               )}
-            <PurchaseOrderStatusForm purchaseOrderId={purchaseOrder.id} status={purchaseOrder.status} />
-            <DeleteButton action={deletePurchaseOrder.bind(null, purchaseOrder.id)} />
+            {purchaseOrder.status === "RECEIVED" ? (
+              hasRole(session, ["OWNER", "ADMIN"]) && (
+                <form action={undoPurchaseOrderReceipt.bind(null, purchaseOrder.id)}>
+                  <SubmitButton variant="secondary" pendingText="Undoing...">
+                    Undo receipt
+                  </SubmitButton>
+                </form>
+              )
+            ) : (
+              <PurchaseOrderStatusForm purchaseOrderId={purchaseOrder.id} status={purchaseOrder.status} />
+            )}
+            {canDeletePo(purchaseOrder.status) && <DeleteButton action={deletePurchaseOrder.bind(null, purchaseOrder.id)} />}
           </div>
         </div>
 
+        {sent && (
+          <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
+            Emailed with the PDF attached.
+          </p>
+        )}
         <ErrorBanner code={error} />
+        {why && <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>}
         {purchaseOrder.autoCreated && purchaseOrder.status === "DRAFT" && (
           <p className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
             Drafted by automation because stock ran low. Nothing is ordered until an owner or admin checks it and moves it to
@@ -122,16 +154,27 @@ export default async function PurchaseOrderDetailPage({
                         {(item.quantity * item.unitCost).toFixed(2)}
                       </p>
                     </div>
-                    <DeleteButton
-                      action={removePurchaseOrderItem.bind(null, purchaseOrder.id, item.id)}
-                      confirmMessage="Remove this item?"
-                      label=""
-                    />
+                    {canEditPoLines(purchaseOrder.status) && (
+                      <DeleteButton
+                        action={removePurchaseOrderItem.bind(null, purchaseOrder.id, item.id)}
+                        confirmMessage="Remove this item?"
+                        label=""
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
             )}
-            <PurchaseOrderItemForm purchaseOrderId={purchaseOrder.id} products={products} />
+            {canEditPoLines(purchaseOrder.status) ? (
+              <PurchaseOrderItemForm purchaseOrderId={purchaseOrder.id} products={products} />
+            ) : (
+              purchaseOrder.status !== "CANCELLED" && (
+                <p className="text-xs text-slate-500">
+                  Lines are locked once the order is placed, so what was ordered is what arrives.
+                  {purchaseOrder.status === "ORDERED" && " Move it back to draft to change them."}
+                </p>
+              )
+            )}
             <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
               Total: ${purchaseOrder.totalAmount.toFixed(2)}
             </p>

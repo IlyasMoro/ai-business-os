@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { db } from "@/lib/db";
+import { COST_METHODS } from "@/lib/cost-math";
 import { requireRole } from "@/lib/dal";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { Input, Label, Select } from "@/components/ui-dark/input";
@@ -12,7 +14,11 @@ import { BackButton } from "@/components/ui-dark/back-button";
 export default async function InventorySettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
   const session = await requireRole(["OWNER", "ADMIN"]);
   const { error, saved } = await searchParams;
-  const s = await getInventorySettings(session.companyId);
+  const [s, costRow] = await Promise.all([
+    getInventorySettings(session.companyId),
+    db.inventorySettings.findUnique({ where: { companyId: session.companyId }, select: { costMethod: true } }),
+  ]);
+  const costMethod = costRow?.costMethod ?? "MANUAL";
   const card = "rounded-2xl border border-white/[0.09] light:border-white/80 glass";
 
   return (
@@ -20,7 +26,7 @@ export default async function InventorySettingsPage({ searchParams }: { searchPa
       <div className="mx-auto max-w-5xl">
         <BackButton href="/dashboard/inventory" label="Back to inventory" />
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Inventory settings</h1>
-        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">How lot and serial tracked stock is picked and watched for expiry.</p>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">How stock is costed, and how lot and serial tracked stock is picked and watched for expiry.</p>
 
         <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
@@ -59,6 +65,22 @@ export default async function InventorySettingsPage({ searchParams }: { searchPa
             </div>
           </div>
           <SettingToggle name="blockExpired" label="Block expired lots" description="Expired lots are never shipped or used in production." defaultChecked={s.blockExpired} />
+          <fieldset className="space-y-2 border-t border-white/[0.06] pt-4 light:border-slate-200">
+            <legend className="text-sm font-medium text-slate-200 light:text-slate-800">Product cost when stock is received</legend>
+            <p className="text-xs text-slate-500">
+              Every received purchase order is also booked in Accounting as a stock purchase. This choice decides whether it updates the
+              product&apos;s cost too, which stock value uses.
+            </p>
+            {COST_METHODS.map((m) => (
+              <label key={m.id} className="flex cursor-pointer items-start gap-3 rounded-lg border border-white/[0.06] p-3 light:border-slate-200">
+                <input type="radio" name="costMethod" value={m.id} defaultChecked={costMethod === m.id} className="mt-1" />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-50 light:text-slate-900">{m.label}</span>
+                  <span className="block text-xs text-slate-400 light:text-slate-500">{m.description}</span>
+                </span>
+              </label>
+            ))}
+          </fieldset>
           <SubmitButton pendingText="Saving...">Save settings</SubmitButton>
         </form>
 

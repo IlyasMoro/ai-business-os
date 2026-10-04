@@ -23,6 +23,16 @@ export const OrderItemSchema = z.object({
     .min(1, { error: "Quantity must be at least 1." }),
 });
 
+/** Editing a pending order's line. Price is optional: only owners and
+ * admins may change it (no unofficial discounts). */
+export const OrderItemEditSchema = z.object({
+  quantity: z.coerce
+    .number({ error: "Enter a valid quantity." })
+    .int({ error: "Quantity must be a whole number." })
+    .min(1, { error: "Quantity must be at least 1." }),
+  unitPrice: z.coerce.number({ error: "Enter a valid price." }).min(0, { error: "Price cannot be negative." }).optional(),
+});
+
 export type OrderItemFormState =
   | {
       errors?: {

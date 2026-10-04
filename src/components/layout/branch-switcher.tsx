@@ -77,7 +77,11 @@ export function BranchSwitcher({
       >
         <MapPin className="h-3.5 w-3.5 text-blue-400 light:text-blue-600" />
         <span className="max-w-[9rem] truncate">{current?.name ?? "All branches"}</span>
-        <ChevronDown className={cn("h-3.5 w-3.5 text-slate-400 transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          strokeWidth={3}
+          aria-hidden
+          className={cn("h-4 w-4 transition-transform", open ? "rotate-180 text-blue-400 light:text-blue-600" : "text-slate-300 light:text-slate-600")}
+        />
       </button>
 
       {open && (

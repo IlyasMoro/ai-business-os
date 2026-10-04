@@ -71,7 +71,8 @@ export default function Home() {
           />
           <div className={styles.heroIn}>
             <h1 className={cn(styles.heroH, "animate-fade-up animate-fade-up-2")}>
-              Run your business. Let AI handle the busywork, with your approval on everything that matters.
+              <span className={styles.heroLine}>Run your business. Let AI handle the busywork,</span>{" "}
+              <span className={styles.heroLine}>with your approval on everything that matters.</span>
             </h1>
             <p className={cn(styles.heroSub, "animate-fade-up animate-fade-up-3")}>
               CRM, sales, inventory, accounting, HR, payroll, invoicing, projects, and support, all unified, with an

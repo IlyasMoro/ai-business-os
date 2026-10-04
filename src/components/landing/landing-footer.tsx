@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Mail } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
@@ -39,12 +40,21 @@ export function LandingFooter() {
             </div>
           </div>
 
-          <nav aria-label="Footer" className={styles.footLinks}>
-            {LINKS.map((link) => (
-              <Link key={link.href} href={link.href} className={styles.footLink}>
-                {link.label}
+          {/* The site links in a grid, Contact centred below a thin line. */}
+          <nav aria-label="Footer" className={styles.footNav}>
+            <div className={styles.footLinks}>
+              {LINKS.map((link) => (
+                <Link key={link.href} href={link.href} className={styles.footLink}>
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+            <div className={styles.footContactRow}>
+              <Link href="/contact" className={styles.footContact}>
+                <Mail className="h-3.5 w-3.5" aria-hidden />
+                Contact us
               </Link>
-            ))}
+            </div>
           </nav>
         </div>
 

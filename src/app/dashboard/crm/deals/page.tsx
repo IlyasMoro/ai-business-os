@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { DealBoard } from "@/components/crm/deal-board";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { LinkButton } from "@/components/ui-dark/button";
@@ -57,10 +56,10 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
   ];
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
+    <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Deals</h1>
+          <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">Deals</h2>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Drag a deal to move it to another stage.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -89,7 +88,6 @@ export default async function DealsPage({ searchParams }: { searchParams: Promis
         </div>
       </div>
 
-      <CrmTabs active="/dashboard/crm/deals" />
       <div className="mt-4">
         <ErrorBanner code={error} />
       </div>

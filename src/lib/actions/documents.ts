@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { DocumentEntityType } from "@/generated/prisma/client";
+import { uploadBlocker } from "@/lib/document-files";
 
-const MAX_SIZE_BYTES = 8 * 1024 * 1024;
 
 async function verifyEntityOwnership(
   entityType: DocumentEntityType,
@@ -29,43 +29,42 @@ async function verifyEntityOwnership(
   }
 }
 
+export type DocumentUploadState = { ok?: number; error?: string } | undefined;
+
+/** One or more files attached to a record. Returns a message for the form
+ * instead of reloading, so the upload box can say exactly what happened. */
 export async function uploadDocument(
   entityType: DocumentEntityType,
   entityId: string,
   redirectPath: string,
+  _state: DocumentUploadState,
   formData: FormData
-) {
+): Promise<DocumentUploadState> {
   const session = await verifySession();
 
-  const file = formData.get("file");
-  if (!(file instanceof File) || file.size === 0) {
-    redirect(`${redirectPath}?error=invalid`);
-  }
-  if (file.size > MAX_SIZE_BYTES) {
-    redirect(`${redirectPath}?error=invalid`);
-  }
+  const files = formData.getAll("file").filter((f): f is File => f instanceof File && f.name !== "");
+  const blocker = uploadBlocker(files);
+  if (blocker) return { error: blocker };
 
   const owned = await verifyEntityOwnership(entityType, entityId, session.companyId);
-  if (!owned) {
-    redirect(`${redirectPath}?error=invalid`);
+  if (!owned) return { error: "This record can't take documents." };
+
+  for (const file of files) {
+    await db.document.create({
+      data: {
+        filename: (file.name || "untitled").slice(0, 255),
+        mimeType: file.type || "application/octet-stream",
+        size: file.size,
+        data: Buffer.from(await file.arrayBuffer()),
+        companyId: session.companyId,
+        entityType,
+        entityId,
+      },
+    });
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-
-  await db.document.create({
-    data: {
-      filename: file.name || "untitled",
-      mimeType: file.type || "application/octet-stream",
-      size: file.size,
-      data: buffer,
-      companyId: session.companyId,
-      entityType,
-      entityId,
-    },
-  });
-
   revalidatePath(redirectPath);
-  redirect(redirectPath);
+  return { ok: files.length };
 }
 
 export async function deleteDocument(documentId: string, redirectPath: string) {

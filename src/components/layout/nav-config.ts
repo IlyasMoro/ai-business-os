@@ -27,6 +27,7 @@ import {
   ArrowLeftRight,
   Target,
   FileText,
+  Inbox,
 } from "lucide-react";
 import { CopilotMark } from "@/components/brand/copilot-mark";
 
@@ -127,6 +128,7 @@ export const navGroups: NavGroup[] = [
       { href: "/dashboard/branches", label: "Branches", icon: MapPin, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"] },
       { href: "/dashboard/admin", label: "Companies", icon: Building2, platformAdminOnly: true },
+      { href: "/dashboard/admin/messages", label: "Messages", icon: Inbox, platformAdminOnly: true },
       { href: "/dashboard/platform-settings", label: "Platform Settings", icon: Settings, platformAdminOnly: true },
     ],
   },

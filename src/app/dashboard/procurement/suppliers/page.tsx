@@ -71,14 +71,18 @@ export default async function SuppliersPage({
                 <th className="px-5 py-3 font-medium">Email</th>
                 <th className="px-5 py-3 font-medium">Phone</th>
                 <th className="px-5 py-3 font-medium">Avg. lead time</th>
-                <th className="px-5 py-3 font-medium">On-time rate</th>
+                <th className="px-5 py-3 font-medium">On time rate</th>
                 <th className="px-5 py-3 font-medium" />
               </tr>
             </thead>
             <tbody>
               {supplierStats.map((supplier) => (
                 <tr key={supplier.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3 font-medium text-slate-50 light:text-slate-900">{supplier.name}</td>
+                  <td className="px-5 py-3 font-medium">
+                    <Link href={`/dashboard/procurement/suppliers/${supplier.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
+                      {supplier.name}
+                    </Link>
+                  </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.email ?? "—"}</td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.phone ?? "—"}</td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
@@ -92,7 +96,7 @@ export default async function SuppliersPage({
                   <td className="px-5 py-3 text-right">
                     <DeleteButton
                       action={deleteSupplier.bind(null, supplier.id)}
-                      confirmMessage="Delete this supplier? Their purchase orders will also be deleted."
+                      confirmMessage="Delete this supplier? Suppliers with purchase orders are kept for your history."
                     />
                   </td>
                 </tr>

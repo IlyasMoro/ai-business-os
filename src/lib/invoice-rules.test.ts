@@ -8,6 +8,10 @@ import {
   isPastDue,
   nextInvoiceStatuses,
   statusAfterUndoPayment,
+  amountBlocker,
+  balanceDue,
+  formatCreditNumber,
+  statusAfterSettlement,
 } from "@/lib/invoice-rules";
 
 describe("invoice status changes", () => {
@@ -64,5 +68,41 @@ describe("formatting", () => {
 
   it("escapes HTML", () => {
     expect(escapeHtml(`<b>"Tom" & 'Jerry'</b>`)).toBe("&lt;b&gt;&quot;Tom&quot; &amp; &#39;Jerry&#39;&lt;/b&gt;");
+  });
+});
+
+describe("payments and credit notes", () => {
+  const due = new Date(2026, 9, 20);
+  const inv = (over = {}) => ({ status: "SENT" as const, totalAmount: 100, amountPaid: 0, amountCredited: 0, dueDate: due, ...over });
+  const now = new Date(2026, 9, 10);
+
+  it("works out the balance", () => {
+    expect(balanceDue(inv({ amountPaid: 30, amountCredited: 20 }))).toBe(50);
+    expect(balanceDue(inv({ amountPaid: 120 }))).toBe(0);
+  });
+
+  it("never takes more than is owed", () => {
+    expect(amountBlocker(50, 50, "payment")).toBeNull();
+    expect(amountBlocker(50.01, 50, "payment")).toMatch(/more than/);
+    expect(amountBlocker(0, 50, "credit note")).toMatch(/above zero/);
+  });
+
+  it("is paid once settled in full, unpaid otherwise", () => {
+    expect(statusAfterSettlement(inv({ amountPaid: 60, amountCredited: 40 }), now)).toBe("PAID");
+    expect(statusAfterSettlement(inv({ amountPaid: 60 }), now)).toBe("SENT");
+    expect(statusAfterSettlement(inv({ status: "PAID", amountPaid: 60, dueDate: new Date(2026, 9, 1) }), now)).toBe("OVERDUE");
+    expect(statusAfterSettlement(inv({ status: "DRAFT", amountPaid: 10 }), now)).toBe("DRAFT");
+    expect(statusAfterSettlement(inv({ status: "DRAFT", amountPaid: 100 }), now)).toBe("PAID");
+    expect(statusAfterSettlement(inv({ totalAmount: 0 }), now)).toBe("SENT");
+  });
+
+  it("locks editing once money or credit is recorded", () => {
+    expect(canEditInvoice("SENT", { amountPaid: 10, amountCredited: 0 })).toBe(false);
+    expect(canEditInvoice("SENT", { amountPaid: 0, amountCredited: 5 })).toBe(false);
+    expect(canEditInvoice("SENT")).toBe(true);
+  });
+
+  it("numbers credit notes", () => {
+    expect(formatCreditNumber(4)).toBe("CN-0004");
   });
 });

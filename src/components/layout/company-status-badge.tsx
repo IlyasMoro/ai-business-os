@@ -16,27 +16,28 @@ function initials(name: string) {
   return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
 }
 
-/** One short line on where the company stands: trial countdown, plan, or a
- * problem to fix. `tone` colours it: warn when attention is needed soon,
- * bad when access is at risk. */
+/** One short line on where the company stands: the plan it's on, then the
+ * trial countdown or a problem to fix. `tone` colours it: warn when
+ * attention is needed soon, bad when access is at risk. */
 function statusLine(subscription: Subscription, planName: string): { text: string; tone: "ok" | "warn" | "bad" } {
   const now = new Date();
+  const plan = `${planName} plan`;
   if (subscription?.status === "TRIALING") {
-    if (subscription.trialEndsAt && subscription.trialEndsAt <= now) return { text: "Trial ended", tone: "bad" };
-    if (!subscription.trialEndsAt) return { text: "Free trial", tone: "ok" };
+    if (subscription.trialEndsAt && subscription.trialEndsAt <= now) return { text: `${plan} · Trial ended`, tone: "bad" };
+    if (!subscription.trialEndsAt) return { text: `${plan} · Free trial`, tone: "ok" };
     const left = daysLeft(subscription.trialEndsAt);
-    if (left <= 1) return { text: left === 0 ? "Trial ends today" : "Trial ends tomorrow", tone: "warn" };
-    return { text: `Trial · ${left} days left`, tone: left <= 3 ? "warn" : "ok" };
+    if (left <= 1) return { text: `${plan} · ${left === 0 ? "Trial ends today" : "Trial ends tomorrow"}`, tone: "warn" };
+    return { text: `${plan} · Trial · ${left} days left`, tone: left <= 3 ? "warn" : "ok" };
   }
-  if (subscription?.status === "PAST_DUE") return { text: "Payment failed", tone: "bad" };
+  if (subscription?.status === "PAST_DUE") return { text: `${plan} · Payment failed`, tone: "bad" };
   if (subscription?.status === "CANCELED" || subscription?.status === "INCOMPLETE") {
     return { text: "No active plan", tone: "bad" };
   }
   if (subscription?.status === "ACTIVE" && subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd) {
     const date = subscription.currentPeriodEnd.toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
-    return { text: `${planName} plan · cancels ${date}`, tone: "warn" };
+    return { text: `${plan} · cancels ${date}`, tone: "warn" };
   }
-  return { text: `${planName} plan`, tone: "ok" };
+  return { text: plan, tone: "ok" };
 }
 
 /**
@@ -83,9 +84,9 @@ export function CompanyStatusBadge({
         <span className="block max-w-[11rem] truncate text-sm font-semibold text-slate-50 sm:max-w-[16rem] light:text-slate-900">
           {companyName}
         </span>
-        <span className={cn("flex items-center gap-1.5 text-[11.5px]", toneClass)}>
-          {status.tone !== "ok" && <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-current" />}
-          {status.text}
+        <span className={cn("flex max-w-[11rem] items-center gap-1.5 text-[11.5px] sm:max-w-[16rem]", toneClass)} title={status.text}>
+          {status.tone !== "ok" && <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />}
+          <span className="truncate">{status.text}</span>
         </span>
       </span>
       {canManage && (

@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { startCheckout, changePlan, confirmCheckout, confirmAiTopUp, startAiTopUp, openBillingPortal, buyEnterprise } from "@/lib/actions/billing";
 import { EnterpriseBuyForm } from "@/components/billing/enterprise-builder";
 import { ENTERPRISE, enterpriseFor, enterpriseQuote, type EnterpriseConfig } from "@/lib/enterprise";
 import { PlanPicker } from "@/components/billing/plan-picker";
+import { PlanStatusHero, TRIAL_DAYS } from "@/components/billing/plan-status-hero";
 import type { BillingInterval } from "@/lib/plans";
 import { updateDefaultTaxRate } from "@/lib/actions/invoicing";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
@@ -11,7 +13,7 @@ import { Input, Label } from "@/components/ui-dark/input";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { CreditCard, Gauge, Percent } from "lucide-react";
 import { activeBranchCount, aiCreditsLeft, aiRequestsUsed, extraUsersBilled, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
-import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan, salesMailto } from "@/lib/plans";
+import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan, ENTERPRISE_CONTACT_HREF } from "@/lib/plans";
 
 /** One plan allowance as "used of limit" with a bar. `limit` null means unlimited. */
 /** One allowance: "used of limit" with a bar that turns amber near the
@@ -110,7 +112,7 @@ export default async function BillingPage({
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <div className="mx-auto max-w-5xl">
+      <div>
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Subscription</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           Manage your AIBOS subscription for {session.name ? "your company" : "this workspace"}.
@@ -145,53 +147,45 @@ export default async function BillingPage({
           )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+        <PlanStatusHero
+          status={
+            isTrialing && subscription?.trialEndsAt
+              ? { kind: "trial", daysLeft: daysLeft(subscription.trialEndsAt) }
+              : isTrialing
+                ? { kind: "trial", daysLeft: TRIAL_DAYS }
+                : subscription?.status === "TRIALING"
+                  ? { kind: "trialEnded" }
+                  : subscription?.status === "PAST_DUE"
+                    ? { kind: "pastDue", planLabel: `${plan.name} plan` }
+                    : isActive
+                      ? {
+                          kind: "active",
+                          planLabel: legacyPrice
+                            ? "AIBOS, $49 a month (earlier price)"
+                            : `${plan.name}${builtConfig ? ` for ${builtConfig.users} users` : ""}, $${planPrice.toLocaleString("en-US")} a ${interval === "monthly" ? "month" : "year"}`,
+                          renewsOn: subscription?.currentPeriodEnd ?? null,
+                          cancelling: Boolean(subscription?.cancelAtPeriodEnd),
+                        }
+                      : { kind: "none" }
+          }
+        />
+
+        <section id="plans" className="mt-6 scroll-mt-24 rounded-2xl border border-white/[0.09] p-5 glass sm:p-6 light:border-white/80">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] bg-white/5 text-slate-300 light:border-slate-200 light:text-slate-600">
               <CreditCard className="h-5 w-5" />
             </span>
             <div>
-              <p className="font-semibold text-slate-50 light:text-slate-900">
-                {isActive && interval
-                  ? `${plan.name} plan${builtConfig ? ` for ${builtConfig.users} users` : ""}, $${planPrice.toLocaleString("en-US")} a ${interval === "monthly" ? "month" : "year"}`
-                  : legacyPrice
-                    ? "AIBOS, $49 a month (earlier price)"
-                    : isTrialing
-                      ? "Free trial with every module"
-                      : "AIBOS"}
+              <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">{isActive ? "Change plan" : "Choose a plan"}</h2>
+              <p className="text-sm text-slate-400 light:text-slate-500">
+                {isActive
+                  ? "Change plan or billing period. Stripe charges or credits the difference straight away."
+                  : "Prices are in US dollars; Rand amounts are a guide. Cancel any time."}
               </p>
-              {!subscription && (
-                <p className="text-sm text-slate-400 light:text-slate-500">No subscription yet.</p>
-              )}
-              {isTrialing && subscription?.trialEndsAt && (
-                <p className="text-sm text-amber-400">
-                  Trial: {daysLeft(subscription.trialEndsAt)} day
-                  {daysLeft(subscription.trialEndsAt) === 1 ? "" : "s"} left
-                </p>
-              )}
-              {isActive && (
-                <p className="text-sm text-emerald-400">
-                  Active
-                  {subscription?.currentPeriodEnd &&
-                    ` (renews ${subscription.currentPeriodEnd.toLocaleDateString()})`}
-                  {subscription?.cancelAtPeriodEnd && " (cancels at period end)"}
-                </p>
-              )}
-              {subscription?.status === "PAST_DUE" && (
-                <p className="text-sm text-red-400">Payment failed. Please update your card.</p>
-              )}
-              {subscription?.status === "CANCELED" && (
-                <p className="text-sm text-slate-400 light:text-slate-500">Canceled.</p>
-              )}
             </div>
           </div>
 
-          <div className="mt-5 border-t border-white/[0.06] pt-4 light:border-slate-200">
-            <p className="mb-3 text-sm text-slate-400 light:text-slate-500">
-              {isActive
-                ? "Change plan or billing period. Stripe charges or credits the difference straight away."
-                : "Choose a plan to subscribe. Prices are in US dollars; Rand amounts are a guide."}
-            </p>
+          <div className="mt-5">
             <PlanPicker
               action={isActive ? changePlan : startCheckout}
               mode={isActive ? "change" : "checkout"}
@@ -201,22 +195,22 @@ export default async function BillingPage({
             />
           </div>
 
-          <div id="enterprise" className="mt-5 scroll-mt-24 border-t border-white/[0.06] pt-4 light:border-slate-200">
-            <h2 className="font-semibold text-slate-50 light:text-slate-900">
+        </section>
+
+        <section id="enterprise" className="mt-6 scroll-mt-24 rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-transparent p-5 sm:p-6 light:from-violet-50">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-violet-300 light:text-violet-700">For bigger teams</p>
+            <h2 className="mt-1 text-lg font-semibold text-slate-50 light:text-slate-900">
               {builtEnterprise ? "Your Enterprise plan" : "Or build an Enterprise plan"}
             </h2>
             <p className="mb-3 mt-1 text-sm text-slate-400 light:text-slate-500">
               {builtEnterprise
                 ? "Change users, branches, AI requests or EDI. Stripe charges or credits the difference straight away."
                 : `For bigger teams: everything in Growth, as many users and branches as you need, and the EDI add on, from $${ENTERPRISE.minUsers * ENTERPRISE.perUser} a month.`}{" "}
-              {salesMailto() && (
-                <>
-                  Contracts or invoicing instead of a card?{" "}
-                  <a href={salesMailto()!} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
-                    Talk to us
-                  </a>
-                </>
-              )}
+              Contracts or invoicing instead of a card?{" "}
+              <Link href={ENTERPRISE_CONTACT_HREF} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                Talk to us
+              </Link>
             </p>
             <EnterpriseBuyForm
               action={buyEnterprise}
@@ -228,8 +222,10 @@ export default async function BillingPage({
             />
           </div>
 
+        </section>
+
           {hasStripeCustomer && (
-            <div className="mt-5 flex items-center gap-3 border-t border-white/[0.06] light:border-slate-200 pt-4">
+            <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
               <form action={openBillingPortal}>
                 <SubmitButton variant="secondary" pendingText="Redirecting...">
                   Manage billing
@@ -238,7 +234,6 @@ export default async function BillingPage({
               <p className="text-sm text-slate-400 light:text-slate-500">Card, invoices and cancelling, on Stripe.</p>
             </div>
           )}
-        </div>
 
         {/* During a trial the plan list's summary line carries the usage, so
             this card is for companies on a plan. */}

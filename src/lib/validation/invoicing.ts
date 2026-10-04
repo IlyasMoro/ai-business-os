@@ -22,6 +22,12 @@ export type InvoiceFormState =
     }
   | undefined;
 
+/** Editing an unpaid invoice's due date and tax rate. */
+export const InvoiceDetailsSchema = z.object({
+  dueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Enter a valid date." }),
+  taxRate: z.coerce.number({ error: "Enter a valid tax rate." }).min(0, { error: "Tax rate cannot be negative." }).max(100),
+});
+
 export const InvoiceLineItemSchema = z.object({
   description: z.string().min(1, { error: "Description is required." }).trim(),
   quantity: z.coerce

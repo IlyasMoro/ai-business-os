@@ -160,7 +160,7 @@
 .heroIn {
   position: relative;
   z-index: 2;
-  max-width: 1080px;
+  max-width: 1240px;
 }
 /* A soft dark pool behind the copy so it reads over the blurred screenshot. */
 .heroIn::before {
@@ -175,11 +175,23 @@
   font-family: var(--font-display);
   font-weight: 800;
   text-transform: uppercase;
-  font-size: clamp(2rem, 4.3vw, 3.9rem);
-  line-height: 1.06;
+  /* Sized so each half of the headline fits on one line: two lines on
+     laptops and desktops (see .heroLine). */
+  font-size: clamp(1.6rem, 3vw, 2.75rem);
+  line-height: 1.12;
   letter-spacing: -0.005em;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 30px rgba(0, 0, 0, 0.6);
+}
+/* Each half of the headline is its own line on wider screens; phones wrap
+   normally. */
+.heroLine {
+  display: block;
+}
+@media (min-width: 768px) {
+  .heroLine {
+    white-space: nowrap;
+  }
 }
 .heroSub {
   max-width: 760px;
@@ -203,7 +215,8 @@
 .shot {
   position: relative;
   z-index: 3;
-  max-width: 56rem;
+  /* Large enough to read the dashboard; the screenshot itself is 1500px wide. */
+  max-width: 76rem;
   margin: -7rem auto 0;
   padding: 0 1.5rem;
 }
@@ -284,7 +297,8 @@
 /* ── How it works: the constellation in a dark glass panel ── */
 .constellationPanel {
   margin-top: 2.6rem;
-  border-radius: 14px;
+  /* Square corners, like the feature slider below it. */
+  border-radius: 0;
   padding: clamp(1.4rem, 4vw, 3rem);
 }
 
@@ -742,6 +756,30 @@
 .footCta .btn {
   padding: 12px 30px;
   font-size: 0.86rem;
+}
+.footNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+.footContactRow {
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+}
+.footContact {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cyan);
+  transition: color 0.15s ease;
+}
+.footContact:hover {
+  color: #fff;
 }
 .footLinks {
   display: grid;

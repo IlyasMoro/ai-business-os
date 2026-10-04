@@ -4,7 +4,6 @@ import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/plan-limits";
 import { canReadMail } from "@/lib/google-token";
-import { CrmTabs } from "@/components/crm/crm-tabs";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui-dark/card";
 import { Input, Label, Select, Textarea } from "@/components/ui-dark/input";
@@ -94,10 +93,9 @@ export default async function CrmSettingsPage({
   const mailReady = canReadMail(integration);
 
   return (
-    <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
-      <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">CRM settings</h1>
+    <div>
+      <h2 className="text-lg font-semibold text-slate-50 light:text-slate-900">CRM settings</h2>
       <p className="mt-1 text-sm text-slate-400 light:text-slate-500">How your team labels, sees and gathers customers.</p>
-      <CrmTabs active="/dashboard/crm/settings" />
 
       <div className="mt-4 space-y-3">
         <ErrorBanner code={error} />

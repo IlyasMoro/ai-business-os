@@ -32,7 +32,7 @@ export default async function EmployeeDetailPage({
     db.employee.findUnique({ where: { id, companyId: session.companyId, ...(await lockedWhere()) } }),
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "EMPLOYEE", entityId: id },
-      select: { id: true, filename: true, size: true },
+      select: { id: true, filename: true, size: true, mimeType: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     }),
     db.task.findMany({

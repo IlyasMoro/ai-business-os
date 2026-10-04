@@ -18,6 +18,9 @@ const TOGGLE_KEYS = [
   "staleTicketEscalation",
   "staleLeadCleanup",
   "creditLimitWarnings",
+  "draftInvoiceOnFulfil",
+  "lateOrderAlerts",
+  "lotExpiryAlerts",
 ] as const;
 
 type ToggleKey = (typeof TOGGLE_KEYS)[number];
