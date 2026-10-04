@@ -7,12 +7,16 @@ import type { Role } from "./nav-config";
 export function Sidebar({
   role,
   userName,
+  email,
+  companyName,
   isPlatformAdmin = false,
   hiddenHrefs,
   lockedHrefs,
 }: {
   role: Role;
   userName: string;
+  email: string;
+  companyName: string;
   isPlatformAdmin?: boolean;
   hiddenHrefs?: string[];
   lockedHrefs?: string[];
@@ -26,7 +30,7 @@ export function Sidebar({
       </div>
       <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
       <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
-        <UserMenu userName={userName} />
+        <UserMenu userName={userName} email={email} role={role} companyName={companyName} />
       </div>
     </aside>
   );

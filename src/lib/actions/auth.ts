@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/password";
-import { createSession, deleteSession } from "@/lib/session";
+import { createSession, deleteSession, sessionCutoffNow } from "@/lib/session";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 import {
@@ -253,7 +253,8 @@ export async function resetPassword(
   await db.$transaction([
     db.user.update({
       where: { id: resetToken.userId },
-      data: { passwordHash, failedLoginAttempts: 0, lockedUntil: null },
+      // A reset signs out every device that still holds an old sign-in.
+      data: { passwordHash, failedLoginAttempts: 0, lockedUntil: null, sessionsValidAfter: sessionCutoffNow() },
     }),
     db.passwordResetToken.updateMany({
       where: { userId: resetToken.userId, usedAt: null },

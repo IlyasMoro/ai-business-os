@@ -53,11 +53,12 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar role={user.role} userName={user.name} isPlatformAdmin={platformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
+      <Sidebar role={user.role} userName={user.name} email={user.email} companyName={user.company.name} isPlatformAdmin={platformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           companyName={user.company.name}
           userName={user.name}
+          email={user.email}
           role={user.role}
           isPlatformAdmin={platformAdmin}
           hiddenHrefs={hiddenHrefs}

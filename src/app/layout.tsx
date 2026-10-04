@@ -43,7 +43,9 @@ export const metadata: Metadata = {
 const THEME_INIT_SCRIPT = `
 (function () {
   try {
-    if (localStorage.getItem("theme") === "light") {
+    // "light", "dark" (the default) or "system", set from the account menu.
+    var theme = localStorage.getItem("theme");
+    if (theme === "light" || (theme === "system" && window.matchMedia("(prefers-color-scheme: light)").matches)) {
       document.documentElement.classList.add("light");
     }
   } catch (e) {}

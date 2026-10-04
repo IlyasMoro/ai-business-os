@@ -7,12 +7,28 @@ import { hasRole } from "@/lib/roles";
 
 export { hasRole };
 
+/**
+ * The signed-in user, checked against the database once per request: the
+ * account must still exist in the same company, the sign-in must be newer
+ * than the last password change (which signs out other devices), and the
+ * role comes from the database, so a removed member or a changed role takes
+ * effect at once instead of when the 7 day sign-in expires.
+ */
 export const verifySession = cache(async () => {
   const session = await getSessionPayload();
   if (!session?.userId) {
     redirect("/login");
   }
-  return session;
+  const user = await db.user.findUnique({
+    where: { id: session.userId },
+    select: { role: true, companyId: true, sessionsValidAfter: true },
+  });
+  const issuedMs = (session.iat ?? 0) * 1000;
+  if (!user || user.companyId !== session.companyId || (user.sessionsValidAfter && issuedMs < user.sessionsValidAfter.getTime())) {
+    // Cookies can only be cleared from a route handler, so go through one.
+    redirect("/api/session/clear");
+  }
+  return { ...session, role: user.role };
 });
 
 /** Page-level guard: redirects to the dashboard with an error banner if the

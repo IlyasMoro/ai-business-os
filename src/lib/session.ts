@@ -8,6 +8,8 @@ export type SessionPayload = {
   role: "OWNER" | "ADMIN" | "EMPLOYEE";
   name: string;
   email: string;
+  /** Issued at, in seconds; set by encrypt(). */
+  iat?: number;
 };
 
 const secretKey = process.env.JWT_SECRET;
@@ -39,6 +41,13 @@ export async function decrypt(
   } catch {
     return null;
   }
+}
+
+/** "Now" rounded down to the second, matching a token's `iat`. Stored as
+ * sessionsValidAfter it rejects every older sign-in, while a session
+ * created right after (same second) stays valid. */
+export function sessionCutoffNow(): Date {
+  return new Date(Math.floor(Date.now() / 1000) * 1000);
 }
 
 export async function createSession(payload: SessionPayload) {
