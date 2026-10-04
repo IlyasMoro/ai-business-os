@@ -2,32 +2,60 @@ import "server-only";
 import { db } from "@/lib/db";
 import { ensureMainBranch } from "@/lib/branches";
 import { lowStockRows, type BranchStockRow } from "@/lib/stock-levels";
+import type { StockAdjustmentReason, StockMovementKind } from "@/generated/prisma/client";
 
 /* Stock per branch. Product.stockQty is the company total and must always
    equal the sum of the product's BranchStock rows, so every change to
    stock goes through changeStock or setStockAt, never straight to
-   product.stockQty. */
+   product.stockQty. Every change also writes a StockMovement row, so a
+   product's history explains its stock; `movement` is required for that. */
 
 type Tx = Parameters<Parameters<typeof db.$transaction>[0]>[0];
 
-/** Adds `delta` (negative to take) at one branch and to the company total. */
+export type StockMovementInfo = {
+  kind: StockMovementKind;
+  /** Who did it; leave out for automatic changes. */
+  userId?: string | null;
+  reason?: StockAdjustmentReason;
+  note?: string;
+  links?: { orderId?: string; purchaseOrderId?: string; transferId?: string; returnId?: string; workOrderId?: string };
+};
+
+/** Adds `delta` (negative to take) at one branch and to the company total,
+ * and records the movement. */
 export async function changeStock(
   tx: Tx,
-  opts: { companyId: string; branchId: string; productId: string; delta: number }
+  opts: { companyId: string; branchId: string; productId: string; delta: number; movement: StockMovementInfo }
 ) {
   if (opts.delta === 0) return;
-  await tx.branchStock.upsert({
+  const row = await tx.branchStock.upsert({
     where: { branchId_productId: { branchId: opts.branchId, productId: opts.productId } },
     create: { companyId: opts.companyId, branchId: opts.branchId, productId: opts.productId, quantity: opts.delta },
     update: { quantity: { increment: opts.delta } },
+    select: { quantity: true },
   });
   await tx.product.update({ where: { id: opts.productId }, data: { stockQty: { increment: opts.delta } } });
+  const { kind, userId, reason, note, links } = opts.movement;
+  await tx.stockMovement.create({
+    data: {
+      kind,
+      delta: opts.delta,
+      quantityAfter: row.quantity,
+      reason: reason ?? null,
+      note: note ?? null,
+      userId: userId ?? null,
+      companyId: opts.companyId,
+      branchId: opts.branchId,
+      productId: opts.productId,
+      ...links,
+    },
+  });
 }
 
 /** Sets the count at one branch (a stock take) and moves the total by the difference. */
 export async function setStockAt(
   tx: Tx,
-  opts: { companyId: string; branchId: string; productId: string; quantity: number }
+  opts: { companyId: string; branchId: string; productId: string; quantity: number; movement: StockMovementInfo }
 ) {
   const current = await tx.branchStock.findUnique({
     where: { branchId_productId: { branchId: opts.branchId, productId: opts.productId } },

@@ -22,6 +22,9 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { SettingToggle } from "@/components/ui-dark/setting-toggle";
 import { Pencil } from "lucide-react";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { StockAdjustForm } from "@/components/inventory/stock-adjust-form";
+import { getStockHistory } from "@/lib/stock-history-data";
+import { MOVEMENT_KIND_LABEL, reasonLabel } from "@/lib/stock-history";
 
 const SALES_LOOKBACK_DAYS = 90;
 const DEFAULT_LEAD_TIME_DAYS = 14;
@@ -101,6 +104,8 @@ export default async function ProductDetailPage({
       };
     });
   const multiBranch = branchStock.length > 1;
+  const history = await getStockHistory(session.companyId, product.id);
+  const adjustBranches = branches.filter((b) => b.active).map((b) => ({ id: b.id, name: b.name, quantity: b.stock[0]?.quantity ?? 0 }));
   const lowAnywhere = branchStock.some((b) => b.low);
   const canSetLevels = hasRole(session, ["OWNER", "ADMIN"]);
   const [otherProducts, suppliers] = mrpOn
@@ -167,7 +172,7 @@ export default async function ProductDetailPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/inventory" label="Back to inventory" />
-        {error === "in-use" ? (
+        {error === "in-use" && why ? null : error === "in-use" ? (
           <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
             This product can&apos;t be deleted because it&apos;s used in an order, a bill of materials, a work order or a stock transfer.
           </p>
@@ -292,6 +297,63 @@ export default async function ProductDetailPage({
                 </CardContent>
               </Card>
             )}
+
+            {canSetLevels && product.trackingMode === "NONE" && adjustBranches.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Adjust stock</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <StockAdjustForm productId={product.id} branches={adjustBranches} />
+                </CardContent>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Stock history</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {history.length === 0 ? (
+                  <p className="text-sm text-slate-500">No stock movements yet.</p>
+                ) : (
+                  <ul className="max-h-[28rem] divide-y divide-white/[0.06] overflow-y-auto light:divide-slate-200">
+                    {history.map((m) => (
+                      <li key={m.id} className="flex items-start justify-between gap-3 py-2 text-sm">
+                        <div className="min-w-0">
+                          <p className="text-slate-100 light:text-slate-900">
+                            {MOVEMENT_KIND_LABEL[m.kind]}
+                            {m.reason && <span className="text-slate-400 light:text-slate-500">: {reasonLabel(m.reason)}</span>}
+                            {m.source && (
+                              <>
+                                {" · "}
+                                <Link href={m.source.href} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700">
+                                  {m.source.label}
+                                </Link>
+                              </>
+                            )}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {m.createdAt.toLocaleString()}
+                            {multiBranch && ` · ${m.branchName}`}
+                            {m.userName && ` · ${m.userName}`}
+                          </p>
+                          {m.note && <p className="mt-0.5 truncate text-xs text-slate-400 light:text-slate-500">{m.note}</p>}
+                        </div>
+                        <div className="shrink-0 text-right tabular-nums">
+                          <p className={m.delta > 0 ? "text-emerald-400 light:text-emerald-700" : "text-red-400 light:text-red-700"}>
+                            {m.delta > 0 ? "+" : ""}
+                            {m.delta}
+                          </p>
+                          <p className="text-xs text-slate-500">{m.quantityAfter} after</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {history.length === 50 && <p className="mt-2 text-xs text-slate-500">Showing the latest 50 movements.</p>}
+              </CardContent>
+            </Card>
 
             {suggestedReorderLevel !== null && suggestedReorderLevel !== product.reorderLevel && (
               <Card className="border-amber-500/30">

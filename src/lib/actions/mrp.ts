@@ -236,7 +236,13 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
       await db.$transaction(async (tx) => {
         for (const req of requirements) {
           const line = lines.find((l) => l.componentId === req.componentId)!;
-          await changeStock(tx, { companyId: session.companyId, branchId, productId: req.componentId, delta: -req.required });
+          await changeStock(tx, {
+            companyId: session.companyId,
+            branchId,
+            productId: req.componentId,
+            delta: -req.required,
+            movement: { kind: "CONSUMPTION", userId: session.userId, links: { workOrderId: wo.id } },
+          });
           if (line.component.trackingMode !== "NONE") {
             await takeFromLots(tx, {
               companyId: session.companyId,
@@ -250,7 +256,13 @@ export async function updateWorkOrderStatus(workOrderId: string, formData: FormD
             });
           }
         }
-        await changeStock(tx, { companyId: session.companyId, branchId, productId: wo.productId, delta: wo.quantity });
+        await changeStock(tx, {
+          companyId: session.companyId,
+          branchId,
+          productId: wo.productId,
+          delta: wo.quantity,
+          movement: { kind: "PRODUCTION", userId: session.userId, links: { workOrderId: wo.id } },
+        });
         if (wo.product.trackingMode === "LOT") {
           await putIntoLot(tx, {
             companyId: session.companyId,

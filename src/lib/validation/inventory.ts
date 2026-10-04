@@ -18,6 +18,12 @@ export const ProductSchema = z.object({
     .min(0, { error: "Reorder level cannot be negative." }),
 });
 
+/** Editing a product never touches stock: that goes through an adjustment,
+ * which records why (lib/stock-history.ts). */
+export const ProductEditSchema = ProductSchema.omit({ stockQty: true });
+
+export type StockAdjustState = { ok?: true; message?: string } | undefined;
+
 export type ProductFormState =
   | {
       errors?: {

@@ -105,13 +105,15 @@ test("stock is kept per branch and orders ship from their own branch", async ({ 
   await selectAndSave(page, 'select[name="status"]', "CONFIRMED");
   await expect(page.getByText(`0 at ${branchName}, 10 more at other branches, 4 requested`)).toBeVisible();
 
-  // A stock take at South, made with South in view.
-  await switchBranch(page, branchName);
-  await page.goto(`${productUrl}/edit`);
-  await expect(page.getByText(`Stock at ${branchName}`)).toBeVisible();
-  await page.fill('input[name="stockQty"]', "6");
-  await page.getByRole("button", { name: "Save changes" }).click();
-  await page.waitForURL(productUrl, { timeout: 45000 });
+  // A stock count at South, recorded through Adjust stock (the edit form
+  // no longer changes stock).
+  await page.goto(productUrl);
+  const adjust = page.locator('form:has(button:has-text("Adjust stock"))');
+  await adjust.locator('select[name="branchId"]').selectOption({ label: `${branchName} (0 on hand)` });
+  await adjust.locator('select[name="mode"]').selectOption("count");
+  await adjust.locator('input[name="quantity"]').fill("6");
+  await adjust.getByRole("button", { name: "Adjust stock" }).click();
+  await expect(page.getByText("Stock adjusted and recorded.")).toBeVisible({ timeout: 45000 });
 
   await page.goto(orderUrl);
   for (const status of ["CONFIRMED", "FULFILLED"]) {

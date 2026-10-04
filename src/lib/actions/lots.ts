@@ -94,7 +94,13 @@ export async function receivePurchaseOrder(purchaseOrderId: string, formData: Fo
   const branchId = await stockBranchFor(session.companyId, po.branchId);
   await db.$transaction(async (tx) => {
     for (const item of po.items) {
-      await changeStock(tx, { companyId: session.companyId, branchId, productId: item.product.id, delta: item.quantity });
+      await changeStock(tx, {
+        companyId: session.companyId,
+        branchId,
+        productId: item.product.id,
+        delta: item.quantity,
+        movement: { kind: "RECEIPT", userId: session.userId, links: { purchaseOrderId } },
+      });
     }
     for (const plan of plans) {
       for (const e of plan.entries) {

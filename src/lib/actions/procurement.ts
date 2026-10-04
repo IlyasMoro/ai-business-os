@@ -138,7 +138,13 @@ export async function updatePurchaseOrderStatus(purchaseOrderId: string, formDat
 
     if (isNewlyReceived) {
       for (const item of current.items) {
-        await changeStock(tx, { companyId: session.companyId, branchId, productId: item.productId, delta: item.quantity });
+        await changeStock(tx, {
+          companyId: session.companyId,
+          branchId,
+          productId: item.productId,
+          delta: item.quantity,
+          movement: { kind: "RECEIPT", userId: session.userId, links: { purchaseOrderId } },
+        });
       }
     }
   });

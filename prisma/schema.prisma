@@ -49,6 +49,7 @@ model Company {
   controllingSettings ControllingSettings?
   stockLots           StockLot[]
   lotMovements        LotMovement[]
+  stockMovements      StockMovement[]
   inventorySettings   InventorySettings?
   invoices            Invoice[]
   transactions        Transaction[]
@@ -171,6 +172,7 @@ model User {
   chatMessages        AiChatMessage[]
   requestedAiActions  AiAction[]           @relation("AiActionRequestedBy")
   decidedAiActions    AiAction[]           @relation("AiActionDecidedBy")
+  stockMovements      StockMovement[]
   passwordResetTokens PasswordResetToken[]
   auditLogs           AuditLog[]
   taskComments        TaskComment[]
@@ -231,6 +233,7 @@ model Branch {
   employees      Employee[]      @relation("EmployeeBranch")
   costCenters    CostCenter[]    @relation("CostCenterBranch")
   stock          BranchStock[]
+  movements      StockMovement[]
   lots           StockLot[]
   transfersOut   StockTransfer[] @relation("TransferFrom")
   transactions   Transaction[]   @relation("TransactionBranch")
@@ -433,23 +436,23 @@ enum DealStage {
 
 // A sales opportunity with one customer, moved across the pipeline board.
 model Deal {
-  id            String    @id @default(cuid())
-  title         String
-  value         Float     @default(0)
-  stage         DealStage @default(NEW)
+  id             String    @id @default(cuid())
+  title          String
+  value          Float     @default(0)
+  stage          DealStage @default(NEW)
   // Chance of winning, 0 to 100; defaults by stage (lib/crm-pipeline.ts).
-  probability   Int       @default(10)
-  expectedClose DateTime?
-  lostReason    String?
+  probability    Int       @default(10)
+  expectedClose  DateTime?
+  lostReason     String?
   // Set when the deal is won or lost.
-  closedAt      DateTime?
+  closedAt       DateTime?
   // Order within its stage column on the board.
-  position      Float     @default(0)
+  position       Float     @default(0)
   // The expected close date an "overdue" reminder was made for, so a
   // deal gets one reminder per date it misses.
   closeNudgedFor DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -574,6 +577,7 @@ model Product {
 
   // stockQty above is the company total: always the sum of these rows.
   branchStock   BranchStock[]
+  movements     StockMovement[]
   transferItems StockTransferItem[]
 
   companyId  String
@@ -746,15 +750,15 @@ model Quote {
 
   // Online acceptance: the secret link sent to the customer, when they
   // first opened it, and who accepted (typed name) from where.
-  publicToken   String?   @unique
-  viewedAt      DateTime?
+  publicToken    String?   @unique
+  viewedAt       DateTime?
   // When the "expires soon" reminder was made, so it's made once.
   expiryNudgedAt DateTime?
-  signedName    String?
-  signedIp      String?
-  declineReason String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  signedName     String?
+  signedIp       String?
+  declineReason  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -1336,15 +1340,15 @@ model AutomationSettings {
 // ---------- Integrations ----------
 
 model GoogleIntegration {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   email        String
   accessToken  String
   refreshToken String
   expiresAt    DateTime
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
   // Space separated Google scopes granted; reading mail needs gmail.readonly.
-  scopes       String   @default("")
+  scopes       String    @default("")
   // The mailbox sync has logged everything up to here.
   mailSyncedAt DateTime?
 
@@ -1418,10 +1422,10 @@ model CrmSettings {
   whatsappCountryCode String @default("27")
 
   // Built in automatic steps (lib/crm-auto.ts), on unless switched off.
-  autoQuoteOpened  Boolean @default(true)
-  autoQuoteExpiry  Boolean @default(true)
-  autoDealOverdue  Boolean @default(true)
-  dailyDigest      Boolean @default(true)
+  autoQuoteOpened Boolean @default(true)
+  autoQuoteExpiry Boolean @default(true)
+  autoDealOverdue Boolean @default(true)
+  dailyDigest     Boolean @default(true)
 
   companyId  String  @unique
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -2090,15 +2094,15 @@ enum CrmRuleAction {
 
 // "When this happens, do that", run by lib/crm-rules.ts.
 model CrmRule {
-  id      String         @id @default(cuid())
-  name    String
-  active  Boolean        @default(true)
-  trigger CrmRuleTrigger
+  id        String         @id @default(cuid())
+  name      String
+  active    Boolean        @default(true)
+  trigger   CrmRuleTrigger
   // DEAL_STAGE: the stage entered. CUSTOMER_QUIET: days without contact.
   stage     DealStage?
   quietDays Int?
 
-  action CrmRuleAction
+  action     CrmRuleAction
   // What the action needs, depending on its type: a reminder title and
   // days, a tag, a sequence, a status, a person and a message.
   title      String?
@@ -2132,4 +2136,63 @@ model CrmRuleRun {
   rule   CrmRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
 
   @@unique([ruleId, key])
+}
+
+// ---------- Stock history ----------
+
+enum StockMovementKind {
+  // The balance on hand when history started, or a new product's first stock.
+  OPENING
+  ADJUSTMENT
+  RECEIPT
+  SALE
+  SALE_CANCELLED
+  RETURN
+  TRANSFER_OUT
+  TRANSFER_IN
+  PRODUCTION
+  CONSUMPTION
+}
+
+enum StockAdjustmentReason {
+  COUNT
+  DAMAGED
+  LOST
+  FOUND
+  OTHER
+}
+
+// One change to a product's stock at one branch. Written by changeStock in
+// lib/stock.ts, the only way stock changes, so every movement is here.
+model StockMovement {
+  id            String                 @id @default(cuid())
+  kind          StockMovementKind
+  // Positive adds stock, negative takes it.
+  delta         Int
+  // The branch's quantity right after this movement.
+  quantityAfter Int
+  reason        StockAdjustmentReason?
+  note          String?
+  createdAt     DateTime               @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  branchId   String
+  branch     Branch  @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  // Who made the change; empty for automatic ones (EDI, quotes accepted online).
+  userId     String?
+  user       User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // The record behind it, when there is one.
+  orderId         String?
+  purchaseOrderId String?
+  transferId      String?
+  returnId        String?
+  workOrderId     String?
+
+  @@index([productId, createdAt])
+  @@index([branchId])
+  @@index([companyId])
 }

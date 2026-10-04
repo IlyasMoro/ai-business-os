@@ -60,7 +60,7 @@ export default async function InventoryPage({
         id: true,
         name: true,
         stockQty: true,
-        unitPrice: true,
+        cost: true,
         ...(viewBranchId ? { branchStock: { where: { branchId: viewBranchId }, select: { quantity: true } } } : {}),
       },
     }),
@@ -73,13 +73,15 @@ export default async function InventoryPage({
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
 
-  const totalValue = allForTotals.reduce((s, p) => s + qtyOf(p) * p.unitPrice, 0);
+  // Stock is worth what it cost, not what it will sell for.
+  const totalValue = allForTotals.reduce((s, p) => s + qtyOf(p) * p.cost, 0);
+  const missingCost = allForTotals.filter((p) => qtyOf(p) > 0 && p.cost === 0).length;
   const lowStockCount = lowIds.size;
   const healthyRatio =
     allForTotals.length > 0 ? ((allForTotals.length - lowStockCount) / allForTotals.length) * 100 : null;
 
   const topProductsByValue = allForTotals
-    .map((p) => ({ label: p.name, value: qtyOf(p) * p.unitPrice }))
+    .map((p) => ({ label: p.name, value: qtyOf(p) * p.cost }))
     .filter((p) => p.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, 6);
@@ -128,10 +130,15 @@ export default async function InventoryPage({
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Inventory value</p>
+          <p className="text-sm text-slate-400 light:text-slate-500">Stock value at cost</p>
           <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
+          {missingCost > 0 && (
+            <p className="mt-1 text-xs text-amber-400 light:text-amber-700">
+              {missingCost} product{missingCost === 1 ? " has" : "s have"} stock but no cost, so count as $0.
+            </p>
+          )}
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Low stock items</p>
@@ -153,7 +160,7 @@ export default async function InventoryPage({
 
       {topProductsByValue.length > 0 && (
         <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
-          <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top products by value</h2>
+          <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top products by stock value at cost</h2>
           <HorizontalBarChart data={topProductsByValue} color={VIZ.blue} />
         </div>
       )}

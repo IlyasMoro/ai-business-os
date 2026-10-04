@@ -170,6 +170,7 @@ export async function sendTransfer(transferId: string) {
           branchId: transfer.fromBranchId,
           productId: item.productId,
           delta: -item.quantity,
+          movement: { kind: "TRANSFER_OUT", userId: session.userId, links: { transferId: transfer.id } },
         });
         // Re-check inside the transaction in case a sale got there first.
         const left = await tx.branchStock.findUnique({
@@ -241,6 +242,7 @@ export async function receiveTransfer(transferId: string) {
           branchId: transfer.toBranchId,
           productId: item.productId,
           delta: item.quantity,
+          movement: { kind: "TRANSFER_IN", userId: session.userId, links: { transferId: transfer.id } },
         });
       }
       for (const lot of arrivals) {

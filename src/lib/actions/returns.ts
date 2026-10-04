@@ -201,7 +201,13 @@ export async function updateReturnStatus(returnId: string, formData: FormData) {
     if (nextStatus === "RECEIVED") {
       for (const item of rma.items) {
         if (!shouldRestock(item.condition, policy.restockDamaged)) continue;
-        await changeStock(tx, { companyId: session.companyId, branchId, productId: item.productId, delta: item.quantity });
+        await changeStock(tx, {
+          companyId: session.companyId,
+          branchId,
+          productId: item.productId,
+          delta: item.quantity,
+          movement: { kind: "RETURN", userId: session.userId, links: { returnId, orderId: rma.orderId } },
+        });
         if (item.product.trackingMode !== "NONE") {
           await returnToLots(tx, {
             companyId: session.companyId,

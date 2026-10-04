@@ -16,7 +16,7 @@ export function ProductForm({
   defaultValues,
   submitLabel = "Save product",
   branches,
-  stockBranch,
+  editing = false,
 }: {
   action: Action;
   defaultValues?: {
@@ -25,14 +25,14 @@ export function ProductForm({
     description: string | null;
     cost: number;
     unitPrice: number;
-    stockQty: number;
     reorderLevel: number;
   };
   submitLabel?: string;
   /** New products: which branch the opening stock goes to. */
   branches?: BranchPicker | null;
-  /** Editing: the branch whose count the stock field shows and sets. */
-  stockBranch?: { id: string; label: string } | null;
+  /** Editing an existing product: no stock field, since stock changes
+   * through a recorded adjustment on the product page. */
+  editing?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
 
@@ -89,20 +89,20 @@ export function ProductForm({
         </div>
       </div>
       <div className="grid grid-cols-2 gap-4">
-        <div>
-          {stockBranch && <input type="hidden" name="branchId" value={stockBranch.id} />}
-          <Label htmlFor="stockQty">{stockBranch?.label ?? "Stock quantity"}</Label>
-          <Input
-            id="stockQty"
-            name="stockQty"
-            type="number"
-            step="1"
-            min="0"
-            defaultValue={defaultValues?.stockQty ?? 0}
-            required
-          />
-          <FieldError messages={state?.errors?.stockQty} />
-        </div>
+        {editing ? (
+          <div>
+            <p className="text-sm font-medium text-slate-300 light:text-slate-600">Stock</p>
+            <p className="mt-1.5 text-xs text-slate-500">
+              Change stock with Adjust stock on the product page, so every change is recorded with a reason.
+            </p>
+          </div>
+        ) : (
+          <div>
+            <Label htmlFor="stockQty">Opening stock</Label>
+            <Input id="stockQty" name="stockQty" type="number" step="1" min="0" defaultValue={0} required />
+            <FieldError messages={state?.errors?.stockQty} />
+          </div>
+        )}
         <div>
           <Label htmlFor="reorderLevel">Reorder level</Label>
           <Input

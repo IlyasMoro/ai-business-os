@@ -174,7 +174,13 @@ export async function updateOrderStatus(
     try {
       await db.$transaction(async (tx) => {
         for (const item of order.items) {
-          await changeStock(tx, { companyId: session.companyId, branchId, productId: item.product.id, delta: -item.quantity });
+          await changeStock(tx, {
+            companyId: session.companyId,
+            branchId,
+            productId: item.product.id,
+            delta: -item.quantity,
+            movement: { kind: "SALE", userId: session.userId, links: { orderId } },
+          });
           if (item.product.trackingMode !== "NONE") {
             await takeFromLots(tx, {
               companyId: session.companyId,
@@ -214,7 +220,13 @@ export async function updateOrderStatus(
   if (nextStatus === "CANCELLED" && order.status === "FULFILLED") {
     await db.$transaction(async (tx) => {
       for (const item of order.items) {
-        await changeStock(tx, { companyId: session.companyId, branchId, productId: item.product.id, delta: item.quantity });
+        await changeStock(tx, {
+          companyId: session.companyId,
+          branchId,
+          productId: item.product.id,
+          delta: item.quantity,
+          movement: { kind: "SALE_CANCELLED", userId: session.userId, links: { orderId } },
+        });
         if (item.product.trackingMode !== "NONE") {
           await returnToLots(tx, {
             companyId: session.companyId,
