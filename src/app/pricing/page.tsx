@@ -43,9 +43,11 @@ export default function PricingPage() {
               and how big your team is.
             </p>
           </div>
-          <Reveal className="mt-12">
+          {/* No Reveal here: the cards sit above the fold and are taller than a phone screen,
+              so a scroll reveal would leave them hidden until the visitor scrolls. */}
+          <div className="mt-12">
             <PricingPlans />
-          </Reveal>
+          </div>
         </section>
 
         <section id="compare" className={styles.section}>

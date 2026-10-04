@@ -50,7 +50,7 @@ describe("Enterprise pricing", () => {
   });
 
   it("turns a configuration into limits", () => {
-    expect(enterpriseLimits({ users: 60, branches: 5, edi: false, aiPacks: 3 })).toEqual({ users: 60, branches: 5, aiRequests: 2500, edi: false });
+    expect(enterpriseLimits({ users: 60, branches: 5, edi: false, aiPacks: 3 })).toEqual({ users: 60, branches: 5, aiRequests: 3500, edi: false });
   });
 
   it("suggests the smallest configuration that fits a team", () => {

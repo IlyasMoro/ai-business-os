@@ -1,29 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import { decrypt } from "@/lib/session";
 
-// Routes anyone can view, logged in or not, with no redirect either way.
-// apple-icon/opengraph-image are code-generated (no literal file extension in
-// the URL), so they don't match the static-asset exclusion in `config.matcher`
-// below and must be listed explicitly — otherwise unauthenticated requests
-// (social-media link previews, Safari's home-screen icon fetch) get bounced
-// to /login instead of the actual image.
-const openRoutes = ["/", "/terms", "/privacy", "/pricing", "/apple-icon", "/opengraph-image"];
+// The signed in app lives under /dashboard, so only that is gated here.
+// Everything else is public: the marketing pages, robots.txt, sitemap.xml,
+// the code generated icons and the customer facing secret links (/q/ quotes,
+// /f/ lead forms, /u/ unsubscribe). Unknown paths fall through to the 404
+// page instead of bouncing to /login. Dashboard pages also check the session
+// against the database themselves (verifySession in lib/dal.ts, called by
+// the dashboard layout), so this redirect is the first gate, not the only one.
+function isPrivateRoute(path: string) {
+  return path === "/dashboard" || path.startsWith("/dashboard/");
+}
+
 // Routes for signed out visitors only — a logged in user is redirected to
 // the dashboard instead of seeing them.
 const authRoutes = ["/login", "/register", "/forgot-password"];
 
 export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
-  // Customer facing pages reached by a secret link: a quote to accept
-  // (/q/), the web lead form (/f/) and unsubscribing (/u/).
-  const isOpenRoute = openRoutes.includes(path) || /^\/(q|f|u)\/[^/]+$/.test(path);
   const isAuthRoute =
     authRoutes.includes(path) || path.startsWith("/reset-password/") || path.startsWith("/invite/");
 
   const cookie = req.cookies.get("session")?.value;
   const session = await decrypt(cookie);
 
-  if (!isOpenRoute && !isAuthRoute && !session?.userId) {
+  if (isPrivateRoute(path) && !session?.userId) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
   }
 

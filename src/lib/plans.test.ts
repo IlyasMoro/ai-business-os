@@ -41,7 +41,7 @@ describe("plans", () => {
   it("shows the same numbers in the comparison table", () => {
     // The last column is Enterprise, built per client from unit prices.
     expect(row("Users included").values).toEqual([...LISTED_PLANS.map((p) => String(p.users)), "40 to 500"]);
-    expect(row("AI Copilot requests a month").values).toEqual([...LISTED_PLANS.map((p) => fmt(p.aiRequests)), "1,000 and up"]);
+    expect(row("AI Copilot requests a month").values).toEqual([...LISTED_PLANS.map((p) => fmt(p.aiRequests)), "2,000 and up"]);
     expect(row("Branches").values).toEqual(["1", "Up to 3", "3, then $25 each"]);
     expect(row("Extra users, each a month").values).toEqual([...LISTED_PLANS.map(() => `$${EXTRA_USER_PRICE}`), "$16"]);
   });

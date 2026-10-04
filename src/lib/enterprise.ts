@@ -21,7 +21,7 @@ export const ENTERPRISE = {
   /** EDI add-on, a month. */
   ediPrice: 99,
   /** AI requests a month included, then packs. */
-  aiIncluded: 1000,
+  aiIncluded: 2000,
   aiPackSize: 500,
   aiPackPrice: 20,
   maxAiPacks: 40,

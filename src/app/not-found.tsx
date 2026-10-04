@@ -1,22 +1,52 @@
 import Link from "next/link";
-import { LinkButton } from "@/components/ui-dark/button";
+import { ArrowRight } from "lucide-react";
+import { SiteHeader } from "@/components/landing/site-header";
+import { LandingFooter } from "@/components/landing/landing-footer";
+import { cn } from "@/lib/utils";
+import styles from "@/components/landing/landing.module.css";
 
+export const metadata = {
+  title: "Page not found",
+};
+
+/* The public 404 for addresses that don't exist, in the landing page's
+   language: white page, capital heading, the same header and footer.
+   Missing records inside the app use app/dashboard/not-found.tsx. */
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      <p className="text-sm font-semibold text-blue-400">404</p>
-      <h1 className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">Page not found</h1>
-      <p className="mt-2 max-w-sm text-sm text-slate-400 light:text-slate-500">
-        The page you&apos;re looking for doesn&apos;t exist or may have been moved.
-      </p>
-      <div className="mt-6">
-        <LinkButton href="/">Go home</LinkButton>
-      </div>
-      <p className="mt-4 text-sm">
-        <Link href="/dashboard" className="text-slate-400 hover:text-slate-200 light:text-slate-500 light:hover:text-slate-700">
-          Back to dashboard
-        </Link>
-      </p>
+    <div className={styles.page}>
+      <SiteHeader light />
+
+      <main>
+        <section className={cn(styles.section, styles.pricingTop, "text-center")}>
+          <p className={styles.eyebrow}>404</p>
+          <h1 className={styles.title}>Page not found</h1>
+          <p className={cn(styles.sub, "mx-auto")}>
+            The page you&apos;re looking for doesn&apos;t exist or has moved. Try one of these instead.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <span>
+              <Link href="/" className={cn(styles.btnDark, "px-[30px] py-3 text-[0.86rem]")}>
+                Back to home
+              </Link>
+            </span>
+            <span>
+              <Link href="/pricing" className={cn(styles.btn, "px-[30px] py-3 text-[0.86rem]")}>
+                See pricing
+              </Link>
+            </span>
+          </div>
+          <p className={styles.pricingMore}>
+            Already have an account?{" "}
+            <Link href="/login" className="group inline-flex items-center gap-1">
+              Sign in
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </p>
+        </section>
+      </main>
+
+      <LandingFooter />
     </div>
   );
 }
