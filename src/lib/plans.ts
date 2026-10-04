@@ -272,13 +272,25 @@ export const PLAN_MATRIX: PlanRowGroup[] = [
     ],
   },
   {
+    // Every CRM feature comes with every plan.
+    title: "CRM and sales",
+    rows: [
+      { label: "Deals pipeline board with win chances", values: ALL },
+      { label: "Activity history and reminders on the calendar", values: ALL },
+      { label: "Account owners and lead sources", values: ALL },
+      { label: "Quotes that become orders, with PDF and email", values: ALL },
+      { label: "Sales report with forecast and win rate", values: ALL },
+      { label: "Import customers from a CSV file", values: ALL },
+    ],
+  },
+  {
     title: "AI and integrations",
     rows: [
       { label: "AI Copilot requests a month", values: perPlan((p) => p.aiRequests.toLocaleString("en-US")) },
       { label: "AI asks before it acts", values: ALL },
       { label: "Extra AI requests, never expire", values: perPlan(() => `$${AI_TOPUP_PRICE} per ${AI_TOPUP_REQUESTS}`) },
       { label: "Google integration for Gmail and Calendar", values: withFeature("integrations") },
-      { label: "Email for invoices, reminders and notifications", values: ALL },
+      { label: "Email for invoices, quotes, reminders and notifications", values: ALL },
     ],
   },
   {
