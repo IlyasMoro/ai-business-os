@@ -200,7 +200,7 @@ export default async function ReturnsPage({
                   <td className="px-5 py-3">
                     <StatusBadge status={rma.status} color={statusColor[rma.status]} />
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
+                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(rma.refundAmount)}
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{rma.createdAt.toLocaleDateString()}</td>

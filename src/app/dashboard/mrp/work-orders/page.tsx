@@ -92,7 +92,7 @@ export default async function WorkOrdersPage({
                     </Link>
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.product.name}</td>
-                  <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{wo.quantity}</td>
+                  <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{wo.quantity}</td>
                   <td className="px-5 py-3">
                     <StatusBadge status={wo.status} tone={statusTone[wo.status]} />
                   </td>

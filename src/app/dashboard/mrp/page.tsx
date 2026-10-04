@@ -150,7 +150,7 @@ export default async function PlanningPage({
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="font-mono tabular-nums">
+            <tbody className="tabular-nums">
               {visible.map((row) => (
                 <tr key={row.productId} className="border-b border-white/[0.04] last:border-0">
                   <td className="px-4 py-3 font-sans">

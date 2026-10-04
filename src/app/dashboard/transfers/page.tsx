@@ -89,7 +89,7 @@ export default async function TransfersPage() {
                         {t.toBranch.name}
                       </span>
                     </td>
-                    <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
+                    <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                       {t.items.reduce((s, i) => s + i.quantity, 0)}
                     </td>
                     <td className="px-5 py-3">

@@ -186,7 +186,7 @@ export function Sparkline({
           style={align === "center" ? { left: active[0] } : undefined}
         >
           {labels?.[hoverIndex] && <span className="mr-1.5 text-slate-400 light:text-slate-500">{labels[hoverIndex]}</span>}
-          <span className="font-mono tabular-nums text-slate-50 light:text-slate-900">{format(data[hoverIndex])}</span>
+          <span className="tabular-nums text-slate-50 light:text-slate-900">{format(data[hoverIndex])}</span>
         </div>
       )}
 

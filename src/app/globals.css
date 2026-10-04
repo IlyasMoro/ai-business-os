@@ -36,7 +36,7 @@
 
 @theme inline {
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Century Gothic", CenturyGothic, AppleGothic, var(--font-jost), sans-serif;
+  --font-display: var(--font-jost), sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -53,10 +53,10 @@ html.light {
 
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  /* Inter for everything people read: tables, forms, cards and menus.
-     Century Gothic is kept as the brand display face for page titles and
-     the AIBOS wordmark (h1 and .font-display below), where its wide,
-     geometric letters read well because they are large. */
+  /* Inter for everything people read: tables, forms, cards and menus, with
+     tabular-nums lining up figures. Jost is the brand display face for page
+     titles and the AIBOS wordmark (h1 and .font-display below): a loaded web
+     font, so titles look the same on every device. */
 }
 
 h1,

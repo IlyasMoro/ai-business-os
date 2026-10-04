@@ -161,7 +161,7 @@ export default async function TransferDetailPage({
                         )}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-mono tabular-nums text-slate-200 light:text-slate-700">{item.quantity}</span>
+                        <span className="tabular-nums text-slate-200 light:text-slate-700">{item.quantity}</span>
                         {isDraft && can("edit") && (
                           <DeleteButton
                             action={removeTransferItem.bind(null, transfer.id, item.id)}
@@ -217,7 +217,7 @@ export default async function TransferDetailPage({
                         {m.lot.lotNumber}
                       </Link>
                     </span>
-                    <span className="font-mono tabular-nums text-slate-300">{-m.quantity}</span>
+                    <span className="tabular-nums text-slate-300">{-m.quantity}</span>
                   </li>
                 ))}
               </ul>

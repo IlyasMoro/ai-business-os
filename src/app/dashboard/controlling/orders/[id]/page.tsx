@@ -103,7 +103,7 @@ export default async function InternalOrderPage({
           ].map((k) => (
             <div key={k.label} className={`${card} p-5`}>
               <p className="text-sm text-slate-400 light:text-slate-500">{k.label}</p>
-              <p className={`mt-2 font-mono text-2xl font-semibold tabular-nums ${k.cls}`}>{k.value}</p>
+              <p className={`mt-2 text-2xl font-semibold tabular-nums ${k.cls}`}>{k.value}</p>
             </div>
           ))}
         </div>
@@ -135,7 +135,7 @@ export default async function InternalOrderPage({
                         l.label
                       )}
                     </td>
-                    <td className={`px-5 py-2 text-right font-mono tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
+                    <td className={`px-5 py-2 text-right tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
                   </tr>
                 ))}
               </tbody>

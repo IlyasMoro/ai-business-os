@@ -88,7 +88,7 @@ export default async function PayrollRunDetailPage({
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.employee.name}</p>
-                      <p className="font-mono text-xs tabular-nums text-slate-500">
+                      <p className="text-xs tabular-nums text-slate-500">
                         Gross ${item.grossPay.toFixed(2)} − Deductions ${item.deductions.toFixed(2)} =
                         Net ${item.netPay.toFixed(2)}
                       </p>
@@ -109,7 +109,7 @@ export default async function PayrollRunDetailPage({
               </ul>
             )}
             <PayrollItemForm payrollRunId={payrollRun.id} employees={employees} />
-            <p className="mt-4 text-right font-mono text-sm font-semibold tabular-nums text-amber-400">
+            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
               Total: ${payrollRun.totalAmount.toFixed(2)}
             </p>
           </CardContent>

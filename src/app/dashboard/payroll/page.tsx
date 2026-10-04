@@ -103,7 +103,7 @@ export default async function PayrollPage({
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total paid</p>
-          <p className="mt-2 font-mono text-2xl font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
             <AnimatedCounter value={totalPaid} prefix="$" decimals={0} />
           </p>
           <div className="mt-2">
@@ -164,7 +164,7 @@ export default async function PayrollPage({
                   <td className="px-5 py-3">
                     <StatusBadge status={run.status} color={statusColor[run.status]} />
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
+                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(run.totalAmount)}
                   </td>
                 </tr>

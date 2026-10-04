@@ -188,16 +188,16 @@ export default async function InventoryPage({
                       {product.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
+                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(product.unitPrice)}
                   </td>
                   <td className="px-5 py-3">
                     {product.low ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 font-mono text-xs tabular-nums text-red-400">
+                      <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-xs tabular-nums text-red-400">
                         {product.qty} low
                       </span>
                     ) : (
-                      <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">{product.qty}</span>
+                      <span className="tabular-nums text-slate-300 light:text-slate-600">{product.qty}</span>
                     )}
                   </td>
                 </tr>

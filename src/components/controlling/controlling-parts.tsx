@@ -57,7 +57,7 @@ export function UsageBar({ used, status }: { used: number | null; status: Varian
       <div className="h-1.5 w-24 overflow-hidden rounded-full bg-white/10 light:bg-slate-200">
         <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: statusColor[status] }} />
       </div>
-      <span className="w-12 text-right font-mono text-xs tabular-nums text-slate-400">{used === null ? "" : `${Math.round(used * 100)}%`}</span>
+      <span className="w-12 text-right text-xs tabular-nums text-slate-400">{used === null ? "" : `${Math.round(used * 100)}%`}</span>
     </div>
   );
 }

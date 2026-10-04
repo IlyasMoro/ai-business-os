@@ -193,7 +193,7 @@ export default async function InvoicingPage({
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                     {invoice.dueDate.toLocaleDateString()}
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-amber-400">
+                  <td className="px-5 py-3 tabular-nums text-amber-400">
                     {formatCompactCurrency(invoice.totalAmount)}
                   </td>
                 </tr>

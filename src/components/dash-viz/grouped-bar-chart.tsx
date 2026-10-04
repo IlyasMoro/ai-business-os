@@ -143,7 +143,7 @@ export function GroupedBarChart({
                   y={t.y}
                   textAnchor="end"
                   dominantBaseline="middle"
-                  className="fill-slate-500 font-mono text-[10px] tabular-nums"
+                  className="fill-slate-500 text-[10px] tabular-nums"
                 >
                   {compactNumber(t.v, true)}
                 </text>
@@ -210,7 +210,7 @@ export function GroupedBarChart({
                       x={g.center}
                       y={chart.baseline + 32}
                       textAnchor="middle"
-                      className={`font-mono text-[10px] font-medium tabular-nums ${
+                      className={`text-[10px] font-medium tabular-nums ${
                         diff > 0
                           ? "fill-emerald-400 light:fill-emerald-700"
                           : diff < 0
@@ -244,19 +244,19 @@ export function GroupedBarChart({
                 <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: VIZ.blue }} />
                 {aLabel}
               </span>
-              <span className="font-mono tabular-nums text-slate-50 light:text-slate-900">{fullNumber(focus.d.a, true)}</span>
+              <span className="tabular-nums text-slate-50 light:text-slate-900">{fullNumber(focus.d.a, true)}</span>
             </p>
             <p className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-1.5 text-slate-300 light:text-slate-700">
                 <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: VIZ.amber }} />
                 {bLabel}
               </span>
-              <span className="font-mono tabular-nums text-slate-50 light:text-slate-900">{fullNumber(focus.d.b, true)}</span>
+              <span className="tabular-nums text-slate-50 light:text-slate-900">{fullNumber(focus.d.b, true)}</span>
             </p>
             <p className="mt-1 flex items-center justify-between gap-4 border-t border-white/10 pt-1 light:border-slate-200">
               <span className="text-slate-400 light:text-slate-500">{diffLabel}</span>
               <span
-                className={`font-mono font-semibold tabular-nums ${
+                className={`font-semibold tabular-nums ${
                   focus.d.a - focus.d.b >= 0 ? "text-emerald-400 light:text-emerald-700" : "text-red-400 light:text-red-700"
                 }`}
               >

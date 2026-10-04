@@ -23,7 +23,7 @@ function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnTyp
               <th className="px-5 py-2 text-right font-medium">Margin %</th>
             </tr>
           </thead>
-          <tbody className="font-mono tabular-nums">
+          <tbody className="tabular-nums">
             {rows.map((r) => (
               <tr key={r.key} className="border-b border-white/[0.04] last:border-0">
                 <td className="px-5 py-2 font-sans">

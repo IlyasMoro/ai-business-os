@@ -151,7 +151,7 @@ export default async function OrderDetailPage({
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
-                      <p className="font-mono text-xs tabular-nums text-slate-500">
+                      <p className="text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
@@ -185,7 +185,7 @@ export default async function OrderDetailPage({
               </ul>
             )}
             <OrderItemForm orderId={order.id} products={products} />
-            <p className="mt-4 text-right font-mono text-sm font-semibold tabular-nums text-amber-400">
+            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
               Total: ${order.totalAmount.toFixed(2)}
             </p>
           </CardContent>
@@ -213,7 +213,7 @@ export default async function OrderDetailPage({
                         {rma.rmaNumber}
                       </Link>
                       <span className="flex items-center gap-3">
-                        <span className="font-mono tabular-nums text-slate-400">${rma.refundAmount.toFixed(2)}</span>
+                        <span className="tabular-nums text-slate-400">${rma.refundAmount.toFixed(2)}</span>
                         <StatusBadge status={rma.status} tone={returnStatusTone[rma.status]} />
                       </span>
                     </li>

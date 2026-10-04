@@ -70,9 +70,9 @@ export default async function CostCentersPage({
                       </Link>
                       {!r.active && <Badge tone="slate" className="ml-2">Inactive</Badge>}
                     </td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-400">{heads.get(r.id) ?? 0}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-400">{heads.get(r.id) ?? 0}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
                     <td className="px-5 py-3">
                       <UsageBar used={v.used} status={v.status} />
                     </td>

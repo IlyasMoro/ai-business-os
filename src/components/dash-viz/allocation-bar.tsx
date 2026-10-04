@@ -32,7 +32,7 @@ export function AllocationBar({
           <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: color }} />
           <span className="truncate">{label}</span>
         </span>
-        <span className="flex shrink-0 items-baseline gap-2 font-mono tabular-nums">
+        <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
           <span className="text-slate-200 light:text-slate-800">{count.toLocaleString()}</span>
           <span className="w-9 text-right text-[11px] text-slate-500">{Math.round(clamped)}%</span>
         </span>

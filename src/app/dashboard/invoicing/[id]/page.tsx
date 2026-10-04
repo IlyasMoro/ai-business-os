@@ -110,7 +110,7 @@ export default async function InvoiceDetailPage({
                   <li key={item.id} className="flex items-center justify-between py-2 text-sm">
                     <div>
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.description}</p>
-                      <p className="font-mono text-xs tabular-nums text-slate-500">
+                      <p className="text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
@@ -125,7 +125,7 @@ export default async function InvoiceDetailPage({
               </ul>
             )}
             <InvoiceLineItemForm invoiceId={invoice.id} products={products} />
-            <div className="mt-4 space-y-1 text-right font-mono text-sm tabular-nums">
+            <div className="mt-4 space-y-1 text-right text-sm tabular-nums">
               <p className="text-slate-400 light:text-slate-500">Subtotal: ${subtotal.toFixed(2)}</p>
               {invoice.taxRate > 0 && (
                 <p className="text-slate-400 light:text-slate-500">

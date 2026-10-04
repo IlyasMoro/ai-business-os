@@ -151,7 +151,7 @@ export default async function MarketingPage({
                   <td className="px-5 py-3">
                     <StatusBadge status={campaign.status} color={statusColor[campaign.status]} />
                   </td>
-                  <td className="px-5 py-3 font-mono tabular-nums text-slate-300 light:text-slate-600">
+                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     ${campaign.budget.toFixed(2)}
                   </td>
                   <td className="px-5 py-3 text-slate-300 light:text-slate-600">{campaign._count.leads}</td>

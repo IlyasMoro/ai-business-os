@@ -99,7 +99,7 @@ export default async function ControllingPage({
         ].map((k) => (
           <div key={k.label} className={`${card} p-5`}>
             <p className="text-sm text-slate-400 light:text-slate-500">{k.label}</p>
-            <p className={`mt-2 font-mono text-2xl font-semibold tabular-nums ${k.cls}`}>{k.value}</p>
+            <p className={`mt-2 text-2xl font-semibold tabular-nums ${k.cls}`}>{k.value}</p>
           </div>
         ))}
       </div>
@@ -164,9 +164,9 @@ export default async function ControllingPage({
                         <span className="font-mono">{r.code}</span> {r.name}
                       </Link>
                     </td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
-                    <td className={`px-5 py-3 text-right font-mono tabular-nums ${v.variance > 0 ? "text-red-400" : "text-emerald-400"}`}>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
+                    <td className={`px-5 py-3 text-right tabular-nums ${v.variance > 0 ? "text-red-400" : "text-emerald-400"}`}>
                       {money(v.variance)}
                       {v.variancePercent !== null && <span className="ml-1 text-xs text-slate-500">({percent(v.variancePercent)})</span>}
                     </td>
@@ -219,9 +219,9 @@ export default async function ControllingPage({
                     <td className="px-5 py-3">
                       <StatusBadge status={o.status} tone={orderTone[o.status]} />
                     </td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(o.budget)}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(actual)}</td>
-                    <td className={`px-5 py-3 text-right font-mono tabular-nums ${o.budget - actual < 0 ? "text-red-400" : "text-emerald-400"}`}>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(o.budget)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(actual)}</td>
+                    <td className={`px-5 py-3 text-right tabular-nums ${o.budget - actual < 0 ? "text-red-400" : "text-emerald-400"}`}>
                       {o.budget > 0 ? money(o.budget - actual) : ""}
                     </td>
                     <td className="px-5 py-3">

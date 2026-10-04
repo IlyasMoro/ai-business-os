@@ -200,12 +200,12 @@ export default async function ReportsPage() {
                       className={isTotal ? "border-t border-white/[0.12] font-semibold light:border-slate-300" : "border-b border-white/[0.04]"}
                     >
                       <td className={`py-2 pr-4 ${r.branchId === null && !isTotal ? "text-slate-400" : "text-slate-50 light:text-slate-900"}`}>{r.name}</td>
-                      <td className="py-2 pr-4 text-right font-mono tabular-nums text-emerald-400">{formatCompactCurrency(r.income)}</td>
-                      <td className="py-2 pr-4 text-right font-mono tabular-nums text-red-400">{formatCompactCurrency(r.expense)}</td>
-                      <td className={`py-2 pr-4 text-right font-mono tabular-nums ${r.net < 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
+                      <td className="py-2 pr-4 text-right tabular-nums text-emerald-400">{formatCompactCurrency(r.income)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-red-400">{formatCompactCurrency(r.expense)}</td>
+                      <td className={`py-2 pr-4 text-right tabular-nums ${r.net < 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
                         {formatCompactCurrency(r.net)}
                       </td>
-                      <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">
+                      <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">
                         {r.marginPct === null ? "n/a" : `${r.marginPct.toFixed(1)}%`}
                       </td>
                     </tr>
@@ -278,9 +278,9 @@ export default async function ReportsPage() {
           <ol className="space-y-3">
             {rankedCustomers.map((c) => (
               <li key={c.name} className="grid grid-cols-[1.5rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5">
-                <span className="font-mono text-xs tabular-nums text-slate-500">{c.rank}</span>
+                <span className="text-xs tabular-nums text-slate-500">{c.rank}</span>
                 <span className="truncate text-sm text-slate-100 light:text-slate-800">{c.name}</span>
-                <span className="flex items-baseline gap-3 font-mono tabular-nums">
+                <span className="flex items-baseline gap-3 tabular-nums">
                   <span className="text-sm text-slate-50 light:text-slate-900">{formatCompactCurrency(c.total)}</span>
                   <span className="w-10 text-right text-[11px] text-slate-500">{Math.round(c.sharePct)}%</span>
                   {c.vsAveragePct !== null && (
@@ -326,7 +326,7 @@ export default async function ReportsPage() {
                   </div>
                   <div className="flex shrink-0 items-center gap-4">
                     <StatusBadge status={invoice.status} tone={INVOICE_TONE[invoice.status]} />
-                    <span className="w-16 text-right font-mono text-sm tabular-nums text-slate-50 light:text-slate-900">
+                    <span className="w-16 text-right text-sm tabular-nums text-slate-50 light:text-slate-900">
                       {formatCompactCurrency(invoice.totalAmount)}
                     </span>
                   </div>
@@ -359,7 +359,7 @@ export default async function ReportsPage() {
                   <td className="py-2">
                     <StatusBadge status={action.status} tone={AI_ACTION_TONE[action.status]} />
                   </td>
-                  <td className="py-2 font-mono text-xs tabular-nums text-slate-500">
+                  <td className="py-2 text-xs tabular-nums text-slate-500">
                     {format(action.createdAt, "MMM d, HH:mm")}
                   </td>
                 </tr>
@@ -399,7 +399,7 @@ export default async function ReportsPage() {
                   </td>
                   <td className="py-2 text-slate-400 light:text-slate-500">{log.user.name}</td>
                   <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditDetails(log.metadata, branchNames) ?? "—"}</td>
-                  <td className="py-2 font-mono text-xs tabular-nums text-slate-500">
+                  <td className="py-2 text-xs tabular-nums text-slate-500">
                     {format(log.createdAt, "MMM d, HH:mm")}
                   </td>
                 </tr>

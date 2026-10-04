@@ -192,7 +192,7 @@ export default async function AccountingPage({
                     <StatusBadge status={transaction.type} color={transaction.type === "INCOME" ? VIZ.emerald : VIZ.red} />
                   </td>
                   <td
-                    className={`px-5 py-3 font-mono tabular-nums ${
+                    className={`px-5 py-3 tabular-nums ${
                       transaction.type === "EXPENSE" ? "text-red-400" : "text-emerald-400"
                     }`}
                   >

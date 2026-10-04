@@ -118,7 +118,7 @@ export function DonutChart({
           >
             {focused ? (
               <>
-                <span className="font-mono text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                <span className="text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
                   {focused.slice.value.toLocaleString()}
                 </span>
                 <span className="max-w-[80%] truncate text-[11px] text-slate-400 light:text-slate-500">
@@ -127,7 +127,7 @@ export function DonutChart({
               </>
             ) : (
               <>
-                <span className="font-mono text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                <span className="text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
                   {centerValue}
                 </span>
                 <span className="text-[11px] uppercase tracking-wide text-slate-500">{centerLabel}</span>
@@ -167,7 +167,7 @@ export function DonutChart({
                           <span className="h-2.5 w-2.5 shrink-0 rounded-sm" style={{ backgroundColor: slice.color }} />
                           <span className="truncate">{slice.label}</span>
                         </span>
-                        <span className="flex shrink-0 items-baseline gap-2 font-mono tabular-nums">
+                        <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
                           <span className="text-slate-200 light:text-slate-800">{slice.value.toLocaleString()}</span>
                           <span className="w-9 text-right text-[11px] text-slate-500">{sharePct(slice.value, total)}</span>
                         </span>

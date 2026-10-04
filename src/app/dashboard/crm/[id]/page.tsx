@@ -162,13 +162,13 @@ export default async function CustomerDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Outstanding balance</p>
-              <p className={overLimit ? "font-mono tabular-nums text-red-400" : "font-mono tabular-nums text-slate-50 light:text-slate-900"}>
+              <p className={overLimit ? "tabular-nums text-red-400" : "tabular-nums text-slate-50 light:text-slate-900"}>
                 ${outstandingBalance.toFixed(2)}
               </p>
             </div>
             <div>
               <p className="text-slate-500">Credit limit</p>
-              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">
+              <p className="tabular-nums text-slate-50 light:text-slate-900">
                 {customer.creditLimit != null ? `$${customer.creditLimit.toFixed(2)}` : "No limit"}
               </p>
               {overLimit && (
@@ -282,7 +282,7 @@ export default async function CustomerDetailPage({
                       {order.createdAt.toLocaleDateString()}
                     </Link>
                     <div className="flex items-center gap-3">
-                      <span className="font-mono tabular-nums text-slate-500">${order.totalAmount.toFixed(2)}</span>
+                      <span className="tabular-nums text-slate-500">${order.totalAmount.toFixed(2)}</span>
                       <StatusBadge status={order.status} tone={orderStatusTone[order.status]} />
                     </div>
                   </li>
@@ -310,7 +310,7 @@ export default async function CustomerDetailPage({
                       {invoice.invoiceNumber}
                     </Link>
                     <div className="flex items-center gap-3">
-                      <span className="font-mono tabular-nums text-slate-500">${invoice.totalAmount.toFixed(2)}</span>
+                      <span className="tabular-nums text-slate-500">${invoice.totalAmount.toFixed(2)}</span>
                       <StatusBadge status={invoice.status} tone={invoiceStatusTone[invoice.status]} />
                     </div>
                   </li>

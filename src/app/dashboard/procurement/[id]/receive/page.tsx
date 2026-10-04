@@ -57,7 +57,7 @@ export default async function ReceivePurchaseOrderPage({
                     {p.name} <span className="font-mono text-xs text-slate-500">{p.sku}</span>
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm tabular-nums text-slate-300">× {item.quantity}</span>
+                    <span className="text-sm tabular-nums text-slate-300">× {item.quantity}</span>
                     <Badge tone={p.trackingMode === "NONE" ? "slate" : p.trackingMode === "LOT" ? "blue" : "purple"}>
                       {p.trackingMode === "NONE" ? "Not tracked" : p.trackingMode === "LOT" ? "Lot" : "Serial"}
                     </Badge>

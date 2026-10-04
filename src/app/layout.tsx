@@ -5,11 +5,11 @@ import "./globals.css";
 const jost = Jost({
   variable: "--font-jost",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-// Body and UI text. Century Gothic (with Jost as its web fallback) stays as
-// the display face for page titles and the wordmark; see globals.css.
+// Body and UI text. Jost is the display face for page titles and the
+// wordmark; see globals.css.
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],

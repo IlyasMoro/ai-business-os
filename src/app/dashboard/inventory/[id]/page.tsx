@@ -210,19 +210,19 @@ export default async function ProductDetailPage({
               <CardContent className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Cost</p>
-                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Unit price</p>
-                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Stock quantity</p>
-                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">{product.stockQty}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">{product.stockQty}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Reorder level</p>
-                  <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">{product.reorderLevel}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">{product.reorderLevel}</p>
                 </div>
                 {product.description && (
                   <div className="col-span-2">
@@ -255,7 +255,7 @@ export default async function ProductDetailPage({
                             {b.low && <Badge tone="red" className="ml-2">Low</Badge>}
                             {!b.stocked && <span className="ml-2 text-xs text-slate-500">not stocked</span>}
                           </td>
-                          <td className="py-2 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">
+                          <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">
                             {b.quantity}
                             {b.arriving > 0 && (
                               <span className="ml-2 font-sans text-xs text-blue-300 light:text-blue-700">+{b.arriving} arriving</span>
@@ -279,7 +279,7 @@ export default async function ProductDetailPage({
                                 </SubmitButton>
                               </form>
                             ) : (
-                              <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">
+                              <span className="tabular-nums text-slate-300 light:text-slate-600">
                                 {b.effectiveLevel}
                                 {b.reorderLevel === null && <span className="ml-1 text-xs text-slate-500">(default)</span>}
                               </span>
@@ -377,7 +377,7 @@ export default async function ProductDetailPage({
                             ) : isExpiringSoon(lot, inventory.expiryWarningDays) ? (
                               <Badge tone="yellow">Expires soon</Badge>
                             ) : null}
-                            <span className="font-mono tabular-nums text-slate-300">{lot.quantity}</span>
+                            <span className="tabular-nums text-slate-300">{lot.quantity}</span>
                           </span>
                         </li>
                       ))}
@@ -425,7 +425,7 @@ export default async function ProductDetailPage({
                               >
                                 {line.component.name}
                               </Link>
-                              <p className="font-mono text-xs tabular-nums text-slate-500">
+                              <p className="text-xs tabular-nums text-slate-500">
                                 {line.quantity} per unit × ${line.component.cost.toFixed(2)} · {line.component.stockQty} in stock
                               </p>
                             </div>
@@ -444,7 +444,7 @@ export default async function ProductDetailPage({
                     )}
                     <BomLineForm productId={product.id} components={otherProducts} />
                     {product.bomComponents.length > 0 && (
-                      <p className="mt-4 text-right font-mono text-sm tabular-nums text-slate-400 light:text-slate-500">
+                      <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
                         Component cost per unit: <span className="font-semibold text-amber-400">${rolledUpCost.toFixed(2)}</span>
                       </p>
                     )}
@@ -483,7 +483,7 @@ export default async function ProductDetailPage({
                         >
                           {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
                         </Link>
-                        <span className="font-mono tabular-nums text-slate-500">
+                        <span className="tabular-nums text-slate-500">
                           {item.quantity} × ${item.unitPrice.toFixed(2)}
                         </span>
                       </li>
@@ -510,7 +510,7 @@ export default async function ProductDetailPage({
                         >
                           {item.purchaseOrder.supplier.name} · {item.purchaseOrder.createdAt.toLocaleDateString()}
                         </Link>
-                        <span className="font-mono tabular-nums text-slate-500">
+                        <span className="tabular-nums text-slate-500">
                           {item.quantity} × ${item.unitCost.toFixed(2)}
                         </span>
                       </li>

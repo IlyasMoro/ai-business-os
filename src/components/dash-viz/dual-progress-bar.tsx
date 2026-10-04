@@ -16,7 +16,7 @@ function Bar({ label, pct, color }: { label: string; pct: number; color: string 
     <div>
       <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400 light:text-slate-500">
         <span>{label}</span>
-        <span className="font-mono tabular-nums text-slate-300 light:text-slate-600">{Math.round(clamped)}%</span>
+        <span className="tabular-nums text-slate-300 light:text-slate-600">{Math.round(clamped)}%</span>
       </div>
       <div className="h-1.5 overflow-hidden rounded-full bg-white/[0.06] light:bg-slate-900/[0.07]">
         <div

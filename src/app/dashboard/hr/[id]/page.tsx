@@ -92,7 +92,7 @@ export default async function EmployeeDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Salary</p>
-              <p className="font-mono tabular-nums text-slate-50 light:text-slate-900">${employee.salary.toFixed(2)}</p>
+              <p className="tabular-nums text-slate-50 light:text-slate-900">${employee.salary.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-slate-500">Hire date</p>
@@ -144,7 +144,7 @@ export default async function EmployeeDetailPage({
                       {item.payrollRun.periodStart.toLocaleDateString()} –{" "}
                       {item.payrollRun.periodEnd.toLocaleDateString()}
                     </Link>
-                    <span className="font-mono tabular-nums text-slate-500">${item.netPay.toFixed(2)}</span>
+                    <span className="tabular-nums text-slate-500">${item.netPay.toFixed(2)}</span>
                   </li>
                 ))}
               </ul>

@@ -181,7 +181,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                           </>
                         )}
                       </span>
-                      <span className={`font-mono tabular-nums ${m.quantity < 0 ? "text-red-400" : "text-emerald-400"}`}>
+                      <span className={`tabular-nums ${m.quantity < 0 ? "text-red-400" : "text-emerald-400"}`}>
                         {m.quantity > 0 ? "+" : "−"}
                         {Math.abs(m.quantity)}
                       </span>
@@ -216,7 +216,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                     <td className="px-5 py-2">
                       {isExpired(lot) ? <Badge tone="red">Expired</Badge> : isExpiringSoon(lot, inventory.expiryWarningDays) ? <Badge tone="yellow">Expires soon</Badge> : null}
                     </td>
-                    <td className="px-5 py-2 text-right font-mono tabular-nums text-slate-300">{lot.quantity}</td>
+                    <td className="px-5 py-2 text-right tabular-nums text-slate-300">{lot.quantity}</td>
                   </tr>
                 ))}
               </tbody>

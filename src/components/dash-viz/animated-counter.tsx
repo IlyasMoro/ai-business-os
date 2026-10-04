@@ -51,7 +51,7 @@ export function AnimatedCounter({
   });
 
   return (
-    <span className="font-mono tabular-nums">
+    <span className="tabular-nums">
       {prefix}
       {formatted}
       {suffix}

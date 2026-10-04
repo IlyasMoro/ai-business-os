@@ -113,7 +113,7 @@ export default async function TransactionDetailPage({
             <div>
               <p className="text-slate-500">Amount</p>
               <p
-                className={`font-mono tabular-nums ${
+                className={`tabular-nums ${
                   transaction.type === "EXPENSE" ? "text-red-400" : "text-emerald-400"
                 }`}
               >

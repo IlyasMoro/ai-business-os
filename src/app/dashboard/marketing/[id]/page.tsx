@@ -69,19 +69,19 @@ export default async function CampaignDetailPage({
           <CardContent className="grid grid-cols-3 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Budget</p>
-              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
                 ${campaign.budget.toFixed(2)}
               </p>
             </div>
             <div>
               <p className="text-slate-500">Leads generated</p>
-              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
                 {campaign.leads.length}
               </p>
             </div>
             <div>
               <p className="text-slate-500">Cost per lead</p>
-              <p className="mt-1 font-mono text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
                 {costPerLead !== null ? `$${costPerLead.toFixed(2)}` : "—"}
               </p>
             </div>

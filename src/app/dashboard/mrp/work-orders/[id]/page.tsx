@@ -137,7 +137,7 @@ export default async function WorkOrderDetailPage({
                     {isOpen && <th className="py-2 text-right font-medium">Short</th>}
                   </tr>
                 </thead>
-                <tbody className="font-mono tabular-nums">
+                <tbody className="tabular-nums">
                   {requirements.map((r) => (
                     <tr key={r.componentId} className="border-t border-white/[0.04] light:border-slate-100">
                       <td className="py-2 font-sans">
@@ -158,7 +158,7 @@ export default async function WorkOrderDetailPage({
                 </tbody>
               </table>
             )}
-            <p className="mt-4 text-right font-mono text-sm tabular-nums text-slate-400 light:text-slate-500">
+            <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
               Material cost: <span className="font-semibold text-amber-400">${materialCost.toFixed(2)}</span>
             </p>
             {wo.status === "COMPLETED" && (

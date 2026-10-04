@@ -120,8 +120,8 @@ export default async function CostCenterPage({
               return (
                 <div key={x.key}>
                   <Label htmlFor={`m${x.key}`}>{monthLabel(x.p)}</Label>
-                  <Input id={`m${x.key}`} name={`m${x.key}`} type="number" min="0" step="0.01" defaultValue={x.plan || ""} className="font-mono" />
-                  <p className={`mt-1 font-mono text-xs tabular-nums ${mv.status === "OVER" ? "text-red-400" : "text-slate-500"}`}>Actual {money(x.actual)}</p>
+                  <Input id={`m${x.key}`} name={`m${x.key}`} type="number" min="0" step="0.01" defaultValue={x.plan || ""} className="tabular-nums" />
+                  <p className={`mt-1 text-xs tabular-nums ${mv.status === "OVER" ? "text-red-400" : "text-slate-500"}`}>Actual {money(x.actual)}</p>
                 </div>
               );
             })}
@@ -154,7 +154,7 @@ export default async function CostCenterPage({
                         l.label
                       )}
                     </td>
-                    <td className={`px-5 py-2 text-right font-mono tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
+                    <td className={`px-5 py-2 text-right tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
                   </tr>
                 ))}
               </tbody>

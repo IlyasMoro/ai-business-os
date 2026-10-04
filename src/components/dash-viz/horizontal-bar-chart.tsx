@@ -30,9 +30,9 @@ export function HorizontalBarChart({
     <ol className="space-y-3">
       {data.map((d, i) => (
         <li key={d.label} className="grid grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5">
-          <span className="font-mono text-xs tabular-nums text-slate-500">{i + 1}</span>
+          <span className="text-xs tabular-nums text-slate-500">{i + 1}</span>
           <span className="truncate text-sm text-slate-100 light:text-slate-800">{d.label}</span>
-          <span className="flex items-baseline gap-2 font-mono tabular-nums">
+          <span className="flex items-baseline gap-2 tabular-nums">
             <span className="text-sm text-slate-50 light:text-slate-900">{formatCompactCurrency(d.value)}</span>
             <span className="w-9 text-right text-[11px] text-slate-500">{sharePct(d.value, total)}</span>
           </span>

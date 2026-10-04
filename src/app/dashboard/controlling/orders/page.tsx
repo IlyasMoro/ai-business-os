@@ -72,9 +72,9 @@ export default async function InternalOrdersPage({ searchParams }: { searchParam
                     <td className="px-5 py-3">
                       <StatusBadge status={o.status} tone={tone[o.status]} />
                     </td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(o.budget)}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-300 light:text-slate-600">{money(cost)}</td>
-                    <td className="px-5 py-3 text-right font-mono tabular-nums text-slate-400">{money(balance.get(o.id) ?? 0)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(o.budget)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(cost)}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-400">{money(balance.get(o.id) ?? 0)}</td>
                     <td className="px-5 py-3">
                       <UsageBar used={v.used} status={v.status} />
                     </td>

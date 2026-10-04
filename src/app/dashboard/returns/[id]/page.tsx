@@ -126,7 +126,7 @@ export default async function ReturnDetailPage({
                         {item.product.name}
                         <StatusBadge status={item.condition} tone={conditionTone[item.condition]} />
                       </p>
-                      <p className="font-mono text-xs tabular-nums text-slate-500">
+                      <p className="text-xs tabular-nums text-slate-500">
                         {item.quantity} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
                         {" · "}
                         {shouldRestock(item.condition, policy.restockDamaged) ? "goes back into stock" : "written off"}
@@ -148,7 +148,7 @@ export default async function ReturnDetailPage({
 
             {editable && <ReturnItemForm returnId={rma.id} orderItems={orderItems} />}
 
-            <dl className="mt-4 space-y-1 text-right font-mono text-sm tabular-nums">
+            <dl className="mt-4 space-y-1 text-right text-sm tabular-nums">
               <div className="text-slate-400 light:text-slate-500">
                 Subtotal: ${subtotal.toFixed(2)}
               </div>
