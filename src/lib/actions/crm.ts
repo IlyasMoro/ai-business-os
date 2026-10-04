@@ -5,6 +5,12 @@ import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { CustomerSchema, ContactSchema } from "@/lib/validation/crm";
+import type { LeadSource } from "@/generated/prisma/client";
+
+/** Whether a user belongs to this company, before making them an owner or assignee. */
+async function isCompanyUser(companyId: string, userId: string) {
+  return Boolean(await db.user.findFirst({ where: { id: userId, companyId }, select: { id: true } }));
+}
 
 export async function createCustomer(formData: FormData) {
   const session = await verifySession();
@@ -17,6 +23,8 @@ export async function createCustomer(formData: FormData) {
     status: formData.get("status"),
     notes: formData.get("notes"),
     campaignId: formData.get("campaignId") || undefined,
+    source: formData.get("source") ?? undefined,
+    ownerId: formData.get("ownerId") || undefined,
     creditLimit: formData.get("creditLimit") || undefined,
   });
 
@@ -24,7 +32,8 @@ export async function createCustomer(formData: FormData) {
     redirect("/dashboard/crm/new?error=invalid");
   }
 
-  const { email, campaignId, creditLimit, ...rest } = validated.data;
+  const { email, campaignId, creditLimit, source, ownerId, ...rest } = validated.data;
+  if (ownerId && !(await isCompanyUser(session.companyId, ownerId))) redirect("/dashboard/crm/new?error=invalid");
 
   if (campaignId) {
     const campaign = await db.campaign.findUnique({
@@ -39,6 +48,9 @@ export async function createCustomer(formData: FormData) {
       ...rest,
       email: email || undefined,
       campaignId: campaignId || undefined,
+      source: source ? (source as LeadSource) : undefined,
+      // The person who adds a customer looks after it unless someone else is chosen.
+      ownerId: ownerId || session.userId,
       creditLimit: creditLimit === "" || creditLimit === undefined ? undefined : creditLimit,
       companyId: session.companyId,
     },
@@ -59,6 +71,8 @@ export async function updateCustomer(customerId: string, formData: FormData) {
     status: formData.get("status"),
     notes: formData.get("notes"),
     campaignId: formData.get("campaignId") || undefined,
+    source: formData.get("source") ?? undefined,
+    ownerId: formData.get("ownerId") || undefined,
     creditLimit: formData.get("creditLimit") || undefined,
   });
 
@@ -66,7 +80,8 @@ export async function updateCustomer(customerId: string, formData: FormData) {
     redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
   }
 
-  const { email, campaignId, creditLimit, ...rest } = validated.data;
+  const { email, campaignId, creditLimit, source, ownerId, ...rest } = validated.data;
+  if (ownerId && !(await isCompanyUser(session.companyId, ownerId))) redirect(`/dashboard/crm/${customerId}/edit?error=invalid`);
 
   if (campaignId) {
     const campaign = await db.campaign.findUnique({
@@ -82,6 +97,8 @@ export async function updateCustomer(customerId: string, formData: FormData) {
       ...rest,
       email: email || null,
       campaignId: campaignId || null,
+      source: source ? (source as LeadSource) : null,
+      ownerId: ownerId || null,
       creditLimit: creditLimit === "" || creditLimit === undefined ? null : creditLimit,
     },
   });

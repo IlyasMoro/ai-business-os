@@ -35,6 +35,9 @@ export async function GET() {
     aiActions,
     chatMessages,
     auditLogs,
+    deals,
+    crmActivities,
+    followUps,
   ] = await Promise.all([
     db.company.findUnique({ where: { id: companyId } }),
     db.user.findMany({
@@ -98,6 +101,10 @@ export async function GET() {
     db.aiAction.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
     db.aiChatMessage.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
     db.auditLog.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
+    // CRM pipeline: deals, activity history and reminders.
+    db.deal.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
+    db.crmActivity.findMany({ where: { companyId }, orderBy: { occurredAt: "asc" } }),
+    db.followUp.findMany({ where: { companyId }, orderBy: { dueAt: "asc" } }),
   ]);
 
   const backup = {
@@ -126,6 +133,9 @@ export async function GET() {
     aiActions,
     chatMessages,
     auditLogs,
+    deals,
+    crmActivities,
+    followUps,
   };
 
   const json = JSON.stringify(backup, null, 2);

@@ -29,7 +29,7 @@ function Panel({ children, className }: { children: ReactNode; className?: strin
 }
 
 const pipeline = [
-  { stage: "Leads", count: 48, width: "100%" },
+  { stage: "New", count: 48, width: "100%" },
   { stage: "Qualified", count: 21, width: "62%" },
   { stage: "Proposal", count: 9, width: "38%" },
   { stage: "Won", count: 5, width: "22%" },
@@ -41,7 +41,7 @@ export const FEATURES: Feature[] = [
   {
     name: "CRM and Sales",
     label: "Sales",
-    description: "Every lead, quote, and customer conversation in one pipeline, from first contact to signed deal.",
+    description: "Every lead, quote and customer conversation in one pipeline, from first contact to signed deal.",
     icon: Users,
     color: "#60a5fa",
     preview: (

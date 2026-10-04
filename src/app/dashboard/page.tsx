@@ -15,24 +15,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { SpotlightCard } from "@/components/dash-viz/spotlight-card";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { subMonths, startOfMonth, endOfMonth, format, formatDistanceToNow } from "date-fns";
-import {
-  Users,
-  ShoppingCart,
-  Boxes,
-  Receipt,
-  LifeBuoy,
-  FolderKanban,
-  Wallet,
-  TrendingDown,
-  TrendingUp,
-  Megaphone,
-  Truck,
-  UserSquare2,
-  CalendarClock,
-  FileText,
-  CheckSquare,
-  Banknote,
-} from "lucide-react";
+import { Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, TrendingUp, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
 
 function monthBuckets(count: number) {
   return Array.from({ length: count }).map((_, i) => startOfMonth(subMonths(new Date(), count - 1 - i)));
@@ -62,6 +45,8 @@ const AGENDA_ICON = {
   task: CheckSquare,
   project: FolderKanban,
   payroll: Banknote,
+  reminder: BellRing,
+  deal: Handshake,
 } as const;
 
 function WidgetsSkeleton() {

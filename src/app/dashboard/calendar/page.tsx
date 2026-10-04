@@ -4,7 +4,7 @@ import { EventForm } from "@/components/calendar/event-form";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { deleteCalendarEvent } from "@/lib/actions/calendar";
-import { CalendarClock, FileText, CheckSquare, FolderKanban, Banknote } from "lucide-react";
+import { CalendarClock, FileText, CheckSquare, FolderKanban, Banknote, BellRing, Handshake } from "lucide-react";
 
 const KIND_ICON = {
   event: CalendarClock,
@@ -12,6 +12,8 @@ const KIND_ICON = {
   task: CheckSquare,
   project: FolderKanban,
   payroll: Banknote,
+  reminder: BellRing,
+  deal: Handshake,
 } as const;
 
 const KIND_LABEL = {
@@ -20,6 +22,8 @@ const KIND_LABEL = {
   task: "Task due",
   project: "Project due",
   payroll: "Payroll run",
+  reminder: "Reminder",
+  deal: "Deal expected to close",
 } as const;
 
 export default async function CalendarPage({

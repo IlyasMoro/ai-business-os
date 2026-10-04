@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { Badge, StatusBadge } from "@/components/ui-dark/badge";
@@ -13,6 +13,12 @@ import { deleteCustomer, deleteContact } from "@/lib/actions/crm";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { Pencil } from "lucide-react";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { ActivityTimeline } from "@/components/crm/activity-timeline";
+import { FollowUpList } from "@/components/crm/follow-up-list";
+import { sourceLabel, stageInfo } from "@/lib/crm-pipeline";
+import { Plus } from "lucide-react";
+
+const dealStageTone = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
 const statusTone = {
   LEAD: "yellow",
@@ -54,12 +60,12 @@ export default async function CustomerDetailPage({
 
   const customer = await db.customer.findUnique({
     where: { id, companyId: session.companyId },
-    include: { contacts: true },
+    include: { contacts: true, owner: { select: { name: true } } },
   });
 
   if (!customer) notFound();
 
-  const [documents, orders, invoices, tickets, outstandingBalance] = await Promise.all([
+  const [documents, orders, invoices, tickets, outstandingBalance, deals, activities, followUps, users] = await Promise.all([
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
       select: { id: true, filename: true, size: true },
@@ -81,7 +87,25 @@ export default async function CustomerDetailPage({
       take: 10,
     }),
     getCustomerOutstandingBalance(customer.id),
+    db.deal.findMany({
+      where: { customerId: customer.id },
+      orderBy: [{ closedAt: { sort: "asc", nulls: "first" } }, { createdAt: "desc" }],
+      select: { id: true, title: true, value: true, stage: true, expectedClose: true },
+    }),
+    db.crmActivity.findMany({
+      where: { customerId: customer.id },
+      orderBy: { occurredAt: "desc" },
+      take: 50,
+      include: { author: { select: { name: true } }, deal: { select: { id: true, title: true } } },
+    }),
+    db.followUp.findMany({
+      where: { customerId: customer.id },
+      orderBy: { dueAt: "asc" },
+      include: { assignee: { select: { name: true } }, deal: { select: { id: true, title: true } } },
+    }),
+    db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
   ]);
+  const back = `/dashboard/crm/${customer.id}`;
 
   const overLimit = customer.creditLimit != null && outstandingBalance > customer.creditLimit;
 
@@ -121,6 +145,14 @@ export default async function CustomerDetailPage({
               <p className="text-slate-50 light:text-slate-900">{customer.phone ?? "—"}</p>
             </div>
             <div>
+              <p className="text-slate-500">Account owner</p>
+              <p className="text-slate-50 light:text-slate-900">{customer.owner?.name ?? "No owner"}</p>
+            </div>
+            <div>
+              <p className="text-slate-500">Lead source</p>
+              <p className="text-slate-50 light:text-slate-900">{sourceLabel(customer.source) ?? "Not known"}</p>
+            </div>
+            <div>
               <p className="text-slate-500">Outstanding balance</p>
               <p className={overLimit ? "font-mono tabular-nums text-red-400" : "font-mono tabular-nums text-slate-50 light:text-slate-900"}>
                 ${outstandingBalance.toFixed(2)}
@@ -145,6 +177,49 @@ export default async function CustomerDetailPage({
             )}
           </CardContent>
         </Card>
+
+        {/* Sales work: deals and reminders side by side, then the history. */}
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Deals ({deals.length})</CardTitle>
+              <LinkButton href={`/dashboard/crm/deals/new?customer=${customer.id}`} variant="secondary" size="sm">
+                <Plus className="h-4 w-4" />
+                New deal
+              </LinkButton>
+            </CardHeader>
+            <CardContent>
+              {deals.length === 0 ? (
+                <p className="text-sm text-slate-500">No deals yet. Add one to track it on the pipeline.</p>
+              ) : (
+                <ul className="divide-y divide-white/[0.06] light:divide-slate-200">
+                  {deals.map((deal) => (
+                    <li key={deal.id} className="flex items-center justify-between gap-3 py-2 text-sm">
+                      <Link href={`/dashboard/crm/deals/${deal.id}`} className="min-w-0 truncate font-semibold text-slate-50 hover:text-blue-400 light:text-slate-900">
+                        {deal.title}
+                      </Link>
+                      <span className="flex shrink-0 items-center gap-2">
+                        <span className="tabular-nums text-slate-300 light:text-slate-600">${Math.round(deal.value).toLocaleString("en-US")}</span>
+                        <Badge tone={dealStageTone[deal.stage]}>{stageInfo(deal.stage).label}</Badge>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </CardContent>
+          </Card>
+          <FollowUpList customerId={customer.id} back={back} followUps={followUps} users={users} currentUserId={session.userId} />
+        </div>
+
+        <div className="mt-6">
+          <ActivityTimeline
+            customerId={customer.id}
+            back={back}
+            activities={activities}
+            currentUserId={session.userId}
+            isAdmin={hasRole(session, ["OWNER", "ADMIN"])}
+          />
+        </div>
 
         <Card className="mt-6">
           <CardHeader>

@@ -101,6 +101,22 @@ export async function getNotifications(companyId: string): Promise<Notification[
     });
   }
 
+  // CRM reminders past their due time, oldest first.
+  const overdueReminders = await db.followUp.findMany({
+    where: { companyId, doneAt: null, dueAt: { lt: now } },
+    select: { id: true, title: true, customer: { select: { id: true, name: true } } },
+    orderBy: { dueAt: "asc" },
+    take: 5,
+  });
+  for (const r of overdueReminders) {
+    notifications.push({
+      id: `reminder-${r.id}`,
+      severity: "medium",
+      message: `Overdue reminder: ${r.title} (${r.customer.name})`,
+      href: `/dashboard/crm/${r.customer.id}`,
+    });
+  }
+
   for (const a of pendingActions) {
     notifications.push({
       id: `ai-action-${a.id}`,

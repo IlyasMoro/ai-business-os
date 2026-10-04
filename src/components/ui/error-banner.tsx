@@ -31,6 +31,8 @@ const MESSAGES: Record<string, string> = {
   "branch-main": "The main branch can't be deactivated. Make another branch the main one first.",
   "branch-limit": "Your plan has no room for another active branch. Deactivate one, or ask the owner to move to a bigger plan on the Billing page.",
   "billing-unavailable": "Billing couldn't reach Stripe just now. Nothing was charged. Please try again in a few minutes.",
+  "activity-invalid": "Write what happened before saving the activity.",
+  "followup-invalid": "Give the reminder a title and a due date.",
   "plan-price-missing": "That plan isn't available for checkout yet. Please try again later.",
   "plan-too-small-users": "Your team, counting open invites, is bigger than any plan takes (150 users). Ask us about an Enterprise plan.",
   "plan-too-small-branches": "You have more active branches than that plan allows. Deactivate branches first.",

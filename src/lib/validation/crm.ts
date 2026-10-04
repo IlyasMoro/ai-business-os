@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { LEAD_SOURCE_IDS } from "@/lib/crm-pipeline";
 
 export const CustomerSchema = z.object({
   name: z.string().min(1, { error: "Name is required." }).trim(),
@@ -8,6 +9,8 @@ export const CustomerSchema = z.object({
   status: z.enum(["LEAD", "ACTIVE", "INACTIVE"]),
   notes: z.string().trim().optional(),
   campaignId: z.string().trim().optional(),
+  source: z.union([z.enum(LEAD_SOURCE_IDS as [string, ...string[]]), z.literal("")]).optional(),
+  ownerId: z.string().trim().optional(),
   creditLimit: z.union([
     z.coerce.number({ error: "Enter a valid credit limit." }).min(0, { error: "Credit limit cannot be negative." }),
     z.literal(""),

@@ -10,6 +10,8 @@ import { Plus, Search, ChevronLeft, ChevronRight, Download, Users } from "lucide
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+import { CrmTabs } from "@/components/crm/crm-tabs";
+import { cn } from "@/lib/utils";
 
 const statusOrder = ["LEAD", "ACTIVE", "INACTIVE"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -18,9 +20,10 @@ const statusColor: Record<(typeof statusOrder)[number], string> = {
   INACTIVE: VIZ.muted,
 };
 
-function crmHref(page: number, q?: string) {
+function crmHref(page: number, q?: string, mine?: boolean) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);
+  if (mine) params.set("mine", "1");
   if (page > 1) params.set("page", String(page));
   const qs = params.toString();
   return qs ? `/dashboard/crm?${qs}` : "/dashboard/crm";
@@ -29,14 +32,16 @@ function crmHref(page: number, q?: string) {
 export default async function CrmPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; mine?: string }>;
 }) {
-  const { page: pageParam, q } = await searchParams;
+  const { page: pageParam, q, mine } = await searchParams;
+  const onlyMine = mine === "1";
   const page = parsePage(pageParam);
   const session = await verifySession();
 
   const where: Prisma.CustomerWhereInput = {
     companyId: session.companyId,
+    ...(onlyMine ? { ownerId: session.userId } : {}),
     ...(q
       ? {
           OR: [
@@ -54,6 +59,7 @@ export default async function CrmPage({
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
+      include: { owner: { select: { name: true } } },
     }),
     db.customer.count({ where }),
     db.customer.groupBy({ by: ["status"], where: { companyId: session.companyId }, _count: { _all: true } }),
@@ -120,7 +126,29 @@ export default async function CrmPage({
         </div>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
+      <CrmTabs active="/dashboard/crm" />
+      <div className="mt-4 flex justify-end">
+        <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1 text-sm light:border-slate-200 light:bg-slate-100">
+          {[
+            { href: crmHref(1, q, false), label: "All customers", on: !onlyMine },
+            { href: crmHref(1, q, true), label: "My customers", on: onlyMine },
+          ].map((f) => (
+            <Link
+              key={f.label}
+              href={f.href}
+              aria-current={f.on ? "page" : undefined}
+              className={cn(
+                "rounded-full px-3 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                f.on ? "bg-blue-600 font-medium text-white" : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
+              )}
+            >
+              {f.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">
           <DonutChart
             title="Customers by status"
@@ -150,6 +178,7 @@ export default async function CrmPage({
                 <th className="px-5 py-3 font-medium">Name</th>
                 <th className="px-5 py-3 font-medium">Company</th>
                 <th className="px-5 py-3 font-medium">Email</th>
+                <th className="px-5 py-3 font-medium">Owner</th>
                 <th className="px-5 py-3 font-medium">Status</th>
               </tr>
             </thead>
@@ -166,6 +195,7 @@ export default async function CrmPage({
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.company ?? "—"}</td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.email ?? "—"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.owner?.name ?? "—"}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2">
                       <StatusBadge status={customer.status} color={statusColor[customer.status]} />
@@ -193,7 +223,7 @@ export default async function CrmPage({
             <div className="flex items-center gap-2">
               {page > 1 ? (
                 <Link
-                  href={crmHref(page - 1, q)}
+                  href={crmHref(page - 1, q, onlyMine)}
                   className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   <ChevronLeft className="h-4 w-4" />
@@ -207,7 +237,7 @@ export default async function CrmPage({
               )}
               {page < totalPages ? (
                 <Link
-                  href={crmHref(page + 1, q)}
+                  href={crmHref(page + 1, q, onlyMine)}
                   className="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-sm text-slate-300 light:text-slate-600 transition-colors hover:bg-white/5"
                 >
                   Next

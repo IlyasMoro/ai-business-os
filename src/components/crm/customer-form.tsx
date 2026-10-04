@@ -1,10 +1,13 @@
 import { Input, Label, Select, Textarea } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { LEAD_SOURCES } from "@/lib/crm-pipeline";
 
 export function CustomerForm({
   action,
   defaultValues,
   campaigns,
+  users,
+  currentUserId,
   submitLabel = "Save customer",
 }: {
   action: (formData: FormData) => Promise<void>;
@@ -17,8 +20,13 @@ export function CustomerForm({
     notes: string | null;
     campaignId?: string | null;
     creditLimit?: number | null;
+    source?: string | null;
+    ownerId?: string | null;
   };
   campaigns?: { id: string; name: string }[];
+  /** People who can own the account; a new customer defaults to `currentUserId`. */
+  users: { id: string; name: string }[];
+  currentUserId: string;
   submitLabel?: string;
 }) {
   return (
@@ -48,6 +56,30 @@ export function CustomerForm({
             <option value="LEAD">Lead</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
+          </Select>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="ownerId">Account owner</Label>
+          <Select id="ownerId" name="ownerId" defaultValue={defaultValues ? (defaultValues.ownerId ?? "") : currentUserId}>
+            <option value="">No owner</option>
+            {users.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div>
+          <Label htmlFor="source">Lead source</Label>
+          <Select id="source" name="source" defaultValue={defaultValues?.source ?? ""}>
+            <option value="">Not known</option>
+            {LEAD_SOURCES.map((source) => (
+              <option key={source.id} value={source.id}>
+                {source.label}
+              </option>
+            ))}
           </Select>
         </div>
       </div>

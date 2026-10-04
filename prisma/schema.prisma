@@ -65,6 +65,9 @@ model Company {
   stockTransfers      StockTransfer[]
   aiUsage             AiUsage[]
   aiTopUps            AiTopUp[]
+  deals               Deal[]
+  crmActivities       CrmActivity[]
+  followUps           FollowUp[]
 
   // The subscription plan (lib/plans.ts) whose limits apply: users,
   // branches, Growth/Scale modules and AI requests. Defaults to SCALE so
@@ -144,6 +147,11 @@ model User {
   taskComments        TaskComment[]
   ticketMessages      TicketMessage[]
   sentInvites         TeamInvite[]
+  ownedCustomers      Customer[]           @relation("CustomerOwner")
+  ownedDeals          Deal[]               @relation("DealOwner")
+  crmActivities       CrmActivity[]        @relation("CrmActivityAuthor")
+  assignedFollowUps   FollowUp[]           @relation("FollowUpAssignee")
+  createdFollowUps    FollowUp[]           @relation("FollowUpCreator")
 
   @@index([companyId])
   @@index([branchId])
@@ -330,6 +338,16 @@ model Customer {
   creditLimit         Float?
   creditWarningSentAt DateTime?
   createdAt           DateTime       @default(now())
+  // Where the lead came from, for filtering and reports.
+  source              LeadSource?
+
+  // The salesperson who looks after this account.
+  ownerId String?
+  owner   User?   @relation("CustomerOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  deals         Deal[]
+  crmActivities CrmActivity[]
+  followUps     FollowUp[]
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -346,6 +364,118 @@ model Customer {
 
   @@index([companyId])
   @@index([campaignId])
+}
+
+enum LeadSource {
+  WEBSITE
+  REFERRAL
+  CAMPAIGN
+  EVENT
+  OUTREACH
+  SOCIAL
+  OTHER
+}
+
+// ---------- CRM pipeline ----------
+
+enum DealStage {
+  NEW
+  QUALIFIED
+  PROPOSAL
+  NEGOTIATION
+  WON
+  LOST
+}
+
+// A sales opportunity with one customer, moved across the pipeline board.
+model Deal {
+  id            String    @id @default(cuid())
+  title         String
+  value         Float     @default(0)
+  stage         DealStage @default(NEW)
+  // Chance of winning, 0 to 100; defaults by stage (lib/crm-pipeline.ts).
+  probability   Int       @default(10)
+  expectedClose DateTime?
+  lostReason    String?
+  // Set when the deal is won or lost.
+  closedAt      DateTime?
+  // Order within its stage column on the board.
+  position      Float     @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  ownerId String?
+  owner   User?   @relation("DealOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  activities CrmActivity[]
+  followUps  FollowUp[]
+
+  @@index([companyId, stage])
+  @@index([customerId])
+}
+
+enum CrmActivityType {
+  NOTE
+  CALL
+  MEETING
+  EMAIL
+}
+
+// Something that happened with a customer: a call, meeting, email or note.
+model CrmActivity {
+  id         String          @id @default(cuid())
+  type       CrmActivityType @default(NOTE)
+  body       String
+  occurredAt DateTime        @default(now())
+  createdAt  DateTime        @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  dealId String?
+  deal   Deal?   @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  authorId String?
+  author   User?   @relation("CrmActivityAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([customerId, occurredAt])
+  @@index([dealId])
+}
+
+// A reminder to get back to a customer by a date, for one person.
+model FollowUp {
+  id        String    @id @default(cuid())
+  title     String
+  dueAt     DateTime
+  doneAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  dealId String?
+  deal   Deal?   @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  assigneeId String?
+  assignee   User?   @relation("FollowUpAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  createdById String?
+  createdBy   User?   @relation("FollowUpCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([companyId, doneAt, dueAt])
+  @@index([customerId])
 }
 
 model Contact {
