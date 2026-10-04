@@ -4,6 +4,7 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { Button } from "@/components/ui-dark/button";
 import { CopilotChat, type CopilotMessage, type CopilotAction } from "@/components/assistant/copilot-chat";
 import { clearChatHistory, approveAiAction, rejectAiAction } from "@/lib/actions/assistant";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 
 export default async function AssistantPage() {
   const session = await verifySession();
@@ -45,11 +46,15 @@ export default async function AssistantPage() {
     <div className="-m-4 flex h-[calc(100dvh-4rem)] flex-col sm:-m-6">
       <div className="border-b border-white/[0.06] px-4 py-4 light:border-slate-900/[0.06] sm:px-6">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">AI Copilot</h1>
-            <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-              Ask questions about your business, or ask it to take action.
-            </p>
+          <div className="flex items-center gap-3">
+            {/* The AIBOS logo's centre point: the Copilot every department feeds. */}
+            <CopilotMark className="h-10 w-10" />
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">AI Copilot</h1>
+              <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
+                Ask questions about your business, or ask it to take action.
+              </p>
+            </div>
           </div>
           {chatMessages.length > 0 && (
             <DeleteButton action={clearChatHistory} confirmMessage="Clear the conversation?" label="Clear chat" />

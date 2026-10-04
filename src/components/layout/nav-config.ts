@@ -12,7 +12,6 @@ import {
   Banknote,
   FolderKanban,
   LifeBuoy,
-  Sparkles,
   BarChart3,
   Zap,
   Plug,
@@ -29,13 +28,17 @@ import {
   Target,
   FileText,
 } from "lucide-react";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
+
+/** A menu icon: a lucide icon, or a brand mark such as CopilotMark. */
+export type NavIcon = React.ComponentType<{ className?: string }>;
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: typeof LayoutDashboard;
+  icon: NavIcon;
   roles?: Role[];
   platformAdminOnly?: boolean;
 };
@@ -48,7 +51,8 @@ export type NavGroup = { label: string; icon: typeof LayoutDashboard; items: Nav
  * department groups. Reports is here rather than in a group of its own. */
 export const navPinned: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/assistant", label: "AI Copilot", icon: Sparkles },
+  // The AIBOS logo's centre point, the Copilot's own mark.
+  { href: "/dashboard/assistant", label: "AI Copilot", icon: CopilotMark },
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
 ];

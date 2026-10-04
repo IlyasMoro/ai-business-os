@@ -1,7 +1,8 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useOptimistic, useRef } from "react";
-import { ArrowUp, Check, Sparkles, X } from "lucide-react";
+import { ArrowUp, Check, X } from "lucide-react";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 import { cn } from "@/lib/utils";
 import { Badge, type Tone } from "@/components/ui-dark/badge";
 import { Button } from "@/components/ui-dark/button";
@@ -183,8 +184,8 @@ export function CopilotChat({
 
 function Avatar() {
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-400/25 bg-blue-500/15 text-blue-300 light:border-blue-600/20 light:bg-blue-600/10 light:text-blue-700">
-      <Sparkles className="h-4 w-4" />
+    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-blue-400/25 bg-[#0b1220] light:border-blue-600/20 light:bg-white">
+      <CopilotMark className="h-6 w-6" />
     </div>
   );
 }
@@ -275,8 +276,8 @@ function Welcome({
 }) {
   return (
     <div className="flex flex-col items-center py-10 text-center sm:py-16">
-      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-blue-400/25 bg-blue-500/15 text-blue-300 light:border-blue-600/20 light:bg-blue-600/10 light:text-blue-700">
-        <Sparkles className="h-6 w-6" />
+      <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-400/25 bg-[#0b1220] shadow-[0_0_32px_-8px_rgba(34,211,238,0.55)] light:border-blue-600/20 light:bg-white">
+        <CopilotMark className="h-11 w-11" />
       </div>
       <h2 className="mt-5 text-xl font-semibold text-slate-50 light:text-slate-900">
         How can I help {companyName} today?
