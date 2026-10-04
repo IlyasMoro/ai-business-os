@@ -38,7 +38,7 @@ const statusLabel: Record<ActionStatus, string> = {
 
 const SUGGESTIONS = [
   "Which invoices are overdue?",
-  "Who are my top customers?",
+  "Which deals might close this month?",
   "Which products are low on stock?",
   "Summarize this month's sales",
 ];

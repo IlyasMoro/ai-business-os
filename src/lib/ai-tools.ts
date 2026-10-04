@@ -1,6 +1,8 @@
 import "server-only";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/db";
+import { isOpenStage, pipelineSummary, stageInfo } from "@/lib/crm-pipeline";
+import { closedIn, forecastByMonth, openByStage, periodRange } from "@/lib/sales-report";
 import {
   FindCustomerArgs,
   CreateTaskArgs,
@@ -8,6 +10,7 @@ import {
   UpdateTicketPriorityArgs,
   UpdateCustomerStatusArgs,
   SummarizeSalesArgs,
+  PipelineReportArgs,
   CreateInvoiceArgs,
   SendOverdueReminderArgs,
   summarizeCreateTask,
@@ -125,9 +128,82 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
     case "forecast_next_month_revenue": {
       return forecastNextMonthRevenue(companyId, branchId);
     }
+    case "pipeline_report": {
+      const parsed = PipelineReportArgs.safeParse(rawArgs ?? {});
+      if (!parsed.success) return { error: "Invalid arguments for pipeline_report." };
+      return pipelineReport(companyId, parsed.data.closing);
+    }
     default:
       return { error: `Unknown read tool: ${name}` };
   }
+}
+
+/** The CRM pipeline for the Copilot. Deals have no branch, so this is
+ * company wide whatever the switcher says. */
+async function pipelineReport(companyId: string, closing?: "this_month" | "next_month" | "this_quarter" | "overdue") {
+  const now = new Date();
+  const deals = await db.deal.findMany({
+    where: { companyId },
+    select: {
+      id: true,
+      title: true,
+      value: true,
+      stage: true,
+      probability: true,
+      expectedClose: true,
+      closedAt: true,
+      createdAt: true,
+      ownerId: true,
+      owner: { select: { name: true } },
+      customer: { select: { name: true } },
+    },
+  });
+  const summary = pipelineSummary(deals);
+  const quarter = closedIn(deals, periodRange("quarter", now));
+
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const windows = {
+    this_month: { start: startOfMonth, end: new Date(now.getFullYear(), now.getMonth() + 1, 1) },
+    next_month: { start: new Date(now.getFullYear(), now.getMonth() + 1, 1), end: new Date(now.getFullYear(), now.getMonth() + 2, 1) },
+    this_quarter: periodRange("quarter", now),
+    overdue: { start: new Date(0), end: startOfToday },
+  };
+  const open = deals.filter((d) => isOpenStage(d.stage));
+  const matching = closing
+    ? open.filter((d) => d.expectedClose && d.expectedClose >= windows[closing].start && d.expectedClose < windows[closing].end)
+    : open;
+  const listed = matching
+    .sort((a, b) => b.value * b.probability - a.value * a.probability)
+    .slice(0, 25)
+    .map((d) => ({
+      id: d.id,
+      title: d.title,
+      customer: d.customer.name,
+      stage: stageInfo(d.stage).label,
+      value: d.value,
+      chancePercent: d.probability,
+      weightedValue: Math.round(d.value * d.probability) / 100,
+      expectedClose: d.expectedClose?.toISOString().slice(0, 10) ?? null,
+      owner: d.owner?.name ?? null,
+    }));
+
+  return {
+    today: now.toISOString().slice(0, 10),
+    openDeals: summary.openCount,
+    openPipelineValue: summary.openValue,
+    weightedForecast: summary.weightedValue,
+    openByStage: openByStage(deals).map(({ label, count, value }) => ({ stage: label, count, value })),
+    forecastByExpectedClose: forecastByMonth(deals, now).map(({ label, count, value, weighted }) => ({ month: label, count, value, weighted })),
+    thisQuarter: { won: quarter.wonCount, lost: quarter.lostCount, wonValue: quarter.wonValue, winRatePercent: quarter.winRate },
+    filter: closing ?? "largest open deals",
+    matchingDealCount: matching.length,
+    // Totals worked out here so the model never has to add them up itself.
+    matchingTotalValue: Math.round(matching.reduce((s, d) => s + d.value, 0) * 100) / 100,
+    matchingWeightedValue: Math.round(matching.reduce((s, d) => s + (d.value * d.probability) / 100, 0) * 100) / 100,
+    deals: listed,
+    note: "Weighted value is value times chance of winning. Quote matchingTotalValue and matchingWeightedValue as given rather than adding up the deals. Chances are estimates set per deal, so this is a forecast, not a guarantee.",
+  };
 }
 
 /** Trailing 3-month average of recorded income — a rough trend estimate, not

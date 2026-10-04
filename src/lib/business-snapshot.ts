@@ -5,7 +5,7 @@ import { lowStockAt } from "@/lib/stock";
 /** Company wide, or one branch's orders, invoices and stock when branchId is set. */
 export async function getBusinessSnapshot(companyId: string, branchId: string | null = null) {
   const inBranch = branchId ? { branchId } : {};
-  const [customerCount, openOrderCount, lowStock, outstandingInvoiceCount, openTicketCount, activeProjectCount] =
+  const [customerCount, openOrderCount, lowStock, outstandingInvoiceCount, openTicketCount, activeProjectCount, openDeals] =
     await Promise.all([
       db.customer.count({ where: { companyId } }),
       db.order.count({ where: { companyId, ...inBranch, status: { in: ["PENDING", "CONFIRMED"] } } }),
@@ -13,6 +13,12 @@ export async function getBusinessSnapshot(companyId: string, branchId: string | 
       db.invoice.count({ where: { companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } } }),
       db.ticket.count({ where: { companyId, status: { in: ["OPEN", "IN_PROGRESS"] } } }),
       db.project.count({ where: { companyId, status: "ACTIVE" } }),
+      // Deals have no branch: the pipeline is always company wide.
+      db.deal.aggregate({
+        where: { companyId, stage: { in: ["NEW", "QUALIFIED", "PROPOSAL", "NEGOTIATION"] } },
+        _count: { _all: true },
+        _sum: { value: true },
+      }),
     ]);
 
   // A product counts once, however many branches are short of it.
@@ -25,6 +31,8 @@ export async function getBusinessSnapshot(companyId: string, branchId: string | 
     outstandingInvoiceCount,
     openTicketCount,
     activeProjectCount,
+    openDealCount: openDeals._count._all,
+    openPipelineValue: openDeals._sum.value ?? 0,
   };
 }
 
@@ -38,6 +46,7 @@ export function formatSnapshotForPrompt(snapshot: BusinessSnapshot) {
     `${snapshot.outstandingInvoiceCount} outstanding invoices (sent or overdue)`,
     `${snapshot.openTicketCount} open support tickets`,
     `${snapshot.activeProjectCount} active projects`,
+    `${snapshot.openDealCount} open deals in the sales pipeline worth $${Math.round(snapshot.openPipelineValue).toLocaleString("en-US")} (company wide)`,
   ]
     .map((line) => `- ${line}`)
     .join("\n");

@@ -4,6 +4,7 @@ import { TicketStatusValues, TicketPriorityValues } from "@/lib/validation/suppo
 
 export const CustomerStatusValues = ["LEAD", "ACTIVE", "INACTIVE"] as const;
 export const SalesPeriodValues = ["this_month", "last_month"] as const;
+export const PipelineClosingValues = ["this_month", "next_month", "this_quarter", "overdue"] as const;
 
 // ---------- Tool definitions (Groq / OpenAI-compatible function schema) ----------
 
@@ -143,6 +144,24 @@ export const TOOL_DEFINITIONS: Groq.Chat.ChatCompletionTool[] = [
   {
     type: "function",
     function: {
+      name: "pipeline_report",
+      description:
+        "Get the CRM sales pipeline: open pipeline value and weighted forecast (value times chance of winning), open deals by stage, forecast by expected close month, win rate and won value this quarter, and a list of matching open deals (title, customer, stage, value, chance, expected close, owner). Use for questions like 'which deals might close this month', 'what is in the pipeline', or 'what's our win rate'. Read-only, runs immediately.",
+      parameters: {
+        type: "object",
+        properties: {
+          closing: {
+            type: "string",
+            enum: [...PipelineClosingValues],
+            description: "Only list open deals expected to close in this window. Omit to list the largest open deals.",
+          },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
       name: "create_invoice",
       description:
         "Propose creating a new draft invoice for a customer. Requires a customer id from find_customer.",
@@ -180,6 +199,7 @@ const READ_TOOL_NAMES = new Set([
   "list_projects",
   "summarize_sales",
   "forecast_next_month_revenue",
+  "pipeline_report",
 ]);
 
 export function isReadTool(name: string) {
@@ -214,6 +234,9 @@ export const UpdateTicketPriorityArgs = z.object({
 export const UpdateCustomerStatusArgs = z.object({
   customerId: z.string().min(1),
   status: z.enum(CustomerStatusValues),
+});
+export const PipelineReportArgs = z.object({
+  closing: z.enum(PipelineClosingValues).optional(),
 });
 export const SummarizeSalesArgs = z.object({
   period: z.enum(SalesPeriodValues).optional(),
