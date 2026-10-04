@@ -50,6 +50,7 @@ export default async function OrderDetailPage({
       customer: true,
       items: { include: { product: true } },
       invoice: { select: { id: true, invoiceNumber: true, status: true } },
+      quote: { select: { id: true, quoteNumber: true } },
       returns: {
         select: { id: true, rmaNumber: true, status: true, refundAmount: true, createdAt: true },
         orderBy: { createdAt: "desc" },
@@ -103,6 +104,14 @@ export default async function OrderDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Created {order.createdAt.toLocaleDateString()}
+              {order.quote && (
+                <>
+                  {" · from quote "}
+                  <Link href={`/dashboard/quotes/${order.quote.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                    {order.quote.quoteNumber}
+                  </Link>
+                </>
+              )}
               {order.customerPoNumber && (
                 <>
                   {" · "}Customer PO <span className="font-mono">{order.customerPoNumber}</span>

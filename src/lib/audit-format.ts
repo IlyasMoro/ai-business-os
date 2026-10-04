@@ -91,6 +91,8 @@ const ENTITY_PATHS: Record<string, string> = {
   PayrollRun: "/dashboard/payroll",
   Order: "/dashboard/sales",
   Customer: "/dashboard/crm",
+  Deal: "/dashboard/crm/deals",
+  Quote: "/dashboard/quotes",
 };
 
 /** Where an activity row should link, or null when its record has no page. */

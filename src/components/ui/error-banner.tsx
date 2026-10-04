@@ -52,6 +52,11 @@ const MESSAGES: Record<string, string> = {
   "co-already-run": "This allocation has already run for that month. Reverse that run first to run it again.",
   "lots-needed": "This order has lot or serial tracked products. Enter their lot numbers or serials to receive it.",
   "lot-short": "Not enough usable lots of a tracked component to complete this. Expired lots may be blocked in inventory settings.",
+  "quote-locked": "This quote has been accepted or declined, so it can't be changed. Copy it to a new quote instead.",
+  "quote-empty": "Add at least one product before sending the quote.",
+  "quote-no-email": "This customer has no email address on file. Add one on the customer page first.",
+  "quote-send-failed": "The quote couldn't be emailed. Check your email setup and try again.",
+  "quote-cannot-accept": "This quote can't be accepted right now. It needs products and must not be expired or already decided.",
   "co-nothing": "The sender cost center has no cost in that month, so there is nothing to allocate.",
 };
 

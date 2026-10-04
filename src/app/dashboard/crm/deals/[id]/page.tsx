@@ -12,6 +12,8 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { stageInfo } from "@/lib/crm-pipeline";
+import { lockedWhere } from "@/lib/branches";
+import { QuoteListCard } from "@/components/quotes/quote-list-card";
 
 const STAGE_TONE = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
@@ -32,7 +34,7 @@ export default async function DealPage({
   });
   if (!deal) notFound();
 
-  const [activities, followUps, users] = await Promise.all([
+  const [activities, followUps, users, quotes] = await Promise.all([
     db.crmActivity.findMany({
       where: { dealId: deal.id },
       orderBy: { occurredAt: "desc" },
@@ -45,6 +47,11 @@ export default async function DealPage({
       include: { assignee: { select: { name: true } } },
     }),
     db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.quote.findMany({
+      where: { dealId: deal.id, ...(await lockedWhere()) },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, quoteNumber: true, status: true, validUntil: true, totalAmount: true, createdAt: true },
+    }),
   ]);
 
   const back = `/dashboard/crm/deals/${deal.id}`;
@@ -93,6 +100,7 @@ export default async function DealPage({
             </CardContent>
           </Card>
           <div className="space-y-6">
+            <QuoteListCard quotes={quotes} newHref={`/dashboard/quotes/new?deal=${deal.id}`} />
             <FollowUpList
               customerId={deal.customerId}
               dealId={deal.id}

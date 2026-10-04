@@ -27,6 +27,7 @@ import {
   Factory,
   ArrowLeftRight,
   Target,
+  FileText,
 } from "lucide-react";
 
 export type Role = "OWNER" | "ADMIN" | "EMPLOYEE";
@@ -64,6 +65,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { href: "/dashboard/crm", label: "CRM", icon: Users },
       { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone },
+      { href: "/dashboard/quotes", label: "Quotes", icon: FileText },
       { href: "/dashboard/sales", label: "Sales", icon: ShoppingCart },
       { href: "/dashboard/returns", label: "Returns", icon: Undo2 },
       { href: "/dashboard/invoicing", label: "Invoicing", icon: Receipt },

@@ -38,6 +38,7 @@ export async function GET() {
     deals,
     crmActivities,
     followUps,
+    quotes,
   ] = await Promise.all([
     db.company.findUnique({ where: { id: companyId } }),
     db.user.findMany({
@@ -105,6 +106,7 @@ export async function GET() {
     db.deal.findMany({ where: { companyId }, orderBy: { createdAt: "asc" } }),
     db.crmActivity.findMany({ where: { companyId }, orderBy: { occurredAt: "asc" } }),
     db.followUp.findMany({ where: { companyId }, orderBy: { dueAt: "asc" } }),
+    db.quote.findMany({ where: { companyId }, include: { items: true }, orderBy: { createdAt: "asc" } }),
   ]);
 
   const backup = {
@@ -136,6 +138,7 @@ export async function GET() {
     deals,
     crmActivities,
     followUps,
+    quotes,
   };
 
   const json = JSON.stringify(backup, null, 2);

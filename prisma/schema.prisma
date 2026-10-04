@@ -68,6 +68,7 @@ model Company {
   deals               Deal[]
   crmActivities       CrmActivity[]
   followUps           FollowUp[]
+  quotes              Quote[]
 
   // The subscription plan (lib/plans.ts) whose limits apply: users,
   // branches, Growth/Scale modules and AI requests. Defaults to SCALE so
@@ -149,6 +150,7 @@ model User {
   sentInvites         TeamInvite[]
   ownedCustomers      Customer[]           @relation("CustomerOwner")
   ownedDeals          Deal[]               @relation("DealOwner")
+  ownedQuotes         Quote[]              @relation("QuoteOwner")
   crmActivities       CrmActivity[]        @relation("CrmActivityAuthor")
   assignedFollowUps   FollowUp[]           @relation("FollowUpAssignee")
   createdFollowUps    FollowUp[]           @relation("FollowUpCreator")
@@ -194,6 +196,7 @@ model Branch {
 
   users          User[]          @relation("UserBranch")
   orders         Order[]         @relation("OrderBranch")
+  quotes         Quote[]         @relation("QuoteBranch")
   invoices       Invoice[]       @relation("InvoiceBranch")
   purchaseOrders PurchaseOrder[] @relation("PurchaseOrderBranch")
   employees      Employee[]      @relation("EmployeeBranch")
@@ -348,6 +351,7 @@ model Customer {
   deals         Deal[]
   crmActivities CrmActivity[]
   followUps     FollowUp[]
+  quotes        Quote[]
 
   companyId  String
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
@@ -415,6 +419,7 @@ model Deal {
 
   activities CrmActivity[]
   followUps  FollowUp[]
+  quotes     Quote[]
 
   @@index([companyId, stage])
   @@index([customerId])
@@ -525,6 +530,7 @@ model Product {
   companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   orderItems         OrderItem[]
+  quoteItems         QuoteItem[]
   invoiceLineItems   InvoiceLineItem[]
   purchaseOrderItems PurchaseOrderItem[]
   returnItems        ReturnItem[]
@@ -638,6 +644,8 @@ model Order {
   items   OrderItem[]
   invoice Invoice?
   returns ReturnAuthorization[]
+  // The accepted quote this order was made from, if any.
+  quote   Quote?
 
   @@index([companyId])
   @@index([customerId])
@@ -658,6 +666,73 @@ model OrderItem {
   returnItems ReturnItem[]
 
   @@index([orderId])
+}
+
+// ---------- Quotes ----------
+
+// Draft -> Sent -> Accepted (becomes an order) or Declined. A sent quote past
+// its valid until date shows as expired; that is worked out, not stored.
+enum QuoteStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+}
+
+model Quote {
+  id          String      @id @default(cuid())
+  quoteNumber String
+  status      QuoteStatus @default(DRAFT)
+  validUntil  DateTime?
+  notes       String?
+  totalAmount Float       @default(0)
+  sentAt      DateTime?
+  // When it was accepted or declined.
+  decidedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  // The pipeline deal this quote prices; accepting it wins the deal.
+  dealId String?
+  deal   Deal?   @relation(fields: [dealId], references: [id], onDelete: SetNull)
+
+  ownerId String?
+  owner   User?   @relation("QuoteOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+
+  branchId String?
+  branch   Branch? @relation("QuoteBranch", fields: [branchId], references: [id], onDelete: SetNull)
+
+  // Set once accepted: the order made from it.
+  orderId String? @unique
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  items QuoteItem[]
+
+  @@unique([companyId, quoteNumber])
+  @@index([companyId, status])
+  @@index([customerId])
+  @@index([dealId])
+}
+
+model QuoteItem {
+  id        String @id @default(cuid())
+  quantity  Int
+  // Starts at the product's price and can be changed, e.g. for a discount.
+  unitPrice Float
+
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([quoteId])
 }
 
 // ---------- Returns (RMA) ----------

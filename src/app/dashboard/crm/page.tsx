@@ -1,16 +1,17 @@
 import Link from "next/link";
-import { verifySession } from "@/lib/dal";
+import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, Users } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, Upload, Users } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
 import { CrmTabs } from "@/components/crm/crm-tabs";
+import { ErrorBanner } from "@/components/ui/error-banner";
 import { cn } from "@/lib/utils";
 
 const statusOrder = ["LEAD", "ACTIVE", "INACTIVE"] as const;
@@ -32,9 +33,9 @@ function crmHref(page: number, q?: string, mine?: boolean) {
 export default async function CrmPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; q?: string; mine?: string }>;
+  searchParams: Promise<{ page?: string; q?: string; mine?: string; imported?: string; error?: string }>;
 }) {
-  const { page: pageParam, q, mine } = await searchParams;
+  const { page: pageParam, q, mine, imported, error } = await searchParams;
   const onlyMine = mine === "1";
   const page = parsePage(pageParam);
   const session = await verifySession();
@@ -116,6 +117,12 @@ export default async function CrmPage({
             <Download className="h-4 w-4" />
             Export CSV
           </a>
+          {hasRole(session, ["OWNER", "ADMIN"]) && (
+            <Link href="/dashboard/crm/import" className={buttonStyles("secondary")}>
+              <Upload className="h-4 w-4" />
+              Import CSV
+            </Link>
+          )}
           <Link
             href="/dashboard/crm/new"
             className={buttonStyles("primary")}
@@ -127,6 +134,17 @@ export default async function CrmPage({
       </div>
 
       <CrmTabs active="/dashboard/crm" />
+      {imported && (
+        <div className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
+          Imported {Number(imported) || 0} {Number(imported) === 1 ? "customer" : "customers"}.
+        </div>
+      )}
+      {error && (
+        <div className="mt-4">
+          <ErrorBanner code={error} />
+        </div>
+      )}
+
       <div className="mt-4 flex justify-end">
         <div className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1 text-sm light:border-slate-200 light:bg-slate-100">
           {[

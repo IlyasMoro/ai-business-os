@@ -15,6 +15,10 @@ type InvoicePdfData = {
   lineItems: { description: string; quantity: number; unitPrice: number }[];
   logoData?: Uint8Array;
   logoMimeType?: string | null;
+  /** "Quote" reuses this layout for quotes: its own heading, "Quote for",
+   * a valid until date in place of the due date, and optional notes. */
+  kind?: "Invoice" | "Quote";
+  notes?: string | null;
 };
 
 export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8Array> {
@@ -44,12 +48,13 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
   }
 
   text(invoice.companyName, margin, 20, bold);
-  text(`Invoice ${invoice.invoiceNumber}`, 400, 20, bold);
+  const kind = invoice.kind ?? "Invoice";
+  text(`${kind} ${invoice.invoiceNumber}`, 400, 20, bold);
   y -= 30;
   text(`Status: ${invoice.status}`, 400, 10, font, gray);
   y -= 40;
 
-  text("Bill to:", margin, 10, bold);
+  text(kind === "Quote" ? "Quote for:" : "Bill to:", margin, 10, bold);
   y -= 15;
   text(invoice.customerName, margin, 11);
   y -= 14;
@@ -60,7 +65,7 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   y -= 10;
   text(`Issue date: ${invoice.issueDate.toLocaleDateString()}`, margin, 10, font, gray);
-  text(`Due date: ${invoice.dueDate.toLocaleDateString()}`, 300, 10, font, gray);
+  text(`${kind === "Quote" ? "Valid until" : "Due date"}: ${invoice.dueDate.toLocaleDateString()}`, 300, 10, font, gray);
   y -= 30;
 
   text("Description", margin, 10, bold);
@@ -97,6 +102,29 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   text("Total", 400, 12, bold);
   text(`$${invoice.totalAmount.toFixed(2)}`, 490, 12, bold);
+
+  if (invoice.notes) {
+    y -= 36;
+    text("Notes", margin, 10, bold);
+    y -= 15;
+    // pdf-lib doesn't wrap text: break the notes into lines of whole words.
+    for (const paragraph of invoice.notes.split(/\r?\n/)) {
+      let line = "";
+      for (const word of paragraph.split(" ")) {
+        const next = line ? `${line} ${word}` : word;
+        if (font.widthOfTextAtSize(next, 10) > 495 && line) {
+          text(line, margin, 10, font, gray);
+          y -= 14;
+          line = word;
+        } else {
+          line = next;
+        }
+      }
+      text(line, margin, 10, font, gray);
+      y -= 14;
+      if (y < 60) break;
+    }
+  }
 
   return doc.save();
 }

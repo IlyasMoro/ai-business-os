@@ -8,6 +8,8 @@ import { LinkButton } from "@/components/ui-dark/button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { ContactForm } from "@/components/crm/contact-form";
+import { QuoteListCard } from "@/components/quotes/quote-list-card";
+import { lockedWhere } from "@/lib/branches";
 import { DocumentsSection } from "@/components/documents/documents-section";
 import { deleteCustomer, deleteContact } from "@/lib/actions/crm";
 import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
@@ -65,7 +67,7 @@ export default async function CustomerDetailPage({
 
   if (!customer) notFound();
 
-  const [documents, orders, invoices, tickets, outstandingBalance, deals, activities, followUps, users] = await Promise.all([
+  const [documents, orders, invoices, tickets, outstandingBalance, deals, activities, followUps, users, quotes] = await Promise.all([
     db.document.findMany({
       where: { companyId: session.companyId, entityType: "CUSTOMER", entityId: customer.id },
       select: { id: true, filename: true, size: true },
@@ -104,6 +106,12 @@ export default async function CustomerDetailPage({
       include: { assignee: { select: { name: true } }, deal: { select: { id: true, title: true } } },
     }),
     db.user.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true }, orderBy: { name: "asc" } }),
+    db.quote.findMany({
+      where: { customerId: customer.id, ...(await lockedWhere()) },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      select: { id: true, quoteNumber: true, status: true, validUntil: true, totalAmount: true, createdAt: true },
+    }),
   ]);
   const back = `/dashboard/crm/${customer.id}`;
 
@@ -253,6 +261,8 @@ export default async function CustomerDetailPage({
             <ContactForm customerId={customer.id} />
           </CardContent>
         </Card>
+
+        <QuoteListCard className="mt-6" quotes={quotes} newHref={`/dashboard/quotes/new?customer=${customer.id}`} />
 
         <Card className="mt-6">
           <CardHeader>
