@@ -1,7 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { MAX_SCALE_USERS, planById, planIncludes, type Plan, type PlanFeature, type PlanId } from "@/lib/plans";
+import { MAX_USERS, planById, planIncludes, type Plan, type PlanFeature, type PlanId } from "@/lib/plans";
 
 /* Applies each company's plan (Company.plan, numbers in lib/plans.ts):
    users, branches, the Growth and Scale modules, and AI requests a month.
@@ -58,18 +58,20 @@ export async function canBillExtraUsers(companyId: string): Promise<boolean> {
  * Room for one more user:
  * - "included": within the plan's users.
  * - "extra": past them, billed as an extra user ($15 a month).
+ * - "plan-full": past them on a plan without extra users (Solo).
  * - "needs-plan": past them, but not on a paid plan price yet.
- * - "full": at MAX_SCALE_USERS; bigger teams need an Enterprise plan.
+ * - "full": at MAX_USERS; bigger teams need an Enterprise plan.
  * Seats count open invites. `pendingInvite`: the seat checked is already
  * held by that invite.
  */
-export type UserRoom = "included" | "extra" | "needs-plan" | "full";
+export type UserRoom = "included" | "extra" | "plan-full" | "needs-plan" | "full";
 
 export async function userRoom(companyId: string, { pendingInvite = false } = {}): Promise<UserRoom> {
   const [plan, seats] = await Promise.all([getCompanyPlan(companyId), seatsUsed(companyId)]);
   const used = seats - (pendingInvite ? 1 : 0);
-  if (used >= MAX_SCALE_USERS) return "full";
+  if (used >= MAX_USERS) return "full";
   if (used < plan.users) return "included";
+  if (!plan.extraUsers) return "plan-full";
   return (await canBillExtraUsers(companyId)) ? "extra" : "needs-plan";
 }
 

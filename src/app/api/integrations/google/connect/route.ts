@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
 import { verifySession, hasRole } from "@/lib/dal";
 import { getGoogleAuthUrl } from "@/lib/google-oauth";
+import { hasFeature } from "@/lib/plan-limits";
 
 const STATE_COOKIE = "google_oauth_state";
 
@@ -12,6 +13,10 @@ export async function GET(request: Request) {
 
   if (!hasRole(session, ["OWNER", "ADMIN"])) {
     return NextResponse.redirect(new URL("/dashboard/integrations?error=forbidden", base));
+  }
+  // Integrations come with Starter and up; the page explains which plan.
+  if (!(await hasFeature(session.companyId, "integrations"))) {
+    return NextResponse.redirect(new URL("/dashboard/integrations", base));
   }
 
   const state = randomBytes(24).toString("hex");

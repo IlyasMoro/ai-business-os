@@ -32,14 +32,16 @@ const growthCol = "bg-[#f0f9fc]";
 
 export function PricingCompare() {
   return (
-    <div className="overflow-hidden border border-[#d5dce5] bg-white shadow-[0_18px_38px_-26px_rgba(24,67,111,0.45)]">
-      <table className="w-full table-fixed border-collapse text-left">
+    // Five plan columns: on narrow screens the table scrolls sideways inside
+    // its card instead of squeezing the columns.
+    <div className="overflow-x-auto border border-[#d5dce5] bg-white shadow-[0_18px_38px_-26px_rgba(24,67,111,0.45)]">
+      <table className="w-full min-w-[720px] table-fixed border-collapse text-left">
         <caption className="sr-only">Every feature by plan</caption>
         <colgroup>
-          <col className="w-[40%] sm:w-[46%]" />
-          <col />
-          <col />
-          <col />
+          <col className="w-[30%]" />
+          {PLANS.map((plan) => (
+            <col key={plan.id} />
+          ))}
         </colgroup>
         <thead>
           <tr>
@@ -57,7 +59,7 @@ export function PricingCompare() {
                   {plan.name}
                 </span>
                 <span className="mt-1 block text-lg font-extrabold text-[#0b1f5e] sm:text-2xl">
-                  ${plan.monthly}
+                  ${plan.monthly.toLocaleString("en-US")}
                   {/* On phones "/mo" drops below the price so the three columns fit. */}
                   <span className="block text-[11px] font-semibold text-[#8a93a3] sm:inline sm:text-xs"> /mo</span>
                 </span>
@@ -76,7 +78,7 @@ export function PricingCompare() {
         {PLAN_MATRIX.map((group) => (
           <tbody key={group.title}>
             <tr>
-              <th scope="colgroup" colSpan={4} className="bg-[#0b0f17] px-3 py-3 text-xs font-extrabold uppercase tracking-[0.06em] text-cyan-400 sm:px-6">
+              <th scope="colgroup" colSpan={PLANS.length + 1} className="bg-[#0b0f17] px-3 py-3 text-xs font-extrabold uppercase tracking-[0.06em] text-cyan-400 sm:px-6">
                 {group.title}
               </th>
             </tr>

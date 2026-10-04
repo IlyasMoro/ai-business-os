@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "@/lib/db";
+import { hasFeature } from "@/lib/plan-limits";
 import { sendEmail, type EmailAttachment } from "@/lib/email";
 import { sendGmailMessage } from "@/lib/google-mail";
 import { refreshAccessToken } from "@/lib/google-oauth";
@@ -27,7 +28,11 @@ export async function sendEmailForCompany(
 ) {
   html = await withLogoHeader(companyId, html);
 
-  const integration = await db.googleIntegration.findUnique({ where: { companyId } });
+  // A connected Gmail is only used on plans with Integrations (Starter and
+  // up); otherwise mail goes through the app's default provider.
+  const integration = (await hasFeature(companyId, "integrations"))
+    ? await db.googleIntegration.findUnique({ where: { companyId } })
+    : null;
 
   if (!integration) {
     return sendEmail({ to, subject, html, attachments });

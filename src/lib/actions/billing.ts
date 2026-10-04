@@ -14,7 +14,7 @@ import { findPriceId, isExtraUserItem } from "@/lib/billing-seats";
 import { AI_TOPUP_KIND, creditAiTopUp } from "@/lib/ai-topups";
 import {
   AI_TOPUP_LOOKUP_KEY,
-  MAX_SCALE_USERS,
+  MAX_USERS,
   extraUserLookupKey,
   planById,
   priceLookupKey,
@@ -25,7 +25,7 @@ import {
 const BASE = "/dashboard/billing";
 
 const PlanChoiceSchema = z.object({
-  plan: z.enum(["starter", "growth", "scale"]),
+  plan: z.enum(["solo", "starter", "growth", "business", "scale"]),
   interval: z.enum(["monthly", "yearly"]),
 });
 
@@ -80,7 +80,9 @@ async function withStripe<T>(work: () => Promise<T>): Promise<T> {
 async function requireFits(companyId: string, planId: PlanId) {
   const plan = planById(planId);
   const [seats, branches] = await Promise.all([seatsUsed(companyId), activeBranchCount(companyId)]);
-  if (seats > MAX_SCALE_USERS) redirect(`${BASE}?error=plan-too-small-users`);
+  if (seats > MAX_USERS) redirect(`${BASE}?error=plan-too-small-users`);
+  // Solo has no extra users, so the whole team has to fit.
+  if (!plan.extraUsers && seats > plan.users) redirect(`${BASE}?error=plan-no-extra-users`);
   if (plan.branches !== null && branches > plan.branches) redirect(`${BASE}?error=plan-too-small-branches`);
 }
 

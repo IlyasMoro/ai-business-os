@@ -11,7 +11,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { InviteForm } from "@/components/team/invite-form";
 import { revokeInvite, removeTeamMember } from "@/lib/actions/team";
 import { canBillExtraUsers, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
-import { EXTRA_USER_PRICE, MAX_SCALE_USERS } from "@/lib/plans";
+import { EXTRA_USER_PRICE, MAX_USERS } from "@/lib/plans";
 
 const roleTone = { OWNER: "purple", ADMIN: "blue", EMPLOYEE: "slate" } as const;
 
@@ -63,9 +63,11 @@ export default async function TeamPage({
               {/* Seats count open invites; past the plan's users each new member is billed. */}
               <p className="mb-4 text-sm text-slate-400 light:text-slate-500">
                 {seats} {seats === 1 ? "user" : "users"}, counting open invites. The {plan.name} plan includes {plan.users}.{" "}
-                {seats >= MAX_SCALE_USERS || plan.users >= MAX_SCALE_USERS
-                  ? `For more than ${MAX_SCALE_USERS}, ask us about an Enterprise plan.`
-                  : billable
+                {seats >= MAX_USERS || plan.users >= MAX_USERS
+                  ? `For more than ${MAX_USERS}, ask us about an Enterprise plan.`
+                  : !plan.extraUsers
+                    ? "For more, the owner can move to Starter on the Billing page."
+                    : billable
                     ? `More are $${EXTRA_USER_PRICE} each a month, charged from the day they join.`
                     : seats >= plan.users
                       ? "To add more, the owner can subscribe to a plan on the Billing page."

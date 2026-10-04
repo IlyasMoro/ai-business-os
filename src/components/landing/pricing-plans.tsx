@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { aboutRand, MAX_SCALE_USERS, PLANS } from "@/lib/plans";
+import { aboutRand, MAX_USERS, PLANS } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
@@ -45,7 +45,7 @@ export function PricingPlans() {
               <p className={styles.planTag}>{plan.tagline}</p>
 
               <p className={styles.planAmt}>
-                ${perMonth}
+                ${perMonth.toLocaleString("en-US")}
                 <span> / month</span>
               </p>
               <p className={styles.planNote}>
@@ -78,7 +78,7 @@ export function PricingPlans() {
       </div>
 
       <div className={styles.planFine}>
-        <p>More than {MAX_SCALE_USERS} users? Ask us about an Enterprise plan.</p>
+        <p>More than {MAX_USERS} users? Ask us about an Enterprise plan.</p>
         <p className={styles.planFineSmall}>Rand amounts are a guide. You are billed in US dollars.</p>
       </div>
     </div>

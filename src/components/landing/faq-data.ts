@@ -42,7 +42,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
         // Mirrors the Branches, Transfers and Profit by branch features and
         // the branch limits in lib/plans.ts.
         q: "Can I use AIBOS with several branches?",
-        a: "Yes. Growth covers up to 3 branches and Scale any number. Each branch keeps its own stock, orders and invoices, you can move stock between branches, staff can be limited to their own branch, and Reports compares profit per branch side by side.",
+        a: "Yes. Growth covers up to 3 branches, Business up to 5 and Scale any number. Each branch keeps its own stock, orders and invoices, you can move stock between branches, staff can be limited to their own branch, and Reports compares profit per branch side by side.",
       },
     ],
   },

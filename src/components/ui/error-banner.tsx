@@ -33,6 +33,7 @@ const MESSAGES: Record<string, string> = {
   "billing-unavailable": "Billing couldn't reach Stripe just now. Nothing was charged. Please try again in a few minutes.",
   "activity-invalid": "Write what happened before saving the activity.",
   "followup-invalid": "Give the reminder a title and a due date.",
+  "plan-no-extra-users": "That plan has a fixed number of users and your team, counting open invites, is bigger. Choose Starter or above, or make room first.",
   "plan-price-missing": "That plan isn't available for checkout yet. Please try again later.",
   "plan-too-small-users": "Your team, counting open invites, is bigger than any plan takes (150 users). Ask us about an Enterprise plan.",
   "plan-too-small-branches": "You have more active branches than that plan allows. Deactivate branches first.",

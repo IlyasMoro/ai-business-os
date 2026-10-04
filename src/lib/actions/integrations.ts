@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireRole, getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { sendEmailForCompany } from "@/lib/email-for-company";
+import { requireFeature } from "@/lib/plan-limits";
 
 export async function disconnectGoogle() {
   const session = await requireRole(["OWNER", "ADMIN"]);
@@ -15,7 +16,8 @@ export async function disconnectGoogle() {
 }
 
 export async function sendTestEmail() {
-  await requireRole(["OWNER", "ADMIN"]);
+  const session = await requireRole(["OWNER", "ADMIN"]);
+  await requireFeature(session.companyId, "integrations", "/dashboard/integrations");
   const user = await getCurrentUser();
 
   let succeeded = true;

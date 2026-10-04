@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { exchangeCodeForTokens, getGoogleUserEmail } from "@/lib/google-oauth";
+import { hasFeature } from "@/lib/plan-limits";
 
 const STATE_COOKIE = "google_oauth_state";
 
@@ -21,6 +22,9 @@ export async function GET(request: Request) {
 
   if (errorParam) {
     return NextResponse.redirect(new URL("/dashboard/integrations?error=invalid", base));
+  }
+  if (!(await hasFeature(session.companyId, "integrations"))) {
+    return NextResponse.redirect(new URL("/dashboard/integrations", base));
   }
 
   if (!code || !state || !expectedState || state !== expectedState) {

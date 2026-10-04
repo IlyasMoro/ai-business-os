@@ -9,26 +9,45 @@ import { Input, Label } from "@/components/ui-dark/input";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { CreditCard, Gauge, Percent } from "lucide-react";
 import { activeBranchCount, aiCreditsLeft, aiRequestsUsed, extraUsersBilled, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
-import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE } from "@/lib/plans";
+import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan } from "@/lib/plans";
 
 /** One plan allowance as "used of limit" with a bar. `limit` null means unlimited. */
-/** `extendable`: going past the limit is fine (extra users are billed), so it isn't shown as a warning. */
-function Meter({ label, used, limit, extendable = false }: { label: string; used: number; limit: number | null; extendable?: boolean }) {
+/** One allowance: "used of limit" with a bar that turns amber near the
+ * limit. Unlimited shows the plain count, no bar. `extendable`: going past
+ * the limit is fine (extra users are billed), so it never warns. `note`: a
+ * short line under it, such as extra users or bought AI requests. */
+function Meter({
+  label,
+  used,
+  limit,
+  extendable = false,
+  note,
+}: {
+  label: string;
+  used: number;
+  limit: number | null;
+  extendable?: boolean;
+  note?: string | null;
+}) {
   const share = limit ? Math.min(100, Math.round((used / limit) * 100)) : 0;
-  const full = limit !== null && used >= limit && !extendable;
+  // A one item allowance (Solo and Starter's single branch) is always full,
+  // so it never warns.
+  const warn = limit !== null && limit > 1 && !extendable && used >= limit * 0.8;
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3 text-sm">
         <span className="text-slate-300 light:text-slate-600">{label}</span>
-        <span className={full ? "font-medium text-amber-400" : "font-medium text-slate-50 light:text-slate-900"}>
-          {used.toLocaleString("en-US")} of {limit === null ? "unlimited" : limit.toLocaleString("en-US")}
+        <span className={warn ? "font-semibold text-amber-400" : "font-semibold text-slate-50 light:text-slate-900"}>
+          {used.toLocaleString("en-US")}
+          {limit !== null && <span className="font-normal text-slate-400"> of {limit.toLocaleString("en-US")}</span>}
         </span>
       </div>
       {limit !== null && (
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10 light:bg-slate-200">
-          <div className={full ? "h-full bg-amber-400" : "h-full bg-blue-500"} style={{ width: `${share}%` }} />
+          <div className={warn ? "h-full bg-amber-400" : "h-full bg-blue-500"} style={{ width: `${share}%` }} />
         </div>
       )}
+      {note && <p className="mt-1.5 text-xs text-slate-400 light:text-slate-500">{note}</p>}
     </div>
   );
 }
@@ -157,6 +176,8 @@ export default async function BillingPage({
               action={isActive ? changePlan : startCheckout}
               mode={isActive ? "change" : "checkout"}
               current={isActive && interval ? { planId: plan.id, interval } : null}
+              recommended={recommendedPlan(seats, branches).id}
+              teamSummary={`You have ${seats} ${seats === 1 ? "user" : "users"}, ${branches} active ${branches === 1 ? "branch" : "branches"} and used ${aiUsed.toLocaleString("en-US")} AI ${aiUsed === 1 ? "request" : "requests"} this month`}
             />
           </div>
 
@@ -172,49 +193,53 @@ export default async function BillingPage({
           )}
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
-              <Gauge className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="font-semibold text-slate-50 light:text-slate-900">
-                {isTrialing ? "Usage during your trial" : `Usage on the ${plan.name} plan`}
-              </p>
-              <p className="text-sm text-slate-400 light:text-slate-500">How much of your plan is in use.</p>
-            </div>
-          </div>
-          <div className="mt-5 grid gap-4 border-t border-white/[0.06] pt-4 sm:grid-cols-3 light:border-slate-200">
-            {/* Open invites hold a seat until they are accepted or expire. */}
-            <Meter label="Users and open invites" used={seats} limit={plan.users} extendable={isActive && Boolean(interval)} />
-            <Meter label="Active branches" used={branches} limit={plan.branches} />
-            <Meter label="AI requests this month" used={aiUsed} limit={plan.aiRequests} />
-          </div>
-          {/* Bought AI requests: used once the plan's monthly ones run out, never expire. */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4 light:border-slate-200">
-            <p className="text-sm text-slate-300 light:text-slate-600">
-              Extra AI requests left:{" "}
-              <span className="font-semibold text-slate-50 light:text-slate-900">{aiCredits.toLocaleString("en-US")}</span>
-              <span className="text-slate-500"> · used after the monthly ones, never expire</span>
-            </p>
-            <form action={startAiTopUp}>
-              <SubmitButton variant="secondary" pendingText="Redirecting...">
-                Buy {AI_TOPUP_REQUESTS} for ${AI_TOPUP_PRICE}
-              </SubmitButton>
-            </form>
-          </div>
-          {extraUsers > 0 && interval && (
-            <p className="mt-4 text-sm text-slate-300 light:text-slate-600">
-              {extraUsers} extra user{extraUsers === 1 ? "" : "s"} above the {plan.users} included, at $
-              {interval === "monthly" ? `${EXTRA_USER_PRICE} a month` : `${EXTRA_USER_YEARLY_PRICE} a year`} each:{" "}
-              <span className="font-semibold text-slate-50 light:text-slate-900">
-                ${(extraUsers * (interval === "monthly" ? EXTRA_USER_PRICE : EXTRA_USER_YEARLY_PRICE)).toLocaleString("en-US")} a{" "}
-                {interval === "monthly" ? "month" : "year"}
+        {/* During a trial the plan list's summary line carries the usage, so
+            this card is for companies on a plan. */}
+        {!isTrialing && (
+          <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-white/[0.06] light:border-slate-200 bg-white/5 text-slate-300 light:text-slate-600">
+                <Gauge className="h-5 w-5" />
               </span>
-              .
-            </p>
-          )}
-        </div>
+              <p className="font-semibold text-slate-50 light:text-slate-900">Your usage</p>
+            </div>
+            <div className="mt-4 grid gap-5 border-t border-white/[0.06] pt-4 sm:grid-cols-3 light:border-slate-200">
+              {/* Users count open invites, which hold a seat until accepted or expired. */}
+              <Meter
+                label="Users"
+                used={seats}
+                limit={plan.users}
+                extendable={isActive && Boolean(interval) && plan.extraUsers}
+                note={
+                  extraUsers > 0 && interval
+                    ? `+ ${extraUsers} extra at $${interval === "monthly" ? `${EXTRA_USER_PRICE} a month` : `${EXTRA_USER_YEARLY_PRICE} a year`}`
+                    : null
+                }
+              />
+              <Meter label="Branches" used={branches} limit={plan.branches} />
+              <Meter
+                label="AI requests this month"
+                used={aiUsed}
+                limit={plan.aiRequests}
+                note={aiCredits > 0 ? `+ ${aiCredits.toLocaleString("en-US")} bought, never expire` : null}
+              />
+            </div>
+            {/* Top-ups only once they'd help: most of the month's requests used, or some already bought. */}
+            {(aiUsed >= plan.aiRequests * 0.8 || aiCredits > 0) && (
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-4 light:border-slate-200">
+                <p className="text-sm text-slate-300 light:text-slate-600">
+                  {aiUsed >= plan.aiRequests * 0.8 ? "Running low on AI requests?" : "Need more AI requests?"} Bought
+                  requests are used after the monthly ones and never expire.
+                </p>
+                <form action={startAiTopUp}>
+                  <SubmitButton variant="secondary" pendingText="Redirecting...">
+                    Buy {AI_TOPUP_REQUESTS} for ${AI_TOPUP_PRICE}
+                  </SubmitButton>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <div className="flex items-center gap-3">

@@ -10,7 +10,7 @@ import { getEdiSettings } from "@/lib/edi/settings";
 import { getControllingSettings } from "@/lib/controlling";
 import { getBranchContext } from "@/lib/branches";
 import { getCompanyPlan } from "@/lib/plan-limits";
-import { planIncludes, type PlanFeature } from "@/lib/plans";
+import { FEATURE_MIN_PLAN, planIncludes, type PlanFeature } from "@/lib/plans";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { SubscriptionBlocked } from "@/components/billing/subscription-blocked";
@@ -40,8 +40,8 @@ export default async function DashboardLayout({
     // Transfers only make sense once there is somewhere to move stock to.
     ...(branchCtx.branches.filter((b) => b.active).length > 1 ? [] : ["/dashboard/transfers"]),
   ];
-  // Growth and Scale modules stay in the menu with a lock on smaller plans.
-  const lockedHrefs = (["transfers", "mrp", "controlling", "automation", "edi"] as PlanFeature[])
+  // Modules a plan lacks stay in the menu, labelled with the plan that has them.
+  const lockedHrefs = (Object.keys(FEATURE_MIN_PLAN) as PlanFeature[])
     .filter((feature) => !planIncludes(plan.id, feature))
     .map((feature) => `/dashboard/${feature}`);
   const platformAdmin = isPlatformAdmin(user.email);

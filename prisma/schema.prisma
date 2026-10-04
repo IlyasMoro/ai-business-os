@@ -82,8 +82,10 @@ model Company {
 }
 
 enum CompanyPlan {
+  SOLO
   STARTER
   GROWTH
+  BUSINESS
   SCALE
 }
 

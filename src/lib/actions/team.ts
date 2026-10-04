@@ -12,7 +12,7 @@ import { sendEmailForCompany } from "@/lib/email-for-company";
 import { logAudit } from "@/lib/audit";
 import { getCompanyPlan, userRoom } from "@/lib/plan-limits";
 import { syncExtraUsers } from "@/lib/billing-seats";
-import { EXTRA_USER_PRICE, MAX_SCALE_USERS } from "@/lib/plans";
+import { EXTRA_USER_PRICE, MAX_USERS } from "@/lib/plans";
 import {
   InviteTeamMemberSchema,
   AcceptInviteSchema,
@@ -61,7 +61,13 @@ export async function inviteTeamMember(
   const room = await userRoom(session.companyId, { pendingInvite: Boolean(openInvite) });
   if (room === "full") {
     return {
-      message: `AIBOS plans go up to ${MAX_SCALE_USERS} users, counting open invites. Remove someone or revoke an invite, or ask us about an Enterprise plan.`,
+      message: `AIBOS plans go up to ${MAX_USERS} users, counting open invites. Remove someone or revoke an invite, or ask us about an Enterprise plan.`,
+    };
+  }
+  if (room === "plan-full") {
+    const plan = await getCompanyPlan(session.companyId);
+    return {
+      message: `The ${plan.name} plan includes ${plan.users} users, counting open invites. To add more, the owner can move to Starter on the Billing page.`,
     };
   }
   if (room === "needs-plan") {
@@ -191,7 +197,7 @@ export async function acceptInvite(
   // The invite already holds a seat, unless it was revoked and resent or
   // the plan changed since it was sent.
   const room = await userRoom(invite.companyId, { pendingInvite: true });
-  if (room === "full" || room === "needs-plan") {
+  if (room === "full" || room === "needs-plan" || room === "plan-full") {
     return { message: "This team is full on its current plan. Ask whoever invited you to make room, then try again." };
   }
 
