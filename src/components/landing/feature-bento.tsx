@@ -35,13 +35,19 @@ const pipeline = [
   { stage: "Won", count: 5, width: "22%" },
 ];
 
+const salesFigures = [
+  { label: "Quotes accepted", value: "12" },
+  { label: "Forecast", value: "$18.4k" },
+  { label: "Win rate", value: "42%" },
+];
+
 const automations = ["Overdue invoice reminders", "Low stock reorders", "Stale ticket escalation", "Dead lead cleanup"];
 
 export const FEATURES: Feature[] = [
   {
     name: "CRM and Sales",
     label: "Sales",
-    description: "Every lead, quote and customer conversation in one pipeline, from first contact to signed deal.",
+    description: "Track deals from first contact to signed, send quotes that become orders, and see your forecast and win rate in one report.",
     icon: Users,
     color: "#60a5fa",
     preview: (
@@ -55,6 +61,15 @@ export const FEATURES: Feature[] = [
             <span className="w-6 text-right font-mono tabular-nums text-slate-200">{row.count}</span>
           </div>
         ))}
+        {/* The quote and sales report figures under the pipeline. */}
+        <div className="grid grid-cols-3 gap-2 border-t border-white/[0.07] pt-2.5">
+          {salesFigures.map((f) => (
+            <div key={f.label}>
+              <p className="text-[10px] text-slate-500">{f.label}</p>
+              <p className="font-mono font-semibold tabular-nums text-slate-100">{f.value}</p>
+            </div>
+          ))}
+        </div>
       </Panel>
     ),
   },
