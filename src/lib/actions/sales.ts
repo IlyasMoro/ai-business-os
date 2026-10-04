@@ -9,8 +9,10 @@ import { getCustomerOutstandingBalance } from "@/lib/customer-balance";
 import { evaluateCreditCheck } from "@/lib/credit-math";
 import { changeStock, quantitiesAt, stockBranchFor } from "@/lib/stock";
 import { describeShortfalls, findBranchShortfalls } from "@/lib/stock-levels";
-import { LotShortageError, getInventorySettings, takeFromLots } from "@/lib/lots";
+import { LotShortageError, getInventorySettings, returnToLots, takeFromLots } from "@/lib/lots";
 import { markCustomerActive } from "@/lib/crm-auto";
+import { takeOrderNumber } from "@/lib/order-number";
+import { ORDER_STATUS_LABEL, canChangeStatus, canDelete, canEditLines, cancelBlocker } from "@/lib/order-rules";
 import {
   OrderSchema,
   OrderItemSchema,
@@ -51,9 +53,12 @@ export async function createOrder(
     return { errors: { customerId: ["Select a valid customer."] } };
   }
 
-  const order = await db.order.create({
-    data: { customerId: customer.id, companyId: session.companyId, branchId: await resolveNewRecordBranch(formData) },
-  });
+  const branchId = await resolveNewRecordBranch(formData);
+  const order = await db.$transaction(async (tx) =>
+    tx.order.create({
+      data: { orderNumber: await takeOrderNumber(tx, session.companyId), customerId: customer.id, companyId: session.companyId, branchId },
+    })
+  );
 
   await markCustomerActive(order.customerId);
   revalidatePath("/dashboard/sales");
@@ -77,9 +82,12 @@ export async function updateOrderStatus(
     where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
     select: {
       status: true,
+      orderNumber: true,
       totalAmount: true,
       customerId: true,
       branchId: true,
+      invoice: { select: { id: true } },
+      _count: { select: { returns: true } },
       customer: { select: { name: true, creditLimit: true } },
       items: {
         select: {
@@ -91,6 +99,18 @@ export async function updateOrderStatus(
   });
   if (!order) {
     return { message: "Order not found." };
+  }
+  if (nextStatus === order.status) return undefined;
+  if (!canChangeStatus(order.status, nextStatus)) {
+    return {
+      message: `A ${ORDER_STATUS_LABEL[order.status].toLowerCase()} order can't be moved to ${ORDER_STATUS_LABEL[nextStatus].toLowerCase()}.${
+        order.status === "FULFILLED" ? " Use a return for goods coming back, or cancel the order to put all its stock back." : ""
+      }`,
+    };
+  }
+  if (nextStatus === "CANCELLED") {
+    const blocker = cancelBlocker({ status: order.status, hasInvoice: Boolean(order.invoice), returnCount: order._count.returns });
+    if (blocker) return { message: `Cannot cancel: ${blocker}` };
   }
 
   // Goods leave from the order's own branch. Stock at other branches
@@ -188,6 +208,36 @@ export async function updateOrderStatus(
     return undefined;
   }
 
+  // Cancelling a fulfilled order puts everything it shipped back where it
+  // left from: the branch stock and, for lot and serial products, the same
+  // lots (lib/lots.ts returnToLots, with the order number as fallback lot).
+  if (nextStatus === "CANCELLED" && order.status === "FULFILLED") {
+    await db.$transaction(async (tx) => {
+      for (const item of order.items) {
+        await changeStock(tx, { companyId: session.companyId, branchId, productId: item.product.id, delta: item.quantity });
+        if (item.product.trackingMode !== "NONE") {
+          await returnToLots(tx, {
+            companyId: session.companyId,
+            branchId,
+            orderId,
+            productId: item.product.id,
+            quantity: item.quantity,
+            returnNumber: order.orderNumber,
+          });
+        }
+      }
+      await tx.order.update({
+        where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
+        data: { status: "CANCELLED", fulfilledAt: null },
+      });
+    });
+
+    revalidatePath(`/dashboard/sales/${orderId}`);
+    revalidatePath("/dashboard/sales");
+    revalidatePath("/dashboard/inventory");
+    return undefined;
+  }
+
   await db.order.update({
     where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
     data: { status: nextStatus },
@@ -204,6 +254,15 @@ export async function deleteOrder(orderId: string) {
   if (!hasRole(session, ["OWNER", "ADMIN"])) {
     redirect("/dashboard/sales?error=forbidden");
   }
+
+  // A confirmed or fulfilled order is cancelled first, so its stock checks
+  // and shipped goods are dealt with; deleting it would lose them.
+  const existing = await db.order.findUnique({
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: { status: true },
+  });
+  if (!existing) redirect("/dashboard/sales");
+  if (!canDelete(existing.status)) redirect(`/dashboard/sales/${orderId}?error=order-delete-blocked`);
 
   await db.order.delete({
     where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
@@ -231,10 +290,13 @@ export async function addOrderItem(
 
   const order = await db.order.findUnique({
     where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
-    select: { id: true },
+    select: { id: true, status: true },
   });
   if (!order) {
     return { message: "Order not found." };
+  }
+  if (!canEditLines(order.status)) {
+    return { message: "Only pending orders can change. Move it back to pending first." };
   }
 
   const product = await db.product.findUnique({
@@ -263,8 +325,10 @@ export async function addOrderItem(
 export async function removeOrderItem(orderId: string, itemId: string) {
   const session = await verifySession();
 
-  await db.orderItem.delete({
-    where: { id: itemId, order: { companyId: session.companyId, ...(await lockedWhere()) } },
+  // Same rule as adding: lines are locked once the order is confirmed.
+  // deleteMany: nothing happens (rather than an error page) on a locked order.
+  await db.orderItem.deleteMany({
+    where: { id: itemId, orderId, order: { companyId: session.companyId, status: "PENDING", ...(await lockedWhere()) } },
   });
 
   await recomputeOrderTotal(orderId);

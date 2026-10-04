@@ -8,6 +8,7 @@ import { lockedWhere, resolveNewRecordBranch } from "@/lib/branches";
 import { logAudit } from "@/lib/audit";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { computeInvoiceTotal, computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
+import { invoiceBlocker } from "@/lib/order-rules";
 import {
   InvoiceSchema,
   InvoiceLineItemSchema,
@@ -31,6 +32,73 @@ async function recomputeInvoiceTotal(invoiceId: string) {
 async function nextInvoiceNumber(companyId: string) {
   const count = await db.invoice.count({ where: { companyId } });
   return `INV-${String(count + 1).padStart(4, "0")}`;
+}
+
+/** Draft invoice from a confirmed or fulfilled order: its lines at the
+ * order's prices, the company's default tax rate, due in 30 days, the same
+ * customer and branch, and linked to the order (Invoice.orderId is unique,
+ * so a double click can't make two). */
+export async function createInvoiceFromOrder(orderId: string) {
+  const session = await verifySession();
+
+  const order = await db.order.findUnique({
+    where: { id: orderId, companyId: session.companyId, ...(await lockedWhere()) },
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      customerId: true,
+      branchId: true,
+      invoice: { select: { id: true } },
+      items: { select: { quantity: true, unitPrice: true, productId: true, product: { select: { name: true } } } },
+    },
+  });
+  if (!order) redirect("/dashboard/sales");
+  if (order.invoice) redirect(`/dashboard/invoicing/${order.invoice.id}`);
+  if (invoiceBlocker({ status: order.status, hasInvoice: false, itemCount: order.items.length })) {
+    redirect(`/dashboard/sales/${orderId}?error=order-invoice-blocked`);
+  }
+
+  const company = await db.company.findUnique({ where: { id: session.companyId }, select: { defaultTaxRate: true } });
+  const taxRate = company?.defaultTaxRate ?? 0;
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 30);
+
+  let invoiceId: string;
+  try {
+    const invoice = await db.invoice.create({
+      data: {
+        invoiceNumber: await nextInvoiceNumber(session.companyId),
+        customerId: order.customerId,
+        companyId: session.companyId,
+        branchId: order.branchId,
+        orderId: order.id,
+        dueDate,
+        taxRate,
+        totalAmount: computeInvoiceTotal(order.items, taxRate),
+        lineItems: {
+          create: order.items.map((item) => ({
+            description: item.product.name,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            productId: item.productId,
+          })),
+        },
+      },
+      select: { id: true },
+    });
+    invoiceId = invoice.id;
+  } catch (e) {
+    // Someone else invoiced it a moment ago: open that invoice instead.
+    const existing = await db.invoice.findUnique({ where: { orderId }, select: { id: true } });
+    if (existing) redirect(`/dashboard/invoicing/${existing.id}`);
+    throw e;
+  }
+
+  await logAudit(session.companyId, session.userId, "invoice.created_from_order", "Invoice", invoiceId, { order: order.orderNumber });
+  revalidatePath("/dashboard/invoicing");
+  revalidatePath(`/dashboard/sales/${orderId}`);
+  redirect(`/dashboard/invoicing/${invoiceId}`);
 }
 
 export async function createInvoice(

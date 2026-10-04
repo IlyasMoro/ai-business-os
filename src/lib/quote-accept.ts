@@ -6,6 +6,7 @@ import { isOpenStage } from "@/lib/crm-pipeline";
 import { touchLeadScore } from "@/lib/lead-score-data";
 import { dealStageChanged, fireRules } from "@/lib/crm-rules-runner";
 import { markCustomerActive } from "@/lib/crm-auto";
+import { takeOrderNumber } from "@/lib/order-number";
 
 /* Accepting and declining a quote, shared by the staff buttons on the quote
    page and the customer's own page at /q/<token>. */
@@ -53,6 +54,7 @@ export async function acceptQuoteRecord(quoteId: string, companyId: string, sign
     if (claimed.count === 0) return null;
     const order = await tx.order.create({
       data: {
+        orderNumber: await takeOrderNumber(tx, companyId),
         companyId,
         customerId: quote.customerId,
         branchId: quote.branchId,

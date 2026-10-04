@@ -15,6 +15,9 @@ model Company {
   industry       String?
   defaultTaxRate Float    @default(0)
   createdAt      DateTime @default(now())
+  // Last sales order number handed out (SO-0001 = 1); bumped atomically
+  // by lib/order-number.ts so two orders at once never share a number.
+  orderSeq       Int      @default(0)
 
   // Custom logo shown on invoices, payslips, business reports, and
   // customer-facing emails in place of the default AIBOS wordmark. PNG/JPEG
@@ -667,6 +670,8 @@ enum OrderStatus {
 
 model Order {
   id               String      @id @default(cuid())
+  // SO-0001, per company (lib/order-number.ts).
+  orderNumber      String
   status           OrderStatus @default(PENDING)
   totalAmount      Float       @default(0)
   createdAt        DateTime    @default(now())
@@ -692,6 +697,7 @@ model Order {
   // The accepted quote this order was made from, if any.
   quote   Quote?
 
+  @@unique([companyId, orderNumber])
   @@index([companyId])
   @@index([customerId])
   @@index([branchId])

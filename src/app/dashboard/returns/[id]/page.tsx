@@ -83,7 +83,7 @@ export default async function ReturnDetailPage({
               </Link>
               {" · "}
               <Link href={`/dashboard/sales/${rma.order.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-                View order
+                Order {rma.order.orderNumber}
               </Link>
               {" · "}Opened {rma.createdAt.toLocaleDateString()}
               {rma.receivedAt && <> · Received {rma.receivedAt.toLocaleDateString()}</>}

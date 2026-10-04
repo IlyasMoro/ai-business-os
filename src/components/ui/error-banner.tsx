@@ -2,6 +2,8 @@ const MESSAGES: Record<string, string> = {
   forbidden: "You don't have permission to perform that action.",
   "in-use": "This record can't be deleted because it's referenced elsewhere.",
   invalid: "Please check the form for errors and try again.",
+  "order-delete-blocked": "Only pending or cancelled orders can be deleted. Cancel the order first, which puts any shipped stock back.",
+  "order-invoice-blocked": "This order can't be invoiced yet. Confirm it, add items, and check it has no invoice already.",
   confirm: "The confirmation text didn't match. Nothing was deleted.",
   "no-email": "This customer doesn't have an email address on file, so the invoice couldn't be sent.",
   "send-failed": "The invoice couldn't be sent. Check your email configuration and try again.",

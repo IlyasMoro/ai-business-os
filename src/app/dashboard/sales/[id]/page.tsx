@@ -10,6 +10,9 @@ import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { OrderItemForm } from "@/components/sales/order-item-form";
 import { OrderStatusForm } from "@/components/sales/order-status-form";
 import { deleteOrder, removeOrderItem } from "@/lib/actions/sales";
+import { createInvoiceFromOrder } from "@/lib/actions/invoicing";
+import { SubmitButton } from "@/components/ui-dark/submit-button";
+import { canDelete, canEditLines, invoiceBlocker } from "@/lib/order-rules";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { getReturnPolicy } from "@/lib/returns-policy";
@@ -70,6 +73,9 @@ export default async function OrderDetailPage({
   const canOpenReturn =
     returnPolicy.enabled && order.status === "FULFILLED" && isWithinReturnWindow(fulfilledAt, returnPolicy.windowDays);
 
+  const editable = canEditLines(order.status);
+  const canInvoice = invoiceBlocker({ status: order.status, hasInvoice: Boolean(order.invoice), itemCount: order.items.length }) === null;
+
   // "In stock" means at this order's branch, where it will ship from.
   const stockBranchId = await stockBranchFor(session.companyId, order.branchId);
   const products = (
@@ -90,11 +96,12 @@ export default async function OrderDetailPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/sales" label="Back to orders" />
-        <div className="flex items-start justify-between">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
-                Order for{" "}
+                <span className="font-mono">{order.orderNumber}</span>
+                <span className="text-slate-500"> · </span>
                 <Link href={`/dashboard/crm/${order.customer.id}`} className="hover:text-blue-400">
                   {order.customer.name}
                 </Link>
@@ -123,7 +130,7 @@ export default async function OrderDetailPage({
                   Invoice {order.invoice.invoiceNumber} ({order.invoice.status})
                 </Link>
               ) : (
-                <span className="text-slate-500">No invoice generated yet</span>
+                <span className="text-slate-500">Not invoiced yet</span>
               )}
             </p>
           </div>
@@ -131,8 +138,13 @@ export default async function OrderDetailPage({
             {order.status === "FULFILLED" && (
               <EdiSendButton docType="856" recordId={order.id} customerId={order.customer.id} />
             )}
+            {canInvoice && (
+              <form action={createInvoiceFromOrder.bind(null, order.id)}>
+                <SubmitButton pendingText="Creating...">Create invoice</SubmitButton>
+              </form>
+            )}
             <OrderStatusForm orderId={order.id} status={order.status} />
-            <DeleteButton action={deleteOrder.bind(null, order.id)} />
+            {canDelete(order.status) && <DeleteButton action={deleteOrder.bind(null, order.id)} />}
           </div>
         </div>
 
@@ -175,16 +187,27 @@ export default async function OrderDetailPage({
                         </p>
                       )}
                     </div>
-                    <DeleteButton
-                      action={removeOrderItem.bind(null, order.id, item.id)}
-                      confirmMessage="Remove this item?"
-                      label=""
-                    />
+                    {editable && (
+                      <DeleteButton
+                        action={removeOrderItem.bind(null, order.id, item.id)}
+                        confirmMessage="Remove this item?"
+                        label=""
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
             )}
-            <OrderItemForm orderId={order.id} products={products} />
+            {editable ? (
+              <OrderItemForm orderId={order.id} products={products} />
+            ) : (
+              order.status !== "CANCELLED" && (
+                <p className="text-xs text-slate-500">
+                  Items are locked once an order is confirmed, so it keeps the credit and stock checks it passed.
+                  {order.status === "CONFIRMED" && " Move it back to pending to change them."}
+                </p>
+              )
+            )}
             <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
               Total: ${order.totalAmount.toFixed(2)}
             </p>

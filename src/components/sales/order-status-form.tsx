@@ -4,13 +4,14 @@ import { useActionState, useEffect, useRef } from "react";
 import { Select } from "@/components/ui-dark/input";
 import { updateOrderStatus } from "@/lib/actions/sales";
 import type { OrderStatusFormState } from "@/lib/validation/sales";
+import { ORDER_STATUS_LABEL, nextStatuses, type OrderStatus } from "@/lib/order-rules";
 
 export function OrderStatusForm({
   orderId,
   status,
 }: {
   orderId: string;
-  status: string;
+  status: OrderStatus;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const selectRef = useRef<HTMLSelectElement>(null);
@@ -38,12 +39,32 @@ export function OrderStatusForm({
           defaultValue={status}
           className="w-auto"
           disabled={pending}
-          onChange={() => formRef.current?.requestSubmit()}
+          onChange={(e) => {
+            // Cancelling a shipped order moves stock, so ask first.
+            if (
+              status === "FULFILLED" &&
+              e.currentTarget.value === "CANCELLED" &&
+              !window.confirm("Cancel this fulfilled order? Everything it shipped goes back into stock.")
+            ) {
+              e.currentTarget.value = status;
+              return;
+            }
+            formRef.current?.requestSubmit();
+          }}
         >
-          <option value="PENDING">Pending</option>
-          <option value="CONFIRMED">Confirmed</option>
-          <option value="FULFILLED">Fulfilled</option>
-          <option value="CANCELLED">Cancelled</option>
+          {/* Only the steps the order can take from here (lib/order-rules.ts). */}
+          <option value={status}>{ORDER_STATUS_LABEL[status]}</option>
+          {nextStatuses(status).map((next) => (
+            <option key={next} value={next}>
+              {status === "CONFIRMED" && next === "PENDING"
+                ? "Back to pending"
+                : status === "CANCELLED" && next === "PENDING"
+                  ? "Reopen as pending"
+                  : status === "FULFILLED" && next === "CANCELLED"
+                    ? "Cancel, stock goes back"
+                    : ORDER_STATUS_LABEL[next]}
+            </option>
+          ))}
         </Select>
       </form>
       {state?.message && <p className="max-w-xs text-right text-sm text-red-400">{state.message}</p>}

@@ -10,12 +10,12 @@ export async function GET() {
   const orders = await db.order.findMany({
     where: { companyId: session.companyId, ...(await branchWhere()) },
     orderBy: { createdAt: "desc" },
-    select: { status: true, totalAmount: true, createdAt: true, customer: { select: { name: true, email: true } } },
+    select: { orderNumber: true, status: true, totalAmount: true, createdAt: true, customer: { select: { name: true, email: true } }, invoice: { select: { invoiceNumber: true } } },
   });
 
   const csv = toCsv(
-    ["Customer", "Customer Email", "Status", "Total Amount", "Created At"],
-    orders.map((o) => [o.customer.name, o.customer.email, o.status, o.totalAmount, o.createdAt])
+    ["Order Number", "Customer", "Customer Email", "Status", "Total Amount", "Invoice", "Created At"],
+    orders.map((o) => [o.orderNumber, o.customer.name, o.customer.email, o.status, o.totalAmount, o.invoice?.invoiceNumber, o.createdAt])
   );
 
   return new NextResponse(csv, {

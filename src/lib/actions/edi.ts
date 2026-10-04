@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { takeOrderNumber } from "@/lib/order-number";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -429,6 +430,7 @@ export async function importEdiDocument(formData: FormData) {
           created.push(
             await tx.order.create({
               data: {
+                orderNumber: await takeOrderNumber(tx, companyId),
                 companyId,
                 branchId,
                 customerId: partner.customerId!,

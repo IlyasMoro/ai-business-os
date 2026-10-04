@@ -51,7 +51,7 @@ export default async function QuotePage({
       deal: { select: { id: true, title: true } },
       owner: { select: { name: true } },
       branch: { select: { name: true } },
-      order: { select: { id: true, status: true } },
+      order: { select: { id: true, orderNumber: true, status: true } },
       items: { include: { product: { select: { name: true, sku: true } } }, orderBy: { id: "asc" } },
     },
   });
@@ -195,7 +195,7 @@ export default async function QuotePage({
             ) : null}
             Accepted {quote.decidedAt && shortDate(quote.decidedAt)}.{" "}
             <Link href={`/dashboard/sales/${quote.order.id}`} className="font-medium underline">
-              Open the order
+              Open order {quote.order.orderNumber}
             </Link>{" "}
             ({quote.order.status.toLowerCase()}).
           </div>

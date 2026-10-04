@@ -105,7 +105,9 @@ export async function putIntoLot(
 /**
  * Puts returned units back into the lots they shipped from on that order,
  * in the order they shipped, never more than shipped minus already returned. Any
- * units that can't be matched go into a lot named after the return.
+ * units that can't be matched go into a lot named after the return. Also used
+ * when a fulfilled order is cancelled: no returnId, and the fallback lot is
+ * named after the order.
  */
 export async function returnToLots(
   tx: Tx,
@@ -116,7 +118,8 @@ export async function returnToLots(
     orderId: string;
     productId: string;
     quantity: number;
-    returnId: string;
+    returnId?: string;
+    /** Names the fallback lot: the return number, or the order number on a cancellation. */
     returnNumber: string;
   }
 ) {

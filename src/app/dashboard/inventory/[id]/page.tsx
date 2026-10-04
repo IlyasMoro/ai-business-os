@@ -481,7 +481,7 @@ export default async function ProductDetailPage({
                           href={`/dashboard/sales/${item.order.id}`}
                           className="text-slate-300 light:text-slate-600 hover:text-blue-400"
                         >
-                          {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
+                          <span className="font-mono">{item.order.orderNumber}</span> · {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
                         </Link>
                         <span className="tabular-nums text-slate-500">
                           {item.quantity} × ${item.unitPrice.toFixed(2)}

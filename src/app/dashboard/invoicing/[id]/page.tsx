@@ -42,6 +42,7 @@ export default async function InvoiceDetailPage({
       branch: { select: { name: true } },
       customer: true,
       lineItems: true,
+      order: { select: { id: true, orderNumber: true } },
     },
   });
 
@@ -78,6 +79,14 @@ export default async function InvoiceDetailPage({
               Issued {invoice.issueDate.toLocaleDateString()} · Due{" "}
               {invoice.dueDate.toLocaleDateString()}
               {invoice.sentAt && <> · Emailed {invoice.sentAt.toLocaleDateString()}</>}
+              {invoice.order && (
+                <>
+                  {" · from order "}
+                  <Link href={`/dashboard/sales/${invoice.order.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                    {invoice.order.orderNumber}
+                  </Link>
+                </>
+              )}
             </p>
           </div>
           <div className="flex items-center gap-2">

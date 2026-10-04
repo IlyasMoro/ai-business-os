@@ -46,7 +46,15 @@ export default async function SalesPage({
   const where: Prisma.OrderWhereInput = {
     companyId: session.companyId,
     ...inBranch,
-    ...(q ? { customer: { name: { contains: q } } } : {}),
+    // Matches the order number (SO-0012) or the customer's name.
+    ...(q
+      ? {
+          OR: [
+            { orderNumber: { contains: q.trim(), mode: "insensitive" } },
+            { customer: { name: { contains: q.trim(), mode: "insensitive" } } },
+          ],
+        }
+      : {}),
   };
 
   const [orders, totalCount, statusGroups] = await Promise.all([
@@ -99,7 +107,7 @@ export default async function SalesPage({
             <input
               type="search"
               name="q"
-              placeholder="Search by customer..."
+              placeholder="Search by number or customer..."
               defaultValue={q}
               className={fieldStyles("pl-9")}
             />
@@ -166,6 +174,7 @@ export default async function SalesPage({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                <th className="px-5 py-3 font-medium">Order</th>
                 <th className="px-5 py-3 font-medium">Customer</th>
                 <th className="px-5 py-3 font-medium">Status</th>
                 <th className="px-5 py-3 font-medium">Total</th>
@@ -178,11 +187,12 @@ export default async function SalesPage({
                   <td className="px-5 py-3">
                     <Link
                       href={`/dashboard/sales/${order.id}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
-                      {order.customer.name}
+                      {order.orderNumber}
                     </Link>
                   </td>
+                  <td className="px-5 py-3 text-slate-300 light:text-slate-600">{order.customer.name}</td>
                   <td className="px-5 py-3">
                     <StatusBadge status={order.status} color={statusColor[order.status]} />
                   </td>

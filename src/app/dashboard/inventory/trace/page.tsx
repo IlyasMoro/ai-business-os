@@ -44,7 +44,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
   ];
   const transferIds = [...new Set(lots.flatMap((l) => l.movements.map((m) => m.transferId)).filter((x): x is string => !!x))];
   const [orders, pos, wos, rmas, transfers] = await Promise.all([
-    db.order.findMany({ where: { id: { in: ids("orderId") }, companyId: session.companyId }, select: { id: true, customerPoNumber: true, customer: { select: { id: true, name: true } } } }),
+    db.order.findMany({ where: { id: { in: ids("orderId") }, companyId: session.companyId }, select: { id: true, orderNumber: true, customerPoNumber: true, customer: { select: { id: true, name: true } } } }),
     db.purchaseOrder.findMany({ where: { id: { in: ids("purchaseOrderId") }, companyId: session.companyId }, select: { id: true, supplier: { select: { name: true } } } }),
     db.workOrder.findMany({ where: { id: { in: ids("workOrderId") }, companyId: session.companyId }, select: { id: true, woNumber: true } }),
     db.returnAuthorization.findMany({ where: { id: { in: ids("returnId") }, companyId: session.companyId }, select: { id: true, rmaNumber: true } }),
@@ -167,7 +167,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                           <>
                             {" to "}
                             <Link href={`/dashboard/sales/${o.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-                              {o.customer.name}
+                              {o.orderNumber} · {o.customer.name}
                               {o.customerPoNumber ? ` (PO ${o.customerPoNumber})` : ""}
                             </Link>
                           </>

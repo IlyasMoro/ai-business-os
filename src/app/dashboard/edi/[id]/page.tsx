@@ -35,7 +35,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
             companyId: session.companyId,
             customerPoNumber: { in: (doc.reference ?? "").split(", ").filter(Boolean) },
           },
-          select: { id: true, customerPoNumber: true, totalAmount: true },
+          select: { id: true, orderNumber: true, customerPoNumber: true, totalAmount: true },
         })
       : [],
   ]);
@@ -84,7 +84,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
               <p key={o.id}>
                 Sales order for PO <span className="font-mono">{o.customerPoNumber}</span>, ${o.totalAmount.toFixed(2)}:{" "}
                 <Link href={`/dashboard/sales/${o.id}`} className={linkClass}>
-                  open order
+                  {o.orderNumber}
                 </Link>
               </p>
             ))}
