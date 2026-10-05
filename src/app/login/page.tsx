@@ -1,78 +1,36 @@
-"use client";
-
-import { Suspense, useActionState } from "react";
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
-import { useSearchParams } from "next/navigation";
-import { login } from "@/lib/actions/auth";
-import { Button } from "@/components/ui-dark/button";
-import { Input, Label, FieldError } from "@/components/ui-dark/input";
+import { Bot, GitBranch, LayoutDashboard } from "lucide-react";
+import { LoginForm } from "@/components/auth/login-form";
+import { SplitCardPage } from "@/components/landing/split-card-page";
 
-function ResetSuccessBanner() {
-  const searchParams = useSearchParams();
-  if (searchParams.get("reset") !== "success") return null;
-  return (
-    <p className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400 light:text-emerald-700">
-      Your password has been reset. Sign in with your new password.
-    </p>
-  );
-}
+export const metadata = {
+  title: "Sign in",
+};
 
+/* Sign in, in the landing page's look: the same card as the contact page. */
 export default function LoginPage() {
-  const [state, action, pending] = useActionState(login, undefined);
-
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
-      />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.09] p-8 shadow-lg light:border-white/80 glass">
-        <Link
-          href="/"
-          className="mb-6 flex justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Logo layout="stacked" />
-        </Link>
-        <p className="text-sm text-slate-400 light:text-slate-500">Sign in to your business dashboard.</p>
-
-        <Suspense fallback={null}>
-          <ResetSuccessBanner />
-        </Suspense>
-
-        <form action={action} className="mt-6 space-y-4">
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="you@company.com" required />
-            <FieldError messages={state?.errors?.email} />
-          </div>
-          <div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="/forgot-password" className="mb-1 text-sm font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
-                Forgot password?
-              </Link>
-            </div>
-            <Input id="password" name="password" type="password" required />
-            <FieldError messages={state?.errors?.password} />
-          </div>
-
-          {state?.message && (
-            <p className="text-sm text-red-400 light:text-red-600">{state.message}</p>
-          )}
-
-          <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Signing in..." : "Sign in"}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-400 light:text-slate-500">
-          Don&apos;t have an account?{" "}
-          <Link href="/register" className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
-            Create one
+    <SplitCardPage
+      eyebrow="Sign in"
+      title="Welcome back"
+      sub="Pick up where you left off: your sales, stock and money are waiting."
+      panelEyebrow="Your business, ready"
+      points={[
+        { icon: LayoutDashboard, title: "Everything at a glance", text: "Sales, stock, money and your team on one dashboard." },
+        { icon: Bot, title: "An AI that asks first", text: "The AI Copilot suggests the next step; nothing happens until you approve it." },
+        { icon: GitBranch, title: "Every branch in step", text: "Switch between branches, or see the whole company at once." },
+      ]}
+      panelFoot={
+        <>
+          New to AIBOS?{" "}
+          <Link href="/register" className="font-semibold text-cyan-300 hover:text-white">
+            Start your free trial
           </Link>
-        </p>
-      </div>
-    </div>
+          . 14 days, no card needed.
+        </>
+      }
+    >
+      <LoginForm />
+    </SplitCardPage>
   );
 }

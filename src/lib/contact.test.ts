@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ContactSchema, sizeLine, topicFromQuery, topicLabel } from "@/lib/contact";
+import { asksForSize, ContactSchema, sizeLine, topicFromQuery, topicLabel } from "@/lib/contact";
 
 describe("contact form", () => {
   it("accepts a normal message", () => {
@@ -17,7 +17,8 @@ describe("contact form", () => {
     expect(topicFromQuery("enterprise")).toBe("ENTERPRISE");
     expect(topicFromQuery("nonsense")).toBe("SALES");
     expect(topicFromQuery(undefined)).toBe("SALES");
-    expect(topicLabel("SUPPORT")).toBe("Help with my account");
+    expect(topicLabel("SUPPORT")).toBe("Account and login");
+    expect(topicLabel("nonsense")).toBe("General question");
   });
   it("reads team size and branches as optional whole numbers", () => {
     const base = { name: "Thandi", email: "t@example.com", topic: "ENTERPRISE", message: "We need invoicing, please." };
@@ -26,6 +27,13 @@ describe("contact form", () => {
     expect(ContactSchema.safeParse(base).success).toBe(true);
     expect(ContactSchema.safeParse({ ...base, teamSize: "0" }).success).toBe(false);
     expect(ContactSchema.safeParse({ ...base, branches: "2.5" }).success).toBe(false);
+  });
+
+  it("asks for team size only on plan and Enterprise questions", () => {
+    expect(asksForSize("SALES")).toBe(true);
+    expect(asksForSize("ENTERPRISE")).toBe(true);
+    expect(asksForSize("SUPPORT")).toBe(false);
+    expect(asksForSize("OTHER")).toBe(false);
   });
 
   it("describes the size in words", () => {

@@ -711,13 +711,13 @@
   color: #1848d8;
 }
 
-/* ── Contact page: one card, dark glass on the left, the form on the right ── */
+/* ── Contact, sign in and sign up: one square card, dark glass on the left,
+   the form on the right (SplitCardPage) ── */
 .contactCard {
   display: grid;
   max-width: 1040px;
   margin: 3rem auto 0;
   overflow: hidden;
-  border-radius: 1.25rem;
   border: 1px solid var(--line);
   background: #fff;
   box-shadow: 0 30px 70px -35px rgba(11, 31, 94, 0.45);
@@ -745,32 +745,111 @@
   box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.3);
   color: var(--cyan);
 }
-/* Topic chips: real radio buttons, drawn as pills. */
-.chip {
-  display: inline-flex;
+/* Topic tiles: real radio buttons, drawn as a 2 x 2 grid of cards with an
+   icon, the label and a one line description; the chosen one gets a navy
+   edge and a tick. */
+.tile {
+  position: relative;
+  display: flex;
+  height: 100%;
   cursor: pointer;
-  align-items: center;
-  border-radius: 999px;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border-radius: 12px;
   border: 1px solid var(--line);
   background: #fff;
-  padding: 0.5rem 0.95rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--body);
-  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  padding: 0.8rem 2.4rem 0.8rem 0.85rem;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
-.chip:hover {
+.tile:hover {
   border-color: var(--ink);
+}
+.tileIcon {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  background: var(--mist);
   color: var(--ink);
+  transition: background 0.15s ease;
 }
-.chipInput:checked + .chip {
-  border-color: var(--ink);
+.tileTick {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  height: 1.25rem;
+  width: 1.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
   background: var(--ink);
   color: #fff;
+  opacity: 0;
+  transform: scale(0.6);
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.chipInput:focus-visible + .chip {
+.tileInput:checked + .tile {
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  background: #f7f9fc;
+}
+.tileInput:checked + .tile .tileIcon {
+  background: rgba(34, 211, 238, 0.16);
+}
+.tileInput:checked + .tile .tileTick {
+  opacity: 1;
+  transform: none;
+}
+.tileInput:focus-visible + .tile {
   outline: 2px solid var(--cyan);
   outline-offset: 2px;
+}
+/* A topic's own hint, between the tiles and the details. */
+.contactTip {
+  border-radius: 10px;
+  border-left: 3px solid var(--cyan);
+  background: var(--mist);
+  padding: 0.8rem 1rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--body);
+}
+.contactTip b {
+  color: var(--ink);
+}
+.contactTip a {
+  font-weight: 800;
+  color: var(--ink);
+  text-decoration: underline;
+}
+/* Switching topics: the topic's part eases in instead of popping. */
+@keyframes topicIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.topicIn:not(:empty) {
+  animation: topicIn 0.28s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .topicIn:not(:empty) {
+    animation: none;
+  }
+  .tile,
+  .tileTick {
+    transition: none;
+  }
 }
 .sendBtn {
   width: 100%;

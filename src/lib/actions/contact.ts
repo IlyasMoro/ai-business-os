@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { HONEYPOT_FIELD, spamReason } from "@/lib/lead-form";
-import { ContactSchema, sizeLine, topicLabel, type ContactFormState } from "@/lib/contact";
+import { asksForSize, ContactSchema, sizeLine, topicLabel, type ContactFormState } from "@/lib/contact";
 import { sendEmail } from "@/lib/email";
 import { escapeHtml } from "@/lib/invoice-rules";
 import { requirePlatformAdmin } from "@/lib/platform-admin";
@@ -45,10 +45,10 @@ export async function submitContactMessage(_state: ContactFormState, formData: F
   }
 
   const m = parsed.data;
-  // The size fields only show for Enterprise; ignore them on other topics.
-  const enterprise = m.topic === "ENTERPRISE";
-  const teamSize = enterprise ? (m.teamSize ?? null) : null;
-  const branches = enterprise ? (m.branches ?? null) : null;
+  // The size fields only show for plan and Enterprise questions.
+  const sized = asksForSize(m.topic);
+  const teamSize = sized ? (m.teamSize ?? null) : null;
+  const branches = sized ? (m.branches ?? null) : null;
   await db.contactMessage.create({
     data: { name: m.name, email: m.email.toLowerCase(), company: m.company || null, topic: m.topic, message: m.message, teamSize, branches },
   });

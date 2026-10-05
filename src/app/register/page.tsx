@@ -1,83 +1,35 @@
-"use client";
-
-import { useActionState } from "react";
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
-import { register } from "@/lib/actions/auth";
-import { Button } from "@/components/ui-dark/button";
-import { Input, Label, FieldError } from "@/components/ui-dark/input";
+import { CreditCard, Gift, ShieldCheck } from "lucide-react";
+import { RegisterForm } from "@/components/auth/register-form";
+import { SplitCardPage } from "@/components/landing/split-card-page";
 
+export const metadata = {
+  title: "Create your account",
+};
+
+/* Sign up, in the landing page's look: the same card as the contact page. */
 export default function RegisterPage() {
-  const [state, action, pending] = useActionState(register, undefined);
-
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
-      />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.09] p-8 shadow-lg light:border-white/80 glass">
-        <Link
-          href="/"
-          className="mb-6 flex justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Logo layout="stacked" />
-        </Link>
-        <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">Create your workspace</h1>
-        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-          Start running your business with an AI powered operating system.
-        </p>
-
-        <form action={action} className="mt-6 space-y-4">
-          <div>
-            <Label htmlFor="companyName">Company name</Label>
-            <Input id="companyName" name="companyName" placeholder="Acme Retail Co." required />
-            <FieldError messages={state?.errors?.companyName} />
-          </div>
-          <div>
-            <Label htmlFor="name">Your name</Label>
-            <Input id="name" name="name" placeholder="Jane Doe" required />
-            <FieldError messages={state?.errors?.name} />
-          </div>
-          <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" name="email" type="email" placeholder="you@company.com" required />
-            <FieldError messages={state?.errors?.email} />
-          </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" name="password" type="password" required />
-            <FieldError messages={state?.errors?.password} />
-          </div>
-
-          {state?.message && (
-            <p className="text-sm text-red-400 light:text-red-600">{state.message}</p>
-          )}
-
-          <Button type="submit" disabled={pending} className="w-full">
-            {pending ? "Creating account..." : "Create account"}
-          </Button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-400 light:text-slate-500">
+    <SplitCardPage
+      eyebrow="Free trial"
+      title="Create your workspace"
+      sub="14 days free with every module, no credit card needed."
+      panelEyebrow="Free for 14 days"
+      points={[
+        { icon: Gift, title: "Every module included", text: "Sales, stock, invoicing, HR and the AI Copilot from day one." },
+        { icon: CreditCard, title: "No card needed", text: "Start now and choose a plan only when your trial ends." },
+        { icon: ShieldCheck, title: "Your data stays yours", text: "Download a full backup of your company whenever you like." },
+      ]}
+      panelFoot={
+        <>
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
+          <Link href="/login" className="font-semibold text-cyan-300 hover:text-white">
             Sign in
           </Link>
-        </p>
-
-        <p className="mt-4 text-center text-xs text-slate-500 light:text-slate-400">
-          By creating an account, you agree to our{" "}
-          <Link href="/terms" className="text-slate-400 hover:text-slate-300 light:text-slate-500 light:hover:text-slate-700">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link href="/privacy" className="text-slate-400 hover:text-slate-300 light:text-slate-500 light:hover:text-slate-700">
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <RegisterForm />
+    </SplitCardPage>
   );
 }
