@@ -8,7 +8,7 @@ export function TagChips({ tags, className }: { tags: { id: string; name: string
   return (
     <span className={cn("inline-flex flex-wrap gap-1", className)}>
       {tags.map((tag) => (
-        <span key={tag.id} className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium", tagColor(tag.color).chip)}>
+        <span key={tag.id} className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium", tagColor(tag.color).chip)}>
           {tag.name}
         </span>
       ))}
@@ -28,7 +28,7 @@ export function ScoreBadge({ score, className }: { score: number; className?: st
   return (
     <span
       title={`Lead score ${score} of 100`}
-      className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium tabular-nums", bandStyles[band], className)}
+      className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium tabular-nums", bandStyles[band], className)}
     >
       <span className="font-semibold">{score}</span>
       <span>{SCORE_BANDS[band].label}</span>

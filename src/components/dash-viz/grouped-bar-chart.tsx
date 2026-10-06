@@ -143,7 +143,7 @@ export function GroupedBarChart({
                   y={t.y}
                   textAnchor="end"
                   dominantBaseline="middle"
-                  className="fill-slate-500 text-[10px] tabular-nums"
+                  className="fill-slate-500 text-[11px] tabular-nums"
                 >
                   {compactNumber(t.v, true)}
                 </text>
@@ -201,7 +201,7 @@ export function GroupedBarChart({
                     x={g.center}
                     y={chart.baseline + 16}
                     textAnchor="middle"
-                    className={`text-[11px] ${isActive || current ? "fill-slate-200 light:fill-slate-800" : "fill-slate-500"}`}
+                    className={`text-xs ${isActive || current ? "fill-slate-200 light:fill-slate-800" : "fill-slate-500"}`}
                   >
                     {g.d.label}
                   </text>
@@ -210,7 +210,7 @@ export function GroupedBarChart({
                       x={g.center}
                       y={chart.baseline + 32}
                       textAnchor="middle"
-                      className={`text-[10px] font-medium tabular-nums ${
+                      className={`text-[11px] font-medium tabular-nums ${
                         diff > 0
                           ? "fill-emerald-400 light:fill-emerald-700"
                           : diff < 0
@@ -238,7 +238,7 @@ export function GroupedBarChart({
                 : { left: focus.left + chart.groupW - 4, top: PAD.top }
             }
           >
-            <p className="mb-1 text-[11px] text-slate-400 light:text-slate-500">{focus.d.longLabel ?? focus.d.label}</p>
+            <p className="mb-1 text-xs text-slate-400 light:text-slate-500">{focus.d.longLabel ?? focus.d.label}</p>
             <p className="flex items-center justify-between gap-4">
               <span className="flex items-center gap-1.5 text-slate-300 light:text-slate-700">
                 <span className="h-2 w-2 rounded-sm" style={{ backgroundColor: VIZ.blue }} />

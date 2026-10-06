@@ -34,7 +34,7 @@ export function HorizontalBarChart({
           <span className="truncate text-sm text-slate-100 light:text-slate-800">{d.label}</span>
           <span className="flex items-baseline gap-2 tabular-nums">
             <span className="text-sm text-slate-50 light:text-slate-900">{formatCompactCurrency(d.value)}</span>
-            <span className="w-9 text-right text-[11px] text-slate-500">{sharePct(d.value, total)}</span>
+            <span className="w-9 text-right text-xs text-slate-500">{sharePct(d.value, total)}</span>
           </span>
           <span className="col-start-2 col-end-4 block h-1.5 overflow-hidden rounded-full bg-white/[0.06] light:bg-slate-900/[0.07]">
             <span

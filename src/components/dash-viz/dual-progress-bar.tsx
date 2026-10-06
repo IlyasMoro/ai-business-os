@@ -14,7 +14,7 @@ function Bar({ label, pct, color }: { label: string; pct: number; color: string 
 
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[11px] text-slate-400 light:text-slate-500">
+      <div className="mb-1 flex items-center justify-between text-xs text-slate-400 light:text-slate-500">
         <span>{label}</span>
         <span className="tabular-nums text-slate-300 light:text-slate-600">{Math.round(clamped)}%</span>
       </div>

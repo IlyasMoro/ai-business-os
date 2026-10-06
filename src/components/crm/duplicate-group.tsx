@@ -67,7 +67,7 @@ export function DuplicateGroup({
                   <Link href={`/dashboard/crm/${r.id}`} target="_blank" className="truncate font-semibold text-slate-50 hover:text-blue-400 light:text-slate-900">
                     {r.name}
                   </Link>
-                  {on && <span className="shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-[10.5px] font-medium text-white">Keep</span>}
+                  {on && <span className="shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-medium text-white">Keep</span>}
                 </span>
                 <span className="mt-1 block truncate text-slate-400 light:text-slate-500">{r.email ?? "No email"}</span>
                 <span className="block truncate text-slate-400 light:text-slate-500">

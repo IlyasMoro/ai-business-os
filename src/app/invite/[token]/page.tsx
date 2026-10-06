@@ -30,7 +30,7 @@ export default async function InvitePage({
   ) => Promise<AcceptInviteFormState>;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center px-4">
+    <div className="app-text relative flex min-h-screen items-center justify-center px-4">
       <div
         aria-hidden
         className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"

@@ -18,7 +18,7 @@ export function ChangeBadge({
   const change = periodChange(values);
   if (change.kind === "none") return null;
 
-  const base = "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-medium tabular-nums";
+  const base = "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs font-medium tabular-nums";
   if (change.kind === "from-zero") {
     return (
       <span className={`${base} border-white/10 text-slate-300 light:border-slate-300 light:text-slate-600`}>

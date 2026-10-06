@@ -227,7 +227,7 @@ export function NavLinks({
                         {lockedHrefs.includes(item.href) && (
                           <span
                             title={lockedPlanName(item.href) ? `Comes with the ${lockedPlanName(item.href)} plan` : "Not on your plan"}
-                            className="ml-auto inline-flex shrink-0 items-center gap-1 rounded border border-white/10 px-1.5 py-px text-[10.5px] font-medium text-slate-400 light:border-slate-300 light:text-slate-500"
+                            className="ml-auto inline-flex shrink-0 items-center gap-1 rounded border border-white/10 px-1.5 py-px text-[11px] font-medium text-slate-400 light:border-slate-300 light:text-slate-500"
                           >
                             <Lock aria-hidden className="h-2.5 w-2.5" />
                             {lockedPlanName(item.href)}

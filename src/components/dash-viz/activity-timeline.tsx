@@ -44,7 +44,7 @@ export function ActivityTimeline({ items }: { items: TimelineItem[] }) {
             )}
             <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{item.meta}</p>
             {/* Time sits under the text so narrow cards keep the title readable. */}
-            <p className="mt-1 text-[11px] tabular-nums text-slate-600 light:text-slate-400">{item.when}</p>
+            <p className="mt-1 text-xs tabular-nums text-slate-600 light:text-slate-400">{item.when}</p>
           </div>
         </li>
       ))}

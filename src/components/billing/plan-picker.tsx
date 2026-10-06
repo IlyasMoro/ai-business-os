@@ -100,7 +100,7 @@ export function PlanPicker({
               {badge && (
                 <span
                   className={cn(
-                    "absolute -top-3 left-5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                    "absolute -top-3 left-5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
                     badge === "Most popular" ? "border border-blue-500/60 bg-slate-950 text-blue-300 light:bg-white light:text-blue-700" : "bg-blue-600 text-white"
                   )}
                 >

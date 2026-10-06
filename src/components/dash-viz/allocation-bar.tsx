@@ -34,7 +34,7 @@ export function AllocationBar({
         </span>
         <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
           <span className="text-slate-200 light:text-slate-800">{count.toLocaleString()}</span>
-          <span className="w-9 text-right text-[11px] text-slate-500">{Math.round(clamped)}%</span>
+          <span className="w-9 text-right text-xs text-slate-500">{Math.round(clamped)}%</span>
         </span>
       </div>
       <div className="mt-1.5 h-[3px] overflow-hidden rounded-full bg-white/[0.06] light:bg-slate-900/[0.07]">

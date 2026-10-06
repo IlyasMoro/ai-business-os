@@ -168,7 +168,7 @@ export function WhatsAppButton({
             <MessageCircle className="h-4 w-4" />
             {busy ? "One moment..." : "Open in WhatsApp"}
           </Button>
-          <p className="mt-2 text-[11px] leading-snug text-slate-500">You press send in WhatsApp. The message is noted on the customer&apos;s history.</p>
+          <p className="mt-2 text-xs leading-snug text-slate-500">You press send in WhatsApp. The message is noted on the customer&apos;s history.</p>
         </div>,
         document.body
       )}

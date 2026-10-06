@@ -519,7 +519,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
             {/* Rendered fresh on every visit, so this is the latest activity. */}
-            <span className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-emerald-400 light:text-emerald-600">
+            <span className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-emerald-400 light:text-emerald-600">
               <span aria-hidden className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />

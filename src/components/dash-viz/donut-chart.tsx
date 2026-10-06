@@ -121,7 +121,7 @@ export function DonutChart({
                 <span className="text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
                   {focused.slice.value.toLocaleString()}
                 </span>
-                <span className="max-w-[80%] truncate text-[11px] text-slate-400 light:text-slate-500">
+                <span className="max-w-[80%] truncate text-xs text-slate-400 light:text-slate-500">
                   {focused.slice.label} · {sharePct(focused.slice.value, total)}
                 </span>
               </>
@@ -130,7 +130,7 @@ export function DonutChart({
                 <span className="text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
                   {centerValue}
                 </span>
-                <span className="text-[11px] uppercase tracking-wide text-slate-500">{centerLabel}</span>
+                <span className="text-xs uppercase tracking-wide text-slate-500">{centerLabel}</span>
               </>
             )}
           </div>
@@ -169,7 +169,7 @@ export function DonutChart({
                         </span>
                         <span className="flex shrink-0 items-baseline gap-2 tabular-nums">
                           <span className="text-slate-200 light:text-slate-800">{slice.value.toLocaleString()}</span>
-                          <span className="w-9 text-right text-[11px] text-slate-500">{sharePct(slice.value, total)}</span>
+                          <span className="w-9 text-right text-xs text-slate-500">{sharePct(slice.value, total)}</span>
                         </span>
                       </span>
                       {/* Thin share bar under the row, in the slice colour. */}

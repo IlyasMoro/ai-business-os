@@ -294,10 +294,10 @@ export default async function ReportsPage() {
                 <span className="truncate text-sm text-slate-100 light:text-slate-800">{c.name}</span>
                 <span className="flex items-baseline gap-3 tabular-nums">
                   <span className="text-sm text-slate-50 light:text-slate-900">{formatCompactCurrency(c.total)}</span>
-                  <span className="w-10 text-right text-[11px] text-slate-500">{Math.round(c.sharePct)}%</span>
+                  <span className="w-10 text-right text-xs text-slate-500">{Math.round(c.sharePct)}%</span>
                   {c.vsAveragePct !== null && (
                     <span
-                      className={`w-16 text-right text-[11px] ${
+                      className={`w-16 text-right text-xs ${
                         c.vsAveragePct > 0
                           ? "text-emerald-400 light:text-emerald-700"
                           : c.vsAveragePct < 0

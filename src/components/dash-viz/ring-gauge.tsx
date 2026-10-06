@@ -86,7 +86,7 @@ export function RingGauge({
       </div>
       <div>
         <p className="text-xs font-medium text-slate-300 light:text-slate-700">{label}</p>
-        <p className="mt-0.5 text-[11px] text-slate-500">{empty ? emptyText : detail}</p>
+        <p className="mt-0.5 text-xs text-slate-500">{empty ? emptyText : detail}</p>
       </div>
     </div>
   );

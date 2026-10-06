@@ -173,7 +173,7 @@ export function CopilotChat({
               {state?.errors?.content?.[0] ?? state?.message}
             </p>
           )}
-          <p className="mt-2 text-center text-[11px] text-slate-500">
+          <p className="mt-2 text-center text-xs text-slate-500">
             Enter to send, Shift and Enter for a new line. The Copilot can make mistakes, and every change it proposes waits for approval.
           </p>
         </form>

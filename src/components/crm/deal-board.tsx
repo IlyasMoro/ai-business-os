@@ -132,7 +132,7 @@ export function DealBoard({ deals }: { deals: BoardDeal[] }) {
                       {column.open && <span className="tabular-nums text-slate-500">{deal.probability}%</span>}
                     </div>
                     {(close || deal.ownerName) && (
-                      <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500">
+                      <div className="mt-1.5 flex items-center justify-between gap-2 text-xs text-slate-500">
                         {close ? (
                           <span className={cn("inline-flex items-center gap-1", close.late && "text-red-400 light:text-red-600")}>
                             <CalendarClock aria-hidden className="h-3 w-3" />

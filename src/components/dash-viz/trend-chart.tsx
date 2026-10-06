@@ -121,7 +121,7 @@ export function TrendChart({
                 y={t.y}
                 textAnchor="end"
                 dominantBaseline="middle"
-                className="fill-slate-500 text-[10px] tabular-nums"
+                className="fill-slate-500 text-[11px] tabular-nums"
               >
                 {compactNumber(t.v, currency)}
               </text>
@@ -134,7 +134,7 @@ export function TrendChart({
               x={chart.points[i][0]}
               y={height - 6}
               textAnchor={i === 0 && data.length > 1 ? "start" : i === last && data.length > 1 ? "end" : "middle"}
-              className={`text-[10px] ${i === active || (active === null && i === last) ? "fill-slate-300 light:fill-slate-700" : "fill-slate-500"}`}
+              className={`text-[11px] ${i === active || (active === null && i === last) ? "fill-slate-300 light:fill-slate-700" : "fill-slate-500"}`}
             >
               {d.label}
             </text>
@@ -199,7 +199,7 @@ export function TrendChart({
             transform: "translate(-50%, -100%)",
           }}
         >
-          <p className="text-[11px] text-slate-400 light:text-slate-500">{data[active].longLabel ?? data[active].label}</p>
+          <p className="text-xs text-slate-400 light:text-slate-500">{data[active].longLabel ?? data[active].label}</p>
           <p className="font-semibold tabular-nums text-slate-50 light:text-slate-900">
             {fullNumber(data[active].value, currency)}
           </p>

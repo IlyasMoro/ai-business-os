@@ -480,10 +480,20 @@ html.light body::after {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Secondary text has to stay readable on the dark glass cards. Inside the
+   app the three greys used for labels, hints and captions are lifted so even
+   the faintest one (slate 600) clears 4.5:1 against the card background,
+   while keeping 400 > 500 > 600 as a visible hierarchy. */
 html:not(.light) .app-text {
   font-weight: 440;
-  --color-slate-400: #a8b3c4;
-  --color-slate-500: #8c97aa;
+  --color-slate-400: #b8c2d1;
+  --color-slate-500: #9ca7b9;
+  --color-slate-600: #8a95a8;
+}
+
+/* Light mode: slate 400 is only 2.6:1 on white, so darken it for text. */
+html.light .app-text {
+  --color-slate-400: #6f7b8f;
 }
 
 /* ---------- Dropdowns ----------

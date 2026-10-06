@@ -105,7 +105,7 @@ export function BranchSwitcher({
                   )}
                 >
                   <span className="flex-1 truncate">{item.label}</span>
-                  {item.code && <span className="font-mono text-[11px] text-slate-500">{item.code}</span>}
+                  {item.code && <span className="font-mono text-xs text-slate-500">{item.code}</span>}
                   {selected && <Check className="h-3.5 w-3.5 shrink-0 text-blue-400" />}
                 </button>
               </li>
