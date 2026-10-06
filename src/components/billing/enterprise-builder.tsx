@@ -5,7 +5,6 @@ import { Minus, Plus } from "lucide-react";
 import { ENTERPRISE, enterpriseQuote, normalizeEnterprise, type EnterpriseConfig } from "@/lib/enterprise";
 import type { BillingInterval } from "@/lib/plans";
 import { cn } from "@/lib/utils";
-import { SubmitButton } from "@/components/ui-dark/submit-button";
 
 /* The Enterprise plan builder: users, branches, the EDI add on and AI
    request packs, with the price worked out as you go (lib/enterprise.ts).
@@ -189,54 +188,5 @@ export function EnterpriseBuilder({
 
       {children}
     </div>
-  );
-}
-
-/** Billing's Enterprise form: period switch, builder and one button that
- * subscribes (Stripe Checkout) or changes the plan in place. */
-export function EnterpriseBuyForm({
-  action,
-  initial,
-  initialInterval = "monthly",
-  minUsers,
-  minBranches,
-  submitLabel,
-}: {
-  action: (formData: FormData) => Promise<void>;
-  initial: EnterpriseConfig;
-  initialInterval?: BillingInterval;
-  minUsers: number;
-  minBranches: number;
-  submitLabel: string;
-}) {
-  const [interval, setBillingInterval] = useState<BillingInterval>(initialInterval);
-  return (
-    <form action={action} className="space-y-4">
-      <div role="group" aria-label="Billing period" className="inline-flex rounded-full border border-white/10 bg-white/[0.04] p-1 light:border-slate-200 light:bg-slate-100">
-        {(["monthly", "yearly"] as const).map((value) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={interval === value}
-            onClick={() => setBillingInterval(value)}
-            className={cn(
-              "rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-              interval === value ? "bg-blue-600 text-white" : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
-            )}
-          >
-            {value === "monthly" ? "Monthly" : "Yearly"}
-            {value === "yearly" && <span className="ml-1.5 text-xs opacity-80">2 months free</span>}
-          </button>
-        ))}
-      </div>
-      <EnterpriseBuilder tone="app" interval={interval} initial={initial} minUsers={minUsers} minBranches={minBranches}>
-        <SubmitButton
-          pendingText="Working..."
-          className="h-auto w-full rounded-xl bg-violet-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/30 hover:bg-violet-500 sm:w-auto"
-        >
-          {submitLabel}
-        </SubmitButton>
-      </EnterpriseBuilder>
-    </form>
   );
 }

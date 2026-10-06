@@ -3,19 +3,24 @@
 import { useState } from "react";
 import Link from "next/link";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
-import { aboutRand, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, LISTED_PLANS, PLANS, planById, type BillingInterval, type PlanId } from "@/lib/plans";
+import { EnterpriseBuilder } from "@/components/billing/enterprise-builder";
+import { aboutRand, CUSTOM_PLAN, ENTERPRISE_CONTACT_HREF, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, PLANS, planById, type BillingInterval, type PlanId } from "@/lib/plans";
+import { ENTERPRISE, DEFAULT_ENTERPRISE, enterpriseQuote, type EnterpriseConfig } from "@/lib/enterprise";
 import { cn } from "@/lib/utils";
 import { Check } from "lucide-react";
 
+type Choice = PlanId | "enterprise";
+
 /**
- * The plans as one selectable list with a single button, for the Billing
- * page. Each row shows users, branches and AI requests in short, plus what
- * the plan adds. `recommended` (the smallest plan that fits the team) is
- * tagged and picked first. Only plans on sale are offered, plus the
- * company's own plan if it's on an older one; a team too big for any plan
- * on sale is pointed to the Enterprise builder below it. `mode` decides what the button does: "checkout"
- * starts a subscription, "change" moves an active one; the current plan and
- * period are marked and can't be submitted again.
+ * Every plan side by side for the Billing page, Enterprise included as the
+ * last card. One Monthly/Yearly switch drives all of them. Picking a priced
+ * plan shows its single subscribe button; picking Enterprise opens the
+ * builder (users, branches, AI requests, EDI) under the cards with its own
+ * button, since it posts to a different action. `recommended` (the smallest
+ * plan that fits the team) is tagged and picked first; a team too big for
+ * any plan on sale starts on Enterprise. `mode`: "checkout" starts a
+ * subscription, "change" moves an active one; the current plan and period
+ * are marked and can't be submitted again.
  */
 export function PlanPicker({
   action,
@@ -23,6 +28,7 @@ export function PlanPicker({
   current,
   recommended,
   teamSummary,
+  enterprise,
 }: {
   action: (formData: FormData) => Promise<void>;
   mode: "checkout" | "change";
@@ -30,26 +36,83 @@ export function PlanPicker({
   recommended: PlanId;
   /** e.g. "You have 7 users and 1 branch". */
   teamSummary: string;
+  enterprise: {
+    action: (formData: FormData) => Promise<void>;
+    initial: EnterpriseConfig;
+    minUsers: number;
+    minBranches: number;
+    submitLabel: string;
+    /** The company already has a built Enterprise plan. */
+    built: boolean;
+    initialInterval: BillingInterval | null;
+  };
 }) {
-  const offered = PLANS.filter((p) => p.listed || p.id === current?.planId);
+  const offered = PLANS.filter((p) => p.listed || p.id === current?.planId).filter((p) => p.id !== CUSTOM_PLAN.id);
   const needsSales = !offered.some((p) => p.id === recommended);
-  const [interval, setBillingInterval] = useState<BillingInterval>(current?.interval ?? "monthly");
-  const [selected, setSelected] = useState<PlanId>(
-    current && current.planId !== recommended ? current.planId : needsSales ? (offered[offered.length - 1] ?? LISTED_PLANS[0]).id : recommended
-  );
+  const [interval, setBillingInterval] = useState<BillingInterval>(current?.interval ?? enterprise.initialInterval ?? "monthly");
+  const [selected, setSelected] = useState<Choice>(() => {
+    if (enterprise.built || needsSales) return "enterprise";
+    if (current && current.planId !== recommended) return current.planId;
+    return recommended;
+  });
 
-  const isCurrent = (id: PlanId) => current?.planId === id && current.interval === interval;
+  const isCurrent = (id: Choice) => id !== "enterprise" && current?.planId === id && current.interval === interval;
   const priceOf = (id: PlanId) => {
     const plan = planById(id);
     return interval === "monthly" ? plan.monthly : plan.yearly;
   };
   const per = interval === "monthly" ? "month" : "year";
-  const chosen = planById(selected);
+  const entFrom = enterpriseQuote(DEFAULT_ENTERPRISE, interval).total;
+
+  const cards: {
+    id: Choice;
+    name: string;
+    tagline: string;
+    price: string;
+    /** Enterprise starts at its price; shown as a small "From". */
+    from?: boolean;
+    rand: string;
+    lines: string[];
+    badge: string | null;
+  }[] = [
+    ...offered.map((plan) => {
+      const price = priceOf(plan.id);
+      return {
+        id: plan.id as Choice,
+        name: plan.name,
+        tagline: plan.tagline,
+        price: `$${price.toLocaleString("en-US")}`,
+        rand: aboutRand(price),
+        lines: [
+          `${plan.users} users included`,
+          plan.branches === null ? "Unlimited branches" : plan.branches === 1 ? "1 branch" : `Up to ${plan.branches} branches`,
+          `${plan.aiRequests.toLocaleString("en-US")} AI requests a month`,
+          ...(plan.adds ? [plan.adds] : []),
+        ],
+        badge: isCurrent(plan.id) ? "Current plan" : plan.id === recommended ? "Fits your team" : plan.popular ? "Most popular" : null,
+      };
+    }),
+    {
+      id: "enterprise",
+      name: CUSTOM_PLAN.name,
+      tagline: "For bigger teams and many branches. Build your own plan.",
+      price: `$${entFrom.toLocaleString("en-US")}`,
+      from: true,
+      rand: aboutRand(entFrom),
+      lines: [
+        `${ENTERPRISE.minUsers}+ users, $${ENTERPRISE.perUser} each`,
+        `${ENTERPRISE.includedBranches} branches, then $${ENTERPRISE.perBranch} each`,
+        `${ENTERPRISE.aiIncluded.toLocaleString("en-US")} AI requests a month`,
+        `EDI add on, $${ENTERPRISE.ediPrice} a month`,
+      ],
+      badge: enterprise.built ? "Your plan" : needsSales ? "Fits your team" : null,
+    },
+  ];
+
+  const chosen = selected === "enterprise" ? null : planById(selected);
 
   return (
-    <form action={action}>
-      <input type="hidden" name="interval" value={interval} />
-
+    <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div
           role="group"
@@ -77,97 +140,118 @@ export function PlanPicker({
         <p className="text-sm text-slate-400 light:text-slate-500">{teamSummary}</p>
       </div>
 
-      <fieldset className={cn("mt-5 grid gap-4", offered.length >= 3 ? "md:grid-cols-3" : "md:grid-cols-2")}>
+      <fieldset className={cn("mt-6 grid gap-4 sm:grid-cols-2", cards.length >= 4 ? "xl:grid-cols-4" : "lg:grid-cols-3")}>
         <legend className="sr-only">Choose a plan</legend>
-        {offered.map((plan) => {
-          const on = selected === plan.id;
-          const price = priceOf(plan.id);
-          const branches =
-            plan.branches === null ? "Unlimited branches" : plan.branches === 1 ? "1 branch" : `Up to ${plan.branches} branches`;
-          const badge = isCurrent(plan.id) ? "Current plan" : plan.id === recommended ? "Fits your team" : plan.popular ? "Most popular" : null;
+        {cards.map((card) => {
+          const on = selected === card.id;
+          const ent = card.id === "enterprise";
           return (
             <label
-              key={plan.id}
+              key={card.id}
               className={cn(
-                "relative flex cursor-pointer flex-col rounded-2xl border p-5 transition-all",
+                "relative flex min-w-0 cursor-pointer flex-col rounded-2xl border p-5 transition-all",
                 "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500",
                 on
-                  ? "border-blue-500 bg-blue-500/10 shadow-[0_0_0_1px_rgb(59_130_246),0_12px_40px_-12px_rgb(59_130_246/0.6)] light:bg-blue-50"
+                  ? ent
+                    ? "border-violet-500 bg-violet-500/10 shadow-[0_0_0_1px_rgb(139_92_246),0_12px_40px_-12px_rgb(139_92_246/0.6)] light:bg-violet-50"
+                    : "border-blue-500 bg-blue-500/10 shadow-[0_0_0_1px_rgb(59_130_246),0_12px_40px_-12px_rgb(59_130_246/0.6)] light:bg-blue-50"
                   : "border-white/[0.1] hover:-translate-y-0.5 hover:border-white/25 light:border-slate-200 light:bg-white light:hover:border-slate-300"
               )}
             >
-              <input type="radio" name="plan" value={plan.id} checked={on} onChange={() => setSelected(plan.id)} className="sr-only" />
-              {badge && (
+              <input type="radio" name="plan-choice" value={card.id} checked={on} onChange={() => setSelected(card.id)} className="sr-only" />
+              {card.badge && (
                 <span
                   className={cn(
-                    "absolute -top-3 left-5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
-                    badge === "Most popular" ? "border border-blue-500/60 bg-slate-950 text-blue-300 light:bg-white light:text-blue-700" : "bg-blue-600 text-white"
+                    "absolute -top-3 left-5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+                    card.badge === "Most popular"
+                      ? "border border-blue-500/60 bg-slate-950 text-blue-300 light:bg-white light:text-blue-700"
+                      : ent
+                        ? "bg-violet-600 text-white"
+                        : "bg-blue-600 text-white"
                   )}
                 >
-                  {badge}
+                  {card.badge}
                 </span>
               )}
               <div className="flex items-start justify-between gap-3">
-                <span className="text-lg font-semibold text-slate-50 light:text-slate-900">{plan.name}</span>
+                <span className="text-lg font-semibold text-slate-50 light:text-slate-900">{card.name}</span>
                 <span
                   aria-hidden
                   className={cn(
                     "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
-                    on ? "border-blue-500 bg-blue-500 text-white" : "border-slate-500"
+                    on ? (ent ? "border-violet-500 bg-violet-500 text-white" : "border-blue-500 bg-blue-500 text-white") : "border-slate-500"
                   )}
                 >
                   {on && <Check className="h-3 w-3" strokeWidth={3} />}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-slate-400 light:text-slate-500">{plan.tagline}</p>
-              <p className="mt-4">
-                <span className="text-4xl font-bold tracking-tight text-slate-50 light:text-slate-900">${price.toLocaleString("en-US")}</span>
-                <span className="text-sm text-slate-400"> / {interval === "monthly" ? "month" : "year"}</span>
+              {/* Three lines tall on every card, so the prices line up. */}
+              <p className="mt-1 min-h-[3.375rem] text-[13px] leading-[1.125rem] text-slate-400 light:text-slate-500">{card.tagline}</p>
+              <p className="mt-3 flex items-baseline gap-1.5 whitespace-nowrap">
+                {card.from && <span className="text-sm font-medium text-slate-300 light:text-slate-600">From</span>}
+                <span className="text-[1.75rem] font-bold leading-none tracking-tight tabular-nums text-slate-50 light:text-slate-900">{card.price}</span>
+                <span className="text-sm text-slate-400 light:text-slate-500">/ {per}</span>
               </p>
-              <p className="text-xs text-slate-500">{aboutRand(price)}</p>
-              <ul className="mt-4 space-y-2 text-sm text-slate-300 light:text-slate-600">
-                {[`${plan.users} users included`, branches, `${plan.aiRequests.toLocaleString("en-US")} AI Copilot requests a month`, ...(plan.adds ? [plan.adds] : [])].map(
-                  (line) => (
-                    <li key={line} className="flex gap-2">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" aria-hidden />
-                      <span>{line}</span>
-                    </li>
-                  )
-                )}
+              <p className="mt-1.5 text-xs text-slate-500">{card.rand}</p>
+              <ul className="mt-4 space-y-2 border-t border-white/[0.07] pt-4 text-[13px] leading-[1.125rem] text-slate-300 light:border-slate-200 light:text-slate-600">
+                {card.lines.map((line) => (
+                  <li key={line} className="flex gap-2">
+                    <Check className={cn("mt-px h-4 w-4 shrink-0", ent ? "text-violet-400" : "text-emerald-400")} aria-hidden />
+                    <span>{line}</span>
+                  </li>
+                ))}
               </ul>
             </label>
           );
         })}
       </fieldset>
 
-      {needsSales && (
-        <p className="mt-3 rounded-xl border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-sm text-blue-200 light:text-blue-800">
-          Your team is bigger than the plans above allow, so it needs the {planById(recommended).name} plan.{" "}
-          <a href="#enterprise" className="font-medium underline">
-            Build it below
-          </a>
-        </p>
+      {selected === "enterprise" ? (
+        <form action={enterprise.action} className="mt-6 rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-transparent p-5 sm:p-6 light:from-violet-50">
+          <h3 className="text-base font-semibold text-slate-50 light:text-slate-900">
+            {enterprise.built ? "Change your Enterprise plan" : "Build your Enterprise plan"}
+          </h3>
+          <p className="mb-4 mt-1 text-sm text-slate-400 light:text-slate-500">
+            {enterprise.built
+              ? "Change users, branches, AI requests or EDI. Stripe charges or credits the difference straight away."
+              : "Everything in Growth, with as many users and branches as you need."}{" "}
+            Contracts or invoicing instead of a card?{" "}
+            <Link href={ENTERPRISE_CONTACT_HREF} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+              Talk to us
+            </Link>
+          </p>
+          <EnterpriseBuilder tone="app" interval={interval} initial={enterprise.initial} minUsers={enterprise.minUsers} minBranches={enterprise.minBranches}>
+            <SubmitButton
+              pendingText="Working..."
+              className="h-auto w-full rounded-xl bg-violet-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/30 hover:bg-violet-500 sm:w-auto"
+            >
+              {enterprise.submitLabel}
+            </SubmitButton>
+          </EnterpriseBuilder>
+        </form>
+      ) : (
+        <form action={action} className="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <input type="hidden" name="interval" value={interval} />
+          <input type="hidden" name="plan" value={selected} />
+          <p className="text-sm text-slate-400 light:text-slate-500">
+            Extra users ${interval === "monthly" ? `${EXTRA_USER_PRICE} a month` : `${EXTRA_USER_YEARLY_PRICE} a year`} each on Starter
+            and up ·{" "}
+            <Link href="/pricing#compare" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+              Compare every feature
+            </Link>
+          </p>
+          {isCurrent(selected) ? (
+            <p className="text-sm text-slate-400">You&apos;re on this plan</p>
+          ) : (
+            <SubmitButton
+              pendingText="One moment..."
+              className="h-auto w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 sm:w-auto"
+            >
+              {mode === "checkout" ? "Subscribe to" : "Switch to"} {chosen!.name} · ${priceOf(chosen!.id).toLocaleString("en-US")}/{per}
+            </SubmitButton>
+          )}
+        </form>
       )}
-
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-400 light:text-slate-500">
-          Extra users ${interval === "monthly" ? `${EXTRA_USER_PRICE} a month` : `${EXTRA_USER_YEARLY_PRICE} a year`} each on Starter
-          and up ·{" "}
-          <Link href="/pricing#compare" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
-            Compare every feature
-          </Link>
-        </p>
-        {isCurrent(selected) ? (
-          <p className="text-sm text-slate-400">You&apos;re on this plan</p>
-        ) : (
-          <SubmitButton
-            pendingText="One moment..."
-            className="h-auto w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 sm:w-auto"
-          >
-            {mode === "checkout" ? "Subscribe to" : "Switch to"} {chosen.name} · ${priceOf(selected).toLocaleString("en-US")}/{per}
-          </SubmitButton>
-        )}
-      </div>
-    </form>
+    </div>
   );
 }

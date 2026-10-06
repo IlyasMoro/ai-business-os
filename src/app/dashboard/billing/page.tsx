@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { startCheckout, changePlan, confirmCheckout, confirmAiTopUp, startAiTopUp, openBillingPortal, buyEnterprise } from "@/lib/actions/billing";
-import { EnterpriseBuyForm } from "@/components/billing/enterprise-builder";
 import { ENTERPRISE, enterpriseFor, enterpriseQuote, type EnterpriseConfig } from "@/lib/enterprise";
 import { PlanPicker } from "@/components/billing/plan-picker";
 import { PlanStatusHero, TRIAL_DAYS } from "@/components/billing/plan-status-hero";
@@ -13,7 +11,7 @@ import { Input, Label } from "@/components/ui-dark/input";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { CreditCard, Gauge, Percent } from "lucide-react";
 import { activeBranchCount, aiCreditsLeft, aiRequestsUsed, extraUsersBilled, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
-import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan, ENTERPRISE_CONTACT_HREF } from "@/lib/plans";
+import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan } from "@/lib/plans";
 
 /** One plan allowance as "used of limit" with a bar. `limit` null means unlimited. */
 /** One allowance: "used of limit" with a bar that turns amber near the
@@ -192,37 +190,20 @@ export default async function BillingPage({
               current={isActive && interval && !builtEnterprise ? { planId: plan.id, interval } : null}
               recommended={recommendedPlan(seats, branches).id}
               teamSummary={`You have ${seats} ${seats === 1 ? "user" : "users"}, ${branches} active ${branches === 1 ? "branch" : "branches"} and used ${aiUsed.toLocaleString("en-US")} AI ${aiUsed === 1 ? "request" : "requests"} this month`}
+              enterprise={{
+                action: buyEnterprise,
+                initial: builtConfig ?? enterpriseFor(seats, branches),
+                initialInterval: interval ?? null,
+                minUsers: seats,
+                minBranches: branches,
+                built: Boolean(builtEnterprise),
+                submitLabel: builtEnterprise ? "Update my plan" : isActive ? "Switch to Enterprise" : "Subscribe to Enterprise",
+              }}
             />
           </div>
 
         </section>
 
-        <section id="enterprise" className="mt-6 scroll-mt-24 rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-transparent p-5 sm:p-6 light:from-violet-50">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-violet-300 light:text-violet-700">For bigger teams</p>
-            <h2 className="mt-1 text-lg font-semibold text-slate-50 light:text-slate-900">
-              {builtEnterprise ? "Your Enterprise plan" : "Or build an Enterprise plan"}
-            </h2>
-            <p className="mb-3 mt-1 text-sm text-slate-400 light:text-slate-500">
-              {builtEnterprise
-                ? "Change users, branches, AI requests or EDI. Stripe charges or credits the difference straight away."
-                : `For bigger teams: everything in Growth, as many users and branches as you need, and the EDI add on, from $${ENTERPRISE.minUsers * ENTERPRISE.perUser} a month.`}{" "}
-              Contracts or invoicing instead of a card?{" "}
-              <Link href={ENTERPRISE_CONTACT_HREF} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
-                Talk to us
-              </Link>
-            </p>
-            <EnterpriseBuyForm
-              action={buyEnterprise}
-              initial={builtConfig ?? enterpriseFor(seats, branches)}
-              initialInterval={interval ?? "monthly"}
-              minUsers={seats}
-              minBranches={branches}
-              submitLabel={builtEnterprise ? "Update my plan" : isActive ? "Switch to Enterprise" : "Subscribe to Enterprise"}
-            />
-          </div>
-
-        </section>
 
           {hasStripeCustomer && (
             <div className="mt-6 flex items-center gap-3 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
