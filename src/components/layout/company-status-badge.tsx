@@ -16,28 +16,27 @@ function initials(name: string) {
   return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
 }
 
-/** One short line on where the company stands: the plan it's on, then the
- * trial countdown or a problem to fix. `tone` colours it: warn when
- * attention is needed soon, bad when access is at risk. */
-function statusLine(subscription: Subscription, planName: string): { text: string; tone: "ok" | "warn" | "bad" } {
+/** Where the company stands: the plan it's on, then the trial countdown or a
+ * problem to fix. `tone` colours it: warn when attention is needed soon, bad
+ * when access is at risk. `text` is null when there is nothing to add. */
+function statusLine(subscription: Subscription): { text: string | null; tone: "ok" | "warn" | "bad" } {
   const now = new Date();
-  const plan = `${planName} plan`;
   if (subscription?.status === "TRIALING") {
-    if (subscription.trialEndsAt && subscription.trialEndsAt <= now) return { text: `${plan} · Trial ended`, tone: "bad" };
-    if (!subscription.trialEndsAt) return { text: `${plan} · Free trial`, tone: "ok" };
+    if (subscription.trialEndsAt && subscription.trialEndsAt <= now) return { text: "Trial ended", tone: "bad" };
+    if (!subscription.trialEndsAt) return { text: "Free trial", tone: "ok" };
     const left = daysLeft(subscription.trialEndsAt);
-    if (left <= 1) return { text: `${plan} · ${left === 0 ? "Trial ends today" : "Trial ends tomorrow"}`, tone: "warn" };
-    return { text: `${plan} · Trial · ${left} days left`, tone: left <= 3 ? "warn" : "ok" };
+    if (left <= 1) return { text: left === 0 ? "Trial ends today" : "Trial ends tomorrow", tone: "warn" };
+    return { text: `Trial, ${left} days left`, tone: left <= 3 ? "warn" : "ok" };
   }
-  if (subscription?.status === "PAST_DUE") return { text: `${plan} · Payment failed`, tone: "bad" };
+  if (subscription?.status === "PAST_DUE") return { text: "Payment failed", tone: "bad" };
   if (subscription?.status === "CANCELED" || subscription?.status === "INCOMPLETE") {
     return { text: "No active plan", tone: "bad" };
   }
   if (subscription?.status === "ACTIVE" && subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd) {
     const date = subscription.currentPeriodEnd.toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
-    return { text: `${plan} · cancels ${date}`, tone: "warn" };
+    return { text: `Cancels ${date}`, tone: "warn" };
   }
-  return { text: plan, tone: "ok" };
+  return { text: null, tone: "ok" };
 }
 
 /**
@@ -60,46 +59,57 @@ export function CompanyStatusBadge({
   /** Owners can open Billing. */
   canManage: boolean;
 }) {
-  const status = statusLine(subscription, planName);
+  const status = statusLine(subscription);
+  const noPlan = status.text === "No active plan";
   const toneClass = {
-    ok: "text-slate-400 light:text-slate-500",
-    warn: "text-amber-400 light:text-amber-600",
-    bad: "text-red-400 light:text-red-600",
+    ok: "text-slate-300 light:text-slate-600",
+    warn: "text-amber-300 light:text-amber-700",
+    bad: "text-red-300 light:text-red-700",
   }[status.tone];
+  const summary = [noPlan ? null : `${planName} plan`, status.text].filter(Boolean).join(", ");
 
   const body = (
     <>
       {logoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logoUrl} alt="" className="h-8 w-8 shrink-0 rounded-md bg-white object-contain p-0.5" />
+        <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg bg-white object-contain p-0.5" />
       ) : (
         <span
           aria-hidden
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-600 text-xs font-semibold text-white"
+          className="font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-semibold tracking-wide text-white"
         >
           {initials(companyName)}
         </span>
       )}
-      <span className="min-w-0 leading-tight">
-        <span className="block max-w-[11rem] truncate text-sm font-semibold text-slate-50 sm:max-w-[16rem] light:text-slate-900">
+      <span className="min-w-0" title={summary}>
+        <span className="font-display block max-w-[11rem] truncate text-[15px] font-semibold leading-5 text-white sm:max-w-[16rem] light:text-slate-900">
           {companyName}
         </span>
-        <span className={cn("flex max-w-[11rem] items-center gap-1.5 text-[11.5px] sm:max-w-[16rem]", toneClass)} title={status.text}>
-          {status.tone !== "ok" && <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />}
-          <span className="truncate">{status.text}</span>
+        <span className="mt-0.5 flex max-w-[11rem] items-center gap-2 text-xs leading-4 sm:max-w-[16rem]">
+          {!noPlan && (
+            <span className="shrink-0 rounded-full bg-blue-500/15 px-2 py-px font-medium text-blue-200 ring-1 ring-inset ring-blue-400/25 light:bg-blue-50 light:text-blue-700 light:ring-blue-200">
+              {planName}
+            </span>
+          )}
+          {status.text && (
+            <span className={cn("flex min-w-0 items-center gap-1.5 font-medium tabular-nums", toneClass)}>
+              {status.tone !== "ok" && <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />}
+              <span className="truncate">{status.text}</span>
+            </span>
+          )}
         </span>
       </span>
       {canManage && (
         <ChevronRight
           aria-hidden
-          className="h-3.5 w-3.5 shrink-0 text-slate-500 transition-transform group-hover:translate-x-0.5 light:text-slate-400"
+          className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5 light:text-slate-400"
         />
       )}
     </>
   );
 
   const shell =
-    "group flex min-w-0 items-center gap-2.5 rounded-lg border border-white/10 bg-white/5 py-1.5 pl-1.5 pr-2.5 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70";
+    "group flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] py-1.5 pl-1.5 pr-3 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70";
 
   return canManage ? (
     <Link
