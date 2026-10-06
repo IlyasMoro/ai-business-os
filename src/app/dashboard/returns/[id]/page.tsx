@@ -12,6 +12,7 @@ import { deleteReturn, removeReturnItem } from "@/lib/actions/returns";
 import { getReturnPolicy } from "@/lib/returns-policy";
 import { computeRefund, isReturnEditable, returnableQuantity, shouldRestock } from "@/lib/returns-math";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { formatQty } from "@/lib/quantity";
 
 const statusTone = {
   REQUESTED: "yellow",
@@ -43,7 +44,7 @@ export default async function ReturnDetailPage({
           items: { include: { product: { select: { name: true, sku: true } } } },
         },
       },
-      items: { include: { product: { select: { name: true, sku: true } } }, orderBy: { id: "asc" } },
+      items: { include: { product: { select: { name: true, sku: true, unit: true } } }, orderBy: { id: "asc" } },
     },
   });
   if (!rma) notFound();
@@ -127,7 +128,7 @@ export default async function ReturnDetailPage({
                         <StatusBadge status={item.condition} tone={conditionTone[item.condition]} />
                       </p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {item.quantity} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
+                        {formatQty(item.quantity, item.product.unit)} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
                         {" · "}
                         {shouldRestock(item.condition, policy.restockDamaged) ? "goes back into stock" : "written off"}
                       </p>

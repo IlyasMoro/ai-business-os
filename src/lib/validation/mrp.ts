@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { lineQuantity } from "@/lib/validation/quantity";
 
 export const BomLineSchema = z.object({
   componentId: z.string().min(1, { error: "Select a component." }),
@@ -10,16 +11,13 @@ export const BomLineSchema = z.object({
 
 export const PlanningFieldsSchema = z.object({
   leadTimeDays: z.coerce.number().int().min(0).max(3650),
-  lotSize: z.coerce.number().int().min(1).max(1_000_000),
+  lotSize: lineQuantity(),
   preferredSupplierId: z.string().optional(),
 });
 
 export const WorkOrderSchema = z.object({
   productId: z.string().min(1, { error: "Select a product." }),
-  quantity: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(1, { error: "Quantity must be at least 1." }),
+  quantity: lineQuantity(),
   dueDate: z.union([z.iso.date(), z.literal("")]).optional(),
   notes: z.string().trim().max(2000).optional(),
 });

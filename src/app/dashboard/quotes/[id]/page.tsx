@@ -32,6 +32,7 @@ import { quoteLink } from "@/lib/quote-accept";
 import { CopyField } from "@/components/ui-dark/copy-field";
 import { WhatsAppButton } from "@/components/crm/whatsapp-button";
 import { getWhatsAppContext } from "@/lib/whatsapp-context";
+import { formatQty } from "@/lib/quantity";
 
 export default async function QuotePage({
   params,
@@ -52,7 +53,7 @@ export default async function QuotePage({
       owner: { select: { name: true } },
       branch: { select: { name: true } },
       order: { select: { id: true, orderNumber: true, status: true } },
-      items: { include: { product: { select: { name: true, sku: true } } }, orderBy: { id: "asc" } },
+      items: { include: { product: { select: { name: true, sku: true, unit: true } } }, orderBy: { id: "asc" } },
     },
   });
   if (!quote) notFound();
@@ -232,7 +233,7 @@ export default async function QuotePage({
                       <div className="min-w-0">
                         <p className="truncate font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                         <p className="text-xs tabular-nums text-slate-500">
-                          {item.quantity} × {money(item.unitPrice, true)} = {money(item.quantity * item.unitPrice, true)}
+                          {formatQty(item.quantity, item.product.unit)} × {money(item.unitPrice, true)} = {money(item.quantity * item.unitPrice, true)}
                         </p>
                       </div>
                       {editable && (

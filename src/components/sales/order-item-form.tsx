@@ -5,13 +5,14 @@ import { Button } from "@/components/ui-dark/button";
 import { Input, Select, FieldError } from "@/components/ui-dark/input";
 import { addOrderItem } from "@/lib/actions/sales";
 import type { OrderItemFormState } from "@/lib/validation/sales";
+import { formatQty, type Unit } from "@/lib/quantity";
 
 export function OrderItemForm({
   orderId,
   products,
 }: {
   orderId: string;
-  products: { id: string; name: string; sku: string; unitPrice: number; stockQty: number }[];
+  products: { id: string; name: string; sku: string; unitPrice: number; stockQty: number; unit: Unit }[];
 }) {
   const action = addOrderItem.bind(null, orderId) as (
     state: OrderItemFormState,
@@ -36,14 +37,14 @@ export function OrderItemForm({
           </option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
-              {product.name} ({product.sku}), ${product.unitPrice.toFixed(2)}, {product.stockQty} in stock
+              {product.name} ({product.sku}), ${product.unitPrice.toFixed(2)}{product.unit === "KG" ? "/kg" : product.unit === "L" ? "/L" : ""}, {formatQty(product.stockQty, product.unit)} in stock
             </option>
           ))}
         </Select>
         <FieldError messages={state?.errors?.productId} />
       </div>
       <div>
-        <Input name="quantity" type="number" min="1" step="1" placeholder="Qty" defaultValue={1} required />
+        <Input name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
         <FieldError messages={state?.errors?.quantity} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>

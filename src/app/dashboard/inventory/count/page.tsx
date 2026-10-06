@@ -7,6 +7,7 @@ import { Input, Label, Select } from "@/components/ui-dark/input";
 import { Button } from "@/components/ui-dark/button";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { submitStockCount } from "@/lib/actions/product-import";
+import { formatQty, qtyStep } from "@/lib/quantity";
 
 export const metadata = { title: "Stock count" };
 
@@ -32,7 +33,7 @@ export default async function StockCountPage({
   const products = await db.product.findMany({
     where: { companyId: session.companyId, trackingMode: "NONE" },
     orderBy: { name: "asc" },
-    select: { id: true, sku: true, name: true, branchStock: { where: { branchId: branch.id }, select: { quantity: true } } },
+    select: { id: true, sku: true, name: true, unit: true, branchStock: { where: { branchId: branch.id }, select: { quantity: true } } },
   });
   const trackedCount = await db.product.count({ where: { companyId: session.companyId, trackingMode: { not: "NONE" } } });
 
@@ -96,9 +97,9 @@ export default async function StockCountPage({
                         <p className="text-slate-50 light:text-slate-900">{p.name}</p>
                         <p className="font-mono text-xs text-slate-500">{p.sku}</p>
                       </td>
-                      <td className="px-5 py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{p.branchStock[0]?.quantity ?? 0}</td>
+                      <td className="px-5 py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{formatQty(p.branchStock[0]?.quantity ?? 0, p.unit)}</td>
                       <td className="px-5 py-2">
-                        <Input name={`count_${p.id}`} type="number" min="0" step="1" aria-label={`Counted ${p.name}`} className="w-28" />
+                        <Input name={`count_${p.id}`} type="number" min="0" step={qtyStep(p.unit)} aria-label={`Counted ${p.name}`} className="w-28" />
                       </td>
                     </tr>
                   ))}

@@ -20,6 +20,7 @@ import { Input, Select } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { formatQty } from "@/lib/quantity";
 
 export default async function TransferDetailPage({
   params,
@@ -39,7 +40,7 @@ export default async function TransferDetailPage({
       fromBranch: { select: { name: true } },
       toBranch: { select: { name: true } },
       items: {
-        include: { product: { select: { id: true, name: true, sku: true, trackingMode: true } } },
+        include: { product: { select: { id: true, name: true, sku: true, trackingMode: true, unit: true } } },
         orderBy: { product: { name: "asc" } },
       },
     },
@@ -161,7 +162,7 @@ export default async function TransferDetailPage({
                         )}
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="tabular-nums text-slate-200 light:text-slate-700">{item.quantity}</span>
+                        <span className="tabular-nums text-slate-200 light:text-slate-700">{formatQty(item.quantity, item.product.unit)}</span>
                         {isDraft && can("edit") && (
                           <DeleteButton
                             action={removeTransferItem.bind(null, transfer.id, item.id)}
@@ -190,7 +191,7 @@ export default async function TransferDetailPage({
                     ))}
                   </Select>
                 </div>
-                <Input name="quantity" type="number" min="1" step="1" defaultValue={1} required aria-label="Quantity" />
+                <Input name="quantity" type="number" min="0.001" step="any" defaultValue={1} required aria-label="Quantity" />
                 <SubmitButton variant="secondary" pendingText="Adding...">
                   Add product
                 </SubmitButton>

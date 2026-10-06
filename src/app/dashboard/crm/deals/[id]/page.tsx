@@ -18,6 +18,7 @@ import { dealScope } from "@/lib/crm-access";
 import { WhatsAppButton } from "@/components/crm/whatsapp-button";
 import { getWhatsAppContext } from "@/lib/whatsapp-context";
 import { QuoteItemForm } from "@/components/quotes/quote-item-form";
+import { formatQty } from "@/lib/quantity";
 
 const STAGE_TONE = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
@@ -56,7 +57,7 @@ export default async function DealPage({
       orderBy: { createdAt: "desc" },
       select: { id: true, quoteNumber: true, status: true, validUntil: true, totalAmount: true, createdAt: true },
     }),
-    db.dealItem.findMany({ where: { dealId: deal.id }, orderBy: { id: "asc" }, include: { product: { select: { name: true, sku: true } } } }),
+    db.dealItem.findMany({ where: { dealId: deal.id }, orderBy: { id: "asc" }, include: { product: { select: { name: true, sku: true, unit: true } } } }),
     db.product.findMany({ where: { companyId: session.companyId }, select: { id: true, name: true, sku: true, unitPrice: true }, orderBy: { name: "asc" } }),
   ]);
 
@@ -133,7 +134,7 @@ export default async function DealPage({
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                           <p className="text-xs tabular-nums text-slate-500">
-                            {item.quantity} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
+                            {formatQty(item.quantity, item.product.unit)} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
                           </p>
                         </div>
                         <DeleteButton action={removeDealItem.bind(null, deal.id, item.id)} confirmMessage="Remove this product from the deal?" label="" />

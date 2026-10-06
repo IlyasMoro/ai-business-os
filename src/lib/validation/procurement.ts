@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { lineQuantity } from "@/lib/validation/quantity";
 
 export const PurchaseOrderStatusValues = ["DRAFT", "ORDERED", "RECEIVED", "CANCELLED"] as const;
 
@@ -16,10 +17,7 @@ export const PurchaseOrderSchema = z.object({
 
 export const PurchaseOrderItemSchema = z.object({
   productId: z.string().min(1, { error: "Select a product." }),
-  quantity: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(1, { error: "Quantity must be at least 1." }),
+  quantity: lineQuantity(),
   unitCost: z.coerce
     .number({ error: "Enter a valid unit cost." })
     .min(0, { error: "Unit cost can't be negative." }),

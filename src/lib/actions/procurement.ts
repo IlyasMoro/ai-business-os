@@ -20,6 +20,7 @@ import {
   PurchaseOrderItemSchema,
   PurchaseOrderStatusValues,
 } from "@/lib/validation/procurement";
+import { quantityError } from "@/lib/quantity";
 
 async function recomputePurchaseOrderTotal(purchaseOrderId: string) {
   const items = await db.purchaseOrderItem.findMany({
@@ -236,10 +237,13 @@ export async function addPurchaseOrderItem(purchaseOrderId: string, formData: Fo
 
   const product = await db.product.findUnique({
     where: { id: validated.data.productId, companyId: session.companyId },
-    select: { id: true },
+    select: { id: true, unit: true },
   });
   if (!product) {
     redirect(`/dashboard/procurement/${purchaseOrderId}?error=invalid`);
+  }
+  if (quantityError(validated.data.quantity, product.unit)) {
+    redirect(`/dashboard/procurement/${purchaseOrderId}?error=whole-quantity`);
   }
 
   await db.purchaseOrderItem.create({

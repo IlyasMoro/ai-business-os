@@ -9,6 +9,7 @@ import { resolveNewRecordBranch } from "@/lib/branches";
 import { changeStock, setStockAt } from "@/lib/stock";
 import { logAudit } from "@/lib/audit";
 import { ADJUSTMENT_REASON_IDS, planAdjustment, productDeleteBlocker, type StockAdjustmentReason } from "@/lib/stock-history";
+import { isWeighed, quantityError, roundQty } from "@/lib/quantity";
 
 export async function createProduct(
   _state: ProductFormState,
@@ -22,6 +23,7 @@ export async function createProduct(
     description: formData.get("description"),
     cost: formData.get("cost"),
     unitPrice: formData.get("unitPrice"),
+    unit: formData.get("unit") || undefined,
     stockQty: formData.get("stockQty"),
     reorderLevel: formData.get("reorderLevel"),
   });
@@ -31,6 +33,10 @@ export async function createProduct(
   }
 
   const { description, stockQty, ...rest } = validated.data;
+  const stockError = quantityError(stockQty, rest.unit);
+  if (stockError) return { errors: { stockQty: [stockError] } };
+  const reorderError = quantityError(rest.reorderLevel, rest.unit);
+  if (reorderError) return { errors: { reorderLevel: [reorderError] } };
 
   const existing = await db.product.findUnique({
     where: { companyId_sku: { companyId: session.companyId, sku: rest.sku } },
@@ -74,6 +80,7 @@ export async function updateProduct(
     description: formData.get("description"),
     cost: formData.get("cost"),
     unitPrice: formData.get("unitPrice"),
+    unit: formData.get("unit") || undefined,
     reorderLevel: formData.get("reorderLevel"),
   });
 
@@ -82,6 +89,23 @@ export async function updateProduct(
   }
 
   const { description, ...rest } = validated.data;
+  const reorderError = quantityError(rest.reorderLevel, rest.unit);
+  if (reorderError) return { errors: { reorderLevel: [reorderError] } };
+
+  // Moving a product to "by the piece" needs whole stock everywhere, and a
+  // serial numbered product can't be weighed (one serial per piece).
+  const current = await db.product.findFirst({
+    where: { id: productId, companyId: session.companyId },
+    select: { unit: true, stockQty: true, trackingMode: true, branchStock: { select: { quantity: true } } },
+  });
+  if (current && rest.unit !== current.unit) {
+    if (rest.unit === "EACH" && current.branchStock.some((b) => !Number.isInteger(roundQty(b.quantity)))) {
+      return { message: "This product has part units in stock (for example 1.35 kg). Count it to a whole number first, then switch it to Each." };
+    }
+    if (rest.unit !== "EACH" && current.trackingMode === "SERIAL") {
+      return { message: "Serial numbered products are counted by the piece. Turn serial tracking off first to sell this by weight or volume." };
+    }
+  }
 
   const existing = await db.product.findFirst({
     where: { companyId: session.companyId, sku: rest.sku, id: { not: productId } },
@@ -107,9 +131,11 @@ export async function updateProduct(
 export async function applyReorderSuggestion(productId: string, suggestedLevel: number) {
   const session = await verifySession();
 
+  const product = await db.product.findFirst({ where: { id: productId, companyId: session.companyId }, select: { unit: true } });
+  if (!product) return;
   await db.product.update({
     where: { id: productId, companyId: session.companyId },
-    data: { reorderLevel: Math.round(suggestedLevel) },
+    data: { reorderLevel: isWeighed(product.unit) ? roundQty(suggestedLevel) : Math.round(suggestedLevel) },
   });
 
   revalidatePath(`/dashboard/inventory/${productId}`);
@@ -172,13 +198,14 @@ export async function setBranchReorderLevel(productId: string, branchId: string,
 
   const raw = String(formData.get("reorderLevel") ?? "").trim();
   const level = raw === "" ? null : Number(raw);
-  if (level !== null && (!Number.isInteger(level) || level < 0 || level > 1_000_000)) redirect(`${back}?error=invalid`);
+  if (level !== null && (!Number.isFinite(level) || level < 0 || level > 1_000_000)) redirect(`${back}?error=invalid`);
 
   const [product, branch] = await Promise.all([
-    db.product.findUnique({ where: { id: productId, companyId: session.companyId }, select: { id: true } }),
+    db.product.findUnique({ where: { id: productId, companyId: session.companyId }, select: { id: true, unit: true } }),
     db.branch.findUnique({ where: { id: branchId, companyId: session.companyId }, select: { id: true } }),
   ]);
   if (!product || !branch) redirect(`${back}?error=invalid`);
+  if (level !== null && quantityError(level, product.unit)) redirect(`${back}?error=whole-quantity`);
 
   await db.branchStock.upsert({
     where: { branchId_productId: { branchId, productId } },
@@ -211,7 +238,7 @@ export async function adjustStock(productId: string, _state: StockAdjustState, f
   if (reason === "OTHER" && !note) return { message: "Add a note saying what happened." };
 
   const [product, branch] = await Promise.all([
-    db.product.findUnique({ where: { id: productId, companyId: session.companyId }, select: { name: true, trackingMode: true } }),
+    db.product.findUnique({ where: { id: productId, companyId: session.companyId }, select: { name: true, trackingMode: true, unit: true } }),
     db.branch.findFirst({ where: { id: branchId, companyId: session.companyId, active: true }, select: { id: true, name: true } }),
   ]);
   if (!product) return { message: "Product not found." };
@@ -228,7 +255,7 @@ export async function adjustStock(productId: string, _state: StockAdjustState, f
         where: { branchId_productId: { branchId: branch.id, productId } },
         select: { quantity: true },
       });
-      const plan = planAdjustment({ mode, value, current: row?.quantity ?? 0, reason });
+      const plan = planAdjustment({ mode, value, current: row?.quantity ?? 0, reason, unit: product.unit });
       if ("error" in plan) throw new AdjustmentRejected(plan.error);
       delta = plan.delta;
       await changeStock(tx, {

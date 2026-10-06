@@ -7,6 +7,7 @@ import { displayStatus } from "@/lib/quotes";
 import { acceptQuoteOnline, declineQuoteOnline } from "./actions";
 import { QuoteAnswer } from "./quote-answer";
 import { onQuoteOpened } from "@/lib/crm-auto";
+import { formatQty } from "@/lib/quantity";
 
 export const metadata: Metadata = { title: "Your quote", robots: { index: false, follow: false } };
 
@@ -29,7 +30,7 @@ export default async function PublicQuotePage({
   const quote = await db.quote.findUnique({
     where: { publicToken: token },
     include: {
-      items: { include: { product: { select: { name: true } } }, orderBy: { id: "asc" } },
+      items: { include: { product: { select: { name: true, unit: true } } }, orderBy: { id: "asc" } },
       customer: { select: { name: true, company: true } },
       companyRef: { select: { id: true, name: true, logoMimeType: true } },
     },
@@ -92,7 +93,7 @@ export default async function PublicQuotePage({
             {quote.items.map((item) => (
               <tr key={item.id} className="border-t border-slate-100">
                 <td className="px-4 py-3 text-slate-900">{item.product.name}</td>
-                <td className="px-4 py-3 text-right tabular-nums text-slate-600">{item.quantity}</td>
+                <td className="px-4 py-3 text-right tabular-nums text-slate-600">{formatQty(item.quantity, item.product.unit)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-slate-600">{money(item.unitPrice)}</td>
                 <td className="px-4 py-3 text-right tabular-nums text-slate-900">{money(item.quantity * item.unitPrice)}</td>
               </tr>

@@ -32,6 +32,7 @@ import { Download, Send } from "lucide-react";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { BranchTag } from "@/components/layout/branch-tag";
+import { formatQty, qtyStep } from "@/lib/quantity";
 
 const statusTone = {
   DRAFT: "slate",
@@ -58,7 +59,7 @@ export default async function InvoiceDetailPage({
     include: {
       branch: { select: { name: true } },
       customer: true,
-      lineItems: true,
+      lineItems: { include: { product: { select: { unit: true } } } },
       order: { select: { id: true, orderNumber: true } },
       _count: { select: { transactions: true } },
       payments: { orderBy: { paidAt: "asc" }, select: { id: true, amount: true, paidAt: true, method: true, reference: true } },
@@ -170,7 +171,7 @@ export default async function InvoiceDetailPage({
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.description}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {item.quantity} × ${item.unitPrice.toFixed(2)} = $
+                        {formatQty(item.quantity, item.product?.unit)} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
                       {editable && (
@@ -178,7 +179,7 @@ export default async function InvoiceDetailPage({
                           <summary className="cursor-pointer list-none text-xs font-medium text-blue-400 hover:text-blue-300 light:text-blue-700">Edit</summary>
                           <form action={updateInvoiceLineItem.bind(null, invoice.id, item.id)} className="mt-2 flex flex-wrap items-end gap-2">
                             <Input name="description" defaultValue={item.description} required aria-label="Description" className="min-w-48 flex-1" />
-                            <Input name="quantity" type="number" min="1" step="1" defaultValue={item.quantity} required aria-label="Quantity" className="w-20" />
+                            <Input name="quantity" type="number" min="0.001" step={item.product ? qtyStep(item.product.unit) : "any"} defaultValue={item.quantity} required aria-label="Quantity" className="w-20" />
                             <Input name="unitPrice" type="number" min="0" step="0.01" defaultValue={item.unitPrice} required aria-label="Unit price" className="w-28" />
                             <SubmitButton variant="secondary" pendingText="Saving...">
                               Save

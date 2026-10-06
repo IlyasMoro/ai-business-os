@@ -53,7 +53,7 @@ export function QuoteItemForm({
         <FieldError messages={state?.errors?.productId} />
       </div>
       <div>
-        <Input name="quantity" aria-label="Quantity" type="number" min="1" step="1" defaultValue={1} required />
+        <Input name="quantity" aria-label="Quantity" type="number" min="0.001" step="any" defaultValue={1} required />
         <FieldError messages={state?.errors?.quantity} />
       </div>
       <div>

@@ -14,6 +14,7 @@ import { Plus, Search, ChevronLeft, ChevronRight, Boxes } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+import { formatQty } from "@/lib/quantity";
 
 function inventoryHref(page: number, q?: string) {
   const params = new URLSearchParams();
@@ -217,10 +218,10 @@ export default async function InventoryPage({
                   <td className="px-5 py-3">
                     {product.low ? (
                       <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-xs tabular-nums text-red-400">
-                        {product.qty} low
+                        {formatQty(product.qty, product.unit)} low
                       </span>
                     ) : (
-                      <span className="tabular-nums text-slate-300 light:text-slate-600">{product.qty}</span>
+                      <span className="tabular-nums text-slate-300 light:text-slate-600">{formatQty(product.qty, product.unit)}</span>
                     )}
                   </td>
                 </tr>

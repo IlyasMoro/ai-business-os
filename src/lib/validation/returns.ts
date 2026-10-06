@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { lineQuantity } from "@/lib/validation/quantity";
 import { ReturnConditionValues } from "@/lib/returns-math";
 
 export const ReturnSchema = z.object({
@@ -9,10 +10,7 @@ export const ReturnSchema = z.object({
 
 export const ReturnItemSchema = z.object({
   orderItemId: z.string().min(1, { error: "Select an item." }),
-  quantity: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(1, { error: "Quantity must be at least 1." }),
+  quantity: lineQuantity(),
   condition: z.enum(ReturnConditionValues),
 });
 

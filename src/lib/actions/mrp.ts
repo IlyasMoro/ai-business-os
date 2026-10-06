@@ -24,6 +24,7 @@ import {
   type WorkOrderStatus,
 } from "@/lib/mrp-math";
 import { BomLineSchema, MrpSettingsSchema, PlanningFieldsSchema, WorkOrderSchema } from "@/lib/validation/mrp";
+import { quantityError } from "@/lib/quantity";
 
 async function nextWorkOrderNumber(companyId: string) {
   const count = await db.workOrder.count({ where: { companyId } });
@@ -153,9 +154,10 @@ export async function createWorkOrder(formData: FormData) {
   // Only products with a bill of materials can be made.
   const product = await db.product.findUnique({
     where: { id: validated.data.productId, companyId: session.companyId },
-    select: { id: true, _count: { select: { bomComponents: true } } },
+    select: { id: true, unit: true, _count: { select: { bomComponents: true } } },
   });
   if (!product) redirect("/dashboard/mrp/work-orders/new?error=invalid");
+  if (quantityError(validated.data.quantity, product.unit)) redirect("/dashboard/mrp/work-orders/new?error=whole-quantity");
   if (product._count.bomComponents === 0) redirect("/dashboard/mrp/work-orders/new?error=not-made");
 
   const wo = await insertWorkOrder(session.companyId, session.userId, {

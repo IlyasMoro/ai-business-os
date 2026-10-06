@@ -12,6 +12,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { deleteWorkOrder, updateWorkOrderStatus } from "@/lib/actions/mrp";
 import { explodeBom, nextWorkOrderStatuses, type WorkOrderStatus } from "@/lib/mrp-math";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { formatQty } from "@/lib/quantity";
 
 const statusTone = {
   PLANNED: "slate",
@@ -48,7 +49,7 @@ export default async function WorkOrderDetailPage({
           sku: true,
           stockQty: true,
           bomComponents: {
-            include: { component: { select: { id: true, name: true, sku: true, stockQty: true, cost: true } } },
+            include: { component: { select: { id: true, name: true, sku: true, stockQty: true, cost: true, unit: true } } },
             orderBy: { component: { name: "asc" } },
           },
         },
@@ -147,7 +148,7 @@ export default async function WorkOrderDetailPage({
                       </td>
                       <td className="py-2 text-right text-slate-400">{r.line.quantity}</td>
                       <td className="py-2 text-right text-slate-300 light:text-slate-600">{r.required}</td>
-                      <td className="py-2 text-right text-slate-300 light:text-slate-600">{r.line.component.stockQty}</td>
+                      <td className="py-2 text-right text-slate-300 light:text-slate-600">{formatQty(r.line.component.stockQty, r.line.component.unit)}</td>
                       {isOpen && (
                         <td className={`py-2 text-right font-semibold ${r.short > 0 ? "text-red-400" : "text-slate-600"}`}>
                           {r.short}

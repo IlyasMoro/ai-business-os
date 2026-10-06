@@ -64,7 +64,7 @@ export default async function NewWorkOrderPage({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="quantity">Quantity</Label>
-                  <Input id="quantity" name="quantity" type="number" min="1" step="1" defaultValue={1} required />
+                  <Input id="quantity" name="quantity" type="number" min="0.001" step="any" defaultValue={1} required />
                 </div>
                 <div>
                   <Label htmlFor="dueDate">Due date (optional)</Label>

@@ -28,6 +28,7 @@ import {
   type OrderItemFormState,
   type OrderStatusFormState,
 } from "@/lib/validation/sales";
+import { quantityError, roundQty } from "@/lib/quantity";
 
 async function recomputeOrderTotal(orderId: string) {
   const items = await db.orderItem.findMany({
@@ -336,16 +337,21 @@ export async function addOrderItem(
 
   const product = await db.product.findUnique({
     where: { id: validated.data.productId, companyId: session.companyId },
-    select: { id: true, unitPrice: true },
+    select: { id: true, unitPrice: true, unit: true },
   });
   if (!product) {
     return { errors: { productId: ["Select a valid product."] } };
   }
+  const unitError = quantityError(validated.data.quantity, product.unit);
+  if (unitError) return { errors: { quantity: [unitError] } };
 
   // The same product again adds to its line instead of a second one.
-  const sameProduct = await db.orderItem.findFirst({ where: { orderId, productId: product.id }, select: { id: true } });
+  const sameProduct = await db.orderItem.findFirst({ where: { orderId, productId: product.id }, select: { id: true, quantity: true } });
   if (sameProduct) {
-    await db.orderItem.update({ where: { id: sameProduct.id }, data: { quantity: { increment: validated.data.quantity } } });
+    await db.orderItem.update({
+      where: { id: sameProduct.id },
+      data: { quantity: roundQty(sameProduct.quantity + validated.data.quantity) },
+    });
   } else {
     await db.orderItem.create({
       data: {
@@ -389,6 +395,11 @@ export async function updateOrderItem(orderId: string, itemId: string, formData:
   if (!parsed.success) redirect(`${back}?error=invalid`);
   const canPrice = hasRole(session, ["OWNER", "ADMIN"]);
   if (parsed.data.unitPrice !== undefined && !canPrice) redirect(`${back}?error=forbidden`);
+  const line = await db.orderItem.findFirst({
+    where: { id: itemId, orderId, order: { companyId: session.companyId } },
+    select: { product: { select: { unit: true } } },
+  });
+  if (line && quantityError(parsed.data.quantity, line.product.unit)) redirect(`${back}?error=whole-quantity`);
 
   const { count } = await db.orderItem.updateMany({
     where: { id: itemId, orderId, order: { companyId: session.companyId, status: "PENDING", ...(await lockedWhere()) } },

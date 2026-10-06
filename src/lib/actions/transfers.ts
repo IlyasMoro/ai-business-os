@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import * as z from "zod";
+import { lineQuantity } from "@/lib/validation/quantity";
 import { db } from "@/lib/db";
 import { requireFeature } from "@/lib/plan-limits";
 import { hasRole, verifySession } from "@/lib/dal";
@@ -20,6 +21,7 @@ import {
   transferRouteError,
   type TransferAction,
 } from "@/lib/transfer-rules";
+import { quantityError, roundQty } from "@/lib/quantity";
 
 const BASE = "/dashboard/transfers";
 
@@ -106,7 +108,7 @@ export async function createTransfer(formData: FormData) {
 
 const ItemSchema = z.object({
   productId: z.string().min(1),
-  quantity: z.coerce.number().int().min(1).max(1_000_000),
+  quantity: lineQuantity(),
 });
 
 /** Adds a line, or tops up the line already there for that product. */
@@ -118,14 +120,20 @@ export async function addTransferItem(transferId: string, formData: FormData) {
 
   const product = await db.product.findUnique({
     where: { id: parsed.data.productId, companyId: session.companyId },
-    select: { id: true },
+    select: { id: true, unit: true },
   });
   if (!product) redirect(`${back}?error=invalid`);
+  if (quantityError(parsed.data.quantity, product.unit)) redirect(`${back}?error=whole-quantity`);
 
+  const existing = await db.stockTransferItem.findUnique({
+    where: { transferId_productId: { transferId: transfer.id, productId: product.id } },
+    select: { quantity: true },
+  });
+  const quantity = roundQty((existing?.quantity ?? 0) + parsed.data.quantity);
   await db.stockTransferItem.upsert({
     where: { transferId_productId: { transferId: transfer.id, productId: product.id } },
-    create: { transferId: transfer.id, productId: product.id, quantity: parsed.data.quantity },
-    update: { quantity: { increment: parsed.data.quantity } },
+    create: { transferId: transfer.id, productId: product.id, quantity },
+    update: { quantity },
   });
   revalidatePath(back);
 }

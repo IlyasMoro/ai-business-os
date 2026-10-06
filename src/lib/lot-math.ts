@@ -1,3 +1,5 @@
+import { roundQty } from "@/lib/quantity";
+
 export const TrackingModeValues = ["NONE", "LOT", "SERIAL"] as const;
 export type TrackingMode = (typeof TrackingModeValues)[number];
 
@@ -51,12 +53,14 @@ export function pickLots(
   );
 
   const allocations: { lotId: string; lotNumber: string; quantity: number }[] = [];
-  let remaining = quantity;
+  // Rounded at every step: weighed lots (1.35 kg) would otherwise leave
+  // float noise like a 0.0000000001 "shortfall".
+  let remaining = roundQty(quantity);
   for (const lot of sorted) {
     if (remaining <= 0) break;
-    const take = Math.min(lot.quantity, remaining);
+    const take = roundQty(Math.min(lot.quantity, remaining));
     allocations.push({ lotId: lot.id, lotNumber: lot.lotNumber, quantity: take });
-    remaining -= take;
+    remaining = roundQty(remaining - take);
   }
   return { allocations, shortfall: Math.max(0, remaining) };
 }

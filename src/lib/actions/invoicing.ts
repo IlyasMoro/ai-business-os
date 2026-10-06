@@ -32,6 +32,8 @@ import {
   type InvoiceFormState,
   type InvoiceLineItemFormState,
 } from "@/lib/validation/invoicing";
+import { quantityError } from "@/lib/quantity";
+import { formatQty } from "@/lib/quantity";
 
 async function recomputeInvoiceTotal(invoiceId: string) {
   const invoice = await db.invoice.findUnique({ where: { id: invoiceId }, select: { taxRate: true } });
@@ -172,7 +174,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
-      lineItems: true,
+      lineItems: { include: { product: { select: { unit: true } } } },
     },
   });
   if (!invoice) redirect("/dashboard/invoicing?error=invalid");
@@ -183,7 +185,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
   const lineItemsHtml = invoice.lineItems
     .map(
       (item) =>
-        `<tr><td>${escapeHtml(item.description)}</td><td>${item.quantity}</td><td>$${item.unitPrice.toFixed(2)}</td><td>$${(item.quantity * item.unitPrice).toFixed(2)}</td></tr>`
+        `<tr><td>${escapeHtml(item.description)}</td><td>${formatQty(item.quantity, item.product?.unit)}</td><td>$${item.unitPrice.toFixed(2)}</td><td>$${(item.quantity * item.unitPrice).toFixed(2)}</td></tr>`
     )
     .join("");
   // Sending a draft makes it Sent, so the attached PDF says so too.
@@ -199,7 +201,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
     companyName: invoice.companyRef.name,
     customerName: invoice.customer.name,
     customerEmail: invoice.customer.email,
-    lineItems: invoice.lineItems,
+    lineItems: invoice.lineItems.map((l) => ({ ...l, unit: l.product?.unit })),
     logoData: invoice.companyRef.logoData ? new Uint8Array(invoice.companyRef.logoData) : undefined,
     logoMimeType: invoice.companyRef.logoMimeType,
   });
@@ -297,11 +299,15 @@ export async function addInvoiceLineItem(
   if (productId) {
     const product = await db.product.findUnique({
       where: { id: productId, companyId: session.companyId },
-      select: { id: true },
+      select: { id: true, unit: true },
     });
     if (!product) {
       return { errors: { productId: ["Select a valid product."] } };
     }
+    // A free text line (a service, hours) may take decimals; a product line
+    // follows the product's own unit.
+    const unitError = quantityError(rest.quantity, product.unit);
+    if (unitError) return { errors: { quantity: [unitError] } };
   }
 
   await db.invoiceLineItem.create({

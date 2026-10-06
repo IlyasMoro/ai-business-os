@@ -19,6 +19,7 @@ import { touchLeadScore } from "@/lib/lead-score-data";
 import { dealStageChanged } from "@/lib/crm-rules-runner";
 import { QuoteItemSchema, quoteTotal } from "@/lib/quotes";
 import type { QuoteItemFormState } from "@/lib/actions/quotes";
+import { quantityError } from "@/lib/quantity";
 
 /* Deals (the pipeline board), activity history and follow-ups. Every record
    is scoped to the signed-in company; ids from forms are checked before use. */
@@ -231,8 +232,10 @@ export async function addDealItem(dealId: string, _state: QuoteItemFormState, fo
   if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
   const deal = await db.deal.findFirst({ where: { id: dealId, companyId: session.companyId, ...(await dealScope()) }, select: { id: true, customerId: true } });
   if (!deal) return { message: "Deal not found." };
-  const product = await db.product.findFirst({ where: { id: parsed.data.productId, companyId: session.companyId }, select: { id: true, unitPrice: true } });
+  const product = await db.product.findFirst({ where: { id: parsed.data.productId, companyId: session.companyId }, select: { id: true, unitPrice: true, unit: true } });
   if (!product) return { errors: { productId: ["Select a valid product."] } };
+  const unitError = quantityError(parsed.data.quantity, product.unit);
+  if (unitError) return { errors: { quantity: [unitError] } };
 
   await db.dealItem.create({
     data: { dealId, productId: product.id, quantity: parsed.data.quantity, unitPrice: parsed.data.unitPrice ?? product.unitPrice },

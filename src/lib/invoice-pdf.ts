@@ -1,6 +1,7 @@
 import "server-only";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
+import { formatQty, type Unit } from "@/lib/quantity";
 
 type InvoicePdfData = {
   invoiceNumber: string;
@@ -16,7 +17,8 @@ type InvoicePdfData = {
   companyName: string;
   customerName: string;
   customerEmail: string | null;
-  lineItems: { description: string; quantity: number; unitPrice: number }[];
+  /** unit: shown after the quantity for weighed products (1.35 kg). */
+  lineItems: { description: string; quantity: number; unitPrice: number; unit?: Unit | null }[];
   logoData?: Uint8Array;
   logoMimeType?: string | null;
   /** The same layout for quotes, purchase orders (to the supplier) and
@@ -89,7 +91,7 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   for (const item of invoice.lineItems) {
     text(item.description.slice(0, 45), margin, 10);
-    text(String(item.quantity), 340, 10);
+    text(formatQty(item.quantity, item.unit), 340, 10);
     text(`$${item.unitPrice.toFixed(2)}`, 400, 10);
     text(`$${(item.quantity * item.unitPrice).toFixed(2)}`, 490, 10);
     y -= 18;

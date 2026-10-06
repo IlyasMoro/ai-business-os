@@ -15,7 +15,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
-      items: { include: { product: { select: { name: true } } } },
+      items: { include: { product: { select: { name: true, unit: true } } } },
     },
   });
   if (!quote) return new NextResponse("Not found", { status: 404 });
@@ -31,7 +31,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     companyName: quote.companyRef.name,
     customerName: quote.customer.name,
     customerEmail: quote.customer.email,
-    lineItems: quote.items.map((i) => ({ description: i.product.name, quantity: i.quantity, unitPrice: i.unitPrice })),
+    lineItems: quote.items.map((i) => ({ description: i.product.name, quantity: i.quantity, unitPrice: i.unitPrice, unit: i.product.unit })),
     notes: quote.notes,
     logoData: quote.companyRef.logoData ? new Uint8Array(quote.companyRef.logoData) : undefined,
     logoMimeType: quote.companyRef.logoMimeType,

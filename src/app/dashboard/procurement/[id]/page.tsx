@@ -17,6 +17,7 @@ import { canDeletePo, canEditPoLines } from "@/lib/po-rules";
 import { EdiSendButton } from "@/components/edi/edi-send-button";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { BranchTag } from "@/components/layout/branch-tag";
+import { formatQty } from "@/lib/quantity";
 
 const statusTone = {
   DRAFT: "slate",
@@ -150,7 +151,7 @@ export default async function PurchaseOrderDetailPage({
                     <div>
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {item.quantity} × ${item.unitCost.toFixed(2)} = $
+                        {formatQty(item.quantity, item.product.unit)} × ${item.unitCost.toFixed(2)} = $
                         {(item.quantity * item.unitCost).toFixed(2)}
                       </p>
                     </div>

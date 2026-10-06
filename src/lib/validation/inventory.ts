@@ -1,4 +1,7 @@
 import * as z from "zod";
+import { stockQuantity } from "@/lib/validation/quantity";
+
+export const UnitValues = ["EACH", "KG", "L"] as const;
 
 export const ProductSchema = z.object({
   sku: z.string().min(1, { error: "SKU is required." }).trim(),
@@ -8,14 +11,10 @@ export const ProductSchema = z.object({
   unitPrice: z.coerce
     .number({ error: "Enter a valid price." })
     .min(0, { error: "Price cannot be negative." }),
-  stockQty: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(0, { error: "Quantity cannot be negative." }),
-  reorderLevel: z.coerce
-    .number({ error: "Enter a valid reorder level." })
-    .int({ error: "Reorder level must be a whole number." })
-    .min(0, { error: "Reorder level cannot be negative." }),
+  // How the product is counted: by the piece, or by weight or volume.
+  unit: z.enum(UnitValues).default("EACH"),
+  stockQty: stockQuantity("Quantity"),
+  reorderLevel: stockQuantity("Reorder level"),
 });
 
 /** Editing a product never touches stock: that goes through an adjustment,
@@ -34,6 +33,7 @@ export type ProductFormState =
         unitPrice?: string[];
         stockQty?: string[];
         reorderLevel?: string[];
+        unit?: string[];
       };
       message?: string;
     }

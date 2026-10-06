@@ -16,7 +16,7 @@ export async function GET(
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
-      lineItems: { select: { description: true, quantity: true, unitPrice: true } },
+      lineItems: { select: { description: true, quantity: true, unitPrice: true, product: { select: { unit: true } } } },
     },
   });
 
@@ -36,7 +36,7 @@ export async function GET(
     companyName: invoice.companyRef.name,
     customerName: invoice.customer.name,
     customerEmail: invoice.customer.email,
-    lineItems: invoice.lineItems,
+    lineItems: invoice.lineItems.map((l) => ({ ...l, unit: l.product?.unit })),
     logoData: invoice.companyRef.logoData ? new Uint8Array(invoice.companyRef.logoData) : undefined,
     logoMimeType: invoice.companyRef.logoMimeType,
   });

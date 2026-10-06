@@ -22,6 +22,7 @@ import { getReturnPolicy } from "@/lib/returns-policy";
 import { isWithinReturnWindow, returnDeadline } from "@/lib/returns-math";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { BranchTag } from "@/components/layout/branch-tag";
+import { formatQty, qtyStep } from "@/lib/quantity";
 
 const statusTone = {
   PENDING: "yellow",
@@ -90,6 +91,7 @@ export default async function OrderDetailPage({
         name: true,
         sku: true,
         unitPrice: true,
+        unit: true,
         branchStock: { where: { branchId: stockBranchId }, select: { quantity: true } },
       },
       orderBy: { name: "asc" },
@@ -184,14 +186,14 @@ export default async function OrderDetailPage({
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {item.quantity} × ${item.unitPrice.toFixed(2)} = $
+                        {formatQty(item.quantity, item.product.unit)} × ${item.unitPrice.toFixed(2)} = $
                         {(item.quantity * item.unitPrice).toFixed(2)}
                       </p>
                       {editable && (
                         <details className="mt-1">
                           <summary className="cursor-pointer list-none text-xs font-medium text-blue-400 hover:text-blue-300 light:text-blue-700">Edit</summary>
                           <form action={updateOrderItem.bind(null, order.id, item.id)} className="mt-2 flex flex-wrap items-end gap-2">
-                            <Input name="quantity" type="number" min="1" step="1" defaultValue={item.quantity} required aria-label="Quantity" className="w-24" />
+                            <Input name="quantity" type="number" min="0.001" step={qtyStep(item.product.unit)} defaultValue={item.quantity} required aria-label="Quantity" className="w-24" />
                             {canPrice && (
                               <Input name="unitPrice" type="number" min="0" step="0.01" defaultValue={item.unitPrice} aria-label="Unit price" className="w-28" />
                             )}

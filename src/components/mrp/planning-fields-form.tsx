@@ -26,7 +26,7 @@ export function PlanningFieldsForm({
       </div>
       <div>
         <Label htmlFor="lotSize">Lot size</Label>
-        <Input id="lotSize" name="lotSize" type="number" min="1" step="1" defaultValue={lotSize} required />
+        <Input id="lotSize" name="lotSize" type="number" min="0.001" step="any" defaultValue={lotSize} required />
         <p className="mt-1 text-xs text-slate-500">Planned quantities round up to multiples of this.</p>
       </div>
       <div>

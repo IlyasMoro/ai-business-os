@@ -23,6 +23,7 @@ import {
   type ReturnStatus,
 } from "@/lib/returns-math";
 import { ReturnSchema, ReturnItemSchema, ReturnPolicySchema } from "@/lib/validation/returns";
+import { hasEnough, quantityError, roundQty } from "@/lib/quantity";
 
 async function nextRmaNumber(companyId: string) {
   const count = await db.returnAuthorization.count({ where: { companyId } });
@@ -114,12 +115,13 @@ export async function addReturnItem(returnId: string, formData: FormData) {
   // The line must belong to the order this return was opened against.
   const orderItem = await db.orderItem.findUnique({
     where: { id: validated.data.orderItemId, orderId: rma.orderId },
-    select: { id: true, quantity: true, unitPrice: true, productId: true },
+    select: { id: true, quantity: true, unitPrice: true, productId: true, product: { select: { unit: true } } },
   });
   if (!orderItem) redirect(`${back}?error=invalid`);
+  if (quantityError(validated.data.quantity, orderItem.product.unit)) redirect(`${back}?error=whole-quantity`);
 
-  const remaining = returnableQuantity(orderItem.quantity, await alreadyReturnedQuantity(orderItem.id));
-  if (validated.data.quantity > remaining) redirect(`${back}?error=return-qty`);
+  const remaining = roundQty(returnableQuantity(orderItem.quantity, await alreadyReturnedQuantity(orderItem.id)));
+  if (!hasEnough(remaining, validated.data.quantity)) redirect(`${back}?error=return-qty`);
 
   await db.returnItem.create({
     data: {

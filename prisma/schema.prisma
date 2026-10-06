@@ -251,9 +251,9 @@ model Branch {
 // once it has a row here; low stock alerts only look at existing rows.
 model BranchStock {
   id           String @id @default(cuid())
-  quantity     Int    @default(0)
+  quantity     Float  @default(0)
   // Null means use the product's own reorder level.
-  reorderLevel Int?
+  reorderLevel Float?
 
   productId String
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
@@ -308,7 +308,7 @@ model StockTransfer {
 
 model StockTransferItem {
   id       String @id @default(cuid())
-  quantity Int
+  quantity Float
 
   transferId String
   transfer   StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
@@ -562,14 +562,18 @@ model Product {
   description  String?
   cost         Float    @default(0)
   unitPrice    Float
-  stockQty     Int      @default(0)
-  reorderLevel Int      @default(5)
+  // How the product is counted. EACH stays whole numbers; KG and L are
+  // sold by weight or volume, to three decimals (1.350 kg). Every quantity
+  // column is a Float so weighed stock fits; see src/lib/quantity.ts.
+  unit         UnitOfMeasure @default(EACH)
+  stockQty     Float    @default(0)
+  reorderLevel Float    @default(5)
   createdAt    DateTime @default(now())
 
   // MRP planning inputs. Lead time is how long it takes to buy (or make)
   // one batch; lot size rounds planned quantities up to whole batches.
   leadTimeDays        Int       @default(0)
-  lotSize             Int       @default(1)
+  lotSize             Float     @default(1)
   preferredSupplierId String?
   preferredSupplier   Supplier? @relation(fields: [preferredSupplierId], references: [id], onDelete: SetNull)
 
@@ -666,7 +670,7 @@ model PurchaseOrder {
 
 model PurchaseOrderItem {
   id       String @id @default(cuid())
-  quantity Int
+  quantity Float
   unitCost Float
 
   purchaseOrderId String
@@ -726,7 +730,7 @@ model Order {
 
 model OrderItem {
   id        String @id @default(cuid())
-  quantity  Int
+  quantity  Float
   unitPrice Float
 
   orderId String
@@ -805,7 +809,7 @@ model Quote {
 // A product on a deal, before any quote exists.
 model DealItem {
   id        String @id @default(cuid())
-  quantity  Int
+  quantity  Float
   unitPrice Float
 
   dealId String
@@ -819,7 +823,7 @@ model DealItem {
 
 model QuoteItem {
   id        String @id @default(cuid())
-  quantity  Int
+  quantity  Float
   // Starts at the product's price and can be changed, e.g. for a discount.
   unitPrice Float
 
@@ -895,7 +899,7 @@ model ReturnPolicy {
 
 model ReturnItem {
   id        String          @id @default(cuid())
-  quantity  Int
+  quantity  Float
   unitPrice Float
   condition ReturnCondition @default(RESELLABLE)
 
@@ -964,7 +968,7 @@ model Invoice {
 model InvoiceLineItem {
   id          String @id @default(cuid())
   description String
-  quantity    Int
+  quantity    Float
   unitPrice   Float
 
   invoiceId String
@@ -1704,7 +1708,7 @@ model WorkOrder {
   id          String          @id @default(cuid())
   woNumber    String
   status      WorkOrderStatus @default(PLANNED)
-  quantity    Int
+  quantity    Float
   notes       String?
   dueDate     DateTime?
   createdAt   DateTime        @default(now())
@@ -2020,6 +2024,12 @@ enum TrackingMode {
   SERIAL
 }
 
+enum UnitOfMeasure {
+  EACH
+  KG
+  L
+}
+
 enum PickingRule {
   FIFO
   FEFO
@@ -2029,7 +2039,7 @@ enum PickingRule {
 model StockLot {
   id         String    @id @default(cuid())
   lotNumber  String
-  quantity   Int
+  quantity   Float
   expiresAt  DateTime?
   receivedAt DateTime  @default(now())
   // Where it came from: PO, WO, OPENING or RETURN.
@@ -2074,7 +2084,7 @@ model LotMovement {
   id        String          @id @default(cuid())
   kind      LotMovementKind
   // Positive adds to the lot, negative takes from it.
-  quantity  Int
+  quantity  Float
   createdAt DateTime        @default(now())
 
   lotId String
@@ -2216,9 +2226,9 @@ model StockMovement {
   id            String                 @id @default(cuid())
   kind          StockMovementKind
   // Positive adds stock, negative takes it.
-  delta         Int
+  delta         Float
   // The branch's quantity right after this movement.
-  quantityAfter Int
+  quantityAfter Float
   reason        StockAdjustmentReason?
   note          String?
   createdAt     DateTime               @default(now())

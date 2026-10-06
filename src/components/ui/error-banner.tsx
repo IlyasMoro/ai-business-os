@@ -2,6 +2,7 @@ const MESSAGES: Record<string, string> = {
   forbidden: "You don't have permission to perform that action.",
   "in-use": "This record can't be deleted because it's referenced elsewhere.",
   invalid: "Please check the form for errors and try again.",
+  "whole-quantity": "This product is counted by the piece, so the quantity must be a whole number. Only products sold by weight or volume (kg, L) take decimals.",
   "supplier-no-email": "This supplier has no email address. Add one on the supplier's page, or download the PDF and send it yourself.",
   "customer-no-email": "This customer has no email address. Add one in CRM, or download the PDF and send it yourself.",
   "document-send-failed": "The email couldn't be sent. Check your email settings, or download the PDF and send it yourself.",

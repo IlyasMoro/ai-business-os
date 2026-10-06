@@ -6,14 +6,18 @@ import { Button } from "@/components/ui-dark/button";
 import { adjustStock } from "@/lib/actions/inventory";
 import { ADJUSTMENT_REASONS } from "@/lib/stock-history";
 import type { StockAdjustState } from "@/lib/validation/inventory";
+import { formatQty, qtyStep, roundQty, type Unit } from "@/lib/quantity";
 
 /** Owners and admins correct stock here; every change is recorded in the
  * product's stock history with the reason. */
 export function StockAdjustForm({
   productId,
   branches,
+  unit = "EACH",
 }: {
   productId: string;
+  /** Decimals only for weighed products (kg, L). */
+  unit?: Unit;
   /** Active branches with their current count; one branch hides the picker. */
   branches: { id: string; name: string; quantity: number }[];
 }) {
@@ -53,7 +57,7 @@ export function StockAdjustForm({
             <Select id="adjust-branch" name="branchId" value={branchId} onChange={(e) => setBranchId(e.target.value)}>
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.name} ({b.quantity} on hand)
+                  {b.name} ({formatQty(b.quantity, unit)} on hand)
                 </option>
               ))}
             </Select>
@@ -70,8 +74,8 @@ export function StockAdjustForm({
         </div>
         <div>
           <Label htmlFor="adjust-quantity">{mode === "count" ? "Counted quantity" : "Change (use a minus to remove)"}</Label>
-          <Input id="adjust-quantity" name="quantity" type="number" step="1" required placeholder={mode === "count" ? String(current) : "-2"} />
-          <p className="mt-1 text-xs text-slate-500">{current} on hand now.</p>
+          <Input id="adjust-quantity" name="quantity" type="number" step={qtyStep(unit)} required placeholder={mode === "count" ? String(roundQty(current)) : "-2"} />
+          <p className="mt-1 text-xs text-slate-500">{formatQty(current, unit)} on hand now.</p>
         </div>
         <div>
           <Label htmlFor="adjust-reason">Reason</Label>

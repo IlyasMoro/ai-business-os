@@ -2,6 +2,7 @@
    access here. */
 
 import * as z from "zod";
+import { lineQuantity } from "@/lib/validation/quantity";
 
 export type QuoteStatus = "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED";
 /** What a quote shows as: its stored status, or Expired for a sent quote
@@ -74,10 +75,6 @@ export function defaultValidUntil(from = new Date()): Date {
  * means the product's own price. */
 export const QuoteItemSchema = z.object({
   productId: z.string().min(1, { error: "Select a product." }),
-  quantity: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(1, { error: "Quantity must be at least 1." })
-    .max(1_000_000),
+  quantity: lineQuantity(),
   unitPrice: z.coerce.number({ error: "Enter a valid price." }).min(0, { error: "Price can't be negative." }).max(1_000_000_000).optional(),
 });

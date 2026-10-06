@@ -1,6 +1,8 @@
 /* Stock adjustments and history labels, shared by the product actions, the
    product page and tests. No database access here. */
 
+import { formatQty, quantityError, roundQty, type Unit } from "@/lib/quantity";
+
 export type StockMovementKind =
   | "OPENING"
   | "ADJUSTMENT"
@@ -54,12 +56,16 @@ export function planAdjustment(input: {
   value: number;
   current: number;
   reason: StockAdjustmentReason;
+  /** The product's unit: decimals only for weighed products. Defaults to EACH. */
+  unit?: Unit;
 }): { delta: number } | { error: string } {
-  if (!Number.isInteger(input.value)) return { error: "Enter a whole number." };
-  const delta = input.mode === "count" ? input.value - input.current : input.value;
+  const unitError = quantityError(Math.abs(input.value), input.unit ?? "EACH");
+  if (unitError) return { error: unitError };
+  const delta = roundQty(input.mode === "count" ? input.value - input.current : input.value);
   if (input.mode === "count" && input.value < 0) return { error: "A counted quantity can't be negative." };
   if (delta === 0) return { error: input.mode === "count" ? "That matches the stock on hand already." : "Enter a change other than zero." };
-  if (input.current + delta < 0) return { error: `That would leave ${input.current + delta} in stock. There are only ${input.current} here.` };
+  const after = roundQty(input.current + delta);
+  if (after < 0) return { error: `That would leave ${formatQty(after, input.unit)} in stock. There are only ${formatQty(input.current, input.unit)} here.` };
   if ((input.reason === "DAMAGED" || input.reason === "LOST") && delta > 0) return { error: "Damaged or lost stock can only go down." };
   if (input.reason === "FOUND" && delta < 0) return { error: "Found stock can only go up." };
   return { delta };

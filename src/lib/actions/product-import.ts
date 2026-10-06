@@ -8,6 +8,7 @@ import { logAudit } from "@/lib/audit";
 import { setStockAt, changeStock } from "@/lib/stock";
 import { MAX_IMPORT_BYTES, parseCsv } from "@/lib/customer-import";
 import { planProductImport, type ProductImportPlan } from "@/lib/product-import";
+import { quantityError, roundQty } from "@/lib/quantity";
 
 /* Product CSV import in two steps (check, then import), and the branch
    stock count. Owners and admins only: both change a lot of stock at once. */
@@ -60,6 +61,7 @@ export async function importProducts(formData: FormData) {
             cost: p.cost,
             unitPrice: p.unitPrice,
             reorderLevel: p.reorderLevel,
+            unit: p.unit,
             stockQty: 0,
             companyId: session.companyId,
           },
@@ -102,22 +104,25 @@ export async function submitStockCount(formData: FormData) {
   for (const [key, value] of formData.entries()) {
     if (!key.startsWith("count_") || typeof value !== "string" || value.trim() === "") continue;
     const n = Number(value);
-    if (!Number.isInteger(n) || n < 0) redirect(`${back}?branch=${branch.id}&error=invalid`);
+    if (!Number.isFinite(n) || n < 0) redirect(`${back}?branch=${branch.id}&error=invalid`);
     counted.set(key.slice("count_".length), n);
   }
   if (counted.size === 0) redirect(`${back}?branch=${branch.id}&why=${encodeURIComponent("Enter at least one counted quantity.")}`);
 
   const products = await db.product.findMany({
     where: { companyId: session.companyId, id: { in: [...counted.keys()] }, trackingMode: "NONE" },
-    select: { id: true },
+    select: { id: true, unit: true },
   });
+  if (products.some((p) => quantityError(counted.get(p.id)!, p.unit))) {
+    redirect(`${back}?branch=${branch.id}&error=whole-quantity`);
+  }
   const note = `Stock count at ${branch.name}`;
   let changed = 0;
   await db.$transaction(
     async (tx) => {
       for (const { id } of products) {
         const row = await tx.branchStock.findUnique({ where: { branchId_productId: { branchId: branch.id, productId: id } }, select: { quantity: true } });
-        const delta = counted.get(id)! - (row?.quantity ?? 0);
+        const delta = roundQty(counted.get(id)! - (row?.quantity ?? 0));
         if (delta === 0) continue;
         changed++;
         await changeStock(tx, {

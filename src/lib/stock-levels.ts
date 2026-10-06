@@ -1,6 +1,7 @@
 /* Pure stock per branch rules, free of database code so they can be unit
    tested. lib/stock.ts feeds them real rows. */
 
+import { formatQty, hasEnough, roundQty } from "@/lib/quantity";
 import { computeReorderQuantity, needsReorder } from "@/lib/automation-rules";
 
 export type BranchStockRow = {
@@ -100,18 +101,18 @@ export function findBranchShortfalls(
   const byProduct = new Map<string, { productName: string; requested: number; branchQty: number; totalQty: number }>();
   for (const item of items) {
     const entry = byProduct.get(item.productId);
-    if (entry) entry.requested += item.quantity;
+    if (entry) entry.requested = roundQty(entry.requested + item.quantity);
     else byProduct.set(item.productId, { productName: item.productName, requested: item.quantity, branchQty: item.branchQty, totalQty: item.totalQty });
   }
   const shortfalls: BranchShortfall[] = [];
   for (const [productId, e] of byProduct) {
-    if (e.requested > e.branchQty) {
+    if (!hasEnough(e.branchQty, e.requested)) {
       shortfalls.push({
         productId,
         productName: e.productName,
         requested: e.requested,
         available: e.branchQty,
-        elsewhere: Math.max(0, e.totalQty - e.branchQty),
+        elsewhere: Math.max(0, roundQty(e.totalQty - e.branchQty)),
       });
     }
   }
@@ -122,8 +123,8 @@ export function findBranchShortfalls(
 export function describeShortfalls(shortfalls: BranchShortfall[], branchName: string): string {
   return shortfalls
     .map((s) => {
-      const elsewhere = s.elsewhere > 0 ? `, ${s.elsewhere} more at other branches` : "";
-      return `${s.productName} (${s.available} at ${branchName}${elsewhere}, ${s.requested} requested)`;
+      const elsewhere = s.elsewhere > 0 ? `, ${formatQty(s.elsewhere)} more at other branches` : "";
+      return `${s.productName} (${formatQty(s.available)} at ${branchName}${elsewhere}, ${formatQty(s.requested)} requested)`;
     })
     .join(", ");
 }

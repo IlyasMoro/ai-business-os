@@ -25,7 +25,7 @@ export async function purchaseOrderPdf(companyId: string, purchaseOrderId: strin
       totalAmount: true,
       supplier: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
-      items: { select: { quantity: true, unitCost: true, product: { select: { name: true, sku: true } } } },
+      items: { select: { quantity: true, unitCost: true, product: { select: { name: true, sku: true, unit: true } } } },
     },
   });
   if (!po) return null;
@@ -40,7 +40,7 @@ export async function purchaseOrderPdf(companyId: string, purchaseOrderId: strin
     companyName: po.companyRef.name,
     customerName: po.supplier.name,
     customerEmail: po.supplier.email,
-    lineItems: po.items.map((i) => ({ description: `${i.product.name} (${i.product.sku})`, quantity: i.quantity, unitPrice: i.unitCost })),
+    lineItems: po.items.map((i) => ({ description: `${i.product.name} (${i.product.sku})`, quantity: i.quantity, unitPrice: i.unitCost, unit: i.product.unit })),
     ...logo(po.companyRef),
   });
   return { bytes, filename: `${po.poNumber}.pdf`, number: po.poNumber, to: po.supplier };
@@ -57,7 +57,7 @@ export async function orderConfirmationPdf(companyId: string, orderId: string): 
       customerPoNumber: true,
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
-      items: { select: { quantity: true, unitPrice: true, product: { select: { name: true } } } },
+      items: { select: { quantity: true, unitPrice: true, product: { select: { name: true, unit: true } } } },
     },
   });
   if (!order) return null;
@@ -71,7 +71,7 @@ export async function orderConfirmationPdf(companyId: string, orderId: string): 
     companyName: order.companyRef.name,
     customerName: order.customer.name,
     customerEmail: order.customer.email,
-    lineItems: order.items.map((i) => ({ description: i.product.name, quantity: i.quantity, unitPrice: i.unitPrice })),
+    lineItems: order.items.map((i) => ({ description: i.product.name, quantity: i.quantity, unitPrice: i.unitPrice, unit: i.product.unit })),
     notes: order.customerPoNumber ? `Your PO number: ${order.customerPoNumber}` : null,
     ...logo(order.companyRef),
   });

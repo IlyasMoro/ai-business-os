@@ -13,6 +13,7 @@ import { defaultValidUntil, isEditable, nextQuoteNumber, QuoteItemSchema, quoteT
 import { customerScope, quoteScope } from "@/lib/crm-access";
 import { acceptQuoteRecord, declineQuoteRecord, ensureQuoteToken, quoteLink } from "@/lib/quote-accept";
 import { touchLeadScore } from "@/lib/lead-score-data";
+import { quantityError } from "@/lib/quantity";
 
 /* Quotes: priced offers to a customer that become an order once accepted.
    Every record is scoped to the signed-in company (and a locked employee's
@@ -136,9 +137,11 @@ export async function addQuoteItem(quoteId: string, _state: QuoteItemFormState, 
 
   const product = await db.product.findFirst({
     where: { id: parsed.data.productId, companyId: session.companyId },
-    select: { id: true, unitPrice: true },
+    select: { id: true, unitPrice: true, unit: true },
   });
   if (!product) return { errors: { productId: ["Select a valid product."] } };
+  const unitError = quantityError(parsed.data.quantity, product.unit);
+  if (unitError) return { errors: { quantity: [unitError] } };
 
   await db.quoteItem.create({
     data: {
@@ -183,7 +186,7 @@ export async function emailQuote(quoteId: string) {
     include: {
       customer: { select: { name: true, email: true } },
       companyRef: { select: { name: true, logoData: true, logoMimeType: true } },
-      items: { include: { product: { select: { name: true } } } },
+      items: { include: { product: { select: { name: true, unit: true } } } },
     },
   });
   if (!quote) redirect(LIST);
@@ -192,7 +195,7 @@ export async function emailQuote(quoteId: string) {
   if (quote.items.length === 0) redirect(`${back}?error=quote-empty`);
   if (!quote.customer.email) redirect(`${back}?error=quote-no-email`);
 
-  const lines = quote.items.map((i) => ({ description: i.product.name, quantity: i.quantity, unitPrice: i.unitPrice }));
+  const lines = quote.items.map((i) => ({ description: i.product.name, quantity: i.quantity, unitPrice: i.unitPrice, unit: i.product.unit }));
   const pdf = await generateInvoicePdf({
     kind: "Quote",
     invoiceNumber: quote.quoteNumber,

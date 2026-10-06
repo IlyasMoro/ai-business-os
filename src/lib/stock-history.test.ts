@@ -43,3 +43,16 @@ describe("productDeleteBlocker", () => {
     expect(productDeleteBlocker({ ...none, quotes: true, purchaseOrders: true, returns: true })).toMatch(/quotes, purchase orders and returns/);
   });
 });
+
+describe("planAdjustment for weighed products", () => {
+  it("allows decimals for kg and keeps whole numbers for each", () => {
+    expect(planAdjustment({ mode: "change", value: 1.35, current: 10, reason: "OTHER", unit: "KG" })).toEqual({ delta: 1.35 });
+    expect(planAdjustment({ mode: "count", value: 2.5, current: 3, reason: "COUNT", unit: "KG" })).toEqual({ delta: -0.5 });
+    expect(planAdjustment({ mode: "change", value: 1.35, current: 10, reason: "OTHER", unit: "EACH" })).toHaveProperty("error");
+  });
+
+  it("explains a shortfall in kilograms", () => {
+    const plan = planAdjustment({ mode: "change", value: -2, current: 1.25, reason: "LOST", unit: "KG" });
+    expect(plan).toEqual({ error: "That would leave -0.75 kg in stock. There are only 1.25 kg here." });
+  });
+});

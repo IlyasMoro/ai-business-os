@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { db } from "@/lib/db";
 import { pickLots, type PickingRule } from "@/lib/lot-math";
+import { roundQty } from "@/lib/quantity";
 
 export type InventorySettingsValues = { pickingRule: PickingRule; blockExpired: boolean; expiryWarningDays: number };
 
@@ -22,6 +23,12 @@ export class LotShortageError extends Error {
   constructor(public productName: string, public shortfall: number) {
     super(`Not enough usable lots for ${productName}: ${shortfall} short.`);
   }
+}
+
+/** Snaps a lot back to 3 decimals after an increment or decrement (see stock.ts). */
+async function roundLot(tx: Tx, lot: { id: string; quantity: number }) {
+  const rounded = roundQty(lot.quantity);
+  if (rounded !== lot.quantity) await tx.stockLot.update({ where: { id: lot.id }, data: { quantity: rounded } });
 }
 
 /**
@@ -55,7 +62,7 @@ export async function takeFromLots(
   if (shortfall > 0) throw new LotShortageError(opts.productName, shortfall);
 
   for (const a of allocations) {
-    await tx.stockLot.update({ where: { id: a.lotId }, data: { quantity: { decrement: a.quantity } } });
+    await roundLot(tx, await tx.stockLot.update({ where: { id: a.lotId }, data: { quantity: { decrement: a.quantity } }, select: { id: true, quantity: true } }));
     await tx.lotMovement.create({
       data: { kind: opts.kind, quantity: -a.quantity, lotId: a.lotId, companyId: opts.companyId, ...opts.links },
     });
@@ -96,6 +103,7 @@ export async function putIntoLot(
     },
     update: { quantity: { increment: opts.quantity } },
   });
+  await roundLot(tx, lot);
   await tx.lotMovement.create({
     data: { kind: opts.kind, quantity: opts.quantity, lotId: lot.id, companyId: opts.companyId, ...opts.links },
   });
@@ -134,16 +142,16 @@ export async function returnToLots(
     outstanding.set(m.lotId, (outstanding.get(m.lotId) ?? 0) - m.quantity);
   }
 
-  let remaining = opts.quantity;
+  let remaining = roundQty(opts.quantity);
   for (const [lotId, shipped] of outstanding) {
     if (remaining <= 0) break;
-    const back = Math.min(shipped, remaining);
+    const back = roundQty(Math.min(shipped, remaining));
     if (back <= 0) continue;
-    await tx.stockLot.update({ where: { id: lotId }, data: { quantity: { increment: back } } });
+    await roundLot(tx, await tx.stockLot.update({ where: { id: lotId }, data: { quantity: { increment: back } }, select: { id: true, quantity: true } }));
     await tx.lotMovement.create({
       data: { kind: "RETURN", quantity: back, lotId, orderId: opts.orderId, returnId: opts.returnId, companyId: opts.companyId },
     });
-    remaining -= back;
+    remaining = roundQty(remaining - back);
   }
   if (remaining > 0) {
     await putIntoLot(tx, {

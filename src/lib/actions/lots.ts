@@ -161,6 +161,7 @@ export async function setProductTracking(productId: string, formData: FormData) 
       id: true,
       stockQty: true,
       trackingMode: true,
+      unit: true,
       lots: { where: { quantity: { gt: 0 } }, select: { id: true } },
       branchStock: { where: { quantity: { gt: 0 } }, select: { branchId: true, quantity: true, branch: { select: { code: true, isMain: true } } } },
     },
@@ -171,6 +172,9 @@ export async function setProductTracking(productId: string, formData: FormData) 
   const to = mode.data;
   if (from !== "NONE" && to !== "NONE" && from !== to && product.stockQty > 0) {
     fail(back, "Switching between lot and serial tracking needs zero stock on hand first.");
+  }
+  if (to === "SERIAL" && product.unit !== "EACH") {
+    fail(back, "Serial numbers are for products counted by the piece. This one is sold by weight or volume; use lot tracking instead.");
   }
   if (from === "NONE" && to === "SERIAL" && product.stockQty > OPENING_SERIAL_LIMIT) {
     fail(back, `Serial tracking can start with at most ${OPENING_SERIAL_LIMIT} units on hand.`);

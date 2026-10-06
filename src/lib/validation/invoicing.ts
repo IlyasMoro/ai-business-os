@@ -1,4 +1,5 @@
 import * as z from "zod";
+import { lineQuantity } from "@/lib/validation/quantity";
 
 export const InvoiceStatusValues = ["DRAFT", "SENT", "PAID", "OVERDUE"] as const;
 
@@ -30,10 +31,7 @@ export const InvoiceDetailsSchema = z.object({
 
 export const InvoiceLineItemSchema = z.object({
   description: z.string().min(1, { error: "Description is required." }).trim(),
-  quantity: z.coerce
-    .number({ error: "Enter a valid quantity." })
-    .int({ error: "Quantity must be a whole number." })
-    .min(1, { error: "Quantity must be at least 1." }),
+  quantity: lineQuantity(),
   unitPrice: z.coerce
     .number({ error: "Enter a valid price." })
     .min(0, { error: "Price cannot be negative." }),

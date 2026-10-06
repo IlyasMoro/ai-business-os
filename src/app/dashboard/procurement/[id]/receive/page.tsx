@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui-dark/badge";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { receivePurchaseOrder } from "@/lib/actions/lots";
 import { BackButton } from "@/components/ui-dark/back-button";
+import { formatQty } from "@/lib/quantity";
 
 export default async function ReceivePurchaseOrderPage({
   params,
@@ -25,7 +26,7 @@ export default async function ReceivePurchaseOrderPage({
     where: { id, companyId: session.companyId, ...(await lockedWhere()) },
     include: {
       supplier: { select: { name: true } },
-      items: { include: { product: { select: { name: true, sku: true, trackingMode: true, tracksExpiry: true } } } },
+      items: { include: { product: { select: { name: true, sku: true, trackingMode: true, tracksExpiry: true, unit: true } } } },
     },
   });
   if (!po) notFound();
@@ -57,7 +58,7 @@ export default async function ReceivePurchaseOrderPage({
                     {p.name} <span className="font-mono text-xs text-slate-500">{p.sku}</span>
                   </p>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm tabular-nums text-slate-300">× {item.quantity}</span>
+                    <span className="text-sm tabular-nums text-slate-300">× {formatQty(item.quantity, item.product.unit)}</span>
                     <Badge tone={p.trackingMode === "NONE" ? "slate" : p.trackingMode === "LOT" ? "blue" : "purple"}>
                       {p.trackingMode === "NONE" ? "Not tracked" : p.trackingMode === "LOT" ? "Lot" : "Serial"}
                     </Badge>

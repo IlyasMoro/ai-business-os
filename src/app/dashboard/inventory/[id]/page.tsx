@@ -25,6 +25,7 @@ import { BackButton } from "@/components/ui-dark/back-button";
 import { StockAdjustForm } from "@/components/inventory/stock-adjust-form";
 import { getStockHistory } from "@/lib/stock-history-data";
 import { MOVEMENT_KIND_LABEL, reasonLabel } from "@/lib/stock-history";
+import { formatQty, qtyStep } from "@/lib/quantity";
 
 const SALES_LOOKBACK_DAYS = 90;
 const DEFAULT_LEAD_TIME_DAYS = 14;
@@ -45,7 +46,7 @@ export default async function ProductDetailPage({
     where: { id, companyId: session.companyId },
     include: {
       bomComponents: {
-        include: { component: { select: { id: true, name: true, sku: true, cost: true, stockQty: true } } },
+        include: { component: { select: { id: true, name: true, sku: true, cost: true, stockQty: true, unit: true } } },
         orderBy: { component: { name: "asc" } },
       },
       usedInBoms: { include: { parent: { select: { id: true, name: true } } } },
@@ -53,6 +54,8 @@ export default async function ProductDetailPage({
   });
 
   if (!product) notFound();
+  // Weighed products are priced per kg or litre; say so next to the price.
+  const perUnit = product.unit === "KG" ? " / kg" : product.unit === "L" ? " / L" : "";
 
   const mrpSettings = await getMrpSettings(session.companyId);
   // Bills of materials and planning fields belong to Planning / MRP (Growth).
@@ -215,19 +218,19 @@ export default async function ProductDetailPage({
               <CardContent className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Cost</p>
-                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}{perUnit}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Unit price</p>
-                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}{perUnit}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Stock quantity</p>
-                  <p className="tabular-nums text-slate-50 light:text-slate-900">{product.stockQty}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">{formatQty(product.stockQty, product.unit)}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Reorder level</p>
-                  <p className="tabular-nums text-slate-50 light:text-slate-900">{product.reorderLevel}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">{formatQty(product.reorderLevel, product.unit)}</p>
                 </div>
                 {product.description && (
                   <div className="col-span-2">
@@ -261,7 +264,7 @@ export default async function ProductDetailPage({
                             {!b.stocked && <span className="ml-2 text-xs text-slate-500">not stocked</span>}
                           </td>
                           <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">
-                            {b.quantity}
+                            {formatQty(b.quantity, product.unit)}
                             {b.arriving > 0 && (
                               <span className="ml-2 font-sans text-xs text-blue-300 light:text-blue-700">+{b.arriving} arriving</span>
                             )}
@@ -273,9 +276,9 @@ export default async function ProductDetailPage({
                                   name="reorderLevel"
                                   type="number"
                                   min="0"
-                                  step="1"
+                                  step={qtyStep(product.unit)}
                                   defaultValue={b.reorderLevel ?? ""}
-                                  placeholder={`${product.reorderLevel} (default)`}
+                                  placeholder={`${formatQty(product.reorderLevel)} (default)`}
                                   aria-label={`Reorder level at ${b.name}`}
                                   className="w-32"
                                 />
@@ -304,7 +307,7 @@ export default async function ProductDetailPage({
                   <CardTitle>Adjust stock</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <StockAdjustForm productId={product.id} branches={adjustBranches} />
+                  <StockAdjustForm productId={product.id} branches={adjustBranches} unit={product.unit} />
                 </CardContent>
               </Card>
             )}
@@ -343,9 +346,9 @@ export default async function ProductDetailPage({
                         <div className="shrink-0 text-right tabular-nums">
                           <p className={m.delta > 0 ? "text-emerald-400 light:text-emerald-700" : "text-red-400 light:text-red-700"}>
                             {m.delta > 0 ? "+" : ""}
-                            {m.delta}
+                            {formatQty(m.delta, product.unit)}
                           </p>
-                          <p className="text-xs text-slate-500">{m.quantityAfter} after</p>
+                          <p className="text-xs text-slate-500">{formatQty(m.quantityAfter, product.unit)} after</p>
                         </div>
                       </li>
                     ))}
@@ -488,7 +491,7 @@ export default async function ProductDetailPage({
                                 {line.component.name}
                               </Link>
                               <p className="text-xs tabular-nums text-slate-500">
-                                {line.quantity} per unit × ${line.component.cost.toFixed(2)} · {line.component.stockQty} in stock
+                                {formatQty(line.quantity, line.component.unit)} per unit × ${line.component.cost.toFixed(2)} · {formatQty(line.component.stockQty, line.component.unit)} in stock
                               </p>
                             </div>
                             <DeleteButton
@@ -546,7 +549,7 @@ export default async function ProductDetailPage({
                           <span className="font-mono">{item.order.orderNumber}</span> · {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
                         </Link>
                         <span className="tabular-nums text-slate-500">
-                          {item.quantity} × ${item.unitPrice.toFixed(2)}
+                          {formatQty(item.quantity, product.unit)} × ${item.unitPrice.toFixed(2)}
                         </span>
                       </li>
                     ))}
@@ -573,7 +576,7 @@ export default async function ProductDetailPage({
                           {item.purchaseOrder.supplier.name} · {item.purchaseOrder.createdAt.toLocaleDateString()}
                         </Link>
                         <span className="tabular-nums text-slate-500">
-                          {item.quantity} × ${item.unitCost.toFixed(2)}
+                          {formatQty(item.quantity, product.unit)} × ${item.unitCost.toFixed(2)}
                         </span>
                       </li>
                     ))}

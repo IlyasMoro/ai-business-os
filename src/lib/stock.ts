@@ -2,6 +2,7 @@ import "server-only";
 import { db } from "@/lib/db";
 import { ensureMainBranch } from "@/lib/branches";
 import { lowStockRows, type BranchStockRow } from "@/lib/stock-levels";
+import { roundQty } from "@/lib/quantity";
 import type { StockAdjustmentReason, StockMovementKind } from "@/generated/prisma/client";
 
 /* Stock per branch. Product.stockQty is the company total and must always
@@ -27,20 +28,32 @@ export async function changeStock(
   tx: Tx,
   opts: { companyId: string; branchId: string; productId: string; delta: number; movement: StockMovementInfo }
 ) {
-  if (opts.delta === 0) return;
+  const delta = roundQty(opts.delta);
+  if (delta === 0) return;
   const row = await tx.branchStock.upsert({
     where: { branchId_productId: { branchId: opts.branchId, productId: opts.productId } },
-    create: { companyId: opts.companyId, branchId: opts.branchId, productId: opts.productId, quantity: opts.delta },
-    update: { quantity: { increment: opts.delta } },
-    select: { quantity: true },
+    create: { companyId: opts.companyId, branchId: opts.branchId, productId: opts.productId, quantity: delta },
+    update: { quantity: { increment: delta } },
+    select: { id: true, quantity: true },
   });
-  await tx.product.update({ where: { id: opts.productId }, data: { stockQty: { increment: opts.delta } } });
+  const product = await tx.product.update({
+    where: { id: opts.productId },
+    data: { stockQty: { increment: delta } },
+    select: { stockQty: true },
+  });
+  // Weighed stock is a float: snap both totals back to 3 decimals so float
+  // noise (1.35 + 0.1 = 1.4500000000000002) never builds up. Safe inside the
+  // transaction: the increments above hold both rows locked until commit.
+  const branchQty = roundQty(row.quantity);
+  if (branchQty !== row.quantity) await tx.branchStock.update({ where: { id: row.id }, data: { quantity: branchQty } });
+  const totalQty = roundQty(product.stockQty);
+  if (totalQty !== product.stockQty) await tx.product.update({ where: { id: opts.productId }, data: { stockQty: totalQty } });
   const { kind, userId, reason, note, links } = opts.movement;
   await tx.stockMovement.create({
     data: {
       kind,
-      delta: opts.delta,
-      quantityAfter: row.quantity,
+      delta,
+      quantityAfter: branchQty,
       reason: reason ?? null,
       note: note ?? null,
       userId: userId ?? null,
@@ -61,7 +74,7 @@ export async function setStockAt(
     where: { branchId_productId: { branchId: opts.branchId, productId: opts.productId } },
     select: { quantity: true },
   });
-  await changeStock(tx, { ...opts, delta: opts.quantity - (current?.quantity ?? 0) });
+  await changeStock(tx, { ...opts, delta: roundQty(opts.quantity - (current?.quantity ?? 0)) });
   if (!current) {
     // A count of zero still records that the branch stocks this product.
     await tx.branchStock.upsert({

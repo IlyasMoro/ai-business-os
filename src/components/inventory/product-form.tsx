@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui-dark/button";
-import { Input, Label, Textarea, FieldError } from "@/components/ui-dark/input";
+import { Input, Label, Select, Textarea, FieldError } from "@/components/ui-dark/input";
+import { UNIT_LABELS, qtyStep, type Unit } from "@/lib/quantity";
 import { BranchSelect, type BranchPicker } from "@/components/layout/branch-select";
 import type { ProductFormState } from "@/lib/validation/inventory";
 
@@ -26,6 +27,7 @@ export function ProductForm({
     cost: number;
     unitPrice: number;
     reorderLevel: number;
+    unit?: Unit;
   };
   submitLabel?: string;
   /** New products: which branch the opening stock goes to. */
@@ -35,6 +37,10 @@ export function ProductForm({
   editing?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, undefined);
+  // Stock and reorder fields take decimals once the product is weighed.
+  const [unit, setUnit] = useState<Unit>(defaultValues?.unit ?? "EACH");
+  const step = qtyStep(unit);
+  const per = unit === "KG" ? " per kg" : unit === "L" ? " per litre" : "";
 
   return (
     <form action={formAction} className="space-y-4">
@@ -62,7 +68,7 @@ export function ProductForm({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="cost">Cost</Label>
+          <Label htmlFor="cost">Cost{per}</Label>
           <Input
             id="cost"
             name="cost"
@@ -75,7 +81,7 @@ export function ProductForm({
           <FieldError messages={state?.errors?.cost} />
         </div>
         <div>
-          <Label htmlFor="unitPrice">Unit price</Label>
+          <Label htmlFor="unitPrice">{per ? `Price${per}` : "Unit price"}</Label>
           <Input
             id="unitPrice"
             name="unitPrice"
@@ -88,6 +94,22 @@ export function ProductForm({
           <FieldError messages={state?.errors?.unitPrice} />
         </div>
       </div>
+      <div>
+        <Label htmlFor="unit">Sold by</Label>
+        <Select id="unit" name="unit" value={unit} onChange={(e) => setUnit(e.target.value as Unit)}>
+          {(Object.keys(UNIT_LABELS) as Unit[]).map((u) => (
+            <option key={u} value={u}>
+              {UNIT_LABELS[u]}
+            </option>
+          ))}
+        </Select>
+        <p className="mt-1.5 text-xs text-slate-500">
+          {unit === "EACH"
+            ? "Counted by the piece: quantities are whole numbers."
+            : `Sold by ${unit === "KG" ? "weight" : "volume"}: quantities take up to 3 decimals, for example 1.35${unit === "KG" ? " kg" : " L"}.`}
+        </p>
+        <FieldError messages={state?.errors?.unit} />
+      </div>
       <div className="grid grid-cols-2 gap-4">
         {editing ? (
           <div>
@@ -99,7 +121,7 @@ export function ProductForm({
         ) : (
           <div>
             <Label htmlFor="stockQty">Opening stock</Label>
-            <Input id="stockQty" name="stockQty" type="number" step="1" min="0" defaultValue={0} required />
+            <Input id="stockQty" name="stockQty" type="number" step={step} min="0" defaultValue={0} required />
             <FieldError messages={state?.errors?.stockQty} />
           </div>
         )}
@@ -109,7 +131,7 @@ export function ProductForm({
             id="reorderLevel"
             name="reorderLevel"
             type="number"
-            step="1"
+            step={step}
             min="0"
             defaultValue={defaultValues?.reorderLevel ?? 5}
             required

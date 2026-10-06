@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { matchProductColumns, parseAmount, planProductImport } from "@/lib/product-import";
+import { matchProductColumns, parseAmount, parseUnit, planProductImport } from "@/lib/product-import";
 
 describe("matchProductColumns", () => {
   it("recognises common headings and lists the rest", () => {
@@ -50,5 +50,39 @@ describe("planProductImport", () => {
 
   it("needs SKU and Name columns", () => {
     expect(planProductImport([["Name", "Price"], ["x", "1"]], { existingSkus: new Set() }).fatal).toMatch(/SKU and a Name/);
+  });
+});
+
+describe("weighed products in the import", () => {
+  const plan = (rows: string[][]) => planProductImport(rows, { existingSkus: new Set() });
+
+  it("reads the Unit column and keeps kg decimals", () => {
+    const p = plan([
+      ["SKU", "Name", "Stock", "Unit", "Reorder level"],
+      ["MINCE", "Beef mince", "12.75", "kg", "2.5"],
+      ["MILK", "Milk 1L", "24", "each", "6"],
+      ["OIL", "Cooking oil bulk", "40.5", "Litres", ""],
+    ]);
+    expect(p.problems).toEqual([]);
+    expect(p.ready.map((r) => [r.sku, r.unit, r.stockQty, r.reorderLevel])).toEqual([
+      ["MINCE", "KG", 12.75, 2.5],
+      ["MILK", "EACH", 24, 6],
+      ["OIL", "L", 40.5, 5],
+    ]);
+  });
+
+  it("rounds pieces down with a hint, and refuses an unknown unit", () => {
+    const p = plan([["SKU", "Name", "Stock", "Unit"], ["A", "Bread", "3.5", ""], ["B", "Rice", "10", "sack"]]);
+    expect(p.ready[0]).toMatchObject({ unit: "EACH", stockQty: 3 });
+    expect(p.warnings[0].message).toMatch(/kg or L/);
+    expect(p.problems[0].message).toMatch(/Unit "sack"/);
+  });
+
+  it("parses unit spellings", () => {
+    expect(parseUnit("KG")).toBe("KG");
+    expect(parseUnit("kilograms")).toBe("KG");
+    expect(parseUnit("ltr.")).toBe("L");
+    expect(parseUnit("")).toBe("EACH");
+    expect(parseUnit("box")).toBeNull();
   });
 });

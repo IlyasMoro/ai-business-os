@@ -3,8 +3,9 @@
    shared with the customer import. */
 
 import { MAX_IMPORT_ROWS } from "@/lib/customer-import";
+import { isWeighed, roundQty, type Unit } from "@/lib/quantity";
 
-export type ProductImportField = "sku" | "name" | "description" | "cost" | "price" | "stock" | "reorderLevel";
+export type ProductImportField = "sku" | "name" | "description" | "cost" | "price" | "stock" | "reorderLevel" | "unit";
 
 export const PRODUCT_IMPORT_FIELD_LABELS: Record<ProductImportField, string> = {
   sku: "SKU",
@@ -14,6 +15,7 @@ export const PRODUCT_IMPORT_FIELD_LABELS: Record<ProductImportField, string> = {
   price: "Price",
   stock: "Opening stock",
   reorderLevel: "Reorder level",
+  unit: "Unit",
 };
 
 // Headings from most spreadsheets and other systems, lower case.
@@ -25,7 +27,21 @@ const ALIASES: Record<ProductImportField, string[]> = {
   price: ["price", "unit price", "selling price", "sell price", "sale price", "retail price"],
   stock: ["stock", "opening stock", "qty", "quantity", "on hand", "stock qty", "stock quantity", "in stock"],
   reorderLevel: ["reorder level", "reorder", "reorder point", "min stock", "minimum stock", "minimum"],
+  unit: ["unit", "uom", "unit of measure", "sold by", "measure"],
 };
+
+// What people write in a Unit column. Blank means counted by the piece.
+const UNIT_WORDS: Record<string, Unit> = {
+  "": "EACH", each: "EACH", ea: "EACH", unit: "EACH", units: "EACH", pc: "EACH", pcs: "EACH",
+  piece: "EACH", pieces: "EACH", item: "EACH", items: "EACH",
+  kg: "KG", kgs: "KG", kilo: "KG", kilos: "KG", kilogram: "KG", kilograms: "KG",
+  l: "L", lt: "L", ltr: "L", litre: "L", litres: "L", liter: "L", liters: "L",
+};
+
+/** The unit named in a cell ("kg", "Litres", "each"), or null when unknown. */
+export function parseUnit(raw: string | undefined): Unit | null {
+  return UNIT_WORDS[(raw ?? "").trim().toLowerCase().replace(/\.$/, "")] ?? null;
+}
 
 export function matchProductColumns(header: string[]) {
   const columns: Partial<Record<ProductImportField, number>> = {};
@@ -59,6 +75,7 @@ export type ImportProduct = {
   unitPrice: number;
   stockQty: number;
   reorderLevel: number;
+  unit: Unit;
 };
 
 export type ProductImportPlan = {
@@ -101,11 +118,18 @@ export function planProductImport(rows: string[][], ctx: { existingSkus: Set<str
     if ([cost, price, stock, reorder].includes("invalid")) return plan.problems.push({ line, message: "A number couldn't be read. Use plain numbers like 12.50." });
     if ([cost, price, stock, reorder].some((n) => typeof n === "number" && n < 0)) return plan.problems.push({ line, message: "Numbers can't be negative." });
 
+    const unit = parseUnit(cell(row, "unit"));
+    if (!unit) return plan.problems.push({ line, message: `Unit "${cell(row, "unit")}" isn't known. Use each, kg or L.` });
+
+    // Weighed products keep their decimals (12.75 kg); pieces stay whole.
     let stockQty = (stock as number | null) ?? 0;
-    if (!Number.isInteger(stockQty)) {
-      plan.warnings.push({ line, message: `Opening stock ${stockQty} rounded down to ${Math.floor(stockQty)}.` });
+    if (isWeighed(unit)) {
+      stockQty = roundQty(stockQty);
+    } else if (!Number.isInteger(stockQty)) {
+      plan.warnings.push({ line, message: `Opening stock ${stockQty} rounded down to ${Math.floor(stockQty)}. Add a Unit column with kg or L for products sold by weight.` });
       stockQty = Math.floor(stockQty);
     }
+    const reorderRaw = (reorder as number | null) ?? 5;
     if (price === null) plan.warnings.push({ line, message: `${name} has no price, so it starts at $0.` });
 
     seen.add(key);
@@ -117,7 +141,8 @@ export function planProductImport(rows: string[][], ctx: { existingSkus: Set<str
       cost: (cost as number | null) ?? 0,
       unitPrice: (price as number | null) ?? 0,
       stockQty,
-      reorderLevel: Math.floor((reorder as number | null) ?? 5),
+      reorderLevel: isWeighed(unit) ? roundQty(reorderRaw) : Math.floor(reorderRaw),
+      unit,
     });
   });
   return plan;

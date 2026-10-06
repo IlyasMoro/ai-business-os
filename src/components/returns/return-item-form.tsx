@@ -31,7 +31,7 @@ export function ReturnItemForm({
         </Select>
       </div>
       <div>
-        <Input name="quantity" type="number" min="1" step="1" placeholder="Qty" defaultValue={1} required />
+        <Input name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
       </div>
       <div>
         <Select name="condition" defaultValue="RESELLABLE">
