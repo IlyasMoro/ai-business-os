@@ -11,6 +11,15 @@ import { Check } from "lucide-react";
 
 type Choice = PlanId | "enterprise";
 
+// Short, so they fit in two lines and the cards stay compact; the pricing page keeps the long taglines.
+const SHORT_TAGLINE: Partial<Record<Choice, string>> = {
+  solo: "One person, the essentials.",
+  starter: "One location, everything in one place.",
+  growth: "For a business with a few branches.",
+  business: "For larger teams across branches.",
+  enterprise: "Many branches. Build your own plan.",
+};
+
 /**
  * Every plan side by side for the Billing page, Enterprise included as the
  * last card. One Monthly/Yearly switch drives all of them. Picking a priced
@@ -80,7 +89,7 @@ export function PlanPicker({
       return {
         id: plan.id as Choice,
         name: plan.name,
-        tagline: plan.tagline,
+        tagline: SHORT_TAGLINE[plan.id] ?? plan.tagline,
         price: `$${price.toLocaleString("en-US")}`,
         rand: aboutRand(price),
         lines: [
@@ -95,13 +104,13 @@ export function PlanPicker({
     {
       id: "enterprise",
       name: CUSTOM_PLAN.name,
-      tagline: "For bigger teams and many branches. Build your own plan.",
+      tagline: SHORT_TAGLINE.enterprise!,
       price: `$${entFrom.toLocaleString("en-US")}`,
       from: true,
       rand: aboutRand(entFrom),
       lines: [
         `${ENTERPRISE.minUsers}+ users, $${ENTERPRISE.perUser} each`,
-        `${ENTERPRISE.includedBranches} branches, then $${ENTERPRISE.perBranch} each`,
+        `${ENTERPRISE.includedBranches} branches, more at $${ENTERPRISE.perBranch}`,
         `${ENTERPRISE.aiIncluded.toLocaleString("en-US")} AI requests a month`,
         `EDI add on, $${ENTERPRISE.ediPrice} a month`,
       ],
@@ -140,7 +149,7 @@ export function PlanPicker({
         <p className="text-sm text-slate-400 light:text-slate-500">{teamSummary}</p>
       </div>
 
-      <fieldset className={cn("mt-6 grid gap-4 sm:grid-cols-2", cards.length >= 4 ? "xl:grid-cols-4" : "lg:grid-cols-3")}>
+      <fieldset className={cn("mt-5 grid gap-3 sm:grid-cols-2", cards.length >= 4 ? "xl:grid-cols-4" : "lg:grid-cols-3")}>
         <legend className="sr-only">Choose a plan</legend>
         {cards.map((card) => {
           const on = selected === card.id;
@@ -149,7 +158,7 @@ export function PlanPicker({
             <label
               key={card.id}
               className={cn(
-                "relative flex min-w-0 cursor-pointer flex-col rounded-2xl border p-5 transition-all",
+                "relative flex min-w-0 cursor-pointer flex-col rounded-xl border px-4 pb-4 pt-4 transition-all",
                 "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500",
                 on
                   ? ent
@@ -162,7 +171,7 @@ export function PlanPicker({
               {card.badge && (
                 <span
                   className={cn(
-                    "absolute -top-3 left-5 whitespace-nowrap rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+                    "absolute -top-2.5 left-4 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
                     card.badge === "Most popular"
                       ? "border border-blue-500/60 bg-slate-950 text-blue-300 light:bg-white light:text-blue-700"
                       : ent
@@ -174,26 +183,26 @@ export function PlanPicker({
                 </span>
               )}
               <div className="flex items-start justify-between gap-3">
-                <span className="text-lg font-semibold text-slate-50 light:text-slate-900">{card.name}</span>
+                <span className="text-base font-semibold text-slate-50 light:text-slate-900">{card.name}</span>
                 <span
                   aria-hidden
                   className={cn(
-                    "mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2",
+                    "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2",
                     on ? (ent ? "border-violet-500 bg-violet-500 text-white" : "border-blue-500 bg-blue-500 text-white") : "border-slate-500"
                   )}
                 >
                   {on && <Check className="h-3 w-3" strokeWidth={3} />}
                 </span>
               </div>
-              {/* Three lines tall on every card, so the prices line up. */}
-              <p className="mt-1 min-h-[3.375rem] text-[13px] leading-[1.125rem] text-slate-400 light:text-slate-500">{card.tagline}</p>
+              {/* Two lines on every card, so the prices line up. */}
+              <p className="mt-0.5 line-clamp-2 min-h-[2.25rem] text-[13px] leading-[1.125rem] text-slate-400 light:text-slate-500">{card.tagline}</p>
               <p className="mt-3 flex items-baseline gap-1.5 whitespace-nowrap">
                 {card.from && <span className="text-sm font-medium text-slate-300 light:text-slate-600">From</span>}
-                <span className="text-[1.75rem] font-bold leading-none tracking-tight tabular-nums text-slate-50 light:text-slate-900">{card.price}</span>
+                <span className="text-2xl font-bold leading-none tracking-tight tabular-nums text-slate-50 light:text-slate-900">{card.price}</span>
                 <span className="text-sm text-slate-400 light:text-slate-500">/ {per}</span>
               </p>
-              <p className="mt-1.5 text-xs text-slate-500">{card.rand}</p>
-              <ul className="mt-4 space-y-2 border-t border-white/[0.07] pt-4 text-[13px] leading-[1.125rem] text-slate-300 light:border-slate-200 light:text-slate-600">
+              <p className="mt-1 text-xs text-slate-500">{card.rand}</p>
+              <ul className="mt-3 space-y-1.5 border-t border-white/[0.07] pt-3 text-[13px] leading-[1.125rem] text-slate-300 light:border-slate-200 light:text-slate-600">
                 {card.lines.map((line) => (
                   <li key={line} className="flex gap-2">
                     <Check className={cn("mt-px h-4 w-4 shrink-0", ent ? "text-violet-400" : "text-emerald-400")} aria-hidden />
@@ -207,7 +216,7 @@ export function PlanPicker({
       </fieldset>
 
       {selected === "enterprise" ? (
-        <form action={enterprise.action} className="mt-6 rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-transparent p-5 sm:p-6 light:from-violet-50">
+        <form action={enterprise.action} className="mt-4 rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-transparent p-4 sm:p-5 light:from-violet-50">
           <h3 className="text-base font-semibold text-slate-50 light:text-slate-900">
             {enterprise.built ? "Change your Enterprise plan" : "Build your Enterprise plan"}
           </h3>
@@ -223,14 +232,14 @@ export function PlanPicker({
           <EnterpriseBuilder tone="app" interval={interval} initial={enterprise.initial} minUsers={enterprise.minUsers} minBranches={enterprise.minBranches}>
             <SubmitButton
               pendingText="Working..."
-              className="h-auto w-full rounded-xl bg-violet-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-violet-600/30 hover:bg-violet-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-600/25 hover:bg-violet-500 sm:w-auto"
             >
               {enterprise.submitLabel}
             </SubmitButton>
           </EnterpriseBuilder>
         </form>
       ) : (
-        <form action={action} className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <form action={action} className="mt-4 flex flex-wrap items-center justify-between gap-3">
           <input type="hidden" name="interval" value={interval} />
           <input type="hidden" name="plan" value={selected} />
           <p className="text-sm text-slate-400 light:text-slate-500">
@@ -245,7 +254,7 @@ export function PlanPicker({
           ) : (
             <SubmitButton
               pendingText="One moment..."
-              className="h-auto w-full rounded-xl bg-blue-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-blue-600/30 hover:bg-blue-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
             >
               {mode === "checkout" ? "Subscribe to" : "Switch to"} {chosen!.name} · ${priceOf(chosen!.id).toLocaleString("en-US")}/{per}
             </SubmitButton>
