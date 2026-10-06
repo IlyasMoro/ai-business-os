@@ -3,6 +3,7 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 import { AnimatedCounter } from "./animated-counter";
 import { Sparkline } from "./sparkline";
 import { SpotlightCard } from "./spotlight-card";
+import { VIZ } from "./colors";
 
 export type KpiChange = {
   /** Percentage change vs the previous period. Null when the previous
@@ -23,7 +24,6 @@ export function KpiCard({
   suffix,
   decimals,
   icon: Icon,
-  color,
   trend,
   trendLabels,
   change,
@@ -34,20 +34,15 @@ export function KpiCard({
   suffix?: string;
   decimals?: number;
   icon: LucideIcon;
-  color: string;
   trend: number[];
   /** Month names for the sparkline tooltip, one per trend point. */
   trendLabels?: string[];
   change?: KpiChange;
 }) {
   return (
-    <SpotlightCard color={color} className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-      {/* Thin lit strip along the top edge in the card's accent colour. */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-8 top-0 h-px opacity-70"
-        style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
-      />
+    // One look for every tile: neutral icon, brand blue trend line. Colour
+    // is kept for meaning only (the green or red change under the number).
+    <SpotlightCard color={VIZ.blue} className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate-400 light:text-slate-500">{label}</p>
@@ -56,17 +51,14 @@ export function KpiCard({
           </p>
           {change && <ChangeBadge change={change} />}
         </div>
-        <span
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-          style={{ backgroundColor: `${color}1a`, color, boxShadow: `0 0 18px -4px ${color}66` }}
-        >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-slate-300 light:border-slate-200 light:bg-slate-50 light:text-slate-500">
           <Icon className="h-5 w-5" />
         </span>
       </div>
       {/* No line for a series that is all zero: it would only draw the floor. */}
       {trend.length > 1 && trend.some((v) => v !== 0) && (
         <div className="mt-4">
-          <Sparkline data={trend} color={color} labels={trendLabels} currency={prefix === "$"} title={`${label} by month`} />
+          <Sparkline data={trend} color={VIZ.blue} labels={trendLabels} currency={prefix === "$"} title={`${label} by month`} />
         </div>
       )}
     </SpotlightCard>

@@ -153,7 +153,6 @@ export function PlanPicker({
         <legend className="sr-only">Choose a plan</legend>
         {cards.map((card) => {
           const on = selected === card.id;
-          const ent = card.id === "enterprise";
           return (
             <label
               key={card.id}
@@ -161,9 +160,7 @@ export function PlanPicker({
                 "relative flex min-w-0 cursor-pointer flex-col rounded-xl border px-4 pb-4 pt-4 transition-all",
                 "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500",
                 on
-                  ? ent
-                    ? "border-violet-500 bg-violet-500/10 shadow-[0_0_0_1px_rgb(139_92_246),0_12px_40px_-12px_rgb(139_92_246/0.6)] light:bg-violet-50"
-                    : "border-blue-500 bg-blue-500/10 shadow-[0_0_0_1px_rgb(59_130_246),0_12px_40px_-12px_rgb(59_130_246/0.6)] light:bg-blue-50"
+                  ? "border-blue-500 bg-blue-500/10 shadow-[0_0_0_1px_rgb(59_130_246),0_12px_40px_-12px_rgb(59_130_246/0.6)] light:bg-blue-50"
                   : "border-white/[0.1] hover:-translate-y-0.5 hover:border-white/25 light:border-slate-200 light:bg-white light:hover:border-slate-300"
               )}
             >
@@ -174,9 +171,7 @@ export function PlanPicker({
                     "absolute -top-2.5 left-4 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
                     card.badge === "Most popular"
                       ? "border border-blue-500/60 bg-slate-950 text-blue-300 light:bg-white light:text-blue-700"
-                      : ent
-                        ? "bg-violet-600 text-white"
-                        : "bg-blue-600 text-white"
+                      : "bg-blue-600 text-white"
                   )}
                 >
                   {card.badge}
@@ -188,7 +183,7 @@ export function PlanPicker({
                   aria-hidden
                   className={cn(
                     "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2",
-                    on ? (ent ? "border-violet-500 bg-violet-500 text-white" : "border-blue-500 bg-blue-500 text-white") : "border-slate-500"
+                    on ? "border-blue-500 bg-blue-500 text-white" : "border-slate-500"
                   )}
                 >
                   {on && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -205,7 +200,7 @@ export function PlanPicker({
               <ul className="mt-3 space-y-1.5 border-t border-white/[0.07] pt-3 text-[13px] leading-[1.125rem] text-slate-300 light:border-slate-200 light:text-slate-600">
                 {card.lines.map((line) => (
                   <li key={line} className="flex gap-2">
-                    <Check className={cn("mt-px h-4 w-4 shrink-0", ent ? "text-violet-400" : "text-emerald-400")} aria-hidden />
+                    <Check className="mt-px h-4 w-4 shrink-0 text-blue-400 light:text-blue-600" aria-hidden />
                     <span>{line}</span>
                   </li>
                 ))}
@@ -216,7 +211,7 @@ export function PlanPicker({
       </fieldset>
 
       {selected === "enterprise" ? (
-        <form action={enterprise.action} className="mt-4 rounded-xl border border-violet-500/30 bg-gradient-to-br from-violet-600/10 to-transparent p-4 sm:p-5 light:from-violet-50">
+        <form action={enterprise.action} className="mt-4 rounded-xl border border-white/[0.09] bg-white/[0.02] p-4 sm:p-5 light:border-slate-200 light:bg-white">
           <h3 className="text-base font-semibold text-slate-50 light:text-slate-900">
             {enterprise.built ? "Change your Enterprise plan" : "Build your Enterprise plan"}
           </h3>
@@ -232,7 +227,7 @@ export function PlanPicker({
           <EnterpriseBuilder tone="app" interval={interval} initial={enterprise.initial} minUsers={enterprise.minUsers} minBranches={enterprise.minBranches}>
             <SubmitButton
               pendingText="Working..."
-              className="h-auto w-full rounded-lg bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-600/25 hover:bg-violet-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
             >
               {enterprise.submitLabel}
             </SubmitButton>

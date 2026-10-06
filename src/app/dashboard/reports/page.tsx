@@ -21,7 +21,7 @@ import { formatRoi, totalStats } from "@/lib/campaign-stats";
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
-  PENDING: VIZ.amber,
+  PENDING: VIZ.muted,
   CONFIRMED: VIZ.blue,
   FULFILLED: VIZ.emerald,
   CANCELLED: VIZ.red,
@@ -149,13 +149,13 @@ export default async function ReportsPage() {
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Income (6 months)</p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-400">
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalIncome} prefix="$" decimals={0} />
           </p>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Expenses (6 months)</p>
-          <p className="mt-2 text-2xl font-semibold text-red-400">
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalExpense} prefix="$" decimals={0} />
           </p>
         </div>
@@ -172,7 +172,7 @@ export default async function ReportsPage() {
           <Sparkles className="h-4 w-4 text-blue-400" />
           <p className="text-sm font-medium text-slate-200 light:text-slate-700">AI revenue forecast</p>
         </div>
-        <p className="mt-2 text-2xl font-semibold text-blue-400">
+        <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
           <AnimatedCounter value={forecast.estimatedNextMonthRevenue} prefix="$" decimals={0} />
         </p>
         <p className="mt-1 text-xs text-slate-500">{forecast.method}</p>
@@ -212,8 +212,8 @@ export default async function ReportsPage() {
                       className={isTotal ? "border-t border-white/[0.12] font-semibold light:border-slate-300" : "border-b border-white/[0.04]"}
                     >
                       <td className={`py-2 pr-4 ${r.branchId === null && !isTotal ? "text-slate-400" : "text-slate-50 light:text-slate-900"}`}>{r.name}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-emerald-400">{formatCompactCurrency(r.income)}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-red-400">{formatCompactCurrency(r.expense)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCompactCurrency(r.income)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCompactCurrency(r.expense)}</td>
                       <td className={`py-2 pr-4 text-right tabular-nums ${r.net < 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
                         {formatCompactCurrency(r.net)}
                       </td>
@@ -330,7 +330,7 @@ export default async function ReportsPage() {
             </div>
             <div>
               <p className="text-slate-500">Revenue</p>
-              <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-400">{formatCompactCurrency(sales.revenue)}</p>
+              <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">{formatCompactCurrency(sales.revenue)}</p>
             </div>
             <div>
               <p className="text-slate-500">Average order</p>
@@ -473,7 +473,7 @@ export default async function ReportsPage() {
                         {r.s.costPerLead === null ? "n/a" : formatCompactCurrency(r.s.costPerLead)}
                       </td>
                       <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{r.s.converted}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-emerald-400">{formatCompactCurrency(r.s.revenue)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCompactCurrency(r.s.revenue)}</td>
                       <td
                         className={`py-2 text-right tabular-nums ${
                           r.s.roiPct === null ? "text-slate-500" : r.s.roiPct >= 0 ? "text-emerald-400" : "text-red-400"
