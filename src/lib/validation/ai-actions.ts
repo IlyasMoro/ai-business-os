@@ -1,4 +1,5 @@
 import type { ModuleKey } from "@/lib/role-access";
+import { formatDate } from "@/lib/utils";
 import * as z from "zod";
 import type { Groq } from "groq-sdk";
 import { TicketStatusValues, TicketPriorityValues } from "@/lib/validation/support";
@@ -298,24 +299,29 @@ export const SendOverdueReminderArgs = z.object({
 
 // ---------- Summary formatters ----------
 
+// The approval cards read like the rest of the app: "due 9 Oct 2026",
+// "status to in progress", never 2026-10-09 or IN_PROGRESS.
+const day = (iso: string) => formatDate(`${iso}T12:00:00Z`);
+const word = (value: string) => value.toLowerCase().replace(/_/g, " ");
+
 export function summarizeCreateTask(args: { title: string; dueDate?: string }) {
-  return `Create task "${args.title}"${args.dueDate ? ` due ${args.dueDate}` : ""}`;
+  return `Create task "${args.title}"${args.dueDate ? ` due ${day(args.dueDate)}` : ""}`;
 }
 
 export function summarizeUpdateTicketStatus(subject: string, status: string) {
-  return `Set ticket "${subject}" status to ${status}`;
+  return `Set ticket "${subject}" status to ${word(status)}`;
 }
 
 export function summarizeUpdateTicketPriority(subject: string, priority: string) {
-  return `Set ticket "${subject}" priority to ${priority}`;
+  return `Set ticket "${subject}" priority to ${word(priority)}`;
 }
 
 export function summarizeUpdateCustomerStatus(name: string, status: string) {
-  return `Set customer "${name}" status to ${status}`;
+  return `Set customer "${name}" status to ${word(status)}`;
 }
 
 export function summarizeCreateInvoice(customerName: string, dueDate: string) {
-  return `Create a draft invoice for "${customerName}" due ${dueDate}`;
+  return `Create a draft invoice for "${customerName}" due ${day(dueDate)}`;
 }
 
 export function summarizeSendOverdueReminder(customerName: string) {

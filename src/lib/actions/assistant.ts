@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
 import { canOpenModule, type ModuleKey } from "@/lib/role-access";
+import { tidyAssistantText } from "@/lib/assistant-text";
 import { db } from "@/lib/db";
 import { getBranchContext, resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
@@ -114,7 +115,7 @@ export async function sendChatMessage(
 
   await db.aiChatMessage.update({
     where: { id: assistantMessage.id },
-    data: { content: finalContent },
+    data: { content: tidyAssistantText(finalContent) },
   });
 
   revalidatePath("/dashboard/assistant");

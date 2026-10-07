@@ -96,25 +96,25 @@ describe("summary formatters", () => {
 
   it("summarizes a task with a due date", () => {
     expect(summarizeCreateTask({ title: "Call Acme Corp", dueDate: "2026-07-15" })).toBe(
-      'Create task "Call Acme Corp" due 2026-07-15'
+      'Create task "Call Acme Corp" due 15 Jul 2026'
     );
   });
 
   it("summarizes a ticket status change", () => {
     expect(summarizeUpdateTicketStatus("Order not delivered", "RESOLVED")).toBe(
-      'Set ticket "Order not delivered" status to RESOLVED'
+      'Set ticket "Order not delivered" status to resolved'
     );
   });
 
   it("summarizes a ticket priority change", () => {
     expect(summarizeUpdateTicketPriority("Order not delivered", "HIGH")).toBe(
-      'Set ticket "Order not delivered" priority to HIGH'
+      'Set ticket "Order not delivered" priority to high'
     );
   });
 
   it("summarizes a customer status change", () => {
     expect(summarizeUpdateCustomerStatus("Acme Corp", "INACTIVE")).toBe(
-      'Set customer "Acme Corp" status to INACTIVE'
+      'Set customer "Acme Corp" status to inactive'
     );
   });
 });
