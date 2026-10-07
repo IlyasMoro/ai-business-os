@@ -170,10 +170,15 @@ export default async function ReportsPage() {
                 Last {PROFIT_MONTHS} months, all branches side by side. Money not tied to a branch shows as company wide.
               </p>
             </div>
-            <a href="/api/export/branch-profit" className={buttonStyles("secondary", "sm", "shrink-0")}>
-              <Download className="h-4 w-4" />
-              CSV
-            </a>
+            <div className="flex shrink-0 items-center gap-2">
+              <Link href="/dashboard/reports/branches" className={buttonStyles("primary", "sm")}>
+                Compare branches
+              </Link>
+              <a href="/api/export/branch-profit" className={buttonStyles("secondary", "sm")}>
+                <Download className="h-4 w-4" />
+                CSV
+              </a>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

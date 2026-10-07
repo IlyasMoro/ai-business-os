@@ -1,4 +1,5 @@
 import {
+  Store,
   ArrowRightLeft,
   MapPin,
   LayoutDashboard,
@@ -56,6 +57,7 @@ export const navPinned: NavItem[] = [
   { href: "/dashboard/assistant", label: "AI Copilot", icon: CopilotMark },
   { href: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { href: "/dashboard/reports", label: "Reports", icon: BarChart3, roles: ["OWNER", "ADMIN"] },
+  { href: "/dashboard/reports/branches", label: "Branch performance", icon: Store, roles: ["OWNER", "ADMIN"] },
 ];
 
 /** Modules with no `roles` are visible to everyone; HR/Payroll/Accounting

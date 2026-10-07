@@ -145,7 +145,7 @@ async function main() {
   // Branches: the main one from sign up becomes the main store.
   const main = await db.branch.findFirst({ where: { companyId, isMain: true } });
   if (!main) throw new Error("The demo company has no main branch.");
-  await db.branch.update({ where: { id: main.id }, data: { name: "Main store, Goodwood", address: "Voortrekker Road, Goodwood" } });
+  await db.branch.update({ where: { id: main.id }, data: { name: "Goodwood", address: "Voortrekker Road, Goodwood" } });
   const branches = [{ id: main.id, name: "Main store", factor: 1 }];
   for (const b of BRANCHES) {
     const created = await db.branch.create({ data: { companyId, code: b.code, name: b.name, address: `${b.name}, Cape Town` } });
