@@ -64,7 +64,7 @@ export function TaskForm({
       >
         {pending ? "Adding..." : "Add task"}
       </Button>
-      {state?.message && <p className="col-span-full text-sm text-red-400">{state.message}</p>}
+      {state?.message && <p className="col-span-full text-sm text-red-400 light:text-red-700">{state.message}</p>}
     </form>
   );
 }

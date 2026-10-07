@@ -169,7 +169,7 @@ export default async function ReportsPage() {
 
       <div className="mt-4 rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-5">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-blue-400" />
+          <Sparkles className="h-4 w-4 text-blue-400 light:text-blue-700" />
           <p className="text-sm font-medium text-slate-200 light:text-slate-700">AI revenue forecast</p>
         </div>
         <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">

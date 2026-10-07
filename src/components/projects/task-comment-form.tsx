@@ -30,7 +30,7 @@ export function TaskCommentForm({ projectId, taskId }: { projectId: string; task
       <Button type="submit" variant="secondary" disabled={pending}>
         {pending ? "Posting..." : "Post"}
       </Button>
-      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400 light:text-red-700">{state.message}</p>}
     </form>
   );
 }

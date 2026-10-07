@@ -23,7 +23,7 @@ export default async function PlanningPage({
     return (
       <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Planning</h1>
-        <p className="mt-4 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+        <p className="mt-4 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
           Planning is turned off for this company.
           {canManage && (
             <>
@@ -96,19 +96,19 @@ export default async function PlanningPage({
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ShoppingCart className="h-4 w-4" /> Items to buy
           </p>
-          <p className="mt-2 text-2xl font-semibold text-blue-400">{toBuy.length}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{toBuy.length}</p>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <Wrench className="h-4 w-4" /> Items to make
           </p>
-          <p className="mt-2 text-2xl font-semibold text-purple-400">{toMake.length}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{toMake.length}</p>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ClipboardList className="h-4 w-4" /> Open work orders
           </p>
-          <p className="mt-2 text-2xl font-semibold text-amber-400">{openWorkOrders}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{openWorkOrders}</p>
         </div>
       </div>
 
@@ -199,7 +199,7 @@ export default async function PlanningPage({
                     {row.plannedQty > 0 && row.action === "BUY" && !row.preferredSupplierId && (
                       <Link
                         href={`/dashboard/inventory/${row.productId}`}
-                        className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-amber-400 hover:text-amber-300"
+                        className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-amber-400 light:text-amber-800 hover:text-amber-300"
                       >
                         <TriangleAlert className="h-3.5 w-3.5" />
                         Set a supplier

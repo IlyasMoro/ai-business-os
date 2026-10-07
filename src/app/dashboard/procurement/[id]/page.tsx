@@ -131,7 +131,7 @@ export default async function PurchaseOrderDetailPage({
           </p>
         )}
         <ErrorBanner code={error} />
-        {why && <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>}
+        {why && <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{why}</p>}
         {purchaseOrder.autoCreated && purchaseOrder.status === "DRAFT" && (
           <p className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
             Drafted by automation because stock ran low. Nothing is ordered until an owner or admin checks it and moves it to
@@ -176,7 +176,7 @@ export default async function PurchaseOrderDetailPage({
                 </p>
               )
             )}
-            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
+            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-800">
               Total: ${purchaseOrder.totalAmount.toFixed(2)}
             </p>
           </CardContent>

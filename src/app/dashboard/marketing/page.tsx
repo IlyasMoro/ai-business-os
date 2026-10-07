@@ -92,7 +92,7 @@ export default async function MarketingPage({
             </div>
             <div>
               <p className="text-sm text-slate-400 light:text-slate-500">Revenue</p>
-              <p className="mt-1 text-xl font-semibold text-emerald-400">
+              <p className="mt-1 text-xl font-semibold text-slate-50 light:text-slate-900">
                 <AnimatedCounter value={totals.revenue} prefix="$" decimals={0} />
               </p>
             </div>

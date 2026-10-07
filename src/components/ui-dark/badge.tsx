@@ -9,7 +9,8 @@ const toneClasses: Record<Tone, string> = {
   yellow: "border-amber-500/40 bg-amber-500/10 text-amber-400 light:text-amber-700",
   red: "border-red-500/40 bg-red-500/10 text-red-400 light:text-red-700",
   blue: "border-blue-500/40 bg-blue-500/10 text-blue-400 light:text-blue-700",
-  purple: "border-purple-500/40 bg-purple-500/10 text-purple-400 light:text-purple-700",
+  // Second category colour: an outlined blue, so it stays on brand but reads apart from "blue".
+  purple: "border-blue-400/40 bg-transparent text-blue-200 light:border-blue-300 light:text-blue-700",
 };
 
 export function Badge({

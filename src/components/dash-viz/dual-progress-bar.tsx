@@ -41,7 +41,7 @@ export function DualProgressBar({
 }) {
   return (
     <div className="flex w-full max-w-56 flex-col gap-2">
-      <Bar label="Completion" pct={completionPct} color={VIZ.amber} />
+      <Bar label="Completion" pct={completionPct} color={VIZ.blue} />
       <Bar label={secondaryLabel} pct={secondaryPct} color={secondaryCritical ? VIZ.red : VIZ.blue} />
     </div>
   );

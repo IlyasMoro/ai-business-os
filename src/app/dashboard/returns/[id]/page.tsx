@@ -158,7 +158,7 @@ export default async function ReturnDetailPage({
                   Restocking fee ({rma.restockingFeePercent}%): ${fee.toFixed(2)}
                 </div>
               )}
-              <div className="font-semibold text-amber-400">Refund: ${refund.toFixed(2)}</div>
+              <div className="font-semibold text-amber-400 light:text-amber-800">Refund: ${refund.toFixed(2)}</div>
             </dl>
           </CardContent>
         </Card>

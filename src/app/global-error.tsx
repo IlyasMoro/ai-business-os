@@ -18,14 +18,14 @@ export default function GlobalError({
     <html lang="en">
       <body className="relative isolate flex min-h-screen flex-col items-center justify-center bg-[#03050b] px-4 text-center text-white">
         <AuroraBackdrop />
-        <p className="text-sm font-semibold text-red-400">Something went wrong</p>
+        <p className="text-sm font-semibold text-red-400 light:text-red-700">Something went wrong</p>
         <h1 className="mt-2 text-2xl font-semibold text-slate-50">Unexpected error</h1>
         <p className="mt-2 max-w-sm text-sm text-slate-400">
           An unexpected error occurred. You can try again, or come back later.
         </p>
         <button
           onClick={() => unstable_retry()}
-          className="mt-6 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20"
+          className="mt-6 rounded-md border border-blue-500/30 bg-blue-500/10 px-4 py-2 text-sm font-medium text-blue-300 light:text-blue-700 transition-colors hover:bg-blue-500/20"
         >
           Try again
         </button>

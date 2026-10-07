@@ -30,12 +30,12 @@ export default async function IntegrationsPage({
         <div className="mt-4">
           <ErrorBanner code={error} />
           {connected && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Gmail connected successfully.
             </div>
           )}
           {testsent && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Test email sent. Check your inbox.
             </div>
           )}
@@ -50,7 +50,7 @@ export default async function IntegrationsPage({
               <div>
                 <p className="font-semibold text-slate-50 light:text-slate-900">Gmail</p>
                 {integration ? (
-                  <p className="text-sm text-emerald-400">Connected as {integration.email}</p>
+                  <p className="text-sm text-emerald-400 light:text-emerald-700">Connected as {integration.email}</p>
                 ) : (
                   <p className="text-sm text-slate-400 light:text-slate-500">
                     Not connected. Emails currently send via the app&apos;s default provider.

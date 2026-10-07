@@ -67,7 +67,7 @@ export function OrderStatusForm({
           ))}
         </Select>
       </form>
-      {state?.message && <p className="max-w-xs text-right text-sm text-red-400">{state.message}</p>}
+      {state?.message && <p className="max-w-xs text-right text-sm text-red-400 light:text-red-700">{state.message}</p>}
     </div>
   );
 }

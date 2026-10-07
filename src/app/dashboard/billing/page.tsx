@@ -119,17 +119,17 @@ export default async function BillingPage({
         <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
           {checkout === "success" && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Subscription confirmed. Thanks for subscribing to the {plan.name} plan.
             </div>
           )}
           {topup === "success" && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Payment received. Your extra AI requests are ready, after this month&apos;s plan requests.
             </div>
           )}
           {changed && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Plan changed to {plan.name}. Stripe has charged or credited the difference.
             </div>
           )}
@@ -139,7 +139,7 @@ export default async function BillingPage({
             </div>
           )}
           {tax === "updated" && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Default tax rate updated.
             </div>
           )}

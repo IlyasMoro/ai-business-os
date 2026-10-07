@@ -6,7 +6,7 @@ import { LinkButton } from "@/components/ui-dark/button";
 export default function DashboardNotFound() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
-      <p className="text-sm font-semibold text-blue-400">404</p>
+      <p className="text-sm font-semibold text-blue-400 light:text-blue-700">404</p>
       <h1 className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">Not found</h1>
       <p className="mt-2 max-w-sm text-sm text-slate-400 light:text-slate-500">
         This page or record doesn&apos;t exist, was deleted, or belongs to a branch you can&apos;t see.

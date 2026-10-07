@@ -124,7 +124,7 @@ export default async function ReturnsPage({
       <div className="mt-4">
         <ErrorBanner code={error} />
         {!policy.enabled && (
-          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
             Returns are turned off for this company, so no new returns can be opened.
             {canManagePolicy && (
               <>
@@ -142,13 +142,13 @@ export default async function ReturnsPage({
         <div className="space-y-4 lg:col-span-1">
           <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Refunded to customers</p>
-            <p className="mt-2 text-2xl font-semibold text-red-400">
+            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
               <AnimatedCounter value={refunded} prefix="$" decimals={0} />
             </p>
           </div>
           <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Open returns</p>
-            <p className="mt-2 text-2xl font-semibold text-amber-400">{openCount}</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{openCount}</p>
           </div>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-2 glass">

@@ -133,7 +133,7 @@ export default async function InvoiceDetailPage({
         </div>
 
         <ErrorBanner code={error} />
-        {why && <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>}
+        {why && <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{why}</p>}
 
         {editable && (
           <Card className="mt-6">
@@ -211,7 +211,7 @@ export default async function InvoiceDetailPage({
                   Tax ({invoice.taxRate}%): ${taxAmount.toFixed(2)}
                 </p>
               )}
-              <p className="font-semibold text-amber-400">Total: ${invoice.totalAmount.toFixed(2)}</p>
+              <p className="font-semibold text-amber-400 light:text-amber-800">Total: ${invoice.totalAmount.toFixed(2)}</p>
               {invoice.amountPaid > 0 && <p className="text-slate-400 light:text-slate-500">Paid: ${invoice.amountPaid.toFixed(2)}</p>}
               {invoice.amountCredited > 0 && <p className="text-slate-400 light:text-slate-500">Credited: ${invoice.amountCredited.toFixed(2)}</p>}
               {(invoice.amountPaid > 0 || invoice.amountCredited > 0) && (

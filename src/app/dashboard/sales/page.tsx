@@ -132,7 +132,7 @@ export default async function SalesPage({
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total order value</p>
-          <p className="mt-2 text-2xl font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
+          <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
             <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
           </p>
           <div className="mt-2">
@@ -140,7 +140,7 @@ export default async function SalesPage({
           </div>
           {monthlyValueTrend.some((v) => v > 0) ? (
             <div className="mt-4 flex-1">
-              <TrendChart data={trendPoints} color={VIZ.emerald} currency title="Order value by month, last 6 months" />
+              <TrendChart data={trendPoints} color={VIZ.blue} currency title="Order value by month, last 6 months" />
             </div>
           ) : (
             <p className="mt-4 text-sm text-slate-500">No activity in the last 6 months yet.</p>

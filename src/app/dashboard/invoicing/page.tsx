@@ -155,7 +155,7 @@ export default async function InvoicingPage({
       {topOutstanding.length > 0 && (
         <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Outstanding by customer</h2>
-          <HorizontalBarChart data={topOutstanding} color={VIZ.red} />
+          <HorizontalBarChart data={topOutstanding} color={VIZ.blue} />
         </div>
       )}
 
@@ -196,7 +196,7 @@ export default async function InvoicingPage({
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                     {invoice.dueDate.toLocaleDateString()}
                   </td>
-                  <td className="px-5 py-3 tabular-nums text-amber-400">
+                  <td className="px-5 py-3 tabular-nums text-amber-400 light:text-amber-800">
                     {formatCompactCurrency(invoice.totalAmount)}
                   </td>
                 </tr>

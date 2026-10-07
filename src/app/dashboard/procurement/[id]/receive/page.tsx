@@ -45,7 +45,7 @@ export default async function ReceivePurchaseOrderPage({
 
         <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
-          {why && <p className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>}
+          {why && <p className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{why}</p>}
         </div>
 
         <form action={receivePurchaseOrder.bind(null, po.id)} className="mt-4 space-y-4">

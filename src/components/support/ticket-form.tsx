@@ -118,7 +118,7 @@ export function TicketForm({
         </div>
       </div>
 
-      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400 light:text-red-700">{state.message}</p>}
 
       <Button type="submit" disabled={pending}>
         {pending ? "Saving..." : submitLabel}

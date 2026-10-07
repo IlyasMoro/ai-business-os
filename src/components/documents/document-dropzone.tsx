@@ -59,7 +59,7 @@ export function DocumentDropzone({
         )}
       >
         {pending ? (
-          <Loader2 className="h-6 w-6 animate-spin text-blue-400" aria-hidden />
+          <Loader2 className="h-6 w-6 animate-spin text-blue-400 light:text-blue-700" aria-hidden />
         ) : (
           <UploadCloud className={cn("h-6 w-6", dragging ? "text-blue-400" : "text-slate-500")} aria-hidden />
         )}

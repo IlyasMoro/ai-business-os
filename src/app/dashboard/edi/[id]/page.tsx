@@ -72,7 +72,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
         </div>
 
         {doc.error && (
-          <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{doc.error}</p>
+          <p className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{doc.error}</p>
         )}
 
         <Card className="mt-6">

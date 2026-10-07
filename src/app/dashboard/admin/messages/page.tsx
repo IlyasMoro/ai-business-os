@@ -73,7 +73,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
                 </p>
                 <p className="text-xs text-slate-500">{m.createdAt.toLocaleString()}</p>
               </div>
-              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-violet-300 light:text-violet-700">
+              <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-blue-300 light:text-blue-700">
                 {topicLabel(m.topic)}
                 {sizeLine(m.teamSize, m.branches) && (
                   <span className="ml-2 font-medium normal-case tracking-normal text-slate-400 light:text-slate-500">

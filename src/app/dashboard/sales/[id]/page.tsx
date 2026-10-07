@@ -244,7 +244,7 @@ export default async function OrderDetailPage({
                 </p>
               )
             )}
-            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
+            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-800">
               Total: ${order.totalAmount.toFixed(2)}
             </p>
           </CardContent>

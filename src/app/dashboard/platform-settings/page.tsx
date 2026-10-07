@@ -45,17 +45,17 @@ export default async function PlatformSettingsPage({
         <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
           {saved && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Saved.
             </div>
           )}
           {testsent && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Test email sent to {user.email}. Check your inbox.
             </div>
           )}
           {groqtested && (
-            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+            <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Groq connection successful.
             </div>
           )}

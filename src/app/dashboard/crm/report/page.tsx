@@ -220,7 +220,7 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
           </CardHeader>
           <CardContent>
             {trend.some((t) => t.value > 0) ? (
-              <TrendChart data={trend} color={VIZ.emerald} currency title="Won deal value by month, last 6 months" />
+              <TrendChart data={trend} color={VIZ.blue} currency title="Won deal value by month, last 6 months" />
             ) : (
               <p className="text-sm text-slate-500">No deals won in the last 6 months yet.</p>
             )}

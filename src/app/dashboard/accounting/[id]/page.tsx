@@ -99,7 +99,7 @@ export default async function TransactionDetailPage({
         </div>
 
         {warning === "budget" && (
-          <p className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          <p className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
             Saved, but this expense puts {transaction.internalOrder ? `internal order ${transaction.internalOrder.orderNumber}` : `cost center ${transaction.costCenter?.code ?? ""}`}{" "}
             ${Number(over ?? 0).toFixed(2)} over its budget.
           </p>

@@ -8,13 +8,16 @@ import { fileKind, opensInBrowser, type FileKind } from "@/lib/document-files";
 import { DocumentDropzone } from "@/components/documents/document-dropzone";
 import type { DocumentEntityType } from "@/generated/prisma/client";
 
+// One neutral chip for every file type; the icon shape tells them apart.
+const FILE_CHIP = "text-slate-300 bg-white/[0.06] light:text-slate-600 light:bg-slate-100";
+
 const KIND_ICON: Record<FileKind, { icon: typeof FileText; color: string }> = {
-  pdf: { icon: FileText, color: "text-red-400 bg-red-500/10" },
-  image: { icon: FileImage, color: "text-violet-400 bg-violet-500/10" },
-  sheet: { icon: FileSpreadsheet, color: "text-emerald-400 bg-emerald-500/10" },
-  doc: { icon: FileText, color: "text-blue-400 bg-blue-500/10" },
-  archive: { icon: FileArchive, color: "text-amber-400 bg-amber-500/10" },
-  other: { icon: FileIcon, color: "text-slate-400 bg-white/[0.06]" },
+  pdf: { icon: FileText, color: FILE_CHIP },
+  image: { icon: FileImage, color: FILE_CHIP },
+  sheet: { icon: FileSpreadsheet, color: FILE_CHIP },
+  doc: { icon: FileText, color: FILE_CHIP },
+  archive: { icon: FileArchive, color: FILE_CHIP },
+  other: { icon: FileIcon, color: FILE_CHIP },
 };
 
 /** Files attached to a record: drop or choose to upload, click to open (or

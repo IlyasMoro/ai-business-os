@@ -63,7 +63,7 @@ export function InvoiceForm({
         <FieldError messages={state?.errors?.taxRate} />
       </div>
 
-      {state?.message && <p className="text-sm text-red-400">{state.message}</p>}
+      {state?.message && <p className="text-sm text-red-400 light:text-red-700">{state.message}</p>}
 
       {branches && <BranchSelect {...branches} />}
 

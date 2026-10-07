@@ -227,7 +227,7 @@ export function PlanPicker({
           <EnterpriseBuilder tone="app" interval={interval} initial={enterprise.initial} minUsers={enterprise.minUsers} minBranches={enterprise.minBranches}>
             <SubmitButton
               pendingText="Working..."
-              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white light:text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
             >
               {enterprise.submitLabel}
             </SubmitButton>
@@ -249,7 +249,7 @@ export function PlanPicker({
           ) : (
             <SubmitButton
               pendingText="One moment..."
-              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white light:text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
             >
               {mode === "checkout" ? "Subscribe to" : "Switch to"} {chosen!.name} · ${priceOf(chosen!.id).toLocaleString("en-US")}/{per}
             </SubmitButton>

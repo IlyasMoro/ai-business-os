@@ -160,7 +160,7 @@ export default async function WorkOrderDetailPage({
               </table>
             )}
             <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
-              Material cost: <span className="font-semibold text-amber-400">${materialCost.toFixed(2)}</span>
+              Material cost: <span className="font-semibold text-amber-400 light:text-amber-800">${materialCost.toFixed(2)}</span>
             </p>
             {wo.status === "COMPLETED" && (
               <p className="mt-2 text-xs text-slate-500">

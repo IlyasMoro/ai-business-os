@@ -102,7 +102,7 @@ const MESSAGES: Record<string, string> = {
 export function ErrorBanner({ code }: { code?: string }) {
   if (!code || !MESSAGES[code]) return null;
   return (
-    <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+    <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">
       {MESSAGES[code]}
     </p>
   );

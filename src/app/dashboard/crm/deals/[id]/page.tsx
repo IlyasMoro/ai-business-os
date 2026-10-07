@@ -72,7 +72,7 @@ export default async function DealPage({
         <BackButton href="/dashboard/crm/deals" label="Back to deals" />
         <ErrorBanner code={error} />
         {saved && (
-          <div className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">Saved.</div>
+          <div className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">Saved.</div>
         )}
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>

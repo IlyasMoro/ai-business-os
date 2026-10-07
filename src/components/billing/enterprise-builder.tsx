@@ -18,7 +18,7 @@ const TONES = {
     muted: "text-[#6b7686]",
     box: "border-[#d5dce5] bg-[#f6f8fb]",
     step: "border-[#d5dce5] bg-white text-[#0b1f5e] hover:bg-[#eef2f7]",
-    accent: "accent-cyan-500",
+    accent: "accent-blue-600",
     line: "border-[#e6e9ee]",
   },
   app: {

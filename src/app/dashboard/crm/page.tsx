@@ -256,7 +256,7 @@ export default async function CrmPage({
                       <StatusBadge status={customer.status} color={statusColor[customer.status]} />
                       {atRiskCustomerIds.has(customer.id) && (
                         <span
-                          className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-400"
+                          className="rounded-full border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-[11px] font-medium text-amber-400 light:text-amber-800"
                           title={`No orders or invoices in the last ${AT_RISK_DAYS} days`}
                         >
                           At risk

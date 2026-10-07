@@ -7,7 +7,7 @@ type Size = "sm" | "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
   primary:
-    "bg-gradient-to-b from-indigo-500 to-indigo-600 text-slate-50 shadow-sm shadow-indigo-600/20 hover:from-indigo-400 hover:to-indigo-500 hover:shadow-md hover:shadow-indigo-500/30 active:from-indigo-600 active:to-indigo-700",
+    "bg-gradient-to-b from-blue-500 to-blue-600 text-slate-50 shadow-sm shadow-blue-600/20 hover:from-blue-400 hover:to-blue-500 hover:shadow-md hover:shadow-blue-500/30 active:from-blue-600 active:to-blue-700",
   secondary:
     "bg-surface text-slate-900 border border-slate-300 shadow-sm hover:bg-surface-hover hover:border-slate-400 active:bg-slate-100",
   ghost: "text-slate-700 hover:bg-slate-100 active:bg-slate-200",
@@ -24,7 +24,7 @@ const sizeClasses: Record<Size, string> = {
 };
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none active:scale-[0.98]";
+  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-surface disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none active:scale-[0.98]";
 
 export function Button({
   className,

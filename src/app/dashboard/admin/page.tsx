@@ -29,7 +29,7 @@ export default async function AdminCompaniesPage({
       </p>
 
       {deleted && (
-        <div className="mt-4 max-w-2xl rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+        <div className="mt-4 max-w-2xl rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
           Company deleted.
         </div>
       )}

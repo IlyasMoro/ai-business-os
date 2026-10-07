@@ -56,7 +56,7 @@ export default async function EmployeeDetailPage({
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/hr" label="Back to HR" />
         {error === "in-use" && (
-          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">
             This employee can&apos;t be deleted because they&apos;re referenced in a payroll run.
           </p>
         )}

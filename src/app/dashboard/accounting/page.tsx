@@ -117,13 +117,13 @@ export default async function AccountingPage({
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2 lg:grid-cols-1">
           <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Income</p>
-            <p className="mt-2 text-2xl font-semibold text-emerald-400">
+            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
               <AnimatedCounter value={income} prefix="$" decimals={0} />
             </p>
           </div>
           <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
             <p className="text-sm text-slate-400 light:text-slate-500">Expenses</p>
-            <p className="mt-2 text-2xl font-semibold text-red-400">
+            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
               <AnimatedCounter value={expense} prefix="$" decimals={0} />
             </p>
           </div>
@@ -152,7 +152,7 @@ export default async function AccountingPage({
       {topCategories.length > 0 && (
         <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Top categories</h2>
-          <HorizontalBarChart data={topCategories} color={VIZ.amber} />
+          <HorizontalBarChart data={topCategories} color={VIZ.blue} />
         </div>
       )}
 

@@ -65,7 +65,7 @@ export default async function SupplierPage({
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{supplier.name}</h1>
         <div className="mt-4">
           <ErrorBanner code={error} />
-          {saved && <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">Saved.</p>}
+          {saved && <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">Saved.</p>}
         </div>
 
         <Card className="mt-2">

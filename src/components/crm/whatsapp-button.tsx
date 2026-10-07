@@ -128,7 +128,7 @@ export function WhatsAppButton({
           if (!open && !text) void choose(template);
         }}
       >
-        <MessageCircle className="h-4 w-4 text-emerald-400" />
+        <MessageCircle className="h-4 w-4 text-emerald-400 light:text-emerald-700" />
         {label}
       </Button>
       {open && pos && createPortal(
@@ -164,7 +164,7 @@ export function WhatsAppButton({
             ))}
           </div>
           <Textarea aria-label="Message" rows={5} value={text} onChange={(e) => setText(e.target.value)} className="mt-3 text-sm" />
-          <Button type="button" onClick={send} disabled={busy} className="mt-3 w-full bg-emerald-600 hover:bg-emerald-500">
+          <Button type="button" onClick={send} disabled={busy} className="mt-3 w-full bg-emerald-600 text-white hover:bg-emerald-500 light:text-white">
             <MessageCircle className="h-4 w-4" />
             {busy ? "One moment..." : "Open in WhatsApp"}
           </Button>

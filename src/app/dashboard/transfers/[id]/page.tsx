@@ -122,7 +122,7 @@ export default async function TransferDetailPage({
         <div className="mt-4">
           <ErrorBanner code={error} />
           {why && (
-            <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>
+            <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{why}</p>
           )}
           {awaitingApproval && (
             <p className="mb-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">

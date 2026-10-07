@@ -176,17 +176,17 @@ export default async function ProductDetailPage({
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/inventory" label="Back to inventory" />
         {error === "in-use" && why ? null : error === "in-use" ? (
-          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">
             This product can&apos;t be deleted because it&apos;s used in an order, a bill of materials, a work order or a stock transfer.
           </p>
         ) : (
           <ErrorBanner code={error} />
         )}
         {why && (
-          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>
+          <p className="mb-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{why}</p>
         )}
         {saved && (
-          <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">
+          <p className="mb-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
             Saved.
           </p>
         )}
@@ -365,7 +365,7 @@ export default async function ProductDetailPage({
                     Based on {unitsSoldRecently} units sold in the last {SALES_LOOKBACK_DAYS} days (
                     {dailyVelocity.toFixed(2)}/day) and an average {avgLeadTimeDays.toFixed(0)} day supplier lead
                     time, a reorder level of{" "}
-                    <span className="font-mono font-semibold text-amber-400">{suggestedReorderLevel}</span> would
+                    <span className="font-mono font-semibold text-amber-400 light:text-amber-800">{suggestedReorderLevel}</span> would
                     keep you covered.
                   </p>
                   <form action={applyReorderSuggestion.bind(null, product.id, suggestedReorderLevel)}>
@@ -510,7 +510,7 @@ export default async function ProductDetailPage({
                     <BomLineForm productId={product.id} components={otherProducts} />
                     {product.bomComponents.length > 0 && (
                       <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
-                        Component cost per unit: <span className="font-semibold text-amber-400">${rolledUpCost.toFixed(2)}</span>
+                        Component cost per unit: <span className="font-semibold text-amber-400 light:text-amber-800">${rolledUpCost.toFixed(2)}</span>
                       </p>
                     )}
                     {product.usedInBoms.length > 0 && (

@@ -31,7 +31,7 @@ export default async function NewTransferPage({
         {active.length < 2 ? (
           <p className="mt-6 text-sm text-slate-400 light:text-slate-500">
             Transfers need at least two active branches.{" "}
-            <Link href="/dashboard/branches" className="text-blue-400 hover:text-blue-300">
+            <Link href="/dashboard/branches" className="text-blue-400 light:text-blue-700 hover:text-blue-300">
               Add a branch
             </Link>{" "}
             first.

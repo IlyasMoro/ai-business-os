@@ -76,7 +76,7 @@ export default async function EdiPage({
       <div className="mt-4">
         <ErrorBanner code={error} />
         {!settings && (
-          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+          <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
             EDI isn&apos;t set up yet.{" "}
             <Link href="/dashboard/edi/settings" className="underline hover:text-amber-200">
               Enter your EDI identity
@@ -91,19 +91,19 @@ export default async function EdiPage({
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ArrowDownToLine className="h-4 w-4" /> Received and processed
           </p>
-          <p className="mt-2 text-2xl font-semibold text-emerald-400">{count("INBOUND", "PROCESSED")}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{count("INBOUND", "PROCESSED")}</p>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ArrowDownToLine className="h-4 w-4" /> Received and rejected
           </p>
-          <p className="mt-2 text-2xl font-semibold text-red-400">{count("INBOUND", "REJECTED")}</p>
+          <p className="mt-2 text-2xl font-semibold text-red-400 light:text-red-700">{count("INBOUND", "REJECTED")}</p>
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
           <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
             <ArrowUpFromLine className="h-4 w-4" /> Generated to send
           </p>
-          <p className="mt-2 text-2xl font-semibold text-blue-400">{count("OUTBOUND")}</p>
+          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{count("OUTBOUND")}</p>
         </div>
       </div>
 

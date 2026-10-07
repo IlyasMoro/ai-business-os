@@ -23,7 +23,7 @@ export default async function ControllingPage({
     return (
       <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Controlling</h1>
-        <p className="mt-4 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+        <p className="mt-4 max-w-2xl rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
           Controlling is turned off.{" "}
           <Link href="/dashboard/controlling/settings" className="underline">
             Turn it on in the settings
@@ -105,7 +105,7 @@ export default async function ControllingPage({
       </div>
 
       {over.length > 0 && (
-        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+        <div className="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300 light:text-red-700">
           <p className="flex items-center gap-2 font-medium">
             <TriangleAlert className="h-4 w-4" /> Over budget
           </p>
@@ -137,7 +137,7 @@ export default async function ControllingPage({
         {shown.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">
             No cost centers yet.{" "}
-            <Link href="/dashboard/controlling/cost-centers" className="text-blue-400">
+            <Link href="/dashboard/controlling/cost-centers" className="text-blue-400 light:text-blue-700">
               Create the first one
             </Link>
             .

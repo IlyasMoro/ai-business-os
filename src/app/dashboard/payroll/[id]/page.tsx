@@ -109,7 +109,7 @@ export default async function PayrollRunDetailPage({
               </ul>
             )}
             <PayrollItemForm payrollRunId={payrollRun.id} employees={employees} />
-            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400">
+            <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-800">
               Total: ${payrollRun.totalAmount.toFixed(2)}
             </p>
           </CardContent>

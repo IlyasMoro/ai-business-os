@@ -92,7 +92,7 @@ export default async function InternalOrderPage({
 
         <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
-          {saved && <p className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300">Saved.</p>}
+          {saved && <p className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">Saved.</p>}
         </div>
 
         <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">

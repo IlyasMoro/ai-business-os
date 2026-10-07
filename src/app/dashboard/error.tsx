@@ -16,7 +16,7 @@ export default function DashboardError({
 
   return (
     <div className="flex flex-col items-center justify-center rounded-lg border border-white/[0.09] px-4 py-16 text-center light:border-white/80 glass">
-      <p className="text-sm font-semibold text-red-400">Something went wrong</p>
+      <p className="text-sm font-semibold text-red-400 light:text-red-700">Something went wrong</p>
       <h2 className="mt-2 text-lg font-semibold text-slate-50 light:text-slate-900">
         This page couldn&apos;t load
       </h2>

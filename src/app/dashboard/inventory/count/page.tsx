@@ -50,7 +50,7 @@ export default async function StockCountPage({
 
         <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
-          {why && <p className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">{why}</p>}
+          {why && <p className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400 light:text-red-700">{why}</p>}
           {counted && (
             <p className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
               Count saved: {counted} product{counted === "1" ? "" : "s"} counted, {changed} adjusted.

@@ -295,7 +295,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
   }));
   const totalCustomers = customerStatusRows.reduce((s, r) => s + r.count, 0);
   const customerStatusColor: Record<(typeof customerStatusRows)[number]["status"], string> = {
-    LEAD: VIZ.blue,
+    LEAD: VIZ.amber,
     ACTIVE: VIZ.emerald,
     INACTIVE: VIZ.muted,
   };
@@ -351,6 +351,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           prefix="$"
           decimals={0}
           icon={Wallet}
+          color={VIZ.emerald}
           trend={revenueTrend}
           trendLabels={monthLabels}
           change={revenueChange}
@@ -361,6 +362,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           prefix="$"
           decimals={0}
           icon={TrendingDown}
+          color={VIZ.red}
           trend={expenseTrend}
           trendLabels={monthLabels}
           change={expensesChange}
@@ -371,6 +373,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           prefix="$"
           decimals={0}
           icon={TrendingUp}
+          color={VIZ.blue}
           trend={profitTrend}
           trendLabels={monthLabels}
           change={profitChange}
@@ -382,6 +385,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           label="Active projects"
           value={activeCount}
           icon={FolderKanban}
+          color={VIZ.blue}
           trend={projectsCumulative}
           trendLabels={monthLabels}
           change={projectsChange}
@@ -390,6 +394,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           label="Total customers"
           value={snapshot.customerCount}
           icon={Users}
+          color={VIZ.amber}
           trend={customersCumulative}
           trendLabels={monthLabels}
           change={customersChange}
@@ -398,6 +403,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           label="Active campaigns"
           value={activeCampaignCount}
           icon={Megaphone}
+          color={VIZ.emerald}
           trend={campaignsCumulative}
           trendLabels={monthLabels}
           change={campaignsChange}
@@ -409,7 +415,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           <Link key={stat.label} href={stat.href} className="block h-full">
             {/* Number and icon on top, label below: long labels wrap freely and every tile keeps the same height. */}
             <SpotlightCard
-              color={VIZ.blue}
+              color={stat.alert ? VIZ.amber : VIZ.blue}
               className="flex h-full flex-col rounded-xl border border-white/[0.09] light:border-white/80 p-4 glass"
             >
               <div className="flex items-start justify-between gap-2">
@@ -513,10 +519,10 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           <div className="flex items-center justify-between gap-3">
             <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Recent activity</h2>
             {/* Rendered fresh on every visit, so this is the latest activity. */}
-            <span className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-slate-400 light:text-slate-500">
+            <span className="flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-emerald-400 light:text-emerald-600">
               <span aria-hidden className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75 motion-safe:animate-ping" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-blue-500" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-safe:animate-ping" />
+                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
               </span>
               Latest
             </span>

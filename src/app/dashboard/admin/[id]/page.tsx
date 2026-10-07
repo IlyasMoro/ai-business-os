@@ -66,7 +66,7 @@ export default async function AdminCompanyDetailPage({
         </div>
 
         <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
-          <h2 className="font-semibold text-red-400">Danger zone</h2>
+          <h2 className="font-semibold text-red-400 light:text-red-700">Danger zone</h2>
           <div className="mt-3">
             <DeleteCompanyForm companyName={company.name} action={deleteAction} />
           </div>
