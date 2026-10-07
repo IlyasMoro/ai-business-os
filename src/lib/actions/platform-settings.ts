@@ -173,7 +173,7 @@ export async function sendTestPlatformEmail(toEmail: string) {
     await sendEmail({
       to: toEmail,
       subject: "Test email from AIBOS platform settings",
-      html: "<p>This confirms your platform-wide email sending configuration works.</p>",
+      html: "<p>This confirms your platform wide email sending configuration works.</p>",
     });
     redirect("/dashboard/platform-settings?testsent=1");
   } catch (err) {

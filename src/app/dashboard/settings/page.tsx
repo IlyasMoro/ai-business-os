@@ -1,3 +1,4 @@
+import { SettingsTabs } from "@/components/settings/settings-tabs";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -26,8 +27,9 @@ export default async function SettingsPage({
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Settings</h1>
-        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Your company&apos;s profile.</p>
+        <SettingsTabs role={session.role} current="/dashboard/settings" />
+        <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Company</h1>
+        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">Your company&apos;s name, industry and logo.</p>
 
         <div className="mt-4 space-y-3">
           {/* Logo problems show on the logo card instead. */}
@@ -63,7 +65,7 @@ export default async function SettingsPage({
                 id="industry"
                 name="industry"
                 defaultValue={company?.industry ?? ""}
-                placeholder="e.g. Retail, Consulting, Manufacturing"
+                placeholder="For example retail, butchery or manufacturing"
                 maxLength={200}
               />
             </div>

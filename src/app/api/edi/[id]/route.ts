@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { verifySession, hasRole } from "@/lib/dal";
+import { hasRole, requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await verifySession();
+  const session = await requireModuleApi("edi");
+  if (session instanceof Response) return session;
   if (!hasRole(session, ["OWNER", "ADMIN"])) {
     return new NextResponse("Forbidden", { status: 403 });
   }

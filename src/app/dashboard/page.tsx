@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { CURRENCY_PREFIX, formatDayMonth } from "@/lib/utils";
 import { Suspense } from "react";
-import { getCurrentUser } from "@/lib/dal";
+import { getCurrentUser, verifySession } from "@/lib/dal";
+import { canOpenModule, type ModuleKey } from "@/lib/role-access";
+import { MyWorkDashboard } from "@/components/dashboard/my-work";
 import { db } from "@/lib/db";
 import { branchWhere, getCompanyBranches } from "@/lib/branches";
 import { auditHref, formatAuditAction, formatAuditDetails } from "@/lib/audit-format";
@@ -84,20 +86,28 @@ export default async function DashboardOverviewPage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { error } = await searchParams;
-  const user = await getCurrentUser();
+  const [user, session] = await Promise.all([getCurrentUser(), verifySession()]);
+  const can = (key: ModuleKey) => canOpenModule(session, key);
+  // Company revenue, costs and profit are only for people who can open the
+  // books or the reports; everyone else gets their own work instead.
+  const seesCompanyMoney = can("accounting") || can("reports");
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
 
       <Suspense fallback={<WidgetsSkeleton />}>
-        <DashboardWidgets companyId={user.companyId} />
+        {seesCompanyMoney ? (
+          <DashboardWidgets companyId={user.companyId} can={can} />
+        ) : (
+          <MyWorkDashboard companyId={user.companyId} userId={user.id} email={user.email} firstName={user.name.trim().split(" ")[0] || user.name} can={can} />
+        )}
       </Suspense>
     </div>
   );
 }
 
-async function DashboardWidgets({ companyId }: { companyId: string }) {
+async function DashboardWidgets({ companyId, can }: { companyId: string; can: (key: ModuleKey) => boolean }) {
   const now = new Date();
   const inBranch = await branchWhere();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
@@ -337,14 +347,16 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
 
   const upcomingItems = agendaItems.filter((item) => item.date <= sevenDaysFromNow).slice(0, 6);
 
+  // Only the modules this member can open; a switched off module drops out.
   const secondaryStats = [
-    { label: "Open orders", value: snapshot.openOrderCount, href: "/dashboard/sales", icon: ShoppingCart, alert: false },
-    { label: "Low stock", value: snapshot.lowStockCount, href: "/dashboard/inventory", icon: Boxes, alert: snapshot.lowStockCount > 0 },
-    { label: "Outstanding invoices", value: snapshot.outstandingInvoiceCount, href: "/dashboard/invoicing", icon: Receipt, alert: snapshot.outstandingInvoiceCount > 0 },
-    { label: "Open tickets", value: snapshot.openTicketCount, href: "/dashboard/support", icon: LifeBuoy, alert: snapshot.openTicketCount > 0 },
-    { label: "Open purchase orders", value: openPurchaseOrderCount, href: "/dashboard/procurement", icon: Truck, alert: false },
-    { label: "Employees", value: employeeCount, href: "/dashboard/hr", icon: UserSquare2, alert: false },
-  ];
+    { module: "sales", label: "Open orders", value: snapshot.openOrderCount, href: "/dashboard/sales", icon: ShoppingCart, alert: false },
+    { module: "inventory", label: "Low stock", value: snapshot.lowStockCount, href: "/dashboard/inventory", icon: Boxes, alert: snapshot.lowStockCount > 0 },
+    { module: "invoicing", label: "Outstanding invoices", value: snapshot.outstandingInvoiceCount, href: "/dashboard/invoicing", icon: Receipt, alert: snapshot.outstandingInvoiceCount > 0 },
+    { module: "support", label: "Open tickets", value: snapshot.openTicketCount, href: "/dashboard/support", icon: LifeBuoy, alert: snapshot.openTicketCount > 0 },
+    { module: "procurement", label: "Open purchase orders", value: openPurchaseOrderCount, href: "/dashboard/procurement", icon: Truck, alert: false },
+    { module: "hr", label: "Employees", value: employeeCount, href: "/dashboard/hr", icon: UserSquare2, alert: false },
+  ].filter((stat) => can(stat.module as ModuleKey));
+  const growthTiles = [can("projects"), can("crm"), can("marketing")].filter(Boolean).length;
 
   return (
     <>
@@ -384,8 +396,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <KpiCard
+      {growthTiles > 0 && <div className={`mt-4 grid grid-cols-1 gap-4 ${growthTiles === 3 ? "sm:grid-cols-3" : growthTiles === 2 ? "sm:grid-cols-2" : ""}`}>
+        {can("projects") && <KpiCard
           label="Active projects"
           value={activeCount}
           icon={FolderKanban}
@@ -393,8 +405,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           trend={projectsCumulative}
           trendLabels={monthLabels}
           change={projectsChange}
-        />
-        <KpiCard
+        />}
+        {can("crm") && <KpiCard
           label="Total customers"
           value={snapshot.customerCount}
           icon={Users}
@@ -402,8 +414,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           trend={customersCumulative}
           trendLabels={monthLabels}
           change={customersChange}
-        />
-        <KpiCard
+        />}
+        {can("marketing") && <KpiCard
           label="Active campaigns"
           value={activeCampaignCount}
           icon={Megaphone}
@@ -411,8 +423,8 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
           trend={campaignsCumulative}
           trendLabels={monthLabels}
           change={campaignsChange}
-        />
-      </div>
+        />}
+      </div>}
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {secondaryStats.map((stat) => (
@@ -446,30 +458,30 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
       <div className="digital-grid mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
         <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Performance rings</h2>
         <div className="mt-4 flex flex-wrap justify-around gap-6">
-          <RingGauge
+          {can("projects") && <RingGauge
             label="Project completion"
             pct={completionRatio}
             detail={`${completedCount} of ${totalProjects} completed`}
             emptyText="No projects yet"
-          />
-          <RingGauge
+          />}
+          {can("projects") && <RingGauge
             label="Task progress"
             pct={avgTaskCompletion}
             detail={`${doneTaskCount} of ${totalActiveProjectTasks} tasks done`}
             emptyText="No tasks in active projects"
-          />
-          <RingGauge
+          />}
+          {can("invoicing") && <RingGauge
             label="Invoice collection rate"
             pct={collectionRate}
             detail={`${paidCount} of ${collectibleTotal} invoices paid`}
             emptyText="No invoices sent yet"
-          />
+          />}
         </div>
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Same interactive donut as the status breakdowns on Reports. */}
-        <div className="flex justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
+        {can("crm") && <div className="flex justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <DonutChart
             title="Customers by status"
             centerValue={String(totalCustomers)}
@@ -480,7 +492,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
               color: customerStatusColor[row.status],
             }))}
           />
-        </div>
+        </div>}
 
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Upcoming this week</h2>

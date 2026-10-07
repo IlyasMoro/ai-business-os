@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { contentDisposition } from "@/lib/document-files";
+import { canOpenModule, type ModuleKey } from "@/lib/role-access";
+import type { DocumentEntityType } from "@/generated/prisma/client";
+
+const DOCUMENT_MODULE: Record<DocumentEntityType, ModuleKey> = {
+  CUSTOMER: "crm",
+  INVOICE: "invoicing",
+  TICKET: "support",
+  PROJECT: "projects",
+  CAMPAIGN: "marketing",
+  EMPLOYEE: "hr",
+};
 
 export async function GET(
   _request: Request,
@@ -16,6 +27,10 @@ export async function GET(
 
   if (!doc) {
     return new NextResponse("Not found", { status: 404 });
+  }
+  // A file is only as open as the record it is attached to.
+  if (!canOpenModule(session, DOCUMENT_MODULE[doc.entityType])) {
+    return new NextResponse("You don't have access to this.", { status: 403 });
   }
 
   return new NextResponse(new Uint8Array(doc.data), {

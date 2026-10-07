@@ -28,7 +28,7 @@ export async function sendEmail({
     throw new Error("No Resend API key configured (set it on the Platform Settings page, or RESEND_API_KEY).");
   }
   if (!from) {
-    throw new Error("No Resend from-address configured (set it on the Platform Settings page, or RESEND_FROM_EMAIL).");
+    throw new Error("No Resend sender address configured (set it on the Platform Settings page, or RESEND_FROM_EMAIL).");
   }
 
   // Constructed lazily (not at module scope): the Resend SDK throws

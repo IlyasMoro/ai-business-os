@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
 import { getCurrentUser, verifySession } from "@/lib/dal";
 import { hiddenByRole } from "@/lib/company-roles";
+import { canOpenModule, moduleOfPath } from "@/lib/role-access";
 import { db } from "@/lib/db";
 import { getNotifications } from "@/lib/notifications";
 import { isPlatformAdmin } from "@/lib/platform-admin";
@@ -38,9 +39,18 @@ export default async function DashboardLayout({
   const logoSize = logoRows[0]?.size ?? null;
   const logoUrl = logoSize ? `/api/company-logo/${user.companyId}?v=${logoSize}` : null;
   // Modules a company role can't open are left out of the menu and search.
-  const { access: roleAccess } = await verifySession();
+  const session = await verifySession();
+  const { access: roleAccess, disabledModules } = session;
+  // The bell only lists work in modules this member can open: a cashier
+  // never sees overdue invoices.
+  const visibleNotifications = notifications.filter((n) => {
+    const key = moduleOfPath(n.href);
+    return !key || canOpenModule(session, key);
+  });
   const hiddenHrefs = [
     ...hiddenByRole(roleAccess),
+    // Switched off on Settings > Modules.
+    ...disabledModules.map((key) => `/dashboard/${key}`),
     ...(returnPolicy.enabled ? [] : ["/dashboard/returns"]),
     ...(mrpSettings.enabled ? [] : ["/dashboard/mrp"]),
     // Unset EDI stays visible so it can be set up; only an explicit off hides it.
@@ -85,7 +95,7 @@ export default async function DashboardLayout({
           hiddenHrefs={hiddenHrefs}
           lockedHrefs={lockedHrefs}
           badges={badges}
-          notifications={notifications}
+          notifications={visibleNotifications}
           subscription={subscription}
           planName={plan.name}
           logoUrl={logoUrl}

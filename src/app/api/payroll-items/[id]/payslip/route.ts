@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { generatePayslipPdf } from "@/lib/payslip-pdf";
 
@@ -8,7 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await verifySession();
+  const session = await requireModuleApi("payroll");
+  if (session instanceof Response) return session;
 
   const item = await db.payrollItem.findUnique({
     where: { id, payrollRun: { companyId: session.companyId } },

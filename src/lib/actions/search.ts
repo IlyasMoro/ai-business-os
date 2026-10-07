@@ -1,6 +1,7 @@
 "use server";
 
 import { verifySessionAnywhere, hasRole } from "@/lib/dal";
+import { canOpenModule } from "@/lib/role-access";
 import { db } from "@/lib/db";
 import { customerScope } from "@/lib/crm-access";
 
@@ -27,8 +28,9 @@ export async function searchRecords(query: string): Promise<SearchHit[]> {
   const companyId = session.companyId;
   const like = { contains: q, mode: "insensitive" as const };
   const backOffice = hasRole(session, ["OWNER", "ADMIN"]);
-  // With a company role, only the modules it can open are searched.
-  const can = (key: "crm" | "inventory" | "sales" | "invoicing" | "procurement" | "hr") => !session.access || Boolean(session.access[key]);
+  // Only the modules this member can open are searched (company role,
+  // plain Employee limits, and modules the company switched off).
+  const can = (key: "crm" | "inventory" | "sales" | "invoicing" | "procurement" | "hr") => canOpenModule(session, key);
   const none = Promise.resolve([] as never[]);
   const scope = await customerScope();
   // Orders and invoices of customers this user may not see stay hidden.

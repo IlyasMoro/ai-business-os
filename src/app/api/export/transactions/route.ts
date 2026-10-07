@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
 import { branchWhere } from "@/lib/branches";
 
 export async function GET() {
-  const session = await requireRole(["OWNER", "ADMIN"]);
+  const session = await requireModuleApi("accounting");
+  if (session instanceof Response) return session;
 
   const transactions = await db.transaction.findMany({
     where: { companyId: session.companyId, ...(await branchWhere()) },

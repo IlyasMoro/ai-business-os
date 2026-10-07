@@ -6,6 +6,7 @@ import { takeInvoiceNumber } from "@/lib/invoice-number";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
+import { canOpenModule, type ModuleKey } from "@/lib/role-access";
 import { db } from "@/lib/db";
 import { getBranchContext, resolveNewRecordBranch } from "@/lib/branches";
 import { sendEmailForCompany } from "@/lib/email-for-company";
@@ -67,8 +68,10 @@ export async function sendChatMessage(
     select: { role: true, content: true },
   });
 
-  // The Copilot sees what the user sees: the branch in the top bar switcher.
+  // The Copilot sees what the user sees: the branch in the top bar switcher,
+  // and only the modules their role opens.
   const { viewBranch } = await getBranchContext();
+  const can = (key: ModuleKey) => canOpenModule(session, key);
   const [company, snapshot] = await Promise.all([
     db.company.findUnique({
       where: { id: session.companyId },
@@ -97,12 +100,13 @@ export async function sendChatMessage(
         session.companyId,
         session.userId,
         assistantMessage.id,
-        formatSnapshotForPrompt(snapshot),
+        formatSnapshotForPrompt(snapshot, can),
         history.map((message) => ({
           role: message.role === "USER" ? "user" : "assistant",
           content: message.content,
         })),
-        viewBranch ? { id: viewBranch.id, name: viewBranch.name } : null
+        viewBranch ? { id: viewBranch.id, name: viewBranch.name } : null,
+        can
       )) || "I couldn't generate a response. Please try again.";
   } catch {
     finalContent = "Sorry, I ran into an error reaching the assistant. Please try again.";

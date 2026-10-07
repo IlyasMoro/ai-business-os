@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight, Boxes, Clock, CornerDownLeft, FileText, Loader2, Plus, Receipt, Search, ShoppingCart, Truck, UserSquare2, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { searchRecords, type SearchHit } from "@/lib/actions/search";
-import { navGroups, navPinned, visibleNav, type NavIcon, type Role } from "./nav-config";
+import { navGroups, navPinned, navSettings, visibleNav, type NavIcon, type Role } from "./nav-config";
 import { isActive } from "./nav-links";
 import { rememberRecent, useRecent } from "./nav-prefs";
 
@@ -89,7 +89,7 @@ export function CommandPalette({
   // join the list when they are opened from the search.
   const pathname = usePathname();
   useEffect(() => {
-    const page = [...navPinned, ...navGroups.flatMap((g) => g.items)].find((i) => i.href === pathname && isActive(i.href, pathname));
+    const page = [...navPinned, ...navGroups.flatMap((g) => g.items), ...navSettings].find((i) => i.href === pathname && isActive(i.href, pathname));
     if (page) rememberRecent({ href: page.href, title: page.label, detail: page.description });
   }, [pathname]);
 
@@ -157,10 +157,11 @@ function SearchDialog({
   }, [term]);
 
   const pages = useMemo(() => {
-    const { pinned, groups } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
+    const { pinned, groups, settings } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
     return [
       ...pinned.map((i) => ({ ...i, group: "Pages" })),
       ...groups.flatMap((g) => g.items.map((i) => ({ ...i, group: g.label }))),
+      ...settings.map((i) => ({ ...i, group: "Settings" })),
     ];
   }, [role, isPlatformAdmin, hiddenHrefs]);
 

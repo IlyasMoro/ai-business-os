@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
 
 export async function GET() {
-  const session = await requireRole(["OWNER", "ADMIN"]);
+  const session = await requireModuleApi("payroll");
+  if (session instanceof Response) return session;
 
   const items = await db.payrollItem.findMany({
     where: { payrollRun: { companyId: session.companyId } },

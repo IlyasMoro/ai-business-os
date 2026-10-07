@@ -25,6 +25,10 @@ model Company {
   purchaseOrderSeq Int      @default(0)
   // Last credit note number handed out (CN-0001 = 1).
   creditNoteSeq    Int      @default(0)
+  // Modules the company switched off on Settings > Modules, by module key
+  // (marketing, quotes...). Returns, Planning, EDI and Controlling keep
+  // their own on/off in their settings rows.
+  disabledModules  String[] @default([])
 
   // Custom logo shown on invoices, payslips, business reports, and
   // customer-facing emails in place of the default AIBOS wordmark. PNG/JPEG

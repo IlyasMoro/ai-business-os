@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
-import { verifySession, hasRole } from "@/lib/dal";
+import { hasRole, requireModuleApi } from "@/lib/dal";
 import { getGoogleAuthUrl } from "@/lib/google-oauth";
 import { hasFeature } from "@/lib/plan-limits";
 
 const STATE_COOKIE = "google_oauth_state";
 
 export async function GET(request: Request) {
-  const session = await verifySession();
+  const session = await requireModuleApi("integrations");
+  if (session instanceof Response) return session;
   const base = process.env.APP_BASE_URL ?? new URL(request.url).origin;
 
   if (!hasRole(session, ["OWNER", "ADMIN"])) {

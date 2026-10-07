@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { toCsv } from "@/lib/csv";
 import { sourceLabel } from "@/lib/crm-pipeline";
@@ -20,7 +20,8 @@ function csvResponse(csv: string, filename: string) {
 }
 
 export async function GET(request: Request) {
-  const session = await verifySession();
+  const session = await requireModuleApi("crm");
+  if (session instanceof Response) return session;
 
   // ?template=1: the headings and one example row, for the import page.
   if (new URL(request.url).searchParams.get("template")) {

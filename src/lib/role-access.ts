@@ -172,3 +172,20 @@ export const PRESET_ROLES: { preset: string; name: string; description: string; 
     },
   },
 ];
+
+/**
+ * Whether this member can open a module at all, for showing or hiding
+ * parts of shared pages such as the dashboard. Owners open everything;
+ * a company role decides by its list; plain Admins open everything and
+ * plain Employees everything but the manager modules. Modules the company
+ * switched off are closed to all.
+ */
+export function canOpenModule(
+  member: { role: "OWNER" | "ADMIN" | "EMPLOYEE"; access: RoleAccess | null; disabledModules?: readonly string[] },
+  key: ModuleKey,
+): boolean {
+  if (member.disabledModules?.includes(key)) return false;
+  if (member.role === "OWNER") return true;
+  if (member.access) return Boolean(member.access[key]);
+  return member.role === "ADMIN" || !MANAGER_MODULES.has(key);
+}

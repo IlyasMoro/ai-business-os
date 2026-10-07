@@ -29,6 +29,7 @@ import {
   Target,
   FileText,
   Inbox,
+  LayoutGrid,
 } from "lucide-react";
 import { CopilotMark } from "@/components/brand/copilot-mark";
 
@@ -120,7 +121,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { href: "/dashboard/hr", label: "HR", icon: UserSquare2, roles: ["OWNER", "ADMIN"], description: "Employees, roles and departments" },
       { href: "/dashboard/payroll", label: "Payroll", icon: Banknote, roles: ["OWNER", "ADMIN"], description: "Pay runs and payslips" },
-      { href: "/dashboard/team", label: "Team", icon: UserPlus, roles: ["OWNER", "ADMIN"], description: "Who can sign in, and their access" },
     ],
   },
   {
@@ -137,18 +137,14 @@ export const navGroups: NavGroup[] = [
     color: "#9085e9",
     icon: Plug,
     items: [
-      { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"], description: "Google, email and other connected apps" },
       { href: "/dashboard/edi", label: "EDI", icon: ArrowLeftRight, roles: ["OWNER", "ADMIN"], description: "Orders and invoices exchanged with partners" },
     ],
   },
   {
-    label: "Administration",
+    label: "Platform",
     color: "#94a3b8",
     icon: SlidersHorizontal,
     items: [
-      { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"], description: "Your plan, payments and invoices" },
-      { href: "/dashboard/branches", label: "Branches", icon: MapPin, roles: ["OWNER", "ADMIN"], description: "Add and manage your branches" },
-      { href: "/dashboard/settings", label: "Settings", icon: SlidersHorizontal, roles: ["OWNER", "ADMIN"], description: "Company details, modules and preferences" },
       { href: "/dashboard/admin", label: "Companies", icon: Building2, platformAdminOnly: true, description: "Every company on the platform" },
       { href: "/dashboard/admin/messages", label: "Messages", icon: Inbox, platformAdminOnly: true, description: "Messages sent through the contact form" },
       { href: "/dashboard/platform-settings", label: "Platform Settings", icon: Settings, platformAdminOnly: true, description: "Keys and settings for the whole platform" },
@@ -156,7 +152,19 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-export const navItems: NavItem[] = navGroups.flatMap((group) => group.items);
+/** Company settings: one Settings link at the foot of the menu opens them,
+ * with tabs across the top of each page, so they stay out of the everyday
+ * menu. Search still finds every one. */
+export const navSettings: NavItem[] = [
+  { href: "/dashboard/settings", label: "Company", icon: Building2, roles: ["OWNER", "ADMIN"], description: "Name, industry and logo" },
+  { href: "/dashboard/settings/modules", label: "Modules", icon: LayoutGrid, roles: ["OWNER", "ADMIN"], description: "Turn modules on or off for the whole company" },
+  { href: "/dashboard/branches", label: "Branches", icon: MapPin, roles: ["OWNER", "ADMIN"], description: "Add and manage your branches" },
+  { href: "/dashboard/team", label: "Team and roles", icon: UserPlus, roles: ["OWNER", "ADMIN"], description: "Who can sign in, and what each role can open" },
+  { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"], description: "Google, email and other connected apps" },
+  { href: "/dashboard/billing", label: "Plan and billing", icon: CreditCard, roles: ["OWNER"], description: "Your plan, payments and invoices" },
+];
+
+export const navItems: NavItem[] = [...navGroups.flatMap((group) => group.items), ...navSettings];
 
 /** The pinned pages and groups this user may see: role, platform admin and
  * the modules the company switched off. Shared by the sidebar and search. */
@@ -169,5 +177,6 @@ export function visibleNav({ role, isPlatformAdmin = false, hiddenHrefs = [] }: 
   return {
     pinned: navPinned.filter(visible),
     groups: navGroups.map((group) => ({ ...group, items: group.items.filter(visible) })).filter((group) => group.items.length > 0),
+    settings: navSettings.filter(visible),
   };
 }

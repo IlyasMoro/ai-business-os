@@ -1,6 +1,8 @@
 import "server-only";
 import type Groq from "groq-sdk";
 import { TOOL_DEFINITIONS, isKnownTool, isReadTool, runReadTool, proposeAiAction } from "@/lib/ai-tools";
+import { TOOL_MODULE } from "@/lib/validation/ai-actions";
+import type { ModuleKey } from "@/lib/role-access";
 import { createChatCompletion, GROQ_MODEL as MODEL } from "@/lib/ai-provider";
 
 const MAX_TOOL_ITERATIONS = 4;
@@ -13,8 +15,12 @@ export async function generateAssistantReply(
   snapshot: string,
   history: { role: "user" | "assistant"; content: string }[],
   /** The branch in the user's switcher, or null for the whole company. */
-  branch: { id: string; name: string } | null = null
+  branch: { id: string; name: string } | null = null,
+  /** Whether the member can open a module; tools for other modules are left out. */
+  can: (key: ModuleKey) => boolean = () => true
 ) {
+  const allowedTool = (name: string) => Boolean(TOOL_MODULE[name]) && can(TOOL_MODULE[name]);
+  const tools = TOOL_DEFINITIONS.filter((tool) => allowedTool(tool.function?.name ?? ""));
   const scope = branch
     ? `The user is looking at the ${branch.name} branch only. The snapshot and the order, invoice, sales and forecast tools cover that branch; customers, tickets and projects are company wide. Say so when it matters.`
     : "The user is looking at the whole company (all branches).";
@@ -54,8 +60,7 @@ Every amount of money is South African rand. Write it like R 1,350.50, never wit
       completion = await createChatCompletion({
         model: MODEL,
         messages,
-        tools: TOOL_DEFINITIONS,
-        tool_choice: "auto",
+        ...(tools.length > 0 ? { tools, tool_choice: "auto" as const } : {}),
       });
     } catch {
       // Groq occasionally rejects a malformed tool call outright (400
@@ -92,6 +97,8 @@ Every amount of money is South African rand. Write it like R 1,350.50, never wit
       let result: unknown;
       if (!isKnownTool(name)) {
         result = { error: `Unknown tool: ${name}` };
+      } else if (!allowedTool(name)) {
+        result = { error: "This person's role doesn't include that part of the business. Say so instead of answering." };
       } else if (isReadTool(name)) {
         result = await runReadTool(companyId, name, args, branch?.id ?? null);
       } else {

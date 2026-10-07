@@ -1,6 +1,7 @@
 const MESSAGES: Record<string, string> = {
   forbidden: "You don't have permission to perform that action.",
   "no-access": "Your role doesn't include that page. Ask the owner if you need it.",
+  "module-off": "That module is switched off for your company. An owner or admin can turn it back on in Settings, Modules.",
   "view-only": "Your role can look at this page but not change it. Ask the owner if you need to.",
   "role-in-use": "This role is still given to people or open invites. Give them another role first.",
   "in-use": "This record can't be deleted because it's referenced elsewhere.",

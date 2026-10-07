@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { lockedWhere } from "@/lib/branches";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
@@ -8,7 +8,8 @@ import { quoteScope } from "@/lib/crm-access";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const session = await verifySession();
+  const session = await requireModuleApi("quotes");
+  if (session instanceof Response) return session;
 
   const quote = await db.quote.findFirst({
     where: { id, companyId: session.companyId, ...(await lockedWhere()), ...(await quoteScope()) },

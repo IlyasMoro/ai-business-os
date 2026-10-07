@@ -5,7 +5,8 @@ import { headers } from "next/headers";
 import { getSessionPayload, type SessionPayload } from "@/lib/session";
 import { db } from "@/lib/db";
 import { hasRole } from "@/lib/roles";
-import { cleanAccess, decideAccess, type RoleAccess } from "@/lib/role-access";
+import { canOpenModule, cleanAccess, decideAccess, type ModuleKey, type RoleAccess } from "@/lib/role-access";
+import { cleanDisabledModules, isModuleOff } from "@/lib/company-modules";
 
 export { hasRole };
 
@@ -23,7 +24,13 @@ export const verifySessionAnywhere = cache(async () => {
   }
   const user = await db.user.findUnique({
     where: { id: session.userId },
-    select: { role: true, companyId: true, sessionsValidAfter: true, companyRole: { select: { access: true, baseRole: true } } },
+    select: {
+      role: true,
+      companyId: true,
+      sessionsValidAfter: true,
+      companyRole: { select: { access: true, baseRole: true } },
+      company: { select: { disabledModules: true } },
+    },
   });
   const issuedMs = (session.iat ?? 0) * 1000;
   if (!user || user.companyId !== session.companyId || (user.sessionsValidAfter && issuedMs < user.sessionsValidAfter.getTime())) {
@@ -34,7 +41,7 @@ export const verifySessionAnywhere = cache(async () => {
   // never limited. Null means the plain Admin or Employee access.
   const access: RoleAccess | null =
     user.role !== "OWNER" && user.companyRole ? cleanAccess(user.companyRole.access, user.companyRole.baseRole === "ADMIN" ? "ADMIN" : "EMPLOYEE") : null;
-  return { ...session, role: user.role, access };
+  return { ...session, role: user.role, access, disabledModules: cleanDisabledModules(user.company.disabledModules) };
 });
 
 /**
@@ -47,6 +54,12 @@ export const verifySessionAnywhere = cache(async () => {
  */
 export const verifySession = cache(async () => {
   const session = await verifySessionAnywhere();
+  if (session.disabledModules.length > 0 || session.access) {
+    const h = await headers();
+    const path = h.get("x-pathname");
+    // A module the company switched off is closed to everyone, owners too.
+    if (isModuleOff(session.disabledModules, path)) redirect("/dashboard?error=module-off");
+  }
   if (session.access) {
     const h = await headers();
     const path = h.get("x-pathname");
@@ -95,3 +108,19 @@ export const getCurrentUser = cache(async () => {
   }
   return user;
 });
+
+/**
+ * For file downloads and other API routes, which sit outside the page
+ * addresses verifySession checks: the session, or a 403 response when
+ * this member can't open module `key` (company role, plain Employee limits,
+ * or the module switched off). Use as
+ *   const auth = await requireModuleApi("invoicing");
+ *   if (auth instanceof Response) return auth;
+ */
+export async function requireModuleApi(key: ModuleKey) {
+  const session = await verifySession();
+  if (!canOpenModule(session, key)) {
+    return new Response("You don't have access to this.", { status: 403 });
+  }
+  return session;
+}

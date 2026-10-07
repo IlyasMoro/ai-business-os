@@ -1,3 +1,4 @@
+import { SettingsTabs } from "@/components/settings/settings-tabs";
 import Link from "next/link";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -22,9 +23,10 @@ export default async function IntegrationsPage({
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="mx-auto max-w-5xl">
+        <SettingsTabs role={session.role} current="/dashboard/integrations" />
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Integrations</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-          Connect third-party accounts so this app can act on your behalf.
+          Connect outside accounts so this app can act on your behalf.
         </p>
 
         <div className="mt-4">

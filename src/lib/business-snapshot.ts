@@ -1,5 +1,6 @@
 import { formatCurrency } from "@/lib/utils";
 import "server-only";
+import type { ModuleKey } from "@/lib/role-access";
 import { db } from "@/lib/db";
 import { lowStockAt } from "@/lib/stock";
 
@@ -39,16 +40,17 @@ export async function getBusinessSnapshot(companyId: string, branchId: string | 
 
 export type BusinessSnapshot = Awaited<ReturnType<typeof getBusinessSnapshot>>;
 
-export function formatSnapshotForPrompt(snapshot: BusinessSnapshot) {
-  return [
-    `${snapshot.customerCount} total customers`,
-    `${snapshot.openOrderCount} open orders (pending or confirmed)`,
-    `${snapshot.lowStockCount} products low on stock at one or more branches`,
-    `${snapshot.outstandingInvoiceCount} outstanding invoices (sent or overdue)`,
-    `${snapshot.openTicketCount} open support tickets`,
-    `${snapshot.activeProjectCount} active projects`,
-    `${snapshot.openDealCount} open deals in the sales pipeline worth ${formatCurrency(snapshot.openPipelineValue, { cents: false })} (company wide)`,
-  ]
-    .map((line) => `- ${line}`)
-    .join("\n");
+export function formatSnapshotForPrompt(snapshot: BusinessSnapshot, can: (key: ModuleKey) => boolean = () => true) {
+  // Only lines about modules this member can open.
+  const lines: [ModuleKey, string][] = [
+    ["crm", `${snapshot.customerCount} total customers`],
+    ["sales", `${snapshot.openOrderCount} open orders (pending or confirmed)`],
+    ["inventory", `${snapshot.lowStockCount} products low on stock at one or more branches`],
+    ["invoicing", `${snapshot.outstandingInvoiceCount} outstanding invoices (sent or overdue)`],
+    ["support", `${snapshot.openTicketCount} open support tickets`],
+    ["projects", `${snapshot.activeProjectCount} active projects`],
+    ["crm", `${snapshot.openDealCount} open deals in the sales pipeline worth ${formatCurrency(snapshot.openPipelineValue, { cents: false })} (company wide)`],
+  ];
+  const visible = lines.filter(([key]) => can(key)).map(([, line]) => `- ${line}`);
+  return visible.length > 0 ? visible.join("\n") : "- Nothing in this person's role to summarise.";
 }

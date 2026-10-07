@@ -1,3 +1,4 @@
+import { SettingsTabs } from "@/components/settings/settings-tabs";
 import { formatDate } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -53,6 +54,7 @@ export default async function TeamPage({
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div>
+        <SettingsTabs role={session.role} current="/dashboard/team" />
         <div className="flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
         {isOwner && (

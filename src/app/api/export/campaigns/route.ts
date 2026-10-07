@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { toCsv } from "@/lib/csv";
 import { getCampaignsWithStats } from "@/lib/campaign-data";
 
 export async function GET() {
-  const session = await verifySession();
+  const session = await requireModuleApi("marketing");
+  if (session instanceof Response) return session;
 
   const campaigns = await getCampaignsWithStats(session.companyId);
 

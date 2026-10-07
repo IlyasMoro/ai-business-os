@@ -1,3 +1,4 @@
+import type { ModuleKey } from "@/lib/role-access";
 import * as z from "zod";
 import type { Groq } from "groq-sdk";
 import { TicketStatusValues, TicketPriorityValues } from "@/lib/validation/support";
@@ -228,6 +229,26 @@ export function isReadTool(name: string) {
 export function isKnownTool(name: string) {
   return TOOL_DEFINITIONS.some((tool) => tool.function?.name === name);
 }
+
+/** The module each tool reads or changes. The Copilot only offers, and
+ * only runs, the tools for modules the member can open, so it never
+ * becomes a way around their role. */
+export const TOOL_MODULE: Record<string, ModuleKey> = {
+  find_customer: "crm",
+  update_customer_status: "crm",
+  pipeline_report: "crm",
+  list_open_tickets: "support",
+  update_ticket_status: "support",
+  update_ticket_priority: "support",
+  list_overdue_invoices: "invoicing",
+  create_invoice: "invoicing",
+  send_overdue_reminder: "invoicing",
+  list_projects: "projects",
+  create_task: "projects",
+  summarize_sales: "sales",
+  forecast_next_month_revenue: "accounting",
+  campaign_report: "marketing",
+};
 
 // ---------- Argument validation ----------
 

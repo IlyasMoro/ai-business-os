@@ -66,7 +66,7 @@ export async function getNotifications(companyId: string): Promise<Notification[
     notifications.push({
       id: `ticket-${t.id}`,
       severity: "high",
-      message: `High-priority ticket: ${t.subject}`,
+      message: `Urgent ticket: ${t.subject}`,
       href: `/dashboard/support/${t.id}`,
     });
   }

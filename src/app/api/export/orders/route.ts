@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { branchWhere } from "@/lib/branches";
 import { toCsv } from "@/lib/csv";
 
 export async function GET() {
-  const session = await verifySession();
+  const session = await requireModuleApi("sales");
+  if (session instanceof Response) return session;
 
   const orders = await db.order.findMany({
     where: { companyId: session.companyId, ...(await branchWhere()) },

@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Lock, Star } from "lucide-react";
+import { ChevronRight, Lock, Settings, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_MIN_PLAN, planById, type PlanFeature } from "@/lib/plans";
 import { navItems, navPinned, visibleNav, type NavBadge, type NavBadges, type NavGroup, type NavItem, type Role } from "./nav-config";
@@ -163,7 +163,8 @@ export function NavLinks({
   }
   const currentPath = pendingHref ?? pathname;
 
-  const { pinned, groups } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
+  const { pinned, groups, settings } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
+  const settingsActive = settings.some((i) => matches(i.href, currentPath));
   const activeGroup = groups.find((g) => g.items.some((i) => isActive(i.href, currentPath)))?.label;
   const allVisible = [...pinned.map((i) => ({ item: i, color: "#3987e5" })), ...groups.flatMap((g) => g.items.map((i) => ({ item: i, color: g.color })))];
   const favouriteItems = favourites.map((href) => allVisible.find((v) => v.item.href === href)).filter((v): v is (typeof allVisible)[number] => Boolean(v));
@@ -426,6 +427,33 @@ export function NavLinks({
           </div>
         );
       })}
+
+      {/* Company settings sit apart from the everyday modules: one link
+          that opens them, with tabs across the top of each settings page. */}
+      {settings.length > 0 && (
+        <>
+          <div aria-hidden className="mx-3 !my-2.5 border-t border-white/[0.08] light:border-slate-900/10" />
+          <Link
+            href={settings[0].href}
+            onClick={linkClick(settings[0].href)}
+            aria-current={settingsActive ? "page" : undefined}
+            aria-label={collapsed ? "Settings" : undefined}
+            title={collapsed ? "Settings" : undefined}
+            className={cn(
+              "group/link relative flex items-center rounded-md text-[13.5px] leading-5 transition-colors duration-150",
+              collapsed ? "justify-center px-0 py-2" : "gap-2.5 px-3 py-2",
+              FOCUS,
+              settingsActive
+                ? "bg-blue-500/15 font-medium text-white light:bg-blue-500/10 light:text-blue-700"
+                : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100 light:text-slate-500 light:hover:bg-slate-900/5 light:hover:text-slate-900",
+            )}
+          >
+            {settingsActive && <ActiveBar className="left-0" />}
+            <Settings className={cn("h-4 w-4 shrink-0", settingsActive ? "text-blue-400 light:text-blue-600" : "text-slate-500 group-hover/link:text-slate-200 light:text-slate-400")} />
+            {!collapsed && <span className="flex-1 truncate">Settings</span>}
+          </Link>
+        </>
+      )}
 
       {flyGroup && fly && (
         <Flyout

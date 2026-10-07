@@ -275,13 +275,14 @@ export async function forecastNextMonthRevenue(companyId: string, branchId: stri
 
 async function getOrCreateAiFollowUpsProject(companyId: string) {
   const existing = await db.project.findFirst({
-    where: { companyId, name: "AI Follow-ups" },
+    // Older companies have the project under its hyphenated name.
+    where: { companyId, name: { in: ["AI follow ups", "AI Follow-ups"] } },
     select: { id: true },
   });
   if (existing) return existing.id;
 
   const created = await db.project.create({
-    data: { companyId, name: "AI Follow-ups", description: "Follow-up tasks proposed by the AI assistant." },
+    data: { companyId, name: "AI follow ups", description: "Follow up tasks suggested by the AI Copilot." },
     select: { id: true },
   });
   return created.id;

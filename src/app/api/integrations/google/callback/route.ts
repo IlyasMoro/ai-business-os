@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { exchangeCodeForTokens, getGoogleUserEmail } from "@/lib/google-oauth";
 import { hasFeature } from "@/lib/plan-limits";
@@ -8,7 +8,8 @@ import { hasFeature } from "@/lib/plan-limits";
 const STATE_COOKIE = "google_oauth_state";
 
 export async function GET(request: Request) {
-  const session = await verifySession();
+  const session = await requireModuleApi("integrations");
+  if (session instanceof Response) return session;
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");

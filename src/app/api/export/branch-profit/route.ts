@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { toCsv } from "@/lib/csv";
 import { getProfitByBranch } from "@/lib/branch-profit-data";
 import { PROFIT_CSV_HEADERS, profitCsvRows } from "@/lib/branch-profit";
 
 export async function GET() {
-  const session = await requireRole(["OWNER", "ADMIN"]);
+  const session = await requireModuleApi("reports");
+  if (session instanceof Response) return session;
   const { rows, total } = await getProfitByBranch(session.companyId);
   const csv = toCsv(PROFIT_CSV_HEADERS, profitCsvRows(rows, total));
 

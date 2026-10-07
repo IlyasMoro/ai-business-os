@@ -166,7 +166,7 @@ export default async function AutomationPage({
               transactions, employees, payroll, projects, tickets, campaigns, calendar, and AI
               activity) as a single JSON file. Login credentials and connected Google tokens are
               never included. This is a copy you control yourself, separate from whatever backup
-              add-on is or is not enabled on the underlying Railway Postgres database.
+              extra is or is not turned on for the underlying Railway Postgres database.
             </p>
             <a
               href="/api/export/backup"

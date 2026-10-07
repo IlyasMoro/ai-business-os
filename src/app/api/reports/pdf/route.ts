@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getBusinessReportData } from "@/lib/business-report-data";
 import { getBranchContext } from "@/lib/branches";
 import { generateBusinessReportPdf } from "@/lib/report-pdf";
 
 export async function GET() {
-  const session = await requireRole(["OWNER", "ADMIN"]);
+  const session = await requireModuleApi("reports");
+  if (session instanceof Response) return session;
 
   const company = await db.company.findUnique({
     where: { id: session.companyId },

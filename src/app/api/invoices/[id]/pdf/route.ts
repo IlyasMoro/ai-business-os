@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/dal";
+import { requireModuleApi } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { lockedWhere } from "@/lib/branches";
 import { generateInvoicePdf } from "@/lib/invoice-pdf";
@@ -9,7 +9,8 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const session = await verifySession();
+  const session = await requireModuleApi("invoicing");
+  if (session instanceof Response) return session;
 
   const invoice = await db.invoice.findUnique({
     where: { id, companyId: session.companyId, ...(await lockedWhere()) },
