@@ -20,9 +20,11 @@ export type BranchScope = {
   viewBranchId: string | null;
 };
 
-/** Only employees can be locked to a branch; owners and admins never are. */
-export function effectiveLockedBranch(role: Role, userBranchId: string | null, branches: BranchOption[]): string | null {
-  if (role !== "EMPLOYEE" || !userBranchId) return null;
+/** Employees can be locked to a branch, and so can managers with a company
+ * role (a Branch manager runs one branch); owners and plain admins never are. */
+export function effectiveLockedBranch(role: Role, userBranchId: string | null, branches: BranchOption[], hasCompanyRole = false): string | null {
+  const lockable = role === "EMPLOYEE" || (role === "ADMIN" && hasCompanyRole);
+  if (!lockable || !userBranchId) return null;
   // A lock pointing at a missing branch fails closed to the main branch
   // rather than silently widening access to everything.
   if (branches.some((b) => b.id === userBranchId)) return userBranchId;
@@ -34,8 +36,10 @@ export function resolveBranchScope(input: {
   userBranchId: string | null;
   selectedBranchId: string | null | undefined;
   branches: BranchOption[];
+  /** The member has a company role, which lets a manager be locked too. */
+  hasCompanyRole?: boolean;
 }): BranchScope {
-  const lockedBranchId = effectiveLockedBranch(input.role, input.userBranchId, input.branches);
+  const lockedBranchId = effectiveLockedBranch(input.role, input.userBranchId, input.branches, input.hasCompanyRole);
   if (lockedBranchId) return { lockedBranchId, viewBranchId: lockedBranchId };
 
   const picked = input.selectedBranchId

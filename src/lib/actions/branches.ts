@@ -8,7 +8,7 @@ import { db } from "@/lib/db";
 import { verifySession, hasRole } from "@/lib/dal";
 import { logAudit } from "@/lib/audit";
 import { canAddBranch } from "@/lib/plan-limits";
-import { BRANCH_COOKIE, ensureMainBranch, getBranchContext } from "@/lib/branches";
+import { BRANCH_COOKIE, ensureMainBranch, getBranchContextAnywhere } from "@/lib/branches";
 
 const BASE = "/dashboard/branches";
 
@@ -122,7 +122,7 @@ export async function makeMainBranch(branchId: string) {
  * widen their view.
  */
 export async function selectBranch(branchId: string) {
-  const ctx = await getBranchContext();
+  const ctx = await getBranchContextAnywhere();
   if (!ctx.canSwitch) return;
   const cookieStore = await cookies();
   const valid = ctx.branches.some((b) => b.id === branchId);

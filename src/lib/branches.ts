@@ -3,7 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { verifySession } from "@/lib/dal";
+import { verifySession, verifySessionAnywhere } from "@/lib/dal";
 import {
   branchFilter,
   branchForNewRecord,
@@ -56,16 +56,22 @@ export type BranchContext = BranchScope & {
  * the database each time (not the session token), so changing someone's
  * branch access on the Team page applies on their very next click.
  */
-export const getBranchContext = cache(async (): Promise<BranchContext> => {
-  const session = await verifySession();
+export const getBranchContext = cache(async (): Promise<BranchContext> => branchContextFor(await verifySession()));
+
+/** The same scope without the company role check, for the top bar branch
+ * switch, which works from any page, even one the member may only view. */
+export const getBranchContextAnywhere = cache(async (): Promise<BranchContext> => branchContextFor(await verifySessionAnywhere()));
+
+async function branchContextFor(session: Awaited<ReturnType<typeof verifySessionAnywhere>>): Promise<BranchContext> {
   const [branches, user, cookieStore] = await Promise.all([
     getCompanyBranches(session.companyId),
-    db.user.findUnique({ where: { id: session.userId }, select: { role: true, branchId: true } }),
+    db.user.findUnique({ where: { id: session.userId }, select: { role: true, branchId: true, companyRoleId: true } }),
     cookies(),
   ]);
   const scope = resolveBranchScope({
     role: user?.role ?? session.role,
     userBranchId: user?.branchId ?? null,
+    hasCompanyRole: Boolean(user?.companyRoleId),
     selectedBranchId: cookieStore.get(BRANCH_COOKIE)?.value || null,
     branches,
   });
@@ -76,7 +82,7 @@ export const getBranchContext = cache(async (): Promise<BranchContext> => {
     viewBranch: branches.find((b) => b.id === scope.viewBranchId) ?? null,
     canSwitch: !scope.lockedBranchId,
   };
-});
+}
 
 /** `where` fragment for branch aware lists and counts. */
 export async function branchWhere() {

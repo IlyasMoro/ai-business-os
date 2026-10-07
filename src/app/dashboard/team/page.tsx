@@ -10,6 +10,11 @@ import { setUserBranchAccess } from "@/lib/actions/branches";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { InviteForm } from "@/components/team/invite-form";
 import { revokeInvite, removeTeamMember } from "@/lib/actions/team";
+import { setMemberRole } from "@/lib/actions/roles";
+import { listCompanyRoles } from "@/lib/company-roles";
+import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
+import { buttonStyles } from "@/components/ui-dark/button";
 import { canBillExtraUsers, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
 import { EXTRA_USER_PRICE, MAX_USERS } from "@/lib/plans";
 
@@ -18,39 +23,51 @@ const roleTone = { OWNER: "purple", ADMIN: "blue", EMPLOYEE: "slate" } as const;
 export default async function TeamPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, saved } = await searchParams;
   const session = await requireRole(["OWNER", "ADMIN"]);
 
-  const [members, invites, branches, plan, seats, billable] = await Promise.all([
+  const [members, invites, branches, plan, seats, billable, companyRoles] = await Promise.all([
     db.user.findMany({
       where: { companyId: session.companyId },
-      select: { id: true, name: true, email: true, role: true, branchId: true, createdAt: true },
+      select: { id: true, name: true, email: true, role: true, branchId: true, createdAt: true, companyRole: { select: { id: true, name: true } } },
       orderBy: { createdAt: "asc" },
     }),
     db.teamInvite.findMany({
       where: { companyId: session.companyId, acceptedAt: null },
       orderBy: { createdAt: "desc" },
+      include: { companyRole: { select: { name: true } } },
     }),
     getCompanyBranches(session.companyId),
     getCompanyPlan(session.companyId),
     seatsUsed(session.companyId),
     canBillExtraUsers(session.companyId),
+    listCompanyRoles(session.companyId),
   ]);
+  const isOwner = session.role === "OWNER";
   // Only offer the branch control once there is more than one branch to pick.
   const showBranchAccess = branches.length > 1;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div>
+        <div className="flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Team</h1>
+        {isOwner && (
+          <Link href="/dashboard/team/roles" className={buttonStyles("secondary", "md")}>
+            <ShieldCheck className="h-4 w-4" />
+            Roles and access
+          </Link>
+        )}
+        </div>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
           {members.length} member{members.length === 1 ? "" : "s"} in {session.name ? "your company" : "this workspace"}.
         </p>
 
-        <div className="mt-4">
+        <div className="mt-4 space-y-3">
           <ErrorBanner code={error} />
+          {saved && <p className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">Saved.</p>}
         </div>
 
         {/* Extra wide screens: the invite form in a narrow column beside the
@@ -76,7 +93,7 @@ export default async function TeamPage({
                       ? "To add more, the owner can subscribe to a plan on the Billing page."
                       : `After that, extra users are $${EXTRA_USER_PRICE} each a month.`}
               </p>
-              <InviteForm />
+              <InviteForm companyRoles={companyRoles.map((r) => ({ id: r.id, name: r.name }))} />
             </CardContent>
           </Card>
 
@@ -94,7 +111,7 @@ export default async function TeamPage({
                         <li key={invite.id} className="flex items-center justify-between py-2.5 text-sm">
                           <div className="flex items-center gap-2.5">
                             <span className="text-slate-50 light:text-slate-900">{invite.email}</span>
-                            <StatusBadge status={invite.role} tone={roleTone[invite.role]} />
+                            {invite.companyRole ? <Badge tone="blue">{invite.companyRole.name}</Badge> : <StatusBadge status={invite.role} tone={roleTone[invite.role]} />}
                             {expired && <Badge tone="red">Expired</Badge>}
                           </div>
                           <DeleteButton
@@ -157,12 +174,43 @@ export default async function TeamPage({
                             </a>
                           </td>
                           <td className="px-2 py-3">
-                            <StatusBadge status={member.role} tone={roleTone[member.role]} />
+                            {isOwner && member.role !== "OWNER" && member.id !== session.userId ? (
+                              <form action={setMemberRole.bind(null, member.id)} className="flex items-center gap-2">
+                                <Select
+                                  name="role"
+                                  defaultValue={member.companyRole ? `role:${member.companyRole.id}` : member.role}
+                                  aria-label={`Role for ${member.name}`}
+                                  className="w-44"
+                                >
+                                  {companyRoles.length > 0 && (
+                                    <optgroup label="Company roles">
+                                      {companyRoles.map((r) => (
+                                        <option key={r.id} value={`role:${r.id}`}>
+                                          {r.name}
+                                        </option>
+                                      ))}
+                                    </optgroup>
+                                  )}
+                                  <optgroup label="Built in">
+                                    <option value="ADMIN">Admin</option>
+                                    <option value="EMPLOYEE">Employee</option>
+                                  </optgroup>
+                                </Select>
+                                <SubmitButton pendingText="Saving..." variant="secondary">
+                                  Save
+                                </SubmitButton>
+                              </form>
+                            ) : member.companyRole ? (
+                              <Badge tone="blue">{member.companyRole.name}</Badge>
+                            ) : (
+                              <StatusBadge status={member.role} tone={roleTone[member.role]} />
+                            )}
                           </td>
                           <td className="px-2 py-3 whitespace-nowrap text-slate-400 light:text-slate-500">{member.createdAt.toLocaleDateString()}</td>
                           {showBranchAccess && (
                             <td className="px-2 py-3">
-                              {member.role === "EMPLOYEE" ? (
+                              {/* Staff, and managers with a company role (a Branch manager), can be kept to one branch. */}
+                              {member.role === "EMPLOYEE" || (member.role === "ADMIN" && member.companyRole) ? (
                                 <form action={setUserBranchAccess.bind(null, member.id)} className="flex items-center gap-2">
                                   <Select
                                     name="branchId"

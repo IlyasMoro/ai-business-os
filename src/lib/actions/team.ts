@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
+import { parseRoleChoice } from "@/lib/validation/roles";
 import { createSession } from "@/lib/session";
 import { hashPassword } from "@/lib/password";
 import { sendEmailForCompany } from "@/lib/email-for-company";
@@ -46,7 +47,20 @@ export async function inviteTeamMember(
   if (!validated.success) {
     return { errors: validated.error.flatten().fieldErrors };
   }
-  const { email, role } = validated.data;
+  const { email } = validated.data;
+  // A company role brings its own level; plain Admin or Employee have none.
+  const choice = parseRoleChoice(validated.data.role);
+  if (!choice) return { errors: { role: ["Select a valid role."] } };
+  let role: "ADMIN" | "EMPLOYEE";
+  let companyRoleId: string | null = null;
+  if (choice.kind === "base") {
+    role = choice.role;
+  } else {
+    const companyRole = await db.companyRole.findUnique({ where: { id: choice.id, companyId: session.companyId }, select: { baseRole: true } });
+    if (!companyRole) return { errors: { role: ["Select a valid role."] } };
+    role = companyRole.baseRole === "ADMIN" ? "ADMIN" : "EMPLOYEE";
+    companyRoleId = choice.id;
+  }
 
   const existingUser = await db.user.findUnique({ where: { email } });
   if (existingUser) {
@@ -92,6 +106,7 @@ export async function inviteTeamMember(
     create: {
       email,
       role,
+      companyRoleId,
       companyId: session.companyId,
       invitedByUserId: session.userId,
       tokenHash: hashToken(rawToken),
@@ -99,6 +114,7 @@ export async function inviteTeamMember(
     },
     update: {
       role,
+      companyRoleId,
       invitedByUserId: session.userId,
       tokenHash: hashToken(rawToken),
       expiresAt: new Date(Date.now() + INVITE_TTL_MS),
@@ -119,7 +135,7 @@ export async function inviteTeamMember(
     return { message: "Could not send the invite email. Please try again." };
   }
 
-  await logAudit(session.companyId, session.userId, "team.invited", "TeamInvite", email, { role });
+  await logAudit(session.companyId, session.userId, "team.invited", "TeamInvite", email, { role, companyRoleId });
 
   revalidatePath("/dashboard/team");
   return {
@@ -213,6 +229,7 @@ export async function acceptInvite(
         email: invite.email,
         passwordHash,
         role: invite.role,
+        companyRoleId: invite.companyRoleId,
         companyId: invite.companyId,
       },
     });

@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { verifySession, hasRole } from "@/lib/dal";
+import { verifySessionAnywhere, hasRole } from "@/lib/dal";
 import type { Prisma } from "@/generated/prisma/client";
 
 /* Who sees which customers. With "own customers only" on in the CRM
@@ -17,7 +17,9 @@ export const getCrmSettings = cache(async (companyId: string) => {
 
 /** The signed-in user's id when their CRM view is limited, else null. */
 export const restrictedTo = cache(async (): Promise<string | null> => {
-  const session = await verifySession();
+  // Only narrows what is listed, never grants a page, so it works from any
+  // page (the search runs from pages the member may only view).
+  const session = await verifySessionAnywhere();
   if (hasRole(session, ["OWNER", "ADMIN"])) return null;
   const settings = await getCrmSettings(session.companyId);
   return settings?.ownCustomersOnly ? session.userId : null;

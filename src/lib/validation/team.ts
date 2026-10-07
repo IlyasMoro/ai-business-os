@@ -4,7 +4,8 @@ export const InviteRoleValues = ["ADMIN", "EMPLOYEE"] as const;
 
 export const InviteTeamMemberSchema = z.object({
   email: z.email({ error: "Please enter a valid email." }).trim().toLowerCase(),
-  role: z.enum(InviteRoleValues, { error: "Select a valid role." }),
+  // "ADMIN", "EMPLOYEE" or "role:<id>" for one of the company roles.
+  role: z.string().refine((v) => (InviteRoleValues as readonly string[]).includes(v) || (v.startsWith("role:") && v.length > 5), { error: "Select a valid role." }),
 });
 
 export type InviteTeamMemberFormState =

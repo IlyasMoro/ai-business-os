@@ -1,5 +1,6 @@
 import { cookies, headers } from "next/headers";
-import { getCurrentUser } from "@/lib/dal";
+import { getCurrentUser, verifySession } from "@/lib/dal";
+import { hiddenByRole } from "@/lib/company-roles";
 import { db } from "@/lib/db";
 import { getNotifications } from "@/lib/notifications";
 import { isPlatformAdmin } from "@/lib/platform-admin";
@@ -36,7 +37,10 @@ export default async function DashboardLayout({
   ]);
   const logoSize = logoRows[0]?.size ?? null;
   const logoUrl = logoSize ? `/api/company-logo/${user.companyId}?v=${logoSize}` : null;
+  // Modules a company role can't open are left out of the menu and search.
+  const { access: roleAccess } = await verifySession();
   const hiddenHrefs = [
+    ...hiddenByRole(roleAccess),
     ...(returnPolicy.enabled ? [] : ["/dashboard/returns"]),
     ...(mrpSettings.enabled ? [] : ["/dashboard/mrp"]),
     // Unset EDI stays visible so it can be set up; only an explicit off hides it.

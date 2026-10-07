@@ -48,6 +48,12 @@ describe("resolveBranchScope", () => {
     expect(resolveBranchScope({ role: "OWNER", userBranchId: null, selectedBranchId: "other-company", branches }).viewBranchId).toBeNull();
   });
 
+  it("locks a branch manager (admin with a company role) but never a plain admin or an owner", () => {
+    expect(resolveBranchScope({ role: "ADMIN", userBranchId: "cpt", selectedBranchId: "main", branches, hasCompanyRole: true }).lockedBranchId).toBe("cpt");
+    expect(resolveBranchScope({ role: "ADMIN", userBranchId: "cpt", selectedBranchId: "main", branches }).lockedBranchId).toBeNull();
+    expect(resolveBranchScope({ role: "OWNER", userBranchId: "cpt", selectedBranchId: "main", branches, hasCompanyRole: true }).lockedBranchId).toBeNull();
+  });
+
   it("forces a locked employee's view to their branch whatever the switcher says", () => {
     expect(resolveBranchScope({ role: "EMPLOYEE", userBranchId: "cpt", selectedBranchId: "main", branches })).toEqual({
       lockedBranchId: "cpt",

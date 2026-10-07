@@ -1,6 +1,6 @@
 "use server";
 
-import { verifySession, hasRole } from "@/lib/dal";
+import { verifySessionAnywhere, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { customerScope } from "@/lib/crm-access";
 
@@ -20,48 +20,52 @@ const LIMIT = 5;
  * rule, like the CRM pages. A few results per kind, best kinds first.
  */
 export async function searchRecords(query: string): Promise<SearchHit[]> {
-  const session = await verifySession();
+  // Works from any page; the role's modules decide which kinds are searched.
+  const session = await verifySessionAnywhere();
   const q = query.trim().slice(0, 80);
   if (q.length < 2) return [];
   const companyId = session.companyId;
   const like = { contains: q, mode: "insensitive" as const };
   const backOffice = hasRole(session, ["OWNER", "ADMIN"]);
+  // With a company role, only the modules it can open are searched.
+  const can = (key: "crm" | "inventory" | "sales" | "invoicing" | "procurement" | "hr") => !session.access || Boolean(session.access[key]);
+  const none = Promise.resolve([] as never[]);
   const scope = await customerScope();
   // Orders and invoices of customers this user may not see stay hidden.
   const ofVisibleCustomers = Object.keys(scope).length > 0 ? { customer: scope } : {};
 
   const [customers, products, orders, invoices, suppliers, employees] = await Promise.all([
-    db.customer.findMany({
+    !can("crm") ? none : db.customer.findMany({
       where: { companyId, ...scope, OR: [{ name: like }, { company: like }, { email: like }, { phone: like }] },
       select: { id: true, name: true, company: true, status: true },
       take: LIMIT,
       orderBy: { name: "asc" },
     }),
-    db.product.findMany({
+    !can("inventory") ? none : db.product.findMany({
       where: { companyId, OR: [{ name: like }, { sku: like }] },
       select: { id: true, name: true, sku: true },
       take: LIMIT,
       orderBy: { name: "asc" },
     }),
-    db.order.findMany({
+    !can("sales") ? none : db.order.findMany({
       where: { companyId, ...ofVisibleCustomers, OR: [{ orderNumber: like }, { customer: { name: like } }] },
       select: { id: true, orderNumber: true, status: true, customer: { select: { name: true } } },
       take: LIMIT,
       orderBy: { createdAt: "desc" },
     }),
-    db.invoice.findMany({
+    !can("invoicing") ? none : db.invoice.findMany({
       where: { companyId, ...ofVisibleCustomers, OR: [{ invoiceNumber: like }, { customer: { name: like } }] },
       select: { id: true, invoiceNumber: true, status: true, customer: { select: { name: true } } },
       take: LIMIT,
       orderBy: { createdAt: "desc" },
     }),
-    db.supplier.findMany({
+    !can("procurement") ? none : db.supplier.findMany({
       where: { companyId, OR: [{ name: like }, { email: like }] },
       select: { id: true, name: true, email: true },
       take: LIMIT,
       orderBy: { name: "asc" },
     }),
-    backOffice
+    backOffice && can("hr")
       ? db.employee.findMany({
           where: { companyId, OR: [{ name: like }, { email: like }, { position: like }] },
           select: { id: true, name: true, position: true },

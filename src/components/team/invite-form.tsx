@@ -5,7 +5,7 @@ import { Button } from "@/components/ui-dark/button";
 import { Input, Label, Select, FieldError } from "@/components/ui-dark/input";
 import { inviteTeamMember } from "@/lib/actions/team";
 
-export function InviteForm() {
+export function InviteForm({ companyRoles = [] }: { companyRoles?: { id: string; name: string }[] }) {
   const [state, formAction, pending] = useActionState(inviteTeamMember, undefined);
 
   return (
@@ -20,8 +20,19 @@ export function InviteForm() {
       <div>
         <Label htmlFor="role">Role</Label>
         <Select id="role" name="role" defaultValue="EMPLOYEE" className="w-full">
-          <option value="ADMIN">Admin</option>
-          <option value="EMPLOYEE">Employee</option>
+          {companyRoles.length > 0 && (
+            <optgroup label="Company roles">
+              {companyRoles.map((r) => (
+                <option key={r.id} value={`role:${r.id}`}>
+                  {r.name}
+                </option>
+              ))}
+            </optgroup>
+          )}
+          <optgroup label="Built in">
+            <option value="ADMIN">Admin, everything except billing</option>
+            <option value="EMPLOYEE">Employee, day to day work</option>
+          </optgroup>
         </Select>
         <FieldError messages={state?.errors?.role} />
       </div>

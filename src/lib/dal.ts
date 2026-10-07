@@ -1,9 +1,11 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { getSessionPayload, type SessionPayload } from "@/lib/session";
 import { db } from "@/lib/db";
 import { hasRole } from "@/lib/roles";
+import { cleanAccess, decideAccess, type RoleAccess } from "@/lib/role-access";
 
 export { hasRole };
 
@@ -14,21 +16,45 @@ export { hasRole };
  * role comes from the database, so a removed member or a changed role takes
  * effect at once instead of when the 7 day sign-in expires.
  */
-export const verifySession = cache(async () => {
+export const verifySessionAnywhere = cache(async () => {
   const session = await getSessionPayload();
   if (!session?.userId) {
     redirect("/login");
   }
   const user = await db.user.findUnique({
     where: { id: session.userId },
-    select: { role: true, companyId: true, sessionsValidAfter: true },
+    select: { role: true, companyId: true, sessionsValidAfter: true, companyRole: { select: { access: true, baseRole: true } } },
   });
   const issuedMs = (session.iat ?? 0) * 1000;
   if (!user || user.companyId !== session.companyId || (user.sessionsValidAfter && issuedMs < user.sessionsValidAfter.getTime())) {
     // Cookies can only be cleared from a route handler, so go through one.
     redirect("/api/session/clear");
   }
-  return { ...session, role: user.role };
+  // A company role limits which modules the member can open; owners are
+  // never limited. Null means the plain Admin or Employee access.
+  const access: RoleAccess | null =
+    user.role !== "OWNER" && user.companyRole ? cleanAccess(user.companyRole.access, user.companyRole.baseRole === "ADMIN" ? "ADMIN" : "EMPLOYEE") : null;
+  return { ...session, role: user.role, access };
+});
+
+/**
+ * verifySessionAnywhere plus the member's company role: every page and
+ * every save inside a module they can't open is refused, and a module they
+ * may only view refuses saves. The page address comes from the proxy
+ * (x-pathname); a server action is recognised by its Next-Action header.
+ * Saves that belong to no module (search, branch switch, sign out) use
+ * verifySessionAnywhere instead.
+ */
+export const verifySession = cache(async () => {
+  const session = await verifySessionAnywhere();
+  if (session.access) {
+    const h = await headers();
+    const path = h.get("x-pathname");
+    const decision = decideAccess(session.access, path, h.has("next-action"));
+    if (decision === "no-access") redirect("/dashboard?error=no-access");
+    if (decision === "view-only") redirect(`${path}?error=view-only`);
+  }
+  return session;
 });
 
 /** Page-level guard: redirects to the dashboard with an error banner if the

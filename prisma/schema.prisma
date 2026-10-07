@@ -105,6 +105,7 @@ model Company {
   customBranches   Int?
   customAiRequests Int?
   customEdi        Boolean @default(false)
+  companyRoles CompanyRole[]
 }
 
 enum CompanyPlan {
@@ -173,6 +174,12 @@ model User {
   branchId String?
   branch   Branch? @relation("UserBranch", fields: [branchId], references: [id], onDelete: SetNull)
 
+  // A ready made or custom role (Branch manager, Cashier...) limiting which
+  // modules this member can open, and whether only to view. Null: the plain
+  // Admin or Employee access of `role`. Owners are never limited.
+  companyRoleId String?
+  companyRole   CompanyRole? @relation(fields: [companyRoleId], references: [id], onDelete: SetNull)
+
   chatMessages        AiChatMessage[]
   requestedAiActions  AiAction[]           @relation("AiActionRequestedBy")
   decidedAiActions    AiAction[]           @relation("AiActionDecidedBy")
@@ -199,6 +206,9 @@ model TeamInvite {
   email      String
   role       UserRole  @default(EMPLOYEE)
   tokenHash  String    @unique
+  /** The company role given on joining, if any (else plain `role`). */
+  companyRoleId String?
+  companyRole   CompanyRole? @relation(fields: [companyRoleId], references: [id], onDelete: SetNull)
   expiresAt  DateTime
   acceptedAt DateTime?
   createdAt  DateTime  @default(now())
@@ -2328,4 +2338,33 @@ model ContactMessage {
   handledAt DateTime?
 
   @@index([createdAt])
+}
+
+/// A role a company gives its members on top of Admin or Employee: which
+/// modules they can open, and for each whether they can only view or also
+/// make changes. Ready made roles (Branch manager, Accountant, Cashier, Stock
+/// controller) are created from templates in lib/company-roles.ts and can be
+/// edited; the owner can add their own. Only owners manage roles.
+model CompanyRole {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  /// Built in level behind the role: ADMIN reaches manager pages it is
+  /// granted (reports, finance, HR); EMPLOYEE never does.
+  baseRole    UserRole @default(EMPLOYEE)
+  /// Module key to "view" or "full"; a missing key means no access.
+  access      Json     @default("{}")
+  /// Template key for the ready made roles; null for the owner's own.
+  preset      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  companyId  String
+  companyRef Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  users   User[]
+  invites TeamInvite[]
+
+  @@unique([companyId, name])
+  @@index([companyId])
 }
