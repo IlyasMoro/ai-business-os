@@ -3,7 +3,7 @@ import { NotificationBell } from "@/components/layout/notification-bell";
 import { CompanyStatusBadge } from "@/components/layout/company-status-badge";
 import { BranchSwitcher } from "@/components/layout/branch-switcher";
 import { CommandPalette, SearchButton } from "@/components/layout/command-palette";
-import type { Role } from "@/components/layout/nav-config";
+import type { NavBadges, Role } from "@/components/layout/nav-config";
 import type { Notification } from "@/lib/notifications";
 
 export function Topbar({
@@ -14,6 +14,7 @@ export function Topbar({
   isPlatformAdmin = false,
   hiddenHrefs,
   lockedHrefs,
+  badges,
   notifications,
   subscription,
   planName,
@@ -27,6 +28,7 @@ export function Topbar({
   isPlatformAdmin?: boolean;
   hiddenHrefs?: string[];
   lockedHrefs?: string[];
+  badges?: NavBadges;
   notifications: Notification[];
   subscription: { status: string; trialEndsAt: Date | null; currentPeriodEnd: Date | null; cancelAtPeriodEnd: boolean } | null;
   planName: string;
@@ -36,7 +38,7 @@ export function Topbar({
   return (
     <header className="relative z-30 flex h-16 items-center justify-between border-b border-white/[0.09] px-4 sm:px-6 light:border-white/80 glass-panel">
       <div className="flex items-center gap-3">
-        <MobileNav role={role} userName={userName} email={email} companyName={companyName} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
+        <MobileNav role={role} userName={userName} email={email} companyName={companyName} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} badges={badges} />
         <CompanyStatusBadge
           companyName={companyName}
           subscription={subscription}
@@ -50,7 +52,7 @@ export function Topbar({
         <SearchButton />
         <NotificationBell notifications={notifications} />
       </div>
-      <CommandPalette role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} />
+      <CommandPalette role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
     </header>
   );
 }

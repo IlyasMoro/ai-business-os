@@ -7,7 +7,7 @@ import { Logo } from "@/components/brand/logo";
 import { Menu, X } from "lucide-react";
 import { NavLinks } from "./nav-links";
 import { UserMenu } from "./user-menu";
-import type { Role } from "./nav-config";
+import type { Role, NavBadges } from "./nav-config";
 
 export function MobileNav({
   role,
@@ -17,6 +17,7 @@ export function MobileNav({
   isPlatformAdmin = false,
   hiddenHrefs,
   lockedHrefs,
+  badges,
 }: {
   role: Role;
   userName: string;
@@ -25,6 +26,7 @@ export function MobileNav({
   isPlatformAdmin?: boolean;
   hiddenHrefs?: string[];
   lockedHrefs?: string[];
+  badges?: NavBadges;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -66,7 +68,7 @@ export function MobileNav({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} onNavigate={() => setOpen(false)} />
+            <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} badges={badges} onNavigate={() => setOpen(false)} />
             <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
               <UserMenu userName={userName} email={email} role={role} companyName={companyName} />
             </div>

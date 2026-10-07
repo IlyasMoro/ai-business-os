@@ -1,16 +1,49 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { ArrowRight, Boxes, CornerDownLeft, FileText, Loader2, Receipt, Search, ShoppingCart, Truck, UserSquare2, Users } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { ArrowRight, Boxes, Clock, CornerDownLeft, FileText, Loader2, Plus, Receipt, Search, ShoppingCart, Truck, UserSquare2, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { searchRecords, type SearchHit } from "@/lib/actions/search";
-import { visibleNav, type NavIcon, type Role } from "./nav-config";
+import { navGroups, navPinned, visibleNav, type NavIcon, type Role } from "./nav-config";
+import { isActive } from "./nav-links";
+import { rememberRecent, useRecent } from "./nav-prefs";
 
 /** Opens the search from anywhere (the top bar button sends it). */
 export const OPEN_SEARCH_EVENT = "aibos:open-search";
 
-type Row = { key: string; group: string; title: string; detail?: string; href: string; icon: NavIcon };
+type Row = { key: string; group: string; title: string; detail?: string; href: string; icon: NavIcon; color?: string };
+
+/** The section colour of the menu page an href belongs to. */
+function sectionColor(href: string): string | undefined {
+  return navGroups.find((g) => g.items.some((i) => href === i.href || href.startsWith(`${i.href}/`)))?.color;
+}
+
+const KIND_HREF: Record<SearchHit["kind"], string> = {
+  Customer: "/dashboard/crm",
+  Product: "/dashboard/inventory",
+  Order: "/dashboard/sales",
+  Invoice: "/dashboard/invoicing",
+  Supplier: "/dashboard/procurement",
+  Employee: "/dashboard/hr",
+};
+
+/** Things to create from anywhere: "new" lists them all. Each shows only
+ * when its module is in the menu for this user and on the company's plan. */
+const ACTIONS: { title: string; href: string; module: string; icon: LucideIcon; words: string }[] = [
+  { title: "New order", href: "/dashboard/sales/new", module: "/dashboard/sales", icon: ShoppingCart, words: "sale create" },
+  { title: "New invoice", href: "/dashboard/invoicing/new", module: "/dashboard/invoicing", icon: Receipt, words: "bill create" },
+  { title: "New quote", href: "/dashboard/quotes/new", module: "/dashboard/quotes", icon: FileText, words: "offer price create" },
+  { title: "New customer", href: "/dashboard/crm/new", module: "/dashboard/crm", icon: Users, words: "client lead create" },
+  { title: "New product", href: "/dashboard/inventory/new", module: "/dashboard/inventory", icon: Boxes, words: "stock item create" },
+  { title: "New purchase order", href: "/dashboard/procurement/new", module: "/dashboard/procurement", icon: Truck, words: "buy supplier create" },
+  { title: "New stock transfer", href: "/dashboard/transfers/new", module: "/dashboard/transfers", icon: Truck, words: "move branch create" },
+  { title: "New return", href: "/dashboard/returns/new", module: "/dashboard/returns", icon: Receipt, words: "refund create" },
+  { title: "New support ticket", href: "/dashboard/support/new", module: "/dashboard/support", icon: Users, words: "help create" },
+  { title: "New project", href: "/dashboard/projects/new", module: "/dashboard/projects", icon: FileText, words: "create" },
+  { title: "New employee", href: "/dashboard/hr/new", module: "/dashboard/hr", icon: UserSquare2, words: "staff hire create" },
+  { title: "New transaction", href: "/dashboard/accounting/new", module: "/dashboard/accounting", icon: Receipt, words: "income expense create" },
+];
 
 const KIND_ICON: Record<SearchHit["kind"], NavIcon> = {
   Customer: Users,
@@ -43,12 +76,22 @@ export function CommandPalette({
   role,
   isPlatformAdmin = false,
   hiddenHrefs = [],
+  lockedHrefs = [],
 }: {
   role: Role;
   isPlatformAdmin?: boolean;
   hiddenHrefs?: string[];
+  lockedHrefs?: string[];
 }) {
   const [open, setOpen] = useState(false);
+
+  // Menu pages opened lately, for "Recent" in the empty search. Records
+  // join the list when they are opened from the search.
+  const pathname = usePathname();
+  useEffect(() => {
+    const page = [...navPinned, ...navGroups.flatMap((g) => g.items)].find((i) => i.href === pathname && isActive(i.href, pathname));
+    if (page) rememberRecent({ href: page.href, title: page.label, detail: page.description });
+  }, [pathname]);
 
   // Ctrl K / Cmd K toggles it; the top bar button opens it.
   useEffect(() => {
@@ -68,21 +111,25 @@ export function CommandPalette({
   }, []);
 
   // Mounted only while open, so every opening starts from an empty search.
-  return open ? <SearchDialog role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} onClose={() => setOpen(false)} /> : null;
+  return open ? <SearchDialog role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} onClose={() => setOpen(false)} /> : null;
 }
 
 function SearchDialog({
   role,
   isPlatformAdmin,
   hiddenHrefs,
+  lockedHrefs,
   onClose,
 }: {
   role: Role;
   isPlatformAdmin: boolean;
   hiddenHrefs: string[];
+  lockedHrefs: string[];
   onClose: () => void;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const recent = useRecent();
   const [query, setQuery] = useState("");
   const [hits, setHits] = useState<SearchHit[]>([]);
   const [selected, setSelected] = useState(0);
@@ -117,24 +164,54 @@ function SearchDialog({
     ];
   }, [role, isPlatformAdmin, hiddenHrefs]);
 
+  const actions = useMemo(() => {
+    const open = new Set(pages.map((p) => p.href));
+    return ACTIONS.filter((a) => open.has(a.module) && !lockedHrefs.includes(a.module));
+  }, [pages, lockedHrefs]);
+
   const rows: Row[] = useMemo(() => {
     const q = query.trim().toLowerCase();
     const words = q.split(/\s+/).filter(Boolean);
+    // Each typed word must start a word of the text, so "min" finds nothing
+    // in "Administration".
+    const fits = (text: string) => {
+      const t = ` ${text}`.toLowerCase().replace(/[^a-z0-9]+/g, " ");
+      return words.every((w) => t.includes(` ${w}`));
+    };
+
     const pageRows = pages
-      .filter((p) => {
-        if (words.length === 0) return true;
-        // Each typed word must start a word of the page's name, description
-        // or other names, so "min" finds nothing in "Administration".
-        const text = ` ${p.label} ${p.description ?? ""} ${ALSO_KNOWN_AS[p.href] ?? ""}`.toLowerCase().replace(/[^a-z0-9]+/g, " ");
-        return words.every((w) => text.includes(` ${w}`));
-      })
+      .filter((p) => words.length === 0 || fits(`${p.label} ${p.description ?? ""} ${ALSO_KNOWN_AS[p.href] ?? ""}`))
       // Name matches before description matches.
       .sort((a, b) => Number(!a.label.toLowerCase().includes(q)) - Number(!b.label.toLowerCase().includes(q)))
       .slice(0, words.length === 0 ? 8 : 6)
-      .map((p) => ({ key: p.href, group: "Pages", title: p.label, detail: p.description, href: p.href, icon: p.icon }));
-    const recordRows = (term.length < 2 ? [] : hits).map((h) => ({ key: h.href, group: `${h.kind}s`, title: h.title, detail: h.detail, href: h.href, icon: KIND_ICON[h.kind] }));
-    return [...pageRows, ...recordRows];
-  }, [pages, hits, term, query]);
+      .map((p) => ({ key: p.href, group: "Pages", title: p.label, detail: p.description, href: p.href, icon: p.icon, color: sectionColor(p.href) }));
+
+    const actionRows = actions
+      .filter((a) => words.length > 0 && fits(`${a.title} ${a.words}`))
+      .slice(0, 6)
+      .map((a) => ({ key: a.href, group: "Create", title: a.title, href: a.href, icon: a.icon, color: sectionColor(a.module) }));
+
+    const recordRows = (term.length < 2 ? [] : hits).map((h) => ({
+      key: h.href,
+      group: `${h.kind}s`,
+      title: h.title,
+      detail: h.detail,
+      href: h.href,
+      icon: KIND_ICON[h.kind],
+      color: sectionColor(KIND_HREF[h.kind]),
+    }));
+
+    if (words.length === 0) {
+      // Empty search: where you were lately, then the things people create most.
+      const recentRows = recent
+        .filter((r) => r.href !== pathname)
+        .slice(0, 5)
+        .map((r) => ({ key: r.href, group: "Recent", title: r.title, detail: r.detail, href: r.href, icon: Clock, color: sectionColor(r.href) }));
+      const quick = actions.slice(0, 4).map((a) => ({ key: a.href, group: "Create", title: a.title, href: a.href, icon: a.icon, color: sectionColor(a.module) }));
+      return [...recentRows, ...quick, ...pageRows];
+    }
+    return [...actionRows, ...pageRows, ...recordRows];
+  }, [pages, actions, hits, term, query, recent, pathname]);
 
   useEffect(() => {
     listRef.current?.querySelector<HTMLElement>(`[data-index="${selected}"]`)?.scrollIntoView({ block: "nearest" });
@@ -143,6 +220,7 @@ function SearchDialog({
 
   const go = (row: Row | undefined) => {
     if (!row) return;
+    if (row.group !== "Create" && row.group !== "Pages" && row.group !== "Recent") rememberRecent({ href: row.href, title: row.title, detail: row.detail });
     onClose();
     router.push(row.href);
   };
@@ -178,7 +256,7 @@ function SearchDialog({
             }}
             autoFocus
             onKeyDown={onKeyDown}
-            placeholder="Search pages, customers, products, orders, invoices..."
+            placeholder="Search, or type new to create something..."
             aria-label="Search"
             aria-controls="search-results"
             aria-activedescendant={rows[selected] ? `search-row-${selected}` : undefined}
@@ -212,15 +290,24 @@ function SearchDialog({
                       on ? "bg-blue-500/15 light:bg-blue-500/10" : "hover:bg-white/[0.04] light:hover:bg-slate-900/[0.03]"
                     )}
                   >
+                    {/* The icon in its section's colour, brighter when selected. */}
                     <span
                       className={cn(
-                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
-                        on
-                          ? "border-blue-400/30 bg-blue-500/15 text-blue-300 light:text-blue-700"
-                          : "border-white/[0.08] bg-white/[0.04] text-slate-300 light:border-slate-200 light:bg-slate-50 light:text-slate-600"
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border transition-shadow",
+                        !row.color && "border-white/[0.08] bg-white/[0.04] text-slate-300 light:border-slate-200 light:bg-slate-50 light:text-slate-600"
                       )}
+                      style={
+                        row.color
+                          ? {
+                              color: row.color,
+                              backgroundColor: `${row.color}${on ? "33" : "1f"}`,
+                              borderColor: `${row.color}${on ? "80" : "4d"}`,
+                              boxShadow: on ? `0 0 18px -4px ${row.color}` : undefined,
+                            }
+                          : undefined
+                      }
                     >
-                      <row.icon className="h-4 w-4" />
+                      {row.group === "Create" ? <Plus className="h-4 w-4" /> : <row.icon className="h-4 w-4" />}
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-medium text-slate-100 light:text-slate-900">{row.title}</span>
@@ -240,7 +327,7 @@ function SearchDialog({
 
         <div className="flex items-center gap-4 border-t border-white/[0.08] px-4 py-2 text-[11px] text-slate-500 light:border-slate-200">
           <span className="flex items-center gap-1">
-            <FileText className="h-3 w-3" /> Pages and records you can open
+            <FileText className="h-3 w-3" /> Pages, records and actions you can open
           </span>
           <span className="ml-auto">↑ ↓ to move · Enter to open · Esc to close</span>
         </div>

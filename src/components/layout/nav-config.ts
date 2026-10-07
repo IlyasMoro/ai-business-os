@@ -49,7 +49,18 @@ export type NavItem = {
 
 /** `icon` marks the group heading; it matches the department icons in the
  * landing page constellation (components/landing/module-constellation.tsx). */
-export type NavGroup = { label: string; icon: typeof LayoutDashboard; items: NavItem[] };
+export type NavGroup = {
+  label: string;
+  icon: typeof LayoutDashboard;
+  /** The section's own colour for its icons in the hover menu and when
+   * open (validated categorical palette, dark surface steps). */
+  color: string;
+  items: NavItem[];
+};
+
+/** Count shown beside a page in the menu, by href: work waiting there. */
+export type NavBadge = { count: number; tone: "red" | "amber" | "blue" };
+export type NavBadges = Record<string, NavBadge>;
 
 /** The everyday pages, always visible at the top of the menu above the
  * department groups. Reports is here rather than in a group of its own. */
@@ -70,6 +81,7 @@ export const navPinned: NavItem[] = [
 export const navGroups: NavGroup[] = [
   {
     label: "Customers and Sales",
+    color: "#3987e5",
     icon: Users,
     items: [
       { href: "/dashboard/crm", label: "CRM", icon: Users, description: "Customers, leads, deals and follow ups" },
@@ -83,6 +95,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Operations",
+    color: "#d95926",
     icon: Boxes,
     items: [
       { href: "/dashboard/inventory", label: "Inventory", icon: Boxes, description: "Products, stock per branch, kg and expiry" },
@@ -93,6 +106,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Finance",
+    color: "#199e70",
     icon: Wallet,
     items: [
       { href: "/dashboard/accounting", label: "Accounting", icon: Wallet, roles: ["OWNER", "ADMIN"], description: "Income, expenses and the books" },
@@ -101,6 +115,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "People",
+    color: "#c98500",
     icon: UserSquare2,
     items: [
       { href: "/dashboard/hr", label: "HR", icon: UserSquare2, roles: ["OWNER", "ADMIN"], description: "Employees, roles and departments" },
@@ -110,6 +125,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Work Management",
+    color: "#d55181",
     icon: FolderKanban,
     items: [
       { href: "/dashboard/projects", label: "Projects", icon: FolderKanban, description: "Projects, tasks, budgets and progress" },
@@ -118,6 +134,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Connectivity",
+    color: "#9085e9",
     icon: Plug,
     items: [
       { href: "/dashboard/integrations", label: "Integrations", icon: Plug, roles: ["OWNER", "ADMIN"], description: "Google, email and other connected apps" },
@@ -126,6 +143,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     label: "Administration",
+    color: "#94a3b8",
     icon: SlidersHorizontal,
     items: [
       { href: "/dashboard/billing", label: "Billing", icon: CreditCard, roles: ["OWNER"], description: "Your plan, payments and invoices" },

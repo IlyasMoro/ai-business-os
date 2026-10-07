@@ -61,11 +61,14 @@ export function UserMenu({
   email,
   role,
   companyName,
+  compact = false,
 }: {
   userName: string;
   email: string;
   role: Role;
   companyName: string;
+  /** Icons only menu: just the initial; the menu opens wider to the right. */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -113,18 +116,18 @@ export function UserMenu({
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blue-400/30 bg-blue-500/20 text-xs font-semibold text-blue-300 backdrop-blur-md light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700">
           {initial}
         </span>
-        <span className="flex-1 truncate text-left text-sm text-slate-300 light:text-slate-600">{firstName}</span>
-        <ChevronDown
+        {!compact && <span className="flex-1 truncate text-left text-sm text-slate-300 light:text-slate-600">{firstName}</span>}
+        {!compact && <ChevronDown
           strokeWidth={3}
           aria-hidden
           className={`h-4 w-4 shrink-0 transition-transform duration-150 ${open ? "rotate-180 text-blue-400 light:text-blue-600" : "text-slate-300 light:text-slate-600"}`}
-        />
+        />}
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute inset-x-0 bottom-full z-50 mb-2 min-w-[15rem] overflow-hidden rounded-lg border border-white/[0.1] shadow-xl glass-strong light:border-white/80"
+          className={`absolute bottom-full z-50 mb-2 min-w-[15rem] overflow-hidden rounded-lg border border-white/[0.1] shadow-xl glass-strong light:border-white/80 ${compact ? "left-0" : "inset-x-0"}`}
         >
           {/* Who is signed in */}
           <div className="border-b border-white/[0.08] px-3 py-3 light:border-slate-200">

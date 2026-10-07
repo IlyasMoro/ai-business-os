@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { getNotifications } from "@/lib/notifications";
@@ -11,7 +11,8 @@ import { getControllingSettings } from "@/lib/controlling";
 import { getBranchContext } from "@/lib/branches";
 import { getCompanyPlan } from "@/lib/plan-limits";
 import { FEATURE_MIN_PLAN, planAllows, type PlanFeature } from "@/lib/plans";
-import { Sidebar } from "@/components/layout/sidebar";
+import { Sidebar, SIDEBAR_COOKIE } from "@/components/layout/sidebar";
+import { getNavBadges } from "@/lib/nav-badges";
 import { Topbar } from "@/components/layout/topbar";
 import { SubscriptionBlocked } from "@/components/billing/subscription-blocked";
 
@@ -49,6 +50,8 @@ export default async function DashboardLayout({
     .filter((feature) => !planAllows(plan, feature))
     .map((feature) => `/dashboard/${feature}`);
   const platformAdmin = isPlatformAdmin(user.email);
+  const [badges, cookieStore] = await Promise.all([getNavBadges(user.companyId, branchCtx.viewBranchId), cookies()]);
+  const sidebarCollapsed = cookieStore.get(SIDEBAR_COOKIE)?.value === "collapsed";
 
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") ?? "";
@@ -57,7 +60,17 @@ export default async function DashboardLayout({
 
   return (
     <div className="app-text flex min-h-screen">
-      <Sidebar role={user.role} userName={user.name} email={user.email} companyName={user.company.name} isPlatformAdmin={platformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
+      <Sidebar
+        role={user.role}
+        userName={user.name}
+        email={user.email}
+        companyName={user.company.name}
+        isPlatformAdmin={platformAdmin}
+        hiddenHrefs={hiddenHrefs}
+        lockedHrefs={lockedHrefs}
+        badges={badges}
+        initialCollapsed={sidebarCollapsed}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           companyName={user.company.name}
@@ -67,6 +80,7 @@ export default async function DashboardLayout({
           isPlatformAdmin={platformAdmin}
           hiddenHrefs={hiddenHrefs}
           lockedHrefs={lockedHrefs}
+          badges={badges}
           notifications={notifications}
           subscription={subscription}
           planName={plan.name}
