@@ -6,13 +6,13 @@ import {
   Building2,
   Check,
   CheckCircle2,
+  Mail,
   MessageCircle,
-  Send,
   Tag,
+  User,
   UserRound,
   type LucideIcon,
 } from "lucide-react";
-import { publicField, publicLabel } from "@/components/public/customer-shell";
 import { HONEYPOT_FIELD } from "@/lib/lead-form";
 import {
   asksForSize,
@@ -23,6 +23,14 @@ import {
 import { CUSTOM_PLAN, recommendedPlan } from "@/lib/plans";
 import { submitContactMessage } from "@/lib/actions/contact";
 import { cn } from "@/lib/utils";
+import {
+  AuthAlert,
+  AuthField,
+  AuthSubmit,
+  authLabel,
+  authLink,
+  authPlainField,
+} from "@/components/auth/auth-fields";
 import styles from "@/components/landing/landing.module.css";
 
 const TOPIC_ICONS: Record<ContactTopicId, LucideIcon> = {
@@ -41,6 +49,9 @@ const PLACEHOLDERS: Record<ContactTopicId, string> = {
   OTHER: "How can we help?",
 };
 
+const tip =
+  "rounded-xl border-l-[3px] border-l-cyan-400 bg-slate-50 px-4 py-3 text-sm leading-relaxed text-slate-600 [&_a]:font-semibold [&_a]:text-[#0b1f5e] [&_a]:underline [&_b]:text-[#0b1f5e]";
+
 function Field({
   id,
   label,
@@ -56,14 +67,12 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className={publicLabel}>
+      <label htmlFor={id} className={authLabel}>
         {label}
-        {optional && (
-          <span className="font-normal text-slate-400"> (optional)</span>
-        )}
+        {optional && <span className="font-normal text-slate-400"> (optional)</span>}
       </label>
       {children}
-      {error?.[0] && <p className="mt-1 text-sm text-red-600">{error[0]}</p>}
+      {error?.[0] && <p className="mt-1.5 text-sm text-red-600">{error[0]}</p>}
     </div>
   );
 }
@@ -73,7 +82,7 @@ function Field({
 function PlanHint({ users, branches }: { users: number; branches: number }) {
   const plan = recommendedPlan(Math.max(1, users), Math.max(1, branches));
   return (
-    <div className={styles.contactTip}>
+    <div className={tip}>
       {plan.id === CUSTOM_PLAN.id ? (
         <>
           <b>Enterprise fits a team this size</b>: priced per user, built on the
@@ -114,14 +123,12 @@ export function ContactForm({
 
   if (state?.ok) {
     return (
-      <div className="flex h-full flex-col items-center justify-center py-12 text-center">
-        <CheckCircle2 className="h-12 w-12 text-emerald-600" aria-hidden />
-        <p className="mt-4 text-lg font-semibold text-slate-900">
-          Thank you, we have your message.
-        </p>
-        <p className="mt-1 max-w-sm text-sm text-slate-600">
-          We reply by email, usually within one working day.
-        </p>
+      <div className="flex flex-col items-center py-10 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 ring-1 ring-emerald-200">
+          <CheckCircle2 className="h-7 w-7 text-emerald-600" aria-hidden />
+        </span>
+        <p className="mt-5 text-lg font-semibold text-slate-900">Thank you, we have your message.</p>
+        <p className="mt-1 max-w-sm text-sm text-slate-600">We reply by email, usually within one working day.</p>
       </div>
     );
   }
@@ -147,10 +154,11 @@ export function ContactForm({
       </div>
 
       <fieldset>
-        <legend className={publicLabel}>What is it about?</legend>
+        <legend className={authLabel}>What is it about?</legend>
         <div className="grid gap-2.5 sm:grid-cols-2">
           {CONTACT_TOPICS.map((t) => {
             const Icon = TOPIC_ICONS[t.id];
+            const chosen = topic === t.id;
             return (
               <span key={t.id}>
                 <input
@@ -158,23 +166,39 @@ export function ContactForm({
                   id={`topic-${t.id}`}
                   name="topic"
                   value={t.id}
-                  checked={topic === t.id}
+                  checked={chosen}
                   onChange={() => setTopic(t.id)}
-                  className={cn(styles.tileInput, "sr-only")}
+                  className="peer sr-only"
                 />
-                <label htmlFor={`topic-${t.id}`} className={styles.tile}>
-                  <span className={styles.tileIcon} aria-hidden>
+                <label
+                  htmlFor={`topic-${t.id}`}
+                  className={cn(
+                    "relative flex h-full cursor-pointer items-start gap-3 rounded-xl border px-3.5 py-3 pr-10 text-[0.9rem] leading-snug transition peer-focus-visible:ring-2 peer-focus-visible:ring-[#1b3fbf]/40",
+                    chosen
+                      ? "border-[#0b1f5e] bg-[#f7f9fc] shadow-[inset_0_0_0_1px_#0b1f5e]"
+                      : "border-slate-200 bg-white hover:border-[#0b1f5e]"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition",
+                      chosen ? "bg-cyan-400/15 text-[#0b1f5e]" : "bg-slate-100 text-[#0b1f5e]"
+                    )}
+                    aria-hidden
+                  >
                     <Icon className="h-4 w-4" />
                   </span>
                   <span className="min-w-0">
-                    <span className="block font-bold text-[#0b1f5e]">
-                      {t.label}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-slate-500">
-                      {t.desc}
-                    </span>
+                    <span className="block font-semibold text-[#0b1f5e]">{t.label}</span>
+                    <span className="mt-0.5 block text-xs text-slate-500">{t.desc}</span>
                   </span>
-                  <span className={styles.tileTick} aria-hidden>
+                  <span
+                    className={cn(
+                      "absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-[#0b1f5e] text-white transition",
+                      chosen ? "scale-100 opacity-100" : "scale-75 opacity-0"
+                    )}
+                    aria-hidden
+                  >
                     <Check className="h-3 w-3" strokeWidth={3} />
                   </span>
                 </label>
@@ -183,7 +207,7 @@ export function ContactForm({
           })}
         </div>
         {e?.topic?.[0] && (
-          <p className="mt-1 text-sm text-red-600">{e.topic[0]}</p>
+          <p className="mt-1.5 text-sm text-red-600">{e.topic[0]}</p>
         )}
       </fieldset>
 
@@ -193,12 +217,7 @@ export function ContactForm({
           {sized && (
             <>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  id="teamSize"
-                  label="Team size"
-                  optional
-                  error={e?.teamSize}
-                >
+                <Field id="teamSize" label="Team size" optional error={e?.teamSize}>
                   <input
                     id="teamSize"
                     name="teamSize"
@@ -209,15 +228,10 @@ export function ContactForm({
                     placeholder="For example 25"
                     value={teamSize}
                     onChange={(ev) => setTeamSize(ev.target.value)}
-                    className={publicField}
+                    className={authPlainField}
                   />
                 </Field>
-                <Field
-                  id="branches"
-                  label="Branches"
-                  optional
-                  error={e?.branches}
-                >
+                <Field id="branches" label="Branches" optional error={e?.branches}>
                   <input
                     id="branches"
                     name="branches"
@@ -228,22 +242,18 @@ export function ContactForm({
                     placeholder="For example 2"
                     value={branches}
                     onChange={(ev) => setBranches(ev.target.value)}
-                    className={publicField}
+                    className={authPlainField}
                   />
                 </Field>
               </div>
               {topic === "SALES" && Number(teamSize) > 0 && (
-                <PlanHint
-                  users={Number(teamSize)}
-                  branches={Number(branches) || 1}
-                />
+                <PlanHint users={Number(teamSize)} branches={Number(branches) || 1} />
               )}
             </>
           )}
           {topic === "SUPPORT" && (
-            <div className={styles.contactTip}>
-              Can&apos;t sign in?{" "}
-              <Link href="/forgot-password">Reset your password</Link> first, it
+            <div className={tip}>
+              Can&apos;t sign in? <Link href="/forgot-password">Reset your password</Link> first, it
               only takes a minute.
             </div>
           )}
@@ -251,37 +261,18 @@ export function ContactForm({
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field id="name" label="Name" error={e?.name}>
-          <input
-            id="name"
-            name="name"
-            required
-            autoComplete="name"
-            maxLength={100}
-            className={publicField}
-          />
-        </Field>
-        <Field id="email" label="Email" error={e?.email}>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            required
-            autoComplete="email"
-            maxLength={200}
-            className={publicField}
-          />
-        </Field>
+        <AuthField id="name" label="Name" icon={User} required autoComplete="name" maxLength={100} placeholder="Your name" errors={e?.name} />
+        <AuthField id="email" type="email" label="Email" icon={Mail} required autoComplete="email" maxLength={200} placeholder="you@company.com" errors={e?.email} />
       </div>
-      <Field id="company" label="Company" optional error={e?.company}>
-        <input
-          id="company"
-          name="company"
-          autoComplete="organization"
-          maxLength={150}
-          className={publicField}
-        />
-      </Field>
+      <AuthField
+        id="company"
+        label="Company (optional)"
+        icon={Building2}
+        autoComplete="organization"
+        maxLength={150}
+        placeholder="Your company"
+        errors={e?.company}
+      />
 
       <Field id="message" label="Message" error={e?.message}>
         <textarea
@@ -291,28 +282,19 @@ export function ContactForm({
           rows={5}
           maxLength={4000}
           placeholder={PLACEHOLDERS[topic]}
-          className={publicField}
+          className={cn(authPlainField, "resize-y")}
         />
       </Field>
 
-      {state?.message && (
-        <p className="text-sm text-red-600">{state.message}</p>
-      )}
+      {state?.message && <AuthAlert tone="error">{state.message}</AuthAlert>}
+
       <div>
-        <button
-          type="submit"
-          disabled={pending}
-          className={cn(styles.btn, styles.sendBtn)}
-        >
-          <Send className="h-4 w-4" aria-hidden />
-          {pending ? "Sending..." : "Send message"}
-        </button>
+        <AuthSubmit pending={pending} pendingText="Sending">
+          Send message
+        </AuthSubmit>
         <p className="mt-3 text-center text-xs text-slate-500">
           We only use your details to reply to you.{" "}
-          <Link
-            href="/privacy"
-            className="font-semibold text-[#0b1f5e] underline"
-          >
+          <Link href="/privacy" className={authLink}>
             Privacy policy
           </Link>
         </p>

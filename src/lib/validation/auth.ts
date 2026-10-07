@@ -42,6 +42,8 @@ export type LoginFormState =
     }
   | undefined;
 
+export type SecondStepFormState = { message?: string } | undefined;
+
 export const ForgotPasswordSchema = z.object({
   email: z.email({ error: "Please enter a valid email." }).trim().toLowerCase(),
 });

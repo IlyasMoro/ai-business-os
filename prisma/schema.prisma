@@ -170,6 +170,18 @@ model User {
   // The day ("2026-10-05") the morning reminder summary was last emailed.
   digestSentOn        String?
 
+  // Two step sign in with an authenticator app (lib/two-factor.ts). The
+  // secret is encrypted (lib/secret-box.ts); pending while being set up,
+  // moved to twoFactorSecret once a first code proves the app has it.
+  twoFactorSecret        String?
+  twoFactorPendingSecret String?
+  twoFactorEnabledAt     DateTime?
+  // SHA-256 hashes of the unused one time recovery codes.
+  twoFactorRecoveryCodes String[]  @default([])
+  // The last 30 second step a code was accepted for, so one code cannot
+  // be used twice.
+  twoFactorLastStep      Int?
+
   companyId String
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
@@ -189,6 +201,7 @@ model User {
   decidedAiActions    AiAction[]           @relation("AiActionDecidedBy")
   stockMovements      StockMovement[]
   passwordResetTokens PasswordResetToken[]
+  externalLogins      ExternalLogin[]
   auditLogs           AuditLog[]
   taskComments        TaskComment[]
   ticketMessages      TicketMessage[]
@@ -332,6 +345,24 @@ model StockTransferItem {
 
   @@unique([transferId, productId])
   @@index([productId])
+}
+
+/// A Google or Microsoft account that can sign in as this user
+/// (lib/oauth-login.ts). Matched by the provider's own user id, never by
+/// email alone after the first link.
+model ExternalLogin {
+  id        String   @id @default(cuid())
+  provider  String
+  subject   String
+  email     String
+  createdAt DateTime @default(now())
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, subject])
+  @@unique([userId, provider])
+  @@index([userId])
 }
 
 model PasswordResetToken {

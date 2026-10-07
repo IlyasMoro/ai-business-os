@@ -1,10 +1,16 @@
 import { createHash } from "crypto";
 import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
+import { Bot, GitBranch, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { acceptInvite } from "@/lib/actions/team";
 import { AcceptInviteForm } from "@/components/team/accept-invite-form";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { AuthAlert, authLink } from "@/components/auth/auth-fields";
 import type { AcceptInviteFormState } from "@/lib/validation/team";
+
+export const metadata = {
+  title: "Join your team",
+};
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -29,45 +35,45 @@ export default async function InvitePage({
     formData: FormData
   ) => Promise<AcceptInviteFormState>;
 
+  const panel = {
+    panelEyebrow: "You are invited",
+    panelTitle: "Your team already works here. Jump in.",
+    points: [
+      { icon: Users, text: "See exactly what your role lets you open" },
+      { icon: GitBranch, text: "Work in your own branch, alongside everyone else" },
+      { icon: Bot, text: "Ask the AI Copilot anything about your work" },
+    ],
+  };
+
+  if (!isValid) {
+    return (
+      <AuthShell title="This invite no longer works" {...panel}>
+        <div className="space-y-6">
+          <AuthAlert tone="error">
+            The link is invalid, already used or expired. Ask whoever invited you to send a new one.
+          </AuthAlert>
+          <p className="text-center text-sm">
+            <Link href="/login" className={authLink}>
+              Go to sign in
+            </Link>
+          </p>
+        </div>
+      </AuthShell>
+    );
+  }
+
   return (
-    <div className="app-text relative flex min-h-screen items-center justify-center px-4">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
-      />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.09] p-8 shadow-lg light:border-white/80 glass">
-        <Link
-          href="/"
-          className="mb-6 flex justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Logo layout="stacked" />
-        </Link>
-        {isValid ? (
-          <>
-            <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">
-              Join {invite.companyRef.name}
-            </h1>
-            <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-              You&apos;re accepting an invite as <span className="font-medium text-slate-300 light:text-slate-700">{invite.email}</span>.
-            </p>
-
-            <AcceptInviteForm action={action} />
-          </>
-        ) : (
-          <>
-            <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">Invite invalid</h1>
-            <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-              This invite link is invalid or has expired. Ask whoever invited you to send a new one.
-            </p>
-          </>
-        )}
-
-        <p className="mt-6 text-center text-sm text-slate-400 light:text-slate-500">
-          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
-            Back to sign in
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthShell
+      title={`Join ${invite.companyRef.name}`}
+      sub={
+        <>
+          You are accepting an invite as <span className="font-semibold text-slate-900">{invite.email}</span>.
+        </>
+      }
+      topLink={{ lead: "Already joined?", label: "Sign in", href: "/login" }}
+      {...panel}
+    >
+      <AcceptInviteForm action={action} />
+    </AuthShell>
   );
 }

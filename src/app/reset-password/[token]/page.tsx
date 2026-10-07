@@ -1,8 +1,12 @@
-import Link from "next/link";
-import { Logo } from "@/components/brand/logo";
+import { KeyRound, LockKeyhole, ShieldCheck } from "lucide-react";
 import { resetPassword } from "@/lib/actions/auth";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
 import type { ResetPasswordFormState } from "@/lib/validation/auth";
+
+export const metadata = {
+  title: "Choose a new password",
+};
 
 export default async function ResetPasswordPage({
   params,
@@ -17,31 +21,18 @@ export default async function ResetPasswordPage({
   ) => Promise<ResetPasswordFormState>;
 
   return (
-    <div className="app-text relative flex min-h-screen items-center justify-center px-4">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-500/10 blur-3xl"
-      />
-      <div className="relative w-full max-w-md rounded-xl border border-white/[0.09] p-8 shadow-lg light:border-white/80 glass">
-        <Link
-          href="/"
-          className="mb-6 flex justify-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-        >
-          <Logo layout="stacked" />
-        </Link>
-        <h1 className="text-xl font-semibold text-slate-50 light:text-slate-900">Choose a new password</h1>
-        <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-          Enter a new password for your account.
-        </p>
-
-        <ResetPasswordForm action={action} />
-
-        <p className="mt-6 text-center text-sm text-slate-400 light:text-slate-500">
-          <Link href="/login" className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-600 light:hover:text-blue-700">
-            Back to sign in
-          </Link>
-        </p>
-      </div>
-    </div>
+    <AuthShell
+      title="Choose a new password"
+      sub="Pick something you have not used here before. You will sign in with it next."
+      panelEyebrow="Almost there"
+      panelTitle="One new password and you are back in."
+      points={[
+        { icon: KeyRound, text: "A longer phrase is easier to remember and harder to guess" },
+        { icon: LockKeyhole, text: "Passwords are stored scrambled, never as plain text" },
+        { icon: ShieldCheck, text: "Too many wrong tries lock the account for 15 minutes" },
+      ]}
+    >
+      <ResetPasswordForm action={action} />
+    </AuthShell>
   );
 }

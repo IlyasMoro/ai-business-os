@@ -1,9 +1,17 @@
-import { KeyRound, UserRound } from "lucide-react";
+import { KeyRound, LogIn, ShieldCheck, UserRound } from "lucide-react";
+import QRCode from "qrcode";
 import { getCurrentUser } from "@/lib/dal";
 import { updateMyName, changePassword } from "@/lib/actions/account";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { Input, Label } from "@/components/ui-dark/input";
+import { buttonStyles } from "@/components/ui-dark/button";
+import { TwoFactorCard } from "@/components/account/two-factor-card";
+import { db } from "@/lib/db";
+import { openSecret } from "@/lib/secret-box";
+import { otpauthUrl } from "@/lib/totp";
+import { enabledProviders, providerLabel } from "@/lib/oauth-login";
+import { unlinkExternalLogin } from "@/lib/actions/sign-in-methods";
 
 export const metadata = { title: "My account" };
 
@@ -27,10 +35,39 @@ function CardHead({ icon: Icon, title, text }: { icon: typeof UserRound; title: 
 export default async function AccountPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; saved?: string }>;
+  searchParams: Promise<{ error?: string; saved?: string; left?: string; oauth?: string }>;
 }) {
   const user = await getCurrentUser();
-  const { error, saved } = await searchParams;
+  const { error, saved, left, oauth } = await searchParams;
+
+  const security = await db.user.findUniqueOrThrow({
+    where: { id: user.id },
+    select: {
+      twoFactorEnabledAt: true,
+      twoFactorPendingSecret: true,
+      twoFactorRecoveryCodes: true,
+      externalLogins: { select: { provider: true, email: true } },
+    },
+  });
+  // Setting up: the QR code for the app, made here so the secret never
+  // leaves the server except as the picture and the typed key.
+  const pendingSecret = !security.twoFactorEnabledAt && security.twoFactorPendingSecret ? openSecret(security.twoFactorPendingSecret) : null;
+  const setup = pendingSecret
+    ? { secret: pendingSecret, qrDataUrl: await QRCode.toDataURL(otpauthUrl({ secret: pendingSecret, account: user.email }), { margin: 1, width: 336 }) }
+    : null;
+  const providers = enabledProviders();
+  const savedText: Record<string, string> = {
+    password: "Password changed. Other devices have been signed out.",
+    "two-factor-off": "Two step sign in is off.",
+    "linked-google": "Google connected. You can now sign in with it.",
+    "linked-microsoft": "Microsoft connected. You can now sign in with it.",
+    unlinked: "Disconnected. Your password still works.",
+    "recovery-used": `You signed in with a recovery code. ${left ?? "Some"} left: make new ones below if you are running low.`,
+  };
+  const oauthError: Record<string, string> = {
+    failed: "Connecting didn't finish. Try again.",
+    taken: "That account is already connected to another AIBOS user.",
+  };
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -44,7 +81,12 @@ export default async function AccountPage({
           <ErrorBanner code={error} />
           {saved && (
             <div className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">
-              {saved === "password" ? "Password changed. Other devices have been signed out." : "Saved."}
+              {savedText[saved] ?? "Saved."}
+            </div>
+          )}
+          {oauth && oauthError[oauth] && (
+            <div role="alert" className="rounded-md border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm text-red-300 light:text-red-700">
+              {oauthError[oauth]}
             </div>
           )}
         </div>
@@ -93,6 +135,47 @@ export default async function AccountPage({
             </div>
           </form>
         </div>
+
+        <div id="two-factor" className="scroll-mt-6 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
+          <CardHead icon={ShieldCheck} title="Two step sign in" text="A code from your phone after your password." />
+          <TwoFactorCard
+            enabledAt={security.twoFactorEnabledAt?.toISOString() ?? null}
+            recoveryCodesLeft={security.twoFactorRecoveryCodes.length}
+            setup={setup}
+          />
+        </div>
+
+        {providers.length > 0 && (
+          <div id="sign-in-methods" className="scroll-mt-6 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
+            <CardHead icon={LogIn} title="Google and Microsoft" text="Sign in with an account you already use." />
+            <ul className="mt-5 space-y-3 border-t border-white/[0.06] pt-4 light:border-slate-200">
+              {providers.map((provider) => {
+                const linked = security.externalLogins.find((l) => l.provider === provider);
+                return (
+                  <li key={provider} className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-slate-100 light:text-slate-900">{providerLabel(provider)}</p>
+                      <p className="text-sm text-slate-400 light:text-slate-500">{linked ? `Connected as ${linked.email}` : "Not connected"}</p>
+                    </div>
+                    {linked ? (
+                      <form action={unlinkExternalLogin}>
+                        <input type="hidden" name="provider" value={provider} />
+                        <SubmitButton variant="ghost" pendingText="Disconnecting...">
+                          Disconnect
+                        </SubmitButton>
+                      </form>
+                    ) : (
+                      // A plain link: the browser leaves for the provider and comes back.
+                      <a href={`/api/auth/oauth/${provider}?mode=link`} className={buttonStyles("secondary")}>
+                        Connect
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
         </div>
       </div>
     </div>

@@ -1,36 +1,36 @@
-import Link from "next/link";
-import { Bot, GitBranch, LayoutDashboard } from "lucide-react";
+import { Bot, GitBranch, LayoutDashboard, ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
-import { SplitCardPage } from "@/components/landing/split-card-page";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { enabledProviders, providerLabel } from "@/lib/oauth-login";
 
 export const metadata = {
   title: "Sign in",
 };
 
-/* Sign in, in the landing page's look: the same card as the contact page. */
 export default function LoginPage() {
+  // Google / Microsoft buttons show only once their keys are set.
+  const providers = enabledProviders().map((id) => ({ id, label: providerLabel(id) }));
+
   return (
-    <SplitCardPage
-      eyebrow="Sign in"
-      title="Welcome back"
-      sub="Pick up where you left off: your sales, stock and money are waiting."
+    <AuthShell
+      title="Sign in"
+      sub="Welcome back. Your sales, stock and money are waiting."
+      topLink={{ lead: "New to AIBOS?", label: "Start free trial", href: "/register" }}
       panelEyebrow="Your business, ready"
+      panelTitle="Run every branch from one calm screen."
       points={[
-        { icon: LayoutDashboard, title: "Everything at a glance", text: "Sales, stock, money and your team on one dashboard." },
-        { icon: Bot, title: "An AI that asks first", text: "The AI Copilot suggests the next step; nothing happens until you approve it." },
-        { icon: GitBranch, title: "Every branch in step", text: "Switch between branches, or see the whole company at once." },
+        { icon: LayoutDashboard, text: "Sales, stock, money and your team on one dashboard" },
+        { icon: Bot, text: "An AI Copilot that suggests, and waits for your approval" },
+        { icon: GitBranch, text: "Every branch on its own, or the whole company at once" },
       ]}
-      panelFoot={
-        <>
-          New to AIBOS?{" "}
-          <Link href="/register" className="font-semibold text-cyan-300 hover:text-white">
-            Start your free trial
-          </Link>
-          . 14 days, no card needed.
-        </>
+      below={
+        <span className="flex items-start gap-2">
+          <ShieldCheck className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden />
+          Encrypted sign in. Five wrong passwords lock the account for 15 minutes.
+        </span>
       }
     >
-      <LoginForm />
-    </SplitCardPage>
+      <LoginForm providers={providers} />
+    </AuthShell>
   );
 }

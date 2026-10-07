@@ -1,35 +1,26 @@
-import Link from "next/link";
 import { CreditCard, Gift, ShieldCheck } from "lucide-react";
 import { RegisterForm } from "@/components/auth/register-form";
-import { SplitCardPage } from "@/components/landing/split-card-page";
+import { AuthShell } from "@/components/auth/auth-shell";
 
 export const metadata = {
   title: "Create your account",
 };
 
-/* Sign up, in the landing page's look: the same card as the contact page. */
 export default function RegisterPage() {
   return (
-    <SplitCardPage
-      eyebrow="Free trial"
+    <AuthShell
       title="Create your workspace"
-      sub="14 days free with every module, no credit card needed."
+      sub="14 days free with every module. No credit card needed."
+      topLink={{ lead: "Already have an account?", label: "Sign in", href: "/login" }}
       panelEyebrow="Free for 14 days"
+      panelTitle="Everything your business runs on, ready in a minute."
       points={[
-        { icon: Gift, title: "Every module included", text: "Sales, stock, invoicing, HR and the AI Copilot from day one." },
-        { icon: CreditCard, title: "No card needed", text: "Start now and choose a plan only when your trial ends." },
-        { icon: ShieldCheck, title: "Your data stays yours", text: "Download a full backup of your company whenever you like." },
+        { icon: Gift, text: "Sales, stock, invoicing, HR and the AI Copilot from day one" },
+        { icon: CreditCard, text: "No card needed: choose a plan only when your trial ends" },
+        { icon: ShieldCheck, text: "Your data stays yours: download a full backup any time" },
       ]}
-      panelFoot={
-        <>
-          Already have an account?{" "}
-          <Link href="/login" className="font-semibold text-cyan-300 hover:text-white">
-            Sign in
-          </Link>
-        </>
-      }
     >
       <RegisterForm />
-    </SplitCardPage>
+    </AuthShell>
   );
 }

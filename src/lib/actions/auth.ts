@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/password";
-import { createSession, deleteSession, sessionCutoffNow } from "@/lib/session";
+import { createSession, deleteSession, endSecondStep, readSecondStep, sessionCutoffNow } from "@/lib/session";
+import { checkSecondStepCode, finishSignIn } from "@/lib/two-factor";
 import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 import { sendEmail } from "@/lib/email";
 import {
@@ -17,6 +18,7 @@ import {
   type RegisterFormState,
   type ForgotPasswordFormState,
   type ResetPasswordFormState,
+  type SecondStepFormState,
 } from "@/lib/validation/auth";
 
 const MAX_LOGIN_ATTEMPTS = 5;
@@ -150,15 +152,47 @@ export async function login(
     data: { failedLoginAttempts: 0, lockedUntil: null },
   });
 
+  // In, or on to /login/verify when two step sign in is on.
+  await finishSignIn(user, { remember: formData.get("remember") === "on", via: "password" });
+}
+
+/**
+ * The second step: the code from the authenticator app, or a recovery code.
+ * Five wrong codes in 10 minutes end the attempt; the person starts over
+ * with their password.
+ */
+export async function verifySecondStep(_state: SecondStepFormState, formData: FormData): Promise<SecondStepFormState> {
+  const ticket = await readSecondStep();
+  if (!ticket) redirect("/login?expired=1");
+
+  const code = String(formData.get("code") ?? "").trim();
+  if (!code) return { message: "Type the 6 digit code from your app." };
+
+  const limitKey = `second-step:${ticket.userId}`;
+  if (!(await checkRateLimit(limitKey, { max: 5, windowMs: 10 * 60 * 1000 }))) {
+    await endSecondStep();
+    redirect("/login?expired=1");
+  }
+
+  const result = await checkSecondStepCode(ticket.userId, code);
+  if (!result.ok) return { message: "That code didn't work. Check it and try again." };
+  // Only wrong codes should count towards the limit: signing in on a few
+  // devices in a row must not end the next attempt early.
+  await db.rateLimitHit.deleteMany({ where: { key: limitKey } });
+
+  const user = await db.user.findUnique({ where: { id: ticket.userId } });
+  if (!user) redirect("/login?expired=1");
+
+  await endSecondStep();
   await createSession({
     userId: user.id,
     companyId: user.companyId,
     role: user.role,
     name: user.name,
     email: user.email,
+    remember: ticket.remember,
   });
-
-  redirect("/dashboard");
+  redirect(result.usedRecoveryCode ? `/dashboard/account?saved=recovery-used&left=${result.recoveryCodesLeft}` : "/dashboard");
 }
 
 export async function logout() {
