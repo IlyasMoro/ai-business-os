@@ -63,8 +63,12 @@ export async function getBranchPerformance(companyId: string) {
   const scored = scoreBranches(figures);
   return {
     branches: scored,
+    /** Stable branch order (main first, then by name), for colours that
+     * follow the branch and not its rank. */
+    branchOrder: branches.map((b) => b.id),
     insights: branchInsights(scored, EXPIRING_DAYS),
     monthLabels: months.map((m) => format(m, "MMMM yyyy")),
+    months: months.map((m) => ({ label: format(m, "MMM"), longLabel: format(m, "MMMM yyyy") })),
     periodStart,
   };
 }

@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/dal";
 import { getBranchPerformance, PERIOD_DAYS, EXPIRING_DAYS } from "@/lib/branch-performance-data";
 import type { Insight, ScoredBranch } from "@/lib/branch-performance";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
+import { BranchBarChart } from "@/components/dash-viz/branch-bar-chart";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { Badge } from "@/components/ui-dark/badge";
@@ -30,6 +31,13 @@ const INSIGHT_STYLE: Record<Insight["tone"], { icon: typeof Lightbulb; className
   info: { icon: Lightbulb, className: "text-blue-400 bg-blue-500/10 light:text-blue-700" },
 };
 
+/* Each branch keeps one colour everywhere on the page (cards, score bars,
+   chart), in branch order, from the validated categorical palette (dark
+   surface steps; adjacent pairs pass the colourblind checks). Status is
+   shown by the badge and label, never by the branch colour. */
+const BRANCH_COLORS = ["#3987e5", "#d95926", "#199e70", "#c98500", "#d55181", "#008300", "#9085e9", "#e66767"];
+const OTHER_COLOR = "#64748b";
+
 const STATUS = {
   top: { label: "Top performer", tone: "green" as const, color: VIZ.emerald },
   steady: { label: "On track", tone: "blue" as const, color: VIZ.blue },
@@ -45,7 +53,10 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
   const session = await requireRole(["OWNER", "ADMIN"]);
   const { sort: sortParam } = await searchParams;
   const sort: SortKey = sortParam && sortParam in SORTS ? (sortParam as SortKey) : "score";
-  const { branches, insights, monthLabels, periodStart } = await getBranchPerformance(session.companyId);
+  const { branches, branchOrder, insights, monthLabels, months, periodStart } = await getBranchPerformance(session.companyId);
+  // Colour follows the branch, not its rank: assigned in the stable branch order.
+  const colorOf = new Map(branchOrder.map((id, i) => [id, BRANCH_COLORS[i] ?? OTHER_COLOR]));
+  const inBranchOrder = branchOrder.map((id) => branches.find((b) => b.id === id)!).filter(Boolean);
 
   const revenue = branches.reduce((s, b) => s + b.revenue, 0);
   const revenuePrev = branches.reduce((s, b) => s + b.revenuePrev, 0);
@@ -170,7 +181,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
                     <td className="px-3 py-3">
                       <div className="flex items-center gap-2">
                         <span className="h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.07] light:bg-slate-200">
-                          <span className="block h-full rounded-full" style={{ width: `${b.score}%`, backgroundColor: STATUS[b.status].color }} />
+                          <span className="block h-full rounded-full" style={{ width: `${b.score}%`, backgroundColor: colorOf.get(b.id) }} />
                         </span>
                         <span className="tabular-nums text-slate-300 light:text-slate-600">{b.score}</span>
                       </div>
@@ -210,14 +221,14 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
           </section>
 
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {branches.map((b) => (
+            {inBranchOrder.map((b) => (
               <KpiCard
                 key={b.id}
                 label={b.name}
                 value={b.revenue}
                 prefix="$"
                 icon={Store}
-                color={STATUS[b.status].color}
+                color={colorOf.get(b.id)!}
                 trend={b.revenueByMonth}
                 trendLabels={monthLabels}
                 progress={{ pct: b.sharePct, label: `${b.sharePct.toFixed(0)}% of company revenue · ${STATUS[b.status].label}` }}
@@ -225,10 +236,24 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
             ))}
           </div>
 
-          <section className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
-            <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Revenue by branch, last {PERIOD_DAYS} days</h2>
-            <HorizontalBarChart data={[...branches].sort((a, b) => b.revenue - a.revenue).map((b) => ({ label: b.name, value: b.revenue, color: STATUS[b.status].color }))} />
+          <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <section className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80 xl:col-span-2">
+            <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Who is ahead</h2>
+            <p className="mb-4 mt-1 text-xs text-slate-400 light:text-slate-500">Revenue in the last {PERIOD_DAYS} days, biggest first.</p>
+            <HorizontalBarChart
+              data={[...branches].sort((a, b) => b.revenue - a.revenue).map((b) => ({ label: b.name, value: b.revenue, color: colorOf.get(b.id) }))}
+            />
           </section>
+          <section className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80 xl:col-span-3">
+            <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Revenue by branch, month by month</h2>
+            <p className="mb-4 mt-1 text-xs text-slate-400 light:text-slate-500">Last {months.length} months. Hover a month to compare every branch.</p>
+            <BranchBarChart
+              months={months}
+              partialLast
+              series={inBranchOrder.map((b) => ({ id: b.id, name: b.name, color: colorOf.get(b.id)!, values: b.revenueByMonth }))}
+            />
+          </section>
+          </div>
         </>
       )}
     </div>
