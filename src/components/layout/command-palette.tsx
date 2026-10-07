@@ -244,8 +244,10 @@ function SearchDialog({
 
   let lastGroup = "";
   return (
-    <div className="app-text fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh]" role="dialog" aria-modal="true" aria-label="Search">
-      <button type="button" aria-label="Close search" className="absolute inset-0 bg-black/50 backdrop-blur-sm light:bg-slate-900/20" onClick={onClose} />
+    // Drops down from the Search button at the top right (just under the
+    // 4rem top bar) on wider screens; full width near the top on a phone.
+    <div className="app-text fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh] md:justify-end md:px-6 md:pt-[4.5rem]" role="dialog" aria-modal="true" aria-label="Search">
+      <button type="button" aria-label="Close search" className="absolute inset-0 bg-black/60 backdrop-blur-sm light:bg-slate-900/25" onClick={onClose} />
       <div className="glass-strong relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl light:border-slate-200 light:bg-white">
         <div className="flex items-center gap-3 border-b border-white/[0.08] px-4 light:border-slate-200">
           {searching ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-400" /> : <Search className="h-4 w-4 shrink-0 text-slate-400" />}
