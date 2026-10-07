@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent } from "react";
-import Link, { useLinkStatus } from "next/link";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Lock, Settings, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,18 +33,6 @@ function matches(href: string, pathname: string) {
 export function isActive(href: string, pathname: string) {
   if (!matches(href, pathname)) return false;
   return ![...navPinned, ...navItems].some((i) => i.href.length > href.length && i.href.startsWith(href) && matches(i.href, pathname));
-}
-
-/** Tiny pulsing dot on a link whose page is still loading. It only shows when
- * the route was not prefetched yet; prefetched routes switch instantly. */
-function PendingDot() {
-  const { pending } = useLinkStatus();
-  return (
-    <span
-      aria-hidden
-      className={cn("h-1.5 w-1.5 shrink-0 rounded-full bg-blue-400 transition-opacity duration-200", pending ? "animate-pulse opacity-100" : "opacity-0")}
-    />
-  );
 }
 
 function isPlainClick(e: MouseEvent) {
@@ -276,7 +264,6 @@ export function NavLinks({
           <>
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
             {badge && <CountBadge badge={badge} label={item.label} />}
-            <PendingDot />
           </>
         )}
       </Link>
@@ -414,7 +401,6 @@ export function NavLinks({
                               </span>
                             )}
                             {badge && <CountBadge badge={badge} label={item.label} />}
-                            <PendingDot />
                           </Link>
                           <FavouriteStar on={fav} label={item.label} onToggle={() => toggleFavourite(item.href)} className="absolute right-1.5" />
                         </div>
