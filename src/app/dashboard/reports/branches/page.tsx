@@ -227,7 +227,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
 
           <section className="mt-6 rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
             <h2 className="mb-4 text-sm font-semibold text-slate-50 light:text-slate-900">Revenue by branch, last {PERIOD_DAYS} days</h2>
-            <HorizontalBarChart data={[...branches].sort((a, b) => b.revenue - a.revenue).map((b) => ({ label: b.name, value: b.revenue }))} color={VIZ.blue} />
+            <HorizontalBarChart data={[...branches].sort((a, b) => b.revenue - a.revenue).map((b) => ({ label: b.name, value: b.revenue, color: STATUS[b.status].color }))} />
           </section>
         </>
       )}
