@@ -62,7 +62,7 @@ export async function getAgendaItems(companyId: string): Promise<AgendaItem[]> {
     ...invoices.map((i) => ({
       id: i.id,
       date: i.dueDate,
-      title: `${i.invoiceNumber} — ${i.customer.name}`,
+      title: `${i.invoiceNumber} · ${i.customer.name}`,
       subtitle: `$${i.totalAmount.toFixed(2)}`,
       kind: "invoice" as const,
       href: `/dashboard/invoicing/${i.id}`,

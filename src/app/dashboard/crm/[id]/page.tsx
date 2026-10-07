@@ -207,11 +207,11 @@ export default async function CustomerDetailPage({
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Email</p>
-              <p className="text-slate-50 light:text-slate-900">{customer.email ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{customer.email ?? "Not set"}</p>
             </div>
             <div>
               <p className="text-slate-500">Phone</p>
-              <p className="text-slate-50 light:text-slate-900">{customer.phone ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{customer.phone ?? "Not set"}</p>
             </div>
             <div>
               <p className="text-slate-500">Account owner</p>
@@ -320,11 +320,11 @@ export default async function CustomerDetailPage({
                       <p className="font-semibold text-slate-50 light:text-slate-900">
                         {contact.name}{" "}
                         {contact.role && (
-                          <span className="font-normal text-slate-500">— {contact.role}</span>
+                          <span className="font-normal text-slate-500">· {contact.role}</span>
                         )}
                       </p>
                       <p className="text-slate-500">
-                        {[contact.email, contact.phone].filter(Boolean).join(" · ") || "—"}
+                        {[contact.email, contact.phone].filter(Boolean).join(" · ") || "No email or phone"}
                       </p>
                     </div>
                     <span className="flex shrink-0 items-center gap-1">

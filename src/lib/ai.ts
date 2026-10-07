@@ -104,5 +104,5 @@ If asked about something not covered by the snapshot or tools, say you don't hav
     }
   }
 
-  return "I looked into that but hit my tool-use limit before finishing — could you rephrase or narrow the request?";
+  return "I looked into that but reached my limit before finishing. Could you rephrase it or ask about something narrower?";
 }

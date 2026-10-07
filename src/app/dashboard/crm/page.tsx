@@ -258,9 +258,9 @@ export default async function CrmPage({
                     </Link>
                     <TagChips tags={customer.tags} className="mt-1 flex" />
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.company ?? "—"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.email ?? "—"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.owner?.name ?? "—"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.company ?? "Not set"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.email ?? "Not set"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{customer.owner?.name ?? "Not set"}</td>
                   <td className="px-5 py-3">
                     <ScoreBadge score={customer.leadScore} />
                   </td>

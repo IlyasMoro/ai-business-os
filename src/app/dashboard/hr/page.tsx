@@ -195,8 +195,8 @@ export default async function HrPage({
                       {employee.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.position ?? "—"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.department ?? "—"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.position ?? "Not set"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.department ?? "Not set"}</td>
                   <td className="px-5 py-3">
                     <StatusBadge status={employee.status} color={statusColor[employee.status]} />
                   </td>

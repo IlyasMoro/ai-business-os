@@ -212,13 +212,16 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
   );
   const profitTrend = revenueTrend.map((rev, i) => rev - expenseTrend[i]);
 
+  // This month so far against the same days of last month, so the 7th
+  // isn't compared with a whole month and always look like a drop.
+  const samePointLastMonth = new Date(Math.min(subMonths(new Date(), 1).getTime(), previousMonthEnd.getTime()));
   const revenueThisMonth = incomeTx.filter((t) => t.date >= currentMonthStart).reduce((s, t) => s + t.amount, 0);
   const revenueLastMonth = incomeTx
-    .filter((t) => t.date >= previousMonthStart && t.date <= previousMonthEnd)
+    .filter((t) => t.date >= previousMonthStart && t.date <= samePointLastMonth)
     .reduce((s, t) => s + t.amount, 0);
   const expensesThisMonth = expenseTx.filter((t) => t.date >= currentMonthStart).reduce((s, t) => s + t.amount, 0);
   const expensesLastMonth = expenseTx
-    .filter((t) => t.date >= previousMonthStart && t.date <= previousMonthEnd)
+    .filter((t) => t.date >= previousMonthStart && t.date <= samePointLastMonth)
     .reduce((s, t) => s + t.amount, 0);
 
   const revenueChange: KpiChange = { pct: pctChange(revenueThisMonth, revenueLastMonth), label: "vs last month" };

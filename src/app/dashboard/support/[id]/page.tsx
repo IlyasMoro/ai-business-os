@@ -88,7 +88,7 @@ export default async function TicketDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Description</p>
-              <p className="text-slate-50 light:text-slate-900">{ticket.description ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{ticket.description ?? "Not set"}</p>
             </div>
             <div>
               <p className="text-slate-500">Assignee</p>

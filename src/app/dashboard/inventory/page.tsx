@@ -7,7 +7,6 @@ import type { Prisma } from "@/generated/prisma/client";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
-import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Boxes, Wallet, AlertTriangle, HeartPulse } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
@@ -209,7 +208,9 @@ export default async function InventoryPage({
                     </Link>
                   </td>
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCompactCurrency(product.unitPrice)}
+                    {/* Exact price, per kg or litre for weighed products. */}
+                    ${product.unitPrice.toFixed(2)}
+                    {product.unit !== "EACH" && <span className="text-slate-500"> / {product.unit === "KG" ? "kg" : "L"}</span>}
                   </td>
                   <td className="px-5 py-3">
                     {product.low ? (

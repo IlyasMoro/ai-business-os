@@ -165,7 +165,7 @@ export default async function ProjectsPage({
                         {project.name}
                       </Link>
                     </td>
-                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{project.customer?.name ?? "—"}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{project.customer?.name ?? "Not set"}</td>
                     <td className="px-5 py-3">
                       <StatusBadge status={project.status} color={statusColor[project.status]} />
                     </td>
@@ -184,7 +184,7 @@ export default async function ProjectsPage({
                       )}
                     </td>
                     <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                      {project.dueDate ? project.dueDate.toLocaleDateString() : "—"}
+                      {project.dueDate ? project.dueDate.toLocaleDateString() : "No due date"}
                     </td>
                   </tr>
                 );

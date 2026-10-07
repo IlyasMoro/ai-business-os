@@ -125,7 +125,7 @@ export default async function PlatformSettingsPage({
               <p className="text-sm text-slate-400 light:text-slate-500">
                 {groqConfigured
                   ? "Configured. Used by every company's AI Copilot chat and by automatic transaction/ticket categorization."
-                  : "Not configured here — falling back to the GROQ_API_KEY environment variable, if set."}
+                  : "Not configured here, so the GROQ_API_KEY environment variable is used if it is set."}
               </p>
             </div>
           </div>

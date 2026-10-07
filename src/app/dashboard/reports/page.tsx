@@ -564,7 +564,7 @@ export default async function ReportsPage() {
                     )}
                   </td>
                   <td className="py-2 text-slate-400 light:text-slate-500">{log.user.name}</td>
-                  <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditDetails(log.metadata, branchNames) ?? "—"}</td>
+                  <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditDetails(log.metadata, branchNames) ?? "Not set"}</td>
                   <td className="py-2 text-xs tabular-nums text-slate-500">
                     {format(log.createdAt, "MMM d, HH:mm")}
                   </td>

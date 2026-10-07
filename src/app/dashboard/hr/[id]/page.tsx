@@ -84,11 +84,11 @@ export default async function EmployeeDetailPage({
           <CardContent className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-slate-500">Email</p>
-              <p className="text-slate-50 light:text-slate-900">{employee.email ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{employee.email ?? "Not set"}</p>
             </div>
             <div>
               <p className="text-slate-500">Department</p>
-              <p className="text-slate-50 light:text-slate-900">{employee.department ?? "—"}</p>
+              <p className="text-slate-50 light:text-slate-900">{employee.department ?? "Not set"}</p>
             </div>
             <div>
               <p className="text-slate-500">Salary</p>

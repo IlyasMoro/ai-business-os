@@ -83,15 +83,15 @@ export default async function SuppliersPage({
                       {supplier.name}
                     </Link>
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.email ?? "—"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.phone ?? "—"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.email ?? "Not set"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.phone ?? "Not set"}</td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                     {supplier.avgLeadTimeDays === null
-                      ? "—"
+                      ? "No deliveries yet"
                       : `${supplier.avgLeadTimeDays.toFixed(1)} days (${supplier.receivedCount} received)`}
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {supplier.onTimeRate === null ? "—" : `${supplier.onTimeRate.toFixed(0)}%`}
+                    {supplier.onTimeRate === null ? "No deliveries yet" : `${supplier.onTimeRate.toFixed(0)}%`}
                   </td>
                   <td className="px-5 py-3 text-right">
                     <DeleteButton
