@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { ArrowRight, Boxes, Clock, CornerDownLeft, FileText, Loader2, Plus, Receipt, Search, ShoppingCart, Truck, UserSquare2, Users, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -135,6 +135,7 @@ function SearchDialog({
   const [selected, setSelected] = useState(0);
   const [searching, startSearch] = useTransition();
   const listRef = useRef<HTMLUListElement>(null);
+  const anchor = useSearchAnchor();
 
   // Records, a moment after typing stops. Under two letters there is
   // nothing to look up, so earlier results are simply not shown.
@@ -244,11 +245,14 @@ function SearchDialog({
 
   let lastGroup = "";
   return (
-    // Drops down from the Search button at the top right (just under the
-    // 4rem top bar) on wider screens; full width near the top on a phone.
-    <div className="app-text fixed inset-0 z-[60] flex items-start justify-center px-4 pt-[12vh] md:justify-end md:px-6 md:pt-[4.5rem]" role="dialog" aria-modal="true" aria-label="Search">
-      <button type="button" aria-label="Close search" className="absolute inset-0 bg-black/60 backdrop-blur-sm light:bg-slate-900/25" onClick={onClose} />
-      <div className="glass-strong relative w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl light:border-slate-200 light:bg-white">
+    // The search box grows out of the top bar's Search button: the input
+    // sits where the button was and the results unfold below it.
+    <div className="app-text fixed inset-0 z-[60]" role="dialog" aria-modal="true" aria-label="Search">
+      <button type="button" aria-label="Close search" className="search-backdrop absolute inset-0 bg-black/40 light:bg-slate-900/15" onClick={onClose} />
+      <div
+        style={anchor}
+        className="search-drop glass-strong absolute overflow-hidden rounded-2xl border border-white/10 shadow-2xl light:border-slate-200 light:bg-white"
+      >
         <div className="flex items-center gap-3 border-b border-white/[0.08] px-4 light:border-slate-200">
           {searching ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-400" /> : <Search className="h-4 w-4 shrink-0 text-slate-400" />}
           <input
@@ -268,7 +272,7 @@ function SearchDialog({
           <kbd className="hidden shrink-0 rounded border border-white/10 px-1.5 py-0.5 text-[11px] text-slate-400 sm:block light:border-slate-300">Esc</kbd>
         </div>
 
-        <ul ref={listRef} id="search-results" role="listbox" className="max-h-[60vh] overflow-y-auto p-2">
+        <ul ref={listRef} id="search-results" role="listbox" className="search-unfold max-h-[60vh] overflow-y-auto p-2">
           {rows.length === 0 ? (
             <li className="px-3 py-10 text-center text-sm text-slate-400 light:text-slate-500">
               {searching ? "Searching..." : query.trim().length < 2 ? "Type to search." : `Nothing found for "${query.trim()}".`}
@@ -339,6 +343,35 @@ function SearchDialog({
   );
 }
 
+const SEARCH_BUTTON_ID = "top-bar-search";
+const PANEL_WIDTH = 576; // 36rem
+const EDGE = 12;
+
+/** Where the open search sits: over the Search button, top and right
+    edges lined up with it, so the box widens out of the button.
+    Falls back to the top middle when the button cannot be found. */
+function searchAnchor(): CSSProperties {
+  const button = document.getElementById(SEARCH_BUTTON_ID)?.getBoundingClientRect();
+  const width = Math.min(PANEL_WIDTH, window.innerWidth - EDGE * 2);
+  if (!button) return { top: "12vh", left: (window.innerWidth - width) / 2, width };
+  // The input row is 3.5rem tall, a little taller than the button: centre it on the button.
+  const top = Math.max(4, button.top + button.height / 2 - 28);
+  // On a phone the button is a small icon: use the full width instead.
+  const right = window.innerWidth < 768 ? EDGE : Math.max(EDGE, window.innerWidth - button.right - 6);
+  // --search-from: the width the box starts at, so it widens from the button's own size.
+  return { top, right, width: Math.min(width, window.innerWidth - right - EDGE), ["--search-from" as string]: `${Math.round(button.width + 12)}px` };
+}
+
+function useSearchAnchor(): CSSProperties {
+  const [style, setStyle] = useState<CSSProperties>(searchAnchor);
+  useEffect(() => {
+    const onResize = () => setStyle(searchAnchor());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return style;
+}
+
 /** The top bar's search box: opens the search, shows the shortcut. */
 const noSubscribe = () => () => {};
 
@@ -347,6 +380,7 @@ export function SearchButton() {
   const mac = useSyncExternalStore(noSubscribe, () => /Mac|iPhone|iPad/.test(navigator.platform), () => false);
   return (
     <button
+      id={SEARCH_BUTTON_ID}
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_SEARCH_EVENT))}
       className="glass-chip flex items-center gap-2 rounded-xl border border-white/[0.1] px-3 py-2 text-sm text-slate-400 hover:border-white/[0.16] hover:text-slate-200 light:border-slate-200 light:text-slate-500 light:hover:text-slate-800"

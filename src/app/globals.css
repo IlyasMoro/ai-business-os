@@ -134,6 +134,41 @@ body * {
   background-size: 28px 28px;
 }
 
+/* Top bar search: the box grows out of the Search button and the
+   results unfold downwards (components/layout/command-palette.tsx). */
+@keyframes search-grow {
+  from {
+    width: var(--search-from, 100%);
+    opacity: 0.6;
+  }
+}
+@keyframes search-unfold {
+  from {
+    clip-path: inset(0 0 100% 0);
+    opacity: 0;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+@keyframes search-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .search-drop {
+    animation: search-grow 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .search-unfold {
+    animation: search-unfold 260ms 140ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .search-backdrop {
+    animation: search-fade 200ms ease-out;
+  }
+}
+
 /* Landing page: staggered entrance for hero content */
 @keyframes fade-up {
   from {
