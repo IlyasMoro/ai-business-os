@@ -19,7 +19,7 @@ export function ReturnItemForm({
   return (
     <form action={action} className="grid grid-cols-2 gap-3 sm:grid-cols-6">
       <div className="col-span-2 sm:col-span-3">
-        <Select name="orderItemId" defaultValue="" required>
+        <Select aria-label="Item to return" name="orderItemId" defaultValue="" required>
           <option value="" disabled>
             Select an item
           </option>
@@ -31,10 +31,10 @@ export function ReturnItemForm({
         </Select>
       </div>
       <div>
-        <Input name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
+        <Input aria-label="Quantity" name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
       </div>
       <div>
-        <Select name="condition" defaultValue="RESELLABLE">
+        <Select aria-label="Condition" name="condition" defaultValue="RESELLABLE">
           <option value="RESELLABLE">Resellable</option>
           <option value="DAMAGED">Damaged</option>
         </Select>

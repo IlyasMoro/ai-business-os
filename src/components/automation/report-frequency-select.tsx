@@ -21,7 +21,7 @@ export function ReportFrequencySelect({ value }: { value: string }) {
           Emails every Owner and Admin a PDF report (revenue, expenses, order and invoice status) on this cadence.
         </p>
       </div>
-      <select
+      <select aria-label="Report frequency"
         name="reportFrequency"
         defaultValue={value}
         onChange={() => formRef.current?.requestSubmit()}

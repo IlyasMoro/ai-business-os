@@ -30,11 +30,11 @@ export function TaskForm({
   return (
     <form ref={formRef} action={formAction} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       <div className="col-span-2">
-        <Input name="title" placeholder="Task title" required />
+        <Input aria-label="Task title" name="title" placeholder="Task title" required />
         <FieldError messages={state?.errors?.title} />
       </div>
       <div>
-        <Select name="assigneeId" defaultValue="">
+        <Select aria-label="Assignee" name="assigneeId" defaultValue="">
           <option value="">Unassigned</option>
           {employees.map((employee) => (
             <option key={employee.id} value={employee.id}>
@@ -45,7 +45,7 @@ export function TaskForm({
         <FieldError messages={state?.errors?.assigneeId} />
       </div>
       <div>
-        <Select name="priority" defaultValue="MEDIUM">
+        <Select aria-label="Priority" name="priority" defaultValue="MEDIUM">
           <option value="LOW">Low</option>
           <option value="MEDIUM">Medium</option>
           <option value="HIGH">High</option>
@@ -53,7 +53,7 @@ export function TaskForm({
         <FieldError messages={state?.errors?.priority} />
       </div>
       <div>
-        <Input name="dueDate" type="date" />
+        <Input aria-label="Due date" name="dueDate" type="date" />
         <FieldError messages={state?.errors?.dueDate} />
       </div>
       <Button

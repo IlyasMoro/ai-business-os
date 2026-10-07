@@ -24,7 +24,7 @@ export function TaskCommentForm({ projectId, taskId }: { projectId: string; task
   return (
     <form ref={formRef} action={formAction} className="flex items-start gap-2">
       <div className="flex-1">
-        <Textarea name="content" placeholder="Add a comment..." rows={2} required />
+        <Textarea aria-label="Add a comment" name="content" placeholder="Add a comment..." rows={2} required />
         <FieldError messages={state?.errors?.content} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>

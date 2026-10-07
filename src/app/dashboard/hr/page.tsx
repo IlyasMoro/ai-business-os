@@ -97,7 +97,7 @@ export default async function HrPage({
         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
           <form method="GET" className="relative w-full min-w-48 sm:w-64 sm:flex-none">
             <Search className="pointer-events-none absolute z-10 left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-            <input
+            <input aria-label="Search by name, position"
               type="search"
               name="q"
               placeholder="Search by name, position..."

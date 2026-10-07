@@ -15,6 +15,7 @@ export function SearchForm({
         type="search"
         name="q"
         placeholder={placeholder}
+        aria-label={placeholder.replace(/\.+$/, "")}
         defaultValue={defaultValue}
         className="pl-9"
       />

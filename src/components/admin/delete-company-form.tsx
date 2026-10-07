@@ -29,7 +29,7 @@ export function DeleteCompanyForm({
         Type <span className="font-medium text-slate-200 light:text-slate-800">{companyName}</span> to confirm
         permanent deletion of this company and all of its data.
       </p>
-      <Input
+      <Input aria-label="Company name to confirm"
         name="confirmCompanyName"
         value={confirmation}
         onChange={(e) => setConfirmation(e.target.value)}

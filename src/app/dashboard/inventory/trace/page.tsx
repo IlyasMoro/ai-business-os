@@ -81,7 +81,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
 
       <form method="GET" className="relative mt-4 max-w-md">
         <Search className="pointer-events-none absolute z-10 left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-        <input
+        <input aria-label="Lot or serial number"
           type="search"
           name="q"
           defaultValue={query}

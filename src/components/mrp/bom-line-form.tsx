@@ -18,7 +18,7 @@ export function BomLineForm({
   return (
     <form action={action} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       <div className="col-span-2 sm:col-span-3">
-        <Select name="componentId" defaultValue="" required>
+        <Select aria-label="Component" name="componentId" defaultValue="" required>
           <option value="" disabled>
             Select a component
           </option>
@@ -30,7 +30,7 @@ export function BomLineForm({
         </Select>
       </div>
       <div>
-        <Input name="quantity" type="number" min="0.001" step="any" placeholder="Qty per unit" defaultValue={1} required />
+        <Input aria-label="Quantity" name="quantity" type="number" min="0.001" step="any" placeholder="Qty per unit" defaultValue={1} required />
       </div>
       <SubmitButton variant="secondary" pendingText="Adding...">
         Add component

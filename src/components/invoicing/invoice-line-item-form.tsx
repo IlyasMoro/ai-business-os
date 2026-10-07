@@ -30,11 +30,11 @@ export function InvoiceLineItemForm({
   return (
     <form ref={formRef} action={formAction} className="grid grid-cols-2 gap-3 sm:grid-cols-6">
       <div className="col-span-2 sm:col-span-2">
-        <Input name="description" placeholder="Description" required />
+        <Input aria-label="Description" name="description" placeholder="Description" required />
         <FieldError messages={state?.errors?.description} />
       </div>
       <div>
-        <Select name="productId" defaultValue="">
+        <Select aria-label="Product" name="productId" defaultValue="">
           <option value="">No product</option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
@@ -45,11 +45,11 @@ export function InvoiceLineItemForm({
         <FieldError messages={state?.errors?.productId} />
       </div>
       <div>
-        <Input name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
+        <Input aria-label="Quantity" name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
         <FieldError messages={state?.errors?.quantity} />
       </div>
       <div>
-        <Input
+        <Input aria-label="Unit price (R)"
           name="unitPrice"
           type="number"
           min="0"

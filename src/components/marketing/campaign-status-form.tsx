@@ -20,7 +20,7 @@ export function CampaignStatusForm({ campaignId, status }: { campaignId: string;
 
   return (
     <form ref={formRef} action={action}>
-      <Select
+      <Select aria-label="Status"
         ref={selectRef}
         name="status"
         defaultValue={status}

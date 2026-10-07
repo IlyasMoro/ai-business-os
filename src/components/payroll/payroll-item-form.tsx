@@ -30,7 +30,7 @@ export function PayrollItemForm({
   return (
     <form ref={formRef} action={formAction} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       <div className="col-span-2">
-        <Select name="employeeId" defaultValue="" required>
+        <Select aria-label="Employee" name="employeeId" defaultValue="" required>
           <option value="" disabled>
             Select an employee
           </option>
@@ -43,11 +43,11 @@ export function PayrollItemForm({
         <FieldError messages={state?.errors?.employeeId} />
       </div>
       <div>
-        <Input name="grossPay" type="number" min="0" step="0.01" placeholder="Gross pay" required />
+        <Input aria-label="Gross pay (R)" name="grossPay" type="number" min="0" step="0.01" placeholder="Gross pay" required />
         <FieldError messages={state?.errors?.grossPay} />
       </div>
       <div>
-        <Input
+        <Input aria-label="Deductions (R)"
           name="deductions"
           type="number"
           min="0"

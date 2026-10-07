@@ -33,7 +33,7 @@ export function OrderStatusForm({
   return (
     <div className="flex flex-col items-end gap-1">
       <form ref={formRef} action={formAction}>
-        <Select
+        <Select aria-label="Status"
           ref={selectRef}
           name="status"
           defaultValue={status}

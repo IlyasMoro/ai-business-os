@@ -81,7 +81,7 @@ export default async function CostCenterPage({
             </p>
           </div>
           <form method="GET" className="flex items-center gap-2">
-            <select name="fy" defaultValue={period.fiscalYear} className="rounded-md border border-white/[0.09] light:border-white/80 px-3 py-2 text-sm text-slate-50 light:text-slate-900 glass">
+            <select aria-label="Financial year" name="fy" defaultValue={period.fiscalYear} className="rounded-md border border-white/[0.09] light:border-white/80 px-3 py-2 text-sm text-slate-50 light:text-slate-900 glass">
               {period.years.map((y) => (
                 <option key={y} value={y}>
                   {fiscalYearLabel(y, settings.fiscalYearStartMonth)}

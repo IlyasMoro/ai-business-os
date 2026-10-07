@@ -32,7 +32,7 @@ export function OrderItemForm({
   return (
     <form ref={formRef} action={formAction} className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       <div className="col-span-2">
-        <Select name="productId" defaultValue="" required>
+        <Select aria-label="Product" name="productId" defaultValue="" required>
           <option value="" disabled>
             Select a product
           </option>
@@ -45,7 +45,7 @@ export function OrderItemForm({
         <FieldError messages={state?.errors?.productId} />
       </div>
       <div>
-        <Input name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
+        <Input aria-label="Quantity" name="quantity" type="number" min="0.001" step="any" placeholder="Qty" defaultValue={1} required />
         <FieldError messages={state?.errors?.quantity} />
       </div>
       <Button type="submit" variant="secondary" disabled={pending}>

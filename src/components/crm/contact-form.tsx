@@ -8,16 +8,16 @@ export function ContactForm({ customerId }: { customerId: string }) {
   return (
     <form action={action} className="grid grid-cols-2 gap-3 sm:grid-cols-5">
       <div className="col-span-2 sm:col-span-1">
-        <Input name="name" placeholder="Name" required />
+        <Input aria-label="Name" name="name" placeholder="Name" required />
       </div>
       <div>
-        <Input name="role" placeholder="Role" />
+        <Input aria-label="Role" name="role" placeholder="Role" />
       </div>
       <div>
-        <Input name="email" type="email" placeholder="Email" />
+        <Input aria-label="Email" name="email" type="email" placeholder="Email" />
       </div>
       <div>
-        <Input name="phone" placeholder="Phone" />
+        <Input aria-label="Phone" name="phone" placeholder="Phone" />
       </div>
       <SubmitButton variant="secondary" pendingText="Adding...">
         Add contact
