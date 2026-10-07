@@ -72,14 +72,6 @@ function CountBadge({ badge, label }: { badge: NavBadge; label: string }) {
   );
 }
 
-/** A group's waiting work in one badge: the total, in its most urgent tone. */
-function groupBadge(items: NavItem[], badges: NavBadges): NavBadge | null {
-  const found = items.map((i) => badges[i.href]).filter(Boolean);
-  if (found.length === 0) return null;
-  const tone = found.some((b) => b.tone === "red") ? "red" : found.some((b) => b.tone === "amber") ? "amber" : "blue";
-  return { count: found.reduce((s, b) => s + b.count, 0), tone };
-}
-
 /** Star to add or remove a favourite; shown on hover, always when set. */
 function FavouriteStar({ on, label, onToggle, className }: { on: boolean; label: string; onToggle: () => void; className?: string }) {
   return (
@@ -279,17 +271,7 @@ export function NavLinks({
               : "text-slate-300 group-hover/link:text-white light:text-slate-600 light:group-hover/link:text-slate-800",
           )}
         />
-        {collapsed ? (
-          badge && (
-            <span
-              aria-hidden
-              className={cn(
-                "absolute right-2.5 top-1.5 h-2 w-2 rounded-full",
-                badge.tone === "red" ? "bg-red-400" : badge.tone === "amber" ? "bg-amber-400" : "bg-blue-400",
-              )}
-            />
-          )
-        ) : (
+        {collapsed ? null : (
           <>
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
             {badge && <CountBadge badge={badge} label={item.label} />}
@@ -330,12 +312,11 @@ export function NavLinks({
         const open = openGroup === group.label;
         const containsActive = group.label === activeGroup;
         const panelId = `nav-group-${group.label.toLowerCase().replace(/[^a-z]+/g, "_")}`;
-        const waiting = groupBadge(group.items, badges);
         const lit = containsActive || open || fly?.label === group.label;
 
         return (
           <div key={group.label}>
-            {/* Group headings read as items: icon, name, waiting work, and an
+            {/* Group headings read as items: icon, name, and an
                 arrow that turns down when open. The icon takes the section's
                 colour on hover and while it is open or holds this page. */}
             <button
@@ -369,20 +350,9 @@ export function NavLinks({
               <group.icon
                 className={cn("h-4 w-4 shrink-0 transition-colors", lit ? "text-(--c)" : "text-slate-500 group-hover/heading:text-(--c) light:text-slate-400")}
               />
-              {collapsed ? (
-                waiting && (
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute right-2.5 top-1.5 h-2 w-2 rounded-full",
-                      waiting.tone === "red" ? "bg-red-400" : waiting.tone === "amber" ? "bg-amber-400" : "bg-blue-400",
-                    )}
-                  />
-                )
-              ) : (
+              {collapsed ? null : (
                 <>
                   <span className="flex-1 truncate text-left">{group.label}</span>
-                  {waiting && !open && <CountBadge badge={waiting} label={group.label} />}
                   {/* Small and faint now that hovering shows the pages; brighter
                       on hover, blue and turned down while the group is open. */}
                   <ChevronRight
