@@ -237,15 +237,16 @@ export function NavLinks({
                 )}
               />
               <span className="flex-1 truncate text-left">{group.label}</span>
-              {/* Bold and high contrast so it reads as a control; blue while open. */}
+              {/* Small and faint now that hovering shows the pages; brighter on
+                  hover, blue and turned down while the group is open. */}
               <ChevronRight
-                strokeWidth={3}
+                strokeWidth={2.25}
                 aria-hidden
                 className={cn(
-                  "h-4 w-4 shrink-0 transition-[transform,color] duration-200 ease-out",
+                  "h-3.5 w-3.5 shrink-0 transition-[transform,color,opacity] duration-200 ease-out",
                   open
-                    ? "rotate-90 text-blue-400 light:text-blue-600"
-                    : "text-slate-300 group-hover/heading:text-white light:text-slate-600 light:group-hover/heading:text-slate-900"
+                    ? "rotate-90 text-blue-400 opacity-100 light:text-blue-600"
+                    : "text-slate-500 opacity-60 group-hover/heading:text-slate-200 group-hover/heading:opacity-100 light:text-slate-400 light:group-hover/heading:text-slate-700"
                 )}
               />
             </button>
