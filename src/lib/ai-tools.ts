@@ -1,5 +1,6 @@
 import "server-only";
 import { balanceDue } from "@/lib/invoice-rules";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { subMonths, startOfMonth, endOfMonth } from "date-fns";
 import { db } from "@/lib/db";
 import { customerScope, dealScope } from "@/lib/crm-access";
@@ -76,9 +77,11 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
     case "list_overdue_invoices": {
       const invoices = await db.invoice.findMany({
         where: { companyId, ...inBranch, status: { in: ["SENT", "OVERDUE"] } },
+        orderBy: { dueDate: "asc" },
         select: {
           id: true,
           invoiceNumber: true,
+          status: true,
           totalAmount: true,
           amountPaid: true,
           amountCredited: true,
@@ -88,14 +91,21 @@ export async function runReadTool(companyId: string, name: string, rawArgs: unkn
         },
         take: 20,
       });
+      const owed = invoices.map((i) => ({ i, due: balanceDue(i) }));
+      const pastDue = owed.filter(({ i }) => i.status === "OVERDUE");
       return {
-        invoices: invoices.map((i) => ({
+        // Amounts and dates come ready to quote, so answers read the same as the app.
+        note: "Only invoices with pastDue true are overdue; the others are sent and not yet due. Quote the amount and dueDate text as given.",
+        totalOwed: formatCurrency(owed.reduce((sum, o) => sum + o.due, 0)),
+        totalPastDue: formatCurrency(pastDue.reduce((sum, o) => sum + o.due, 0)),
+        invoices: owed.map(({ i, due }) => ({
           id: i.id,
           invoiceNumber: i.invoiceNumber,
-          totalAmount: i.totalAmount,
+          pastDue: i.status === "OVERDUE",
+          total: formatCurrency(i.totalAmount),
           // What's still owed after part payments and credit notes.
-          balanceDue: balanceDue(i),
-          dueDate: i.dueDate.toISOString().slice(0, 10),
+          balanceDue: formatCurrency(due),
+          dueDate: formatDate(i.dueDate),
           customerId: i.customerId,
           customerName: i.customer.name,
         })),

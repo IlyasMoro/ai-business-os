@@ -38,7 +38,7 @@ export const TOOL_DEFINITIONS: Groq.Chat.ChatCompletionTool[] = [
     type: "function",
     function: {
       name: "list_overdue_invoices",
-      description: "List invoices that are sent or overdue and still unpaid, with id, invoice number, customer name, and amount.",
+      description: "List unpaid invoices (sent and not yet due, or past due), with id, invoice number, customer name, amount still owed, due date, and whether each one is past due.",
       parameters: { type: "object", properties: {} },
     },
   },
