@@ -501,7 +501,6 @@ function Flyout({
         }}
       />
       <p className="flex items-center gap-2 px-2.5 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 light:text-slate-500">
-        <span aria-hidden className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: group.color }} />
         {group.label}
       </p>
       {group.items.map((item) => {
