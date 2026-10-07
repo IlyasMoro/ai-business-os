@@ -46,7 +46,9 @@ export function Sidebar({
   return (
     <aside
       className={cn(
-        "relative z-30 hidden shrink-0 flex-col border-r border-white/[0.09] transition-[width] duration-200 ease-out sm:flex light:border-white/80 glass-panel",
+        // Sticky at screen height: the page scrolls, the menu and its
+        // shrink button stay in view.
+        "sticky top-0 z-30 hidden h-screen shrink-0 flex-col self-start border-r border-white/[0.09] transition-[width] duration-200 ease-out sm:flex light:border-white/80 glass-panel",
         collapsed ? "w-[4.5rem]" : "w-64"
       )}
     >
@@ -73,7 +75,11 @@ export function Sidebar({
           onClick={toggle}
           aria-label={collapsed ? "Show the full menu" : "Shrink the menu to icons"}
           title={collapsed ? "Show the full menu" : "Shrink the menu to icons"}
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:text-slate-500 light:hover:bg-slate-900/5 light:hover:text-slate-900"
+          // Shrunk, the button stacks above the avatar so it stays easy to find.
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:text-slate-500 light:hover:bg-slate-900/5 light:hover:text-slate-900",
+            collapsed && "order-first"
+          )}
         >
           <ToggleIcon className="h-4 w-4" />
         </button>
