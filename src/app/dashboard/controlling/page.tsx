@@ -8,6 +8,8 @@ import { costCenterPlanActual, getControllingSettings, sumBy, loadCostLines } fr
 import { fiscalYearMonths, monthLabel, periodKey, periodOf, resolvePeriods, variance } from "@/lib/controlling-math";
 import { TriangleAlert } from "lucide-react";
 
+export const metadata = { title: "Controlling" };
+
 const orderTone = { OPEN: "blue", CLOSED: "yellow", SETTLED: "green" } as const;
 
 export default async function ControllingPage({

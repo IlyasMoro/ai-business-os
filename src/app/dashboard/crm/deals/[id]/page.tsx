@@ -21,6 +21,8 @@ import { getWhatsAppContext } from "@/lib/whatsapp-context";
 import { QuoteItemForm } from "@/components/quotes/quote-item-form";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Deal" };
+
 const STAGE_TONE = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
 export default async function DealPage({

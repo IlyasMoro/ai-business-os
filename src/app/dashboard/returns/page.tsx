@@ -8,12 +8,14 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { getReturnPolicy } from "@/lib/returns-policy";
-import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
+import { CURRENCY_PREFIX, formatDate, formatCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { ReturnStatusValues, type ReturnStatus } from "@/lib/returns-math";
 import { Plus, Search, ChevronLeft, ChevronRight, Settings2, Banknote, Undo2 } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+
+export const metadata = { title: "Returns" };
 
 const statusColor: Record<ReturnStatus, string> = {
   REQUESTED: VIZ.amber,
@@ -95,7 +97,7 @@ export default async function ReturnsPage({
             <input
               type="search"
               name="q"
-              placeholder="Search RMA or customer..."
+              placeholder="Search return number or customer..."
               defaultValue={q}
               className={fieldStyles("pl-9")}
             />
@@ -199,7 +201,7 @@ export default async function ReturnsPage({
                     <StatusBadge status={rma.status} color={statusColor[rma.status]} />
                   </td>
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCompactCurrency(rma.refundAmount)}
+                    {formatCurrency(rma.refundAmount)}
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(rma.createdAt)}</td>
                 </tr>

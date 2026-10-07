@@ -7,6 +7,8 @@ import { SupplierForm } from "@/components/procurement/supplier-form";
 import { deleteSupplier } from "@/lib/actions/procurement";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Suppliers" };
+
 export default async function SuppliersPage({
   searchParams,
 }: {

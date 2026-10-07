@@ -9,6 +9,8 @@ import { getControllingSettings } from "@/lib/controlling";
 import { fiscalYearMonths, fiscalYearOf, monthLabel, periodKey, periodOf } from "@/lib/controlling-math";
 import { createAllocation, deleteAllocation, reverseAllocationRun, runAllocation } from "@/lib/actions/controlling";
 
+export const metadata = { title: "Allocations" };
+
 const RECEIVER_ROWS = 4;
 
 export default async function AllocationsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
@@ -112,7 +114,7 @@ export default async function AllocationsPage({ searchParams }: { searchParams: 
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" placeholder="IT costs" required maxLength={100} />
+                <Input id="name" name="name" placeholder="For example IT costs" required maxLength={100} />
               </div>
               <div>
                 <Label htmlFor="senderId">Allocate from</Label>

@@ -10,6 +10,8 @@ import { Download } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "EDI document" };
+
 const statusTone = { GENERATED: "blue", PROCESSED: "green", REJECTED: "red" } as const;
 
 export default async function EdiDocumentPage({ params }: { params: Promise<{ id: string }> }) {

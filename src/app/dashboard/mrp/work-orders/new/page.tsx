@@ -9,6 +9,8 @@ import { getMrpSettings } from "@/lib/mrp";
 import { createWorkOrder } from "@/lib/actions/mrp";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New work order" };
+
 export default async function NewWorkOrderPage({
   searchParams,
 }: {

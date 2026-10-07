@@ -13,6 +13,8 @@ import { deleteEmployee } from "@/lib/actions/hr";
 import { Pencil } from "lucide-react";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Employee" };
+
 const statusTone = {
   ACTIVE: "green",
   TERMINATED: "slate",
@@ -61,9 +63,9 @@ export default async function EmployeeDetailPage({
             This employee can&apos;t be deleted because they&apos;re referenced in a payroll run.
           </p>
         )}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{employee.name}</h1>
               <StatusBadge status={employee.status} tone={statusTone[employee.status]} />
             </div>

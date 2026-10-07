@@ -81,7 +81,7 @@ export function CompanyStatusBadge({
           {initials(companyName)}
         </span>
       )}
-      <span className="min-w-0" title={summary}>
+      <span className="hidden min-w-0 sm:block" title={summary}>
         <span className="font-display block max-w-[11rem] truncate text-[15px] font-semibold leading-5 text-white sm:max-w-[16rem] light:text-slate-900">
           {companyName}
         </span>
@@ -102,19 +102,20 @@ export function CompanyStatusBadge({
       {canManage && (
         <ChevronRight
           aria-hidden
-          className="h-4 w-4 shrink-0 text-slate-400 transition-transform group-hover:translate-x-0.5 light:text-slate-400"
+          className="hidden h-4 w-4 shrink-0 sm:block text-slate-400 transition-transform group-hover:translate-x-0.5 light:text-slate-400"
         />
       )}
     </>
   );
 
   const shell =
-    "glass-chip group flex min-w-0 items-center gap-3 rounded-xl border border-white/[0.1] py-1.5 pl-1.5 pr-3 light:border-slate-200";
+    "glass-chip group flex min-w-0 shrink-0 items-center gap-3 rounded-xl border border-white/[0.1] p-1 sm:py-1.5 sm:pl-1.5 sm:pr-3 light:border-slate-200";
 
   return canManage ? (
     <Link
       href="/dashboard/billing"
       title="Plan and billing"
+      aria-label={`${companyName}, ${summary}. Plan and billing`}
       className={cn(
         shell,
         "hover:border-white/[0.16] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:hover:border-slate-300"
@@ -123,6 +124,8 @@ export function CompanyStatusBadge({
       {body}
     </Link>
   ) : (
-    <div className={shell}>{body}</div>
+    <div className={shell} aria-label={`${companyName}, ${summary}`} role="group">
+      {body}
+    </div>
   );
 }

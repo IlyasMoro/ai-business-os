@@ -18,6 +18,8 @@ import { fiscalYearLabel, fiscalYearMonths, monthLabel, periodKey, periodOf, per
 import { deleteCostCenter, saveBudgets, updateCostCenter } from "@/lib/actions/controlling";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Cost centre" };
+
 const SOURCE_LABEL = { EXPENSE: "Expense", PAYROLL: "Payroll", ALLOCATION: "Allocation", SETTLEMENT: "Settlement" } as const;
 
 export default async function CostCenterPage({
@@ -66,7 +68,7 @@ export default async function CostCenterPage({
         <BackButton href="/dashboard/controlling/cost-centers" label="Back to cost centers" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
                 <span className="font-mono">{cc.code}</span> {cc.name}
               </h1>

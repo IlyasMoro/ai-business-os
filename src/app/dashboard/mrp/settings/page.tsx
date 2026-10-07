@@ -8,6 +8,8 @@ import { MRP_PRESETS } from "@/lib/mrp-settings-presets";
 import { applyMrpPreset, updateMrpSettings } from "@/lib/actions/mrp";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Planning settings" };
+
 export default async function PlanningSettingsPage({
   searchParams,
 }: {

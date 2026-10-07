@@ -9,6 +9,8 @@ import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { TRANSFER_TONE } from "@/lib/transfer-rules";
 
+export const metadata = { title: "Transfers" };
+
 export default async function TransfersPage() {
   const session = await verifySession();
   const ctx = await getBranchContext();

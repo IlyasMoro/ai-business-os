@@ -12,6 +12,8 @@ import { costCenterPlanActual, getControllingSettings } from "@/lib/controlling"
 import { resolvePeriods, variance } from "@/lib/controlling-math";
 import { createCostCenter } from "@/lib/actions/controlling";
 
+export const metadata = { title: "Cost centres" };
+
 export default async function CostCentersPage({
   searchParams,
 }: {

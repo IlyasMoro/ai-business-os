@@ -17,6 +17,8 @@ import { customerScope, restrictedTo } from "@/lib/crm-access";
 import { TagChips, ScoreBadge } from "@/components/crm/crm-chips";
 import { CustomerFilters } from "@/components/crm/customer-filters";
 
+export const metadata = { title: "CRM" };
+
 const statusOrder = ["LEAD", "ACTIVE", "INACTIVE"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
   LEAD: VIZ.amber,

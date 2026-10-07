@@ -4,6 +4,8 @@ import { dateInputDaysFromNow } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New payroll run" };
+
 export default async function NewPayrollRunPage() {
   await requireRole(["OWNER", "ADMIN"]);
 

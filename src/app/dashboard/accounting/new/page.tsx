@@ -7,6 +7,8 @@ import { loadCostObjectOptions } from "@/lib/controlling";
 import { moneyBranchPicker } from "@/lib/branches";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New transaction" };
+
 export default async function NewTransactionPage() {
   const session = await requireRole(["OWNER", "ADMIN"]);
 

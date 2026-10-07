@@ -30,7 +30,7 @@ export function RegisterForm() {
           <label htmlFor="name" className={publicLabel}>
             Your name
           </label>
-          <input id="name" name="name" placeholder="Jane Doe" autoComplete="name" required className={publicField} />
+          <input id="name" name="name" placeholder="Your full name" autoComplete="name" required className={publicField} />
           <FieldError messages={state?.errors?.name} />
         </div>
       </div>

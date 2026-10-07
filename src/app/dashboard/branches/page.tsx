@@ -9,6 +9,8 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { createBranch, makeMainBranch, setBranchActive, updateBranch } from "@/lib/actions/branches";
 
+export const metadata = { title: "Branches" };
+
 export default async function BranchesPage({
   searchParams,
 }: {

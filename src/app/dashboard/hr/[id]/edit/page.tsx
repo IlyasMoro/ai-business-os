@@ -8,6 +8,8 @@ import type { EmployeeFormState } from "@/lib/validation/hr";
 import { toDateInputValue } from "@/lib/utils";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Edit employee" };
+
 export default async function EditEmployeePage({
   params,
 }: {

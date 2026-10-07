@@ -5,6 +5,8 @@ import { PurchaseOrderForm } from "@/components/procurement/purchase-order-form"
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New purchase order" };
+
 export default async function NewPurchaseOrderPage({
   searchParams,
 }: {

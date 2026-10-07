@@ -4,6 +4,8 @@ import { TicketForm } from "@/components/support/ticket-form";
 import { createTicket } from "@/lib/actions/support";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New ticket" };
+
 export default async function NewTicketPage() {
   const session = await verifySession();
 

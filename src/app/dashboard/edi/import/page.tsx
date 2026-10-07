@@ -6,6 +6,8 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { importEdiDocument } from "@/lib/actions/edi";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Import EDI" };
+
 export default async function EdiImportPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   await requireRole(["OWNER", "ADMIN"]);
   const { error } = await searchParams;

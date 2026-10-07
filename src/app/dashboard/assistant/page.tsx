@@ -6,6 +6,8 @@ import { CopilotChat, type CopilotMessage, type CopilotAction } from "@/componen
 import { clearChatHistory, approveAiAction, rejectAiAction } from "@/lib/actions/assistant";
 import { CopilotMark } from "@/components/brand/copilot-mark";
 
+export const metadata = { title: "AI Copilot" };
+
 export default async function AssistantPage() {
   const session = await verifySession();
   const canDecide = hasRole(session, ["OWNER", "ADMIN"]);

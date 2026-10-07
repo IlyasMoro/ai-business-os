@@ -17,6 +17,8 @@ import {
 } from "@/lib/actions/platform-settings";
 import { Mail, Sparkles, ShieldCheck } from "lucide-react";
 
+export const metadata = { title: "Platform settings" };
+
 export default async function PlatformSettingsPage({
   searchParams,
 }: {
@@ -169,7 +171,7 @@ export default async function PlatformSettingsPage({
               <p className="font-semibold text-slate-50 light:text-slate-900">AI Copilot fallback (OpenAI)</p>
               <p className="text-sm text-slate-400 light:text-slate-500">
                 {openaiConfigured
-                  ? "Configured. If a Groq request fails (e.g. an outage), it automatically retries once against OpenAI (gpt-4o-mini) instead of failing outright."
+                  ? "Configured. If a Groq request fails (an outage, for example), it automatically retries once against OpenAI (gpt-4o-mini) instead of failing outright."
                   : "Not configured. If Groq is unreachable, the AI Copilot and automatic categorization simply fail until Groq recovers."}
               </p>
             </div>

@@ -17,7 +17,7 @@ export function AcceptInviteForm({ action }: { action: Action }) {
     <form action={formAction} className="mt-6 space-y-4">
       <div>
         <Label htmlFor="name">Your name</Label>
-        <Input id="name" name="name" placeholder="Jane Doe" required />
+        <Input id="name" name="name" placeholder="Your full name" required />
         <FieldError messages={state?.errors?.name} />
       </div>
       <div>

@@ -15,6 +15,8 @@ import { toDateInputValue, formatCurrency, formatDate } from "@/lib/utils";
 import { Download } from "lucide-react";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Payroll run" };
+
 const statusTone = {
   DRAFT: "slate",
   PROCESSED: "blue",
@@ -56,9 +58,9 @@ export default async function PayrollRunDetailPage({
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/payroll" label="Back to payroll" />
         <ErrorBanner code={error} />
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
                 {formatDate(payrollRun.periodStart)} to{" "}
                 {formatDate(payrollRun.periodEnd)}

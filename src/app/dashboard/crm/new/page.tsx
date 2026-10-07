@@ -5,6 +5,8 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { createCustomer } from "@/lib/actions/crm";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New customer" };
+
 export default async function NewCustomerPage({
   searchParams,
 }: {

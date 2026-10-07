@@ -14,6 +14,8 @@ import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
 
+export const metadata = { title: "Support" };
+
 const statusOrder = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
   OPEN: VIZ.blue,

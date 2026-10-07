@@ -7,6 +7,8 @@ import { sizeLine, topicLabel } from "@/lib/contact";
 import { setContactMessageHandled } from "@/lib/actions/contact";
 import { cn, formatDate, formatDateTime } from "@/lib/utils";
 
+export const metadata = { title: "Messages" };
+
 /* Messages from the public contact form, visible only to the platform
    operator. Open messages first; "Handled" moves one out of the way. */
 export default async function AdminMessagesPage({ searchParams }: { searchParams: Promise<{ show?: string }> }) {

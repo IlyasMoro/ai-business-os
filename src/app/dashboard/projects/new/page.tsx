@@ -4,6 +4,8 @@ import { ProjectForm } from "@/components/projects/project-form";
 import { createProject } from "@/lib/actions/projects";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New project" };
+
 export default async function NewProjectPage() {
   const session = await verifySession();
 

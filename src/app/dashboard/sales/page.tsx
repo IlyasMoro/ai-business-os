@@ -10,13 +10,15 @@ import { ChangeBadge } from "@/components/dash-viz/change-badge";
 import { VIZ } from "@/components/dash-viz/colors";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
+import { CURRENCY_PREFIX, formatDate, formatCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, ShoppingCart, Wallet, Clock } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+
+export const metadata = { title: "Sales" };
 
 const statusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -222,7 +224,7 @@ export default async function SalesPage({
                     <StatusBadge status={order.status} color={statusColor[order.status]} />
                   </td>
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCompactCurrency(order.totalAmount)}
+                    {formatCurrency(order.totalAmount)}
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
                     {formatDate(order.createdAt)}

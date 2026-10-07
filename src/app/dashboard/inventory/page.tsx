@@ -15,6 +15,8 @@ import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Inventory" };
+
 function inventoryHref(page: number, q?: string) {
   const params = new URLSearchParams();
   if (q) params.set("q", q);

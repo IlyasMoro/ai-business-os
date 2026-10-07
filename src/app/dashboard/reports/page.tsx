@@ -4,7 +4,7 @@ import { getSalesReport, getStockValueReport, SALES_REPORT_DAYS } from "@/lib/re
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
 import { getProfitByBranch, PROFIT_MONTHS } from "@/lib/branch-profit-data";
-import { formatCompactCurrency, CURRENCY_PREFIX } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatCurrency } from "@/lib/utils";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { GroupedBarChart } from "@/components/dash-viz/grouped-bar-chart";
@@ -18,6 +18,8 @@ import { buttonStyles } from "@/components/ui-dark/button";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { getCampaignsWithStats } from "@/lib/campaign-data";
 import { formatRoi, totalStats } from "@/lib/campaign-stats";
+
+export const metadata = { title: "Reports" };
 
 const orderStatusOrder = ["PENDING", "CONFIRMED", "FULFILLED", "CANCELLED"] as const;
 const orderStatusColor: Record<(typeof orderStatusOrder)[number], string> = {
@@ -200,10 +202,10 @@ export default async function ReportsPage() {
                       className={isTotal ? "border-t border-white/[0.12] font-semibold light:border-slate-300" : "border-b border-white/[0.04]"}
                     >
                       <td className={`py-2 pr-4 ${r.branchId === null && !isTotal ? "text-slate-400" : "text-slate-50 light:text-slate-900"}`}>{r.name}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCompactCurrency(r.income)}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCompactCurrency(r.expense)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCurrency(r.income, { cents: false })}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCurrency(r.expense, { cents: false })}</td>
                       <td className={`py-2 pr-4 text-right tabular-nums ${r.net < 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
-                        {formatCompactCurrency(r.net)}
+                        {formatCurrency(r.net, { cents: false })}
                       </td>
                       <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">
                         {r.marginPct === null ? "n/a" : `${r.marginPct.toFixed(1)}%`}
@@ -348,7 +350,7 @@ export default async function ReportsPage() {
                       </Link>
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(p.value)}</td>
+                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(p.value, { cents: false })}</td>
                     <td className="py-2 text-right tabular-nums text-slate-500">{p.sharePct}%</td>
                   </tr>
                 ))}
@@ -392,7 +394,7 @@ export default async function ReportsPage() {
                       </Link>
                     </td>
                     <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
-                    <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(p.value)}</td>
+                    <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(p.value, { cents: false })}</td>
                   </tr>
                 ))}
               </tbody>
@@ -455,13 +457,13 @@ export default async function ReportsPage() {
                           r.name
                         )}
                       </td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCompactCurrency(r.s.spent)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(r.s.spent, { cents: false })}</td>
                       <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{r.s.leads}</td>
                       <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">
-                        {r.s.costPerLead === null ? "n/a" : formatCompactCurrency(r.s.costPerLead)}
+                        {r.s.costPerLead === null ? "n/a" : formatCurrency(r.s.costPerLead, { cents: false })}
                       </td>
                       <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-600">{r.s.converted}</td>
-                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCompactCurrency(r.s.revenue)}</td>
+                      <td className="py-2 pr-4 text-right tabular-nums text-slate-300 light:text-slate-700">{formatCurrency(r.s.revenue, { cents: false })}</td>
                       <td
                         className={`py-2 text-right tabular-nums ${
                           r.s.roiPct === null ? "text-slate-500" : r.s.roiPct >= 0 ? "text-emerald-400" : "text-red-400"
@@ -498,7 +500,7 @@ export default async function ReportsPage() {
                   <div className="flex shrink-0 items-center gap-4">
                     <StatusBadge status={invoice.status} tone={INVOICE_TONE[invoice.status]} />
                     <span className="w-16 text-right text-sm tabular-nums text-slate-50 light:text-slate-900">
-                      {formatCompactCurrency(invoice.totalAmount)}
+                      {formatCurrency(invoice.totalAmount)}
                     </span>
                   </div>
                 </Link>

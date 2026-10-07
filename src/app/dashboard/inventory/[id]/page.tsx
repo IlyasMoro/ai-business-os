@@ -28,6 +28,8 @@ import { getStockHistory } from "@/lib/stock-history-data";
 import { MOVEMENT_KIND_LABEL, reasonLabel } from "@/lib/stock-history";
 import { formatQty, qtyStep } from "@/lib/quantity";
 
+export const metadata = { title: "Product" };
+
 const SALES_LOOKBACK_DAYS = 90;
 const DEFAULT_LEAD_TIME_DAYS = 14;
 const SAFETY_FACTOR = 1.5;
@@ -191,9 +193,9 @@ export default async function ProductDetailPage({
             Saved.
           </p>
         )}
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{product.name}</h1>
               {lowAnywhere && (
                 <Badge tone="red">{multiBranch ? `Low at ${branchStock.filter((b) => b.low).map((b) => b.name).join(", ")}` : "Low stock"}</Badge>

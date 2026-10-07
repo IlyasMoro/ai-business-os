@@ -12,6 +12,8 @@ import { getCampaignsWithStats } from "@/lib/campaign-data";
 import { formatRoi, totalStats } from "@/lib/campaign-stats";
 import { formatCurrency, CURRENCY_PREFIX } from "@/lib/utils";
 
+export const metadata = { title: "Marketing" };
+
 const statusOrder = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
   DRAFT: VIZ.muted,

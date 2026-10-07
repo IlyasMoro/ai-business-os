@@ -10,13 +10,15 @@ import { TrendChart } from "@/components/dash-viz/trend-chart";
 import { ChangeBadge } from "@/components/dash-viz/change-badge";
 import { VIZ } from "@/components/dash-viz/colors";
 import { Badge, StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
+import { CURRENCY_PREFIX, formatDate, formatCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, Truck, Wallet, Clock, PackageCheck } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+
+export const metadata = { title: "Procurement" };
 
 const statusOrder = ["DRAFT", "ORDERED", "RECEIVED", "CANCELLED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -232,7 +234,7 @@ export default async function ProcurementPage({
                     </span>
                   </td>
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCompactCurrency(po.totalAmount)}
+                    {formatCurrency(po.totalAmount)}
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(po.createdAt)}</td>
                 </tr>

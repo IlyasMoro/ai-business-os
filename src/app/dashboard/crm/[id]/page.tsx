@@ -30,6 +30,8 @@ import { CustomerSequences } from "@/components/crm/customer-sequences";
 import { WhatsAppButton } from "@/components/crm/whatsapp-button";
 import { getWhatsAppContext } from "@/lib/whatsapp-context";
 
+export const metadata = { title: "Customer" };
+
 const dealStageTone = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
 const statusTone = {

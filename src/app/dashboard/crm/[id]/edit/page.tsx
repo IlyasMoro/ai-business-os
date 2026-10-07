@@ -8,6 +8,8 @@ import { BackButton } from "@/components/ui-dark/back-button";
 import { customerScope } from "@/lib/crm-access";
 import { asCustomValues } from "@/lib/custom-fields";
 
+export const metadata = { title: "Edit customer" };
+
 export default async function EditCustomerPage({
   params,
   searchParams,

@@ -9,6 +9,8 @@ import { toDateInputValue } from "@/lib/utils";
 import { moneyBranchPicker } from "@/lib/branches";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Edit transaction" };
+
 export default async function EditTransactionPage({
   params,
 }: {

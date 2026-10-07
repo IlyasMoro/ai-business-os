@@ -11,6 +11,8 @@ import { INVENTORY_PRESETS } from "@/lib/inventory-presets";
 import { applyInventoryPreset, updateInventorySettings } from "@/lib/actions/lots";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Inventory settings" };
+
 export default async function InventorySettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
   const session = await requireRole(["OWNER", "ADMIN"]);
   const { error, saved } = await searchParams;

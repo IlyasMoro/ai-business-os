@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/lib/dal";
 import { isPlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
 
+export const metadata = { title: "Companies" };
+
 export default async function AdminCompaniesPage({
   searchParams,
 }: {

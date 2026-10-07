@@ -8,6 +8,8 @@ import { getEdiSettings } from "@/lib/edi/settings";
 import { updateEdiSettings } from "@/lib/actions/edi";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "EDI settings" };
+
 export default async function EdiSettingsPage({
   searchParams,
 }: {

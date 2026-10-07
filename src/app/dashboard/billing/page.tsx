@@ -14,6 +14,8 @@ import { CreditCard, Gauge, Percent } from "lucide-react";
 import { activeBranchCount, aiCreditsLeft, aiRequestsUsed, extraUsersBilled, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
 import { AI_TOPUP_PRICE, AI_TOPUP_REQUESTS, EXTRA_USER_PRICE, EXTRA_USER_YEARLY_PRICE, recommendedPlan } from "@/lib/plans";
 
+export const metadata = { title: "Plan and billing" };
+
 /** One plan allowance as "used of limit" with a bar. `limit` null means unlimited. */
 /** One allowance: "used of limit" with a bar that turns amber near the
  * limit. Unlimited shows the plain count, no bar. `extendable`: going past

@@ -20,6 +20,8 @@ import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { subMonths, startOfMonth, endOfMonth, format, formatDistanceToNow } from "date-fns";
 import { Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, TrendingUp, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
 
+export const metadata = { title: "Dashboard" };
+
 function monthBuckets(count: number) {
   return Array.from({ length: count }).map((_, i) => startOfMonth(subMonths(new Date(), count - 1 - i)));
 }

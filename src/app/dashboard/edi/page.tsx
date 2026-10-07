@@ -12,6 +12,8 @@ import { DOC_TYPE_LABEL } from "@/lib/edi/labels";
 import { ArrowDownToLine, ArrowUpFromLine, Settings2, Upload, Users, ChevronLeft, ChevronRight, TriangleAlert } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 
+export const metadata = { title: "EDI" };
+
 const statusTone = { GENERATED: "blue", PROCESSED: "green", REJECTED: "red" } as const;
 
 export default async function EdiPage({

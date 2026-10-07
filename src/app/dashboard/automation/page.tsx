@@ -9,6 +9,8 @@ import { runAutomationsNow, updateWebhookUrl, clearWebhookUrl, sendTestWebhook }
 import { Webhook } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 
+export const metadata = { title: "Automation" };
+
 export default async function AutomationPage({
   searchParams,
 }: {

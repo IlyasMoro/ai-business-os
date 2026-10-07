@@ -8,6 +8,8 @@ import { disconnectGoogle, sendTestEmail } from "@/lib/actions/integrations";
 import { Mail } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 
+export const metadata = { title: "Integrations" };
+
 export default async function IntegrationsPage({
   searchParams,
 }: {

@@ -12,6 +12,8 @@ import { createPurchaseOrdersFromPlan, createWorkOrderFromPlan } from "@/lib/act
 import { ClipboardList, Settings2, ShoppingCart, Wrench, TriangleAlert } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 
+export const metadata = { title: "Planning" };
+
 export default async function PlanningPage({
   searchParams,
 }: {

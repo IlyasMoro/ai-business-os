@@ -15,6 +15,8 @@ import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
 
+export const metadata = { title: "HR" };
+
 const statusColor = {
   ACTIVE: VIZ.emerald,
   TERMINATED: VIZ.muted,

@@ -10,12 +10,14 @@ import { subMonths, startOfMonth, format } from "date-fns";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatDate, formatCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, Wallet, TrendingDown, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+
+export const metadata = { title: "Accounting" };
 
 function accountingHref(page: number, q?: string) {
   const params = new URLSearchParams();
@@ -205,7 +207,7 @@ export default async function AccountingPage({
                     }`}
                   >
                     {transaction.type === "EXPENSE" ? "-" : ""}
-                    {formatCompactCurrency(transaction.amount)}
+                    {formatCurrency(transaction.amount)}
                   </td>
                 </tr>
               ))}

@@ -13,6 +13,8 @@ import { variance } from "@/lib/controlling-math";
 import { closeInternalOrder, reopenInternalOrder, settleInternalOrder, updateInternalOrder } from "@/lib/actions/controlling";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Internal order" };
+
 const tone = { OPEN: "blue", CLOSED: "yellow", SETTLED: "green" } as const;
 
 export default async function InternalOrderPage({

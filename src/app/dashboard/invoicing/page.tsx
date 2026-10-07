@@ -11,12 +11,14 @@ import { RingGauge } from "@/components/dash-viz/ring-gauge";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency, formatCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
+import { formatCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, Receipt, Wallet, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
+
+export const metadata = { title: "Invoices" };
 
 const statusOrder = ["DRAFT", "SENT", "PAID", "OVERDUE"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -227,7 +229,7 @@ export default async function InvoicingPage({
                     {formatDate(invoice.dueDate)}
                   </td>
                   <td className="px-5 py-3 tabular-nums text-amber-400 light:text-amber-800">
-                    {formatCompactCurrency(invoice.totalAmount)}
+                    {formatCurrency(invoice.totalAmount)}
                   </td>
                 </tr>
               ))}

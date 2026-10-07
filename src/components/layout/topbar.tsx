@@ -36,8 +36,10 @@ export function Topbar({
   branch: { options: { id: string; name: string; code: string }[]; currentId: string | null; locked: boolean };
 }) {
   return (
-    <header className="relative z-30 flex h-16 items-center justify-between border-b border-white/[0.09] px-4 sm:px-6 light:border-white/80 glass-panel">
-      <div className="flex items-center gap-3">
+    <header className="relative z-30 flex h-16 items-center justify-between gap-2 border-b border-white/[0.09] px-3 sm:px-6 light:border-white/80 glass-panel">
+      {/* On a phone the company shows as its logo only and the branch name
+          is shortened, so the bar fits a 375 px screen. */}
+      <div className="flex min-w-0 items-center gap-2 sm:gap-3">
         <MobileNav role={role} userName={userName} email={email} companyName={companyName} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} badges={badges} />
         <CompanyStatusBadge
           companyName={companyName}
@@ -48,7 +50,7 @@ export function Topbar({
         />
         <BranchSwitcher branches={branch.options} currentId={branch.currentId} locked={branch.locked} />
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <SearchButton />
         <NotificationBell notifications={notifications} />
       </div>

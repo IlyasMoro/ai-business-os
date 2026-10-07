@@ -7,6 +7,8 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { deleteCalendarEvent } from "@/lib/actions/calendar";
 import { CalendarClock, FileText, CheckSquare, FolderKanban, Banknote, BellRing, Handshake } from "lucide-react";
 
+export const metadata = { title: "Calendar" };
+
 const KIND_ICON = {
   event: CalendarClock,
   invoice: FileText,

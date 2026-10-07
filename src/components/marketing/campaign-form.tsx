@@ -19,7 +19,7 @@ export function CampaignForm({ action, campaign }: { action: (formData: FormData
     <form action={action} className="space-y-4">
       <div>
         <Label htmlFor="name">Campaign name</Label>
-        <Input id="name" name="name" placeholder="Spring Promo" defaultValue={campaign?.name} required maxLength={200} />
+        <Input id="name" name="name" placeholder="For example Eid specials" defaultValue={campaign?.name} required maxLength={200} />
       </div>
       <div>
         <Label htmlFor="channel">Channel</Label>

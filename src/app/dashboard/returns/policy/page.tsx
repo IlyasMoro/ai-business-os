@@ -8,6 +8,8 @@ import { RETURN_POLICY_PRESETS } from "@/lib/returns-policy-presets";
 import { applyReturnPolicyPreset } from "@/lib/actions/returns";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Return policy" };
+
 export default async function ReturnPolicyPage({
   searchParams,
 }: {

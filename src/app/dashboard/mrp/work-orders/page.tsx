@@ -10,6 +10,8 @@ import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Work orders" };
+
 const statusTone = {
   PLANNED: "slate",
   IN_PROGRESS: "yellow",

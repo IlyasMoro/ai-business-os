@@ -9,6 +9,8 @@ import { DeleteCompanyForm } from "@/components/admin/delete-company-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Company" };
+
 export default async function AdminCompanyDetailPage({
   params,
   searchParams,

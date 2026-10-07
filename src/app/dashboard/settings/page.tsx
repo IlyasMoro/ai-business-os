@@ -8,6 +8,8 @@ import { updateCompanyProfile, updateCompanyLogo, removeCompanyLogo } from "@/li
 import { Building2, ImageIcon } from "lucide-react";
 import { LogoUpload } from "@/components/settings/logo-upload";
 
+export const metadata = { title: "Company settings" };
+
 export default async function SettingsPage({
   searchParams,
 }: {

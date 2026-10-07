@@ -16,6 +16,8 @@ import { getCampaignStats } from "@/lib/campaign-data";
 import { formatRoi } from "@/lib/campaign-stats";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
+export const metadata = { title: "Campaign" };
+
 const statusTone = {
   DRAFT: "slate",
   ACTIVE: "green",
@@ -82,7 +84,7 @@ export default async function CampaignDetailPage({
         <BackButton href="/dashboard/marketing" label="Back to campaigns" />
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{campaign.name}</h1>
               <StatusBadge status={campaign.status} tone={statusTone[campaign.status]} />
             </div>

@@ -35,6 +35,8 @@ import { WhatsAppButton } from "@/components/crm/whatsapp-button";
 import { getWhatsAppContext } from "@/lib/whatsapp-context";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Quote" };
+
 export default async function QuotePage({
   params,
   searchParams,

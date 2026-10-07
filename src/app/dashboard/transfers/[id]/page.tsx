@@ -23,6 +23,8 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Transfer" };
+
 export default async function TransferDetailPage({
   params,
   searchParams,
@@ -83,7 +85,7 @@ export default async function TransferDetailPage({
         <BackButton href="/dashboard/transfers" label="Back to transfers" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="font-mono text-2xl font-semibold text-slate-50 light:text-slate-900">{transfer.transferNumber}</h1>
               <StatusBadge status={transfer.status} tone={TRANSFER_TONE[transfer.status]} />
             </div>

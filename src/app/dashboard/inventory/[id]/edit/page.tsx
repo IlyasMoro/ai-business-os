@@ -6,6 +6,8 @@ import { updateProduct } from "@/lib/actions/inventory";
 import type { ProductFormState } from "@/lib/validation/inventory";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Edit product" };
+
 export default async function EditProductPage({
   params,
 }: {

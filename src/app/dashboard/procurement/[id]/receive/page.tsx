@@ -11,6 +11,8 @@ import { receivePurchaseOrder } from "@/lib/actions/lots";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Receive delivery" };
+
 export default async function ReceivePurchaseOrderPage({
   params,
   searchParams,

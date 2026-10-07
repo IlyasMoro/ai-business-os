@@ -25,7 +25,7 @@ const baseUrl = process.env.APP_BASE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
-  title: "AIBOS",
+  title: { default: "AIBOS", template: "%s · AIBOS" },
   description,
   openGraph: {
     title: "AIBOS",

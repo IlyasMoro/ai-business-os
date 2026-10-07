@@ -6,6 +6,8 @@ import { updateTicket } from "@/lib/actions/support";
 import type { TicketFormState } from "@/lib/validation/support";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Edit ticket" };
+
 export default async function EditTicketPage({
   params,
 }: {

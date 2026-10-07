@@ -5,6 +5,8 @@ import { OrderForm } from "@/components/sales/order-form";
 import { createOrder } from "@/lib/actions/sales";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New order" };
+
 export default async function NewOrderPage() {
   const session = await verifySession();
   const branches = await branchPicker();

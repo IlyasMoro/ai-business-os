@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui-dark/badge";
 import { createEdiPartner, deleteEdiPartner, updateEdiPartnerFlags } from "@/lib/actions/edi";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Trading partners" };
+
 const FLAGS = [
   { name: "receive850", label: "Receives their 850 orders" },
   { name: "send810", label: "Send them 810 invoices" },

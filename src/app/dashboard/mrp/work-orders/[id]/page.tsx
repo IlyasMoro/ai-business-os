@@ -15,6 +15,8 @@ import { explodeBom, nextWorkOrderStatuses, type WorkOrderStatus } from "@/lib/m
 import { BackButton } from "@/components/ui-dark/back-button";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Work order" };
+
 const statusTone = {
   PLANNED: "slate",
   IN_PROGRESS: "yellow",
@@ -83,7 +85,7 @@ export default async function WorkOrderDetailPage({
         <BackButton href="/dashboard/mrp/work-orders" label="Back to work orders" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="font-mono text-2xl font-semibold text-slate-50 light:text-slate-900">{wo.woNumber}</h1>
               <StatusBadge status={wo.status} tone={statusTone[wo.status]} />
             </div>

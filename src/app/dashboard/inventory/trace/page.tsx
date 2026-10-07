@@ -8,6 +8,8 @@ import { expiryWarningCutoff, isExpired, isExpiringSoon } from "@/lib/lot-math";
 import { Search } from "lucide-react";
 import { fieldStyles } from "@/components/ui-dark/input";
 
+export const metadata = { title: "Lot trace" };
+
 const KIND_LABEL = {
   RECEIPT: "Received",
   SALE: "Shipped",

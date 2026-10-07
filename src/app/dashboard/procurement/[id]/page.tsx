@@ -20,6 +20,8 @@ import { BackButton } from "@/components/ui-dark/back-button";
 import { BranchTag } from "@/components/layout/branch-tag";
 import { formatQty } from "@/lib/quantity";
 
+export const metadata = { title: "Purchase order" };
+
 const statusTone = {
   DRAFT: "slate",
   ORDERED: "blue",
@@ -59,9 +61,9 @@ export default async function PurchaseOrderDetailPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/procurement" label="Back to purchase orders" />
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
                 <span className="font-mono">{purchaseOrder.poNumber}</span>
                 <span className="text-slate-500"> · </span>

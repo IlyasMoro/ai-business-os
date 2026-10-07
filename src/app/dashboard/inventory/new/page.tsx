@@ -3,6 +3,8 @@ import { createProduct } from "@/lib/actions/inventory";
 import { branchPicker } from "@/lib/branches";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New product" };
+
 export default async function NewProductPage() {
   const branches = await branchPicker();
   return (

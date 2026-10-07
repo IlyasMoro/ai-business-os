@@ -8,6 +8,8 @@ import { getReturnPolicy } from "@/lib/returns-policy";
 import { isWithinReturnWindow, parseReturnReasons } from "@/lib/returns-math";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New return" };
+
 export default async function NewReturnPage({
   searchParams,
 }: {

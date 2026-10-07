@@ -64,19 +64,19 @@ export function BranchSwitcher({
   ];
 
   return (
-    <div ref={rootRef} className="relative">
+    <div ref={rootRef} className="relative min-w-0">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          "glass-chip inline-flex items-center gap-2 rounded-xl border border-white/[0.1] px-3 py-2 text-sm font-medium text-slate-100 hover:border-white/[0.16] light:border-slate-200 light:text-slate-800 light:hover:border-slate-300",
+          "glass-chip inline-flex min-w-0 items-center gap-1.5 rounded-xl border border-white/[0.1] px-2.5 py-2 text-sm font-medium sm:gap-2 sm:px-3 text-slate-100 hover:border-white/[0.16] light:border-slate-200 light:text-slate-800 light:hover:border-slate-300",
           pending && "opacity-60"
         )}
       >
         <MapPin className="h-3.5 w-3.5 text-blue-400 light:text-blue-600" />
-        <span className="max-w-[9rem] truncate">{current?.name ?? "All branches"}</span>
+        <span className="max-w-[6.5rem] truncate sm:max-w-[9rem]">{current?.name ?? "All branches"}</span>
         <ChevronDown
           strokeWidth={3}
           aria-hidden

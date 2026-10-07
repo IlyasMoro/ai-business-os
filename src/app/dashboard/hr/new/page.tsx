@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { branchPicker } from "@/lib/branches";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New employee" };
+
 export default async function NewEmployeePage() {
   const session = await requireRole(["OWNER", "ADMIN"]);
   const branches = await branchPicker();

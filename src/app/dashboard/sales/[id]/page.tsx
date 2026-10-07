@@ -25,6 +25,8 @@ import { BackButton } from "@/components/ui-dark/back-button";
 import { BranchTag } from "@/components/layout/branch-tag";
 import { formatQty, qtyStep } from "@/lib/quantity";
 
+export const metadata = { title: "Sales order" };
+
 const statusTone = {
   PENDING: "yellow",
   CONFIRMED: "blue",

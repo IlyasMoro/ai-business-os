@@ -10,11 +10,13 @@ import { format } from "date-fns";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
+import { CURRENCY_PREFIX, formatDate, formatCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, ChevronLeft, ChevronRight, Download, Banknote, Clock, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
+
+export const metadata = { title: "Payroll" };
 
 const statusOrder = ["DRAFT", "PROCESSED", "PAID"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -186,7 +188,7 @@ export default async function PayrollPage({
                     <StatusBadge status={run.status} color={statusColor[run.status]} />
                   </td>
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCompactCurrency(run.totalAmount)}
+                    {formatCurrency(run.totalAmount)}
                   </td>
                 </tr>
               ))}

@@ -3,6 +3,8 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { createCampaign } from "@/lib/actions/marketing";
 
+export const metadata = { title: "New campaign" };
+
 export default async function NewCampaignPage({
   searchParams,
 }: {

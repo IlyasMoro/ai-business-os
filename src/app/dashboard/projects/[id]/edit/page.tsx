@@ -7,6 +7,8 @@ import type { ProjectFormState } from "@/lib/validation/projects";
 import { toDateInputValue } from "@/lib/utils";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Edit project" };
+
 export default async function EditProjectPage({
   params,
 }: {

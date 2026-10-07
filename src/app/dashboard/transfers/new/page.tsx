@@ -6,6 +6,8 @@ import { Label, Select, Textarea } from "@/components/ui-dark/input";
 import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New transfer" };
+
 export default async function NewTransferPage({
   searchParams,
 }: {

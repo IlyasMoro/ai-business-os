@@ -11,6 +11,8 @@ import { deleteTaskComment } from "@/lib/actions/projects";
 import { formatDistanceToNow } from "date-fns";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Task" };
+
 const priorityTone = {
   LOW: "slate",
   MEDIUM: "blue",

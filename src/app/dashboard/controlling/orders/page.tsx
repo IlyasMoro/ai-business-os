@@ -10,6 +10,8 @@ import { getControllingSettings, loadCostLines, sumBy } from "@/lib/controlling"
 import { variance } from "@/lib/controlling-math";
 import { createInternalOrder } from "@/lib/actions/controlling";
 
+export const metadata = { title: "Internal orders" };
+
 const tone = { OPEN: "blue", CLOSED: "yellow", SETTLED: "green" } as const;
 
 export default async function InternalOrdersPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {

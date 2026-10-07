@@ -8,6 +8,8 @@ import { getControllingSettings } from "@/lib/controlling";
 import { CONTROLLING_PRESETS } from "@/lib/controlling-presets";
 import { applyControllingPreset, updateControllingSettings } from "@/lib/actions/controlling";
 
+export const metadata = { title: "Controlling settings" };
+
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 export default async function ControllingSettingsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {

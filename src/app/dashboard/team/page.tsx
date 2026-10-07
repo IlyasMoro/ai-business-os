@@ -20,6 +20,8 @@ import { buttonStyles } from "@/components/ui-dark/button";
 import { canBillExtraUsers, getCompanyPlan, seatsUsed } from "@/lib/plan-limits";
 import { EXTRA_USER_PRICE, MAX_USERS } from "@/lib/plans";
 
+export const metadata = { title: "Team" };
+
 const roleTone = { OWNER: "purple", ADMIN: "blue", EMPLOYEE: "slate" } as const;
 
 export default async function TeamPage({

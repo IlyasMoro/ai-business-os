@@ -6,6 +6,8 @@ import { createInvoice } from "@/lib/actions/invoicing";
 import { dateInputDaysFromNow } from "@/lib/utils";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "New invoice" };
+
 export default async function NewInvoicePage() {
   const session = await verifySession();
   const branches = await branchPicker();

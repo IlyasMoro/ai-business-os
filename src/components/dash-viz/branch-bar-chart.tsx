@@ -178,7 +178,7 @@ export function BranchBarChart({
                               x={x + chart.barW / 2}
                               y={chart.y(v) - 5}
                               textAnchor="middle"
-                              className="fill-slate-300 text-[10px] font-medium tabular-nums light:fill-slate-600"
+                              className="fill-slate-300 text-[11px] font-medium tabular-nums light:fill-slate-600"
                               style={{ opacity: grown ? 1 : 0, transition: `opacity 0.4s ease ${0.5 + i * 0.04}s` }}
                             >
                               {Math.round((v / chart.totals[i]) * 100)}%

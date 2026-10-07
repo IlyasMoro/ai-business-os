@@ -11,6 +11,8 @@ import { deleteTransaction } from "@/lib/actions/accounting";
 import { Pencil } from "lucide-react";
 import { BackButton } from "@/components/ui-dark/back-button";
 
+export const metadata = { title: "Transaction" };
+
 const typeTone = {
   INCOME: "green",
   EXPENSE: "red",
@@ -58,9 +60,9 @@ export default async function TransactionDetailPage({
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <BackButton href="/dashboard/accounting" label="Back to accounting" />
-        <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">{transaction.category}</h1>
               <StatusBadge status={transaction.type} tone={typeTone[transaction.type]} />
               {isAnomalous && (

@@ -5,6 +5,8 @@ import { ControllingTabs, PeriodPicker, money, percent } from "@/components/cont
 import { getControllingSettings } from "@/lib/controlling";
 import { contributionMargin, periodRange, resolvePeriods, type MarginLine } from "@/lib/controlling-math";
 
+export const metadata = { title: "Profitability" };
+
 function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnType<typeof contributionMargin>; hrefBase: string }) {
   const total = rows.reduce((s, r) => ({ revenue: s.revenue + r.revenue, cost: s.cost + r.cost, margin: s.margin + r.margin }), { revenue: 0, cost: 0, margin: 0 });
   return (
