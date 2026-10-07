@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/utils";
 /* Branch performance: scores, ranks and compares branches, and writes the
    findings a manager should see first. Pure so it can be unit tested; the
    data comes from branch-performance-data.ts. User facing text here has no
@@ -48,7 +49,7 @@ export type ScoredBranch = BranchFigures & {
 export type Insight = { tone: "good" | "warn" | "bad" | "info"; branchId: string | null; text: string };
 
 const pct = (part: number, whole: number) => (whole > 0 ? (part / whole) * 100 : null);
-const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+const money = (n: number) => formatCurrency(n, { cents: false });
 const whole = (n: number) => Math.round(Math.abs(n)).toString();
 
 /** Where `value` sits between the lowest and highest of `all`, 0 to 1. */

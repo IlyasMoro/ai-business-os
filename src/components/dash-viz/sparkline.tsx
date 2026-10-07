@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { fullNumber } from "@/lib/chart-math";
+import { formatCurrency } from "@/lib/utils";
 
 function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -96,10 +97,10 @@ export function Sparkline({
 
   // Keep the tooltip inside the card: pin it left or right near the edges.
   const align = !active ? "center" : active[0] < width / 3 ? "left" : active[0] > (width * 2) / 3 ? "right" : "center";
-  // Whole numbers, "$1,250" or "-$80" for money: cents add nothing at a glance.
+  // Whole numbers, "R 1,250" or "−R 80" for money: cents add nothing at a glance.
   const format = (v: number) => {
     const whole = Math.round(v);
-    return currency ? `${whole < 0 ? "-" : ""}$${fullNumber(Math.abs(whole))}` : fullNumber(whole);
+    return currency ? formatCurrency(whole, { cents: false }) : fullNumber(whole);
   };
 
   return (

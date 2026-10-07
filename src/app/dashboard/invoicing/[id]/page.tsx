@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -102,9 +103,9 @@ export default async function InvoiceDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">{invoice.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
-              Issued {invoice.issueDate.toLocaleDateString()} · Due{" "}
-              {invoice.dueDate.toLocaleDateString()}
-              {invoice.sentAt && <> · Emailed {invoice.sentAt.toLocaleDateString()}</>}
+              Issued {formatDate(invoice.issueDate)} · Due{" "}
+              {formatDate(invoice.dueDate)}
+              {invoice.sentAt && <> · Emailed {formatDate(invoice.sentAt)}</>}
               {invoice.order && (
                 <>
                   {" · from order "}
@@ -171,8 +172,8 @@ export default async function InvoiceDetailPage({
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.description}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {formatQty(item.quantity, item.product?.unit)} × ${item.unitPrice.toFixed(2)} = $
-                        {(item.quantity * item.unitPrice).toFixed(2)}
+                        {formatQty(item.quantity, item.product?.unit)} × {formatCurrency(item.unitPrice)} ={" "}
+                        {formatCurrency(item.quantity * item.unitPrice)}
                       </p>
                       {editable && (
                         <details className="mt-1">
@@ -205,18 +206,18 @@ export default async function InvoiceDetailPage({
               <p className="text-xs text-slate-500">Payments or credit notes are recorded, so the lines are locked to match them.</p>
             )}
             <div className="mt-4 space-y-1 text-right text-sm tabular-nums">
-              <p className="text-slate-400 light:text-slate-500">Subtotal: ${subtotal.toFixed(2)}</p>
+              <p className="text-slate-400 light:text-slate-500">Subtotal: {formatCurrency(subtotal)}</p>
               {invoice.taxRate > 0 && (
                 <p className="text-slate-400 light:text-slate-500">
-                  Tax ({invoice.taxRate}%): ${taxAmount.toFixed(2)}
+                  Tax ({invoice.taxRate}%): {formatCurrency(taxAmount)}
                 </p>
               )}
-              <p className="font-semibold text-amber-400 light:text-amber-800">Total: ${invoice.totalAmount.toFixed(2)}</p>
-              {invoice.amountPaid > 0 && <p className="text-slate-400 light:text-slate-500">Paid: ${invoice.amountPaid.toFixed(2)}</p>}
-              {invoice.amountCredited > 0 && <p className="text-slate-400 light:text-slate-500">Credited: ${invoice.amountCredited.toFixed(2)}</p>}
+              <p className="font-semibold text-amber-400 light:text-amber-800">Total: {formatCurrency(invoice.totalAmount)}</p>
+              {invoice.amountPaid > 0 && <p className="text-slate-400 light:text-slate-500">Paid: {formatCurrency(invoice.amountPaid)}</p>}
+              {invoice.amountCredited > 0 && <p className="text-slate-400 light:text-slate-500">Credited: {formatCurrency(invoice.amountCredited)}</p>}
               {(invoice.amountPaid > 0 || invoice.amountCredited > 0) && (
                 <p className={`font-semibold ${balance > 0 ? "text-red-400 light:text-red-700" : "text-emerald-400 light:text-emerald-700"}`}>
-                  Balance due: ${balance.toFixed(2)}
+                  Balance due: {formatCurrency(balance)}
                 </p>
               )}
             </div>
@@ -236,9 +237,9 @@ export default async function InvoiceDetailPage({
                   {invoice.payments.map((pay) => (
                     <li key={pay.id} className="flex items-center justify-between gap-3 py-2">
                       <div>
-                        <p className="tabular-nums text-slate-50 light:text-slate-900">${pay.amount.toFixed(2)}</p>
+                        <p className="tabular-nums text-slate-50 light:text-slate-900">{formatCurrency(pay.amount)}</p>
                         <p className="text-xs text-slate-500">
-                          {pay.paidAt.toLocaleDateString()} · {methodLabel(pay.method)}
+                          {formatDate(pay.paidAt)} · {methodLabel(pay.method)}
                           {pay.reference && ` · ${pay.reference}`}
                         </p>
                       </div>
@@ -299,10 +300,10 @@ export default async function InvoiceDetailPage({
                     <li key={cn.id} className="flex items-center justify-between gap-3 py-2">
                       <div className="min-w-0">
                         <p className="text-slate-50 light:text-slate-900">
-                          <span className="font-mono">{cn.creditNumber}</span> · <span className="tabular-nums">${cn.amount.toFixed(2)}</span>
+                          <span className="font-mono">{cn.creditNumber}</span> · <span className="tabular-nums">{formatCurrency(cn.amount)}</span>
                         </p>
                         <p className="truncate text-xs text-slate-500">
-                          {cn.createdAt.toLocaleDateString()} · {cn.reason}
+                          {formatDate(cn.createdAt)} · {cn.reason}
                         </p>
                       </div>
                       {isManager && (

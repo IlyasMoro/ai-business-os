@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
@@ -92,11 +93,11 @@ export default async function EmployeeDetailPage({
             </div>
             <div>
               <p className="text-slate-500">Salary</p>
-              <p className="tabular-nums text-slate-50 light:text-slate-900">${employee.salary.toFixed(2)}</p>
+              <p className="tabular-nums text-slate-50 light:text-slate-900">{formatCurrency(employee.salary)}</p>
             </div>
             <div>
               <p className="text-slate-500">Hire date</p>
-              <p className="text-slate-50 light:text-slate-900">{employee.hireDate.toLocaleDateString()}</p>
+              <p className="text-slate-50 light:text-slate-900">{formatDate(employee.hireDate)}</p>
             </div>
           </CardContent>
         </Card>
@@ -141,10 +142,10 @@ export default async function EmployeeDetailPage({
                       href={`/dashboard/payroll/${item.payrollRun.id}`}
                       className="text-slate-300 light:text-slate-600 hover:text-blue-400"
                     >
-                      {item.payrollRun.periodStart.toLocaleDateString()} –{" "}
-                      {item.payrollRun.periodEnd.toLocaleDateString()}
+                      {formatDate(item.payrollRun.periodStart)} to{" "}
+                      {formatDate(item.payrollRun.periodEnd)}
                     </Link>
-                    <span className="tabular-nums text-slate-500">${item.netPay.toFixed(2)}</span>
+                    <span className="tabular-nums text-slate-500">{formatCurrency(item.netPay)}</span>
                   </li>
                 ))}
               </ul>

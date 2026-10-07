@@ -12,7 +12,7 @@ export type StockHistoryRow = {
   createdAt: Date;
   branchName: string;
   userName: string | null;
-  /** The record behind the movement, ready to link: "SO-0012" and its page. */
+  /** The record behind the movement, ready to link: "SO0012" and its page. */
   source: { label: string; href: string } | null;
 };
 

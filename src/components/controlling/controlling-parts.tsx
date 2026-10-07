@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { VIZ } from "@/components/dash-viz/colors";
@@ -102,8 +103,7 @@ export function PeriodPicker({
   );
 }
 
-export const money = (n: number) =>
-  `${n < 0 ? "−" : ""}$${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+export const money = (n: number) => formatCurrency(n);
 
 /** Percentages with a true minus sign, never a hyphen. */
 export const percent = (n: number) => `${n < 0 ? "\u2212" : ""}${Math.abs(n)}%`;

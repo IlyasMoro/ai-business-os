@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import { hasRole, verifySession } from "@/lib/dal";
@@ -57,7 +58,7 @@ export async function EdiSendButton({
       </form>
       {last && (
         <Link href={`/dashboard/edi/${last.id}`} className="text-xs text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
-          Last sent {last.createdAt.toLocaleDateString()}
+          Last sent {formatDate(last.createdAt)}
         </Link>
       )}
     </div>

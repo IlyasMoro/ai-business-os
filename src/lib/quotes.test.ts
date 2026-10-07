@@ -40,9 +40,9 @@ describe("acceptBlocker", () => {
 
 describe("quote numbers and totals", () => {
   it("continues from the highest number, ignoring gaps and odd ones", () => {
-    expect(nextQuoteNumber([])).toBe("Q-0001");
-    expect(nextQuoteNumber(["Q-0001", "Q-0007", "Q-0003", "OLD-9"])).toBe("Q-0008");
-    expect(nextQuoteNumber(["Q-9999"])).toBe("Q-10000");
+    expect(nextQuoteNumber([])).toBe("Q0001");
+    expect(nextQuoteNumber(["Q0001", "Q-0007", "Q0003", "OLD-9"])).toBe("Q0008");
+    expect(nextQuoteNumber(["Q-9999"])).toBe("Q10000");
   });
 
   it("adds up lines to the cent", () => {

@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -96,7 +97,7 @@ export default async function WorkOrdersPage({
                   <td className="px-5 py-3">
                     <StatusBadge status={wo.status} tone={statusTone[wo.status]} />
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.dueDate?.toLocaleDateString() ?? "Not set"}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.dueDate ? formatDate(wo.dueDate) : "Not set"}</td>
                 </tr>
               ))}
             </tbody>

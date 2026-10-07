@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
@@ -206,7 +207,7 @@ export default async function TeamPage({
                               <StatusBadge status={member.role} tone={roleTone[member.role]} />
                             )}
                           </td>
-                          <td className="px-2 py-3 whitespace-nowrap text-slate-400 light:text-slate-500">{member.createdAt.toLocaleDateString()}</td>
+                          <td className="px-2 py-3 whitespace-nowrap text-slate-400 light:text-slate-500">{formatDate(member.createdAt)}</td>
                           {showBranchAccess && (
                             <td className="px-2 py-3">
                               {/* Staff, and managers with a company role (a Branch manager), can be kept to one branch. */}

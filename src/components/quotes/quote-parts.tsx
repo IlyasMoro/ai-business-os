@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui-dark/badge";
 import { QUOTE_STATUS_LABELS, type QuoteDisplayStatus } from "@/lib/quotes";
 
@@ -14,9 +15,9 @@ export function QuoteStatusBadge({ status }: { status: QuoteDisplayStatus }) {
 }
 
 export function money(n: number, cents = false) {
-  return `$${n.toLocaleString("en-US", { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 })}`;
+  return formatCurrency(n, { cents });
 }
 
 export function shortDate(date: Date) {
-  return date.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
+  return formatDate(date);
 }

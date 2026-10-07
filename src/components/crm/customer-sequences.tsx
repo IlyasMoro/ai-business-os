@@ -1,3 +1,4 @@
+import { formatDayMonth } from "@/lib/utils";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui-dark/card";
 import { Badge } from "@/components/ui-dark/badge";
@@ -15,7 +16,7 @@ type Enrollment = {
   sequence: { id: string; name: string; active: boolean; _count: { steps: number } };
 };
 
-const shortDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const shortDate = (d: Date) => formatDayMonth(d);
 
 /** The email sequences a customer is in, and a way to add them to one. */
 export function CustomerSequences({

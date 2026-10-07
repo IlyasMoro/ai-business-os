@@ -8,7 +8,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { getReturnPolicy } from "@/lib/returns-policy";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { ReturnStatusValues, type ReturnStatus } from "@/lib/returns-math";
 import { Plus, Search, ChevronLeft, ChevronRight, Settings2, Banknote, Undo2 } from "lucide-react";
@@ -140,7 +140,7 @@ export default async function ReturnsPage({
 
       <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-1">
-          <KpiCard label="Refunded to customers" value={refunded} prefix="$" icon={Banknote} color={VIZ.red} />
+          <KpiCard label="Refunded to customers" value={refunded} prefix={CURRENCY_PREFIX} icon={Banknote} color={VIZ.red} />
           <KpiCard
             label="Open returns"
             value={openCount}
@@ -201,7 +201,7 @@ export default async function ReturnsPage({
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(rma.refundAmount)}
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{rma.createdAt.toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(rma.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

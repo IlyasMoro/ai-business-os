@@ -58,8 +58,8 @@ describe("transferRouteError", () => {
 describe("transfer numbers", () => {
   it("continue from the highest number used", () => {
     expect(nextTransferSequence([])).toBe(1);
-    expect(nextTransferSequence(["TR-0002", "TR-0010", "junk"])).toBe(11);
-    expect(formatTransferNumber(11)).toBe("TR-0011");
+    expect(nextTransferSequence(["TR-0002", "TR0010", "junk"])).toBe(11);
+    expect(formatTransferNumber(11)).toBe("TR0011");
   });
 });
 

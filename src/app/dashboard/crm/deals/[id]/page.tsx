@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -85,8 +86,8 @@ export default async function DealPage({
                 {deal.customer.name}
               </Link>
               {" · "}
-              <span className="tabular-nums">${Math.round(deal.value).toLocaleString("en-US")}</span>
-              {deal.closedAt && ` · closed ${deal.closedAt.toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" })}`}
+              <span className="tabular-nums">{formatCurrency(deal.value, { cents: false })}</span>
+              {deal.closedAt && ` · closed ${formatDate(deal.closedAt)}`}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -134,7 +135,7 @@ export default async function DealPage({
                         <div className="min-w-0">
                           <p className="truncate font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                           <p className="text-xs tabular-nums text-slate-500">
-                            {formatQty(item.quantity, item.product.unit)} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
+                            {formatQty(item.quantity, item.product.unit)} × {formatCurrency(item.unitPrice)} = {formatCurrency(item.quantity * item.unitPrice)}
                           </p>
                         </div>
                         <DeleteButton action={removeDealItem.bind(null, deal.id, item.id)} confirmMessage="Remove this product from the deal?" label="" />
@@ -149,7 +150,7 @@ export default async function DealPage({
                 )}
                 {items.length > 0 && (
                   <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-700">
-                    Total: ${deal.value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    Total: {formatCurrency(deal.value)}
                   </p>
                 )}
               </CardContent>

@@ -17,27 +17,37 @@ describe("cn", () => {
 });
 
 describe("formatCurrency", () => {
-  it("formats a number as USD currency", () => {
-    expect(formatCurrency(1234.5)).toBe("$1,234.50");
-    expect(formatCurrency(0)).toBe("$0.00");
+  it("formats a number as rand", () => {
+    expect(formatCurrency(1234.5)).toBe("R 1,234.50");
+    expect(formatCurrency(0)).toBe("R 0.00");
+  });
+
+  it("rounds to whole rand and marks negatives with a minus sign", () => {
+    expect(formatCurrency(1234.5, { cents: false })).toBe("R 1,235");
+    expect(formatCurrency(-80)).toBe("−R 80.00");
+    expect(formatCurrency(-0.001)).toBe("R 0.00");
   });
 });
 
 describe("formatCompactCurrency", () => {
   it("formats large numbers compactly", () => {
-    expect(formatCompactCurrency(1500)).toBe("$1.5K");
-    expect(formatCompactCurrency(4200000)).toBe("$4.2M");
+    expect(formatCompactCurrency(1500)).toBe("R 1.5K");
+    expect(formatCompactCurrency(4200000)).toBe("R 4.2M");
   });
 
   it("formats small numbers plainly, with no trailing decimal", () => {
-    expect(formatCompactCurrency(0)).toBe("$0");
-    expect(formatCompactCurrency(42)).toBe("$42");
+    expect(formatCompactCurrency(0)).toBe("R 0");
+    expect(formatCompactCurrency(42)).toBe("R 42");
   });
 });
 
 describe("formatDate", () => {
   it("formats a date in a readable form", () => {
-    expect(formatDate("2026-01-15")).toBe("Jan 15, 2026");
+    expect(formatDate("2026-01-15")).toBe("15 Jan 2026");
+  });
+
+  it("uses South African time, so a late UTC evening is already the next day", () => {
+    expect(formatDate(new Date("2026-01-15T23:30:00Z"))).toBe("16 Jan 2026");
   });
 });
 

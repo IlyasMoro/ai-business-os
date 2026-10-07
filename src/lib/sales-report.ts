@@ -2,6 +2,7 @@
    per salesperson and per lead source. No database access here; the Sales
    report page and the Copilot's pipeline tool pass the rows in. */
 
+import { APP_TIME_ZONE } from "@/lib/utils";
 import { DEAL_STAGES, isOpenStage, sourceLabel, type DealStage, type LeadSource } from "@/lib/crm-pipeline";
 
 export type ReportPeriod = "month" | "quarter" | "year" | "last12";
@@ -79,7 +80,7 @@ export function forecastByMonth(deals: ReportDeal[], now = new Date(), months = 
     { key: "overdue", label: "Overdue", count: 0, value: 0, weighted: 0 },
     ...monthStarts.slice(0, months).map((d) => ({
       key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
-      label: d.toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      label: d.toLocaleDateString("en-GB", { month: "short", year: "numeric", timeZone: APP_TIME_ZONE }),
       count: 0,
       value: 0,
       weighted: 0,

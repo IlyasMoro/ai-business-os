@@ -1,3 +1,4 @@
+import { formatCurrencyPlain, formatDate } from "@/lib/utils";
 import "server-only";
 import { PDFDocument, StandardFonts, rgb, type RGB } from "pdf-lib";
 
@@ -50,7 +51,7 @@ export type BusinessReportData = {
   logoMimeType?: string | null;
 };
 
-const money = (n: number) => `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+const money = (n: number) => formatCurrencyPlain(n, { cents: false });
 
 export async function generateBusinessReportPdf(data: BusinessReportData): Promise<Uint8Array> {
   const doc = await PDFDocument.create();
@@ -78,7 +79,7 @@ export async function generateBusinessReportPdf(data: BusinessReportData): Promi
   text(data.companyName, margin, 20, bold);
   text("Business Report", 400, 20, bold);
   y -= 22;
-  text(`Generated ${data.generatedAt.toLocaleDateString()} (trailing 6 months)`, margin, 10, font, COLOR.gray);
+  text(`Generated ${formatDate(data.generatedAt)} (trailing 6 months)`, margin, 10, font, COLOR.gray);
   y -= 30;
   page.drawLine({ start: { x: margin, y }, end: { x: 545, y }, thickness: 0.75, color: COLOR.lightGray });
   y -= 30;

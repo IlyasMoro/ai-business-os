@@ -1,5 +1,6 @@
 "use server";
 
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -216,10 +217,10 @@ export async function emailQuote(quoteId: string) {
   const rows = lines
     .map(
       (l) =>
-        `<tr><td>${escapeHtml(l.description)}</td><td>${l.quantity}</td><td>$${l.unitPrice.toFixed(2)}</td><td>$${(l.quantity * l.unitPrice).toFixed(2)}</td></tr>`
+        `<tr><td>${escapeHtml(l.description)}</td><td>${l.quantity}</td><td>${formatCurrency(l.unitPrice)}</td><td>${formatCurrency(l.quantity * l.unitPrice)}</td></tr>`
     )
     .join("");
-  const validText = quote.validUntil ? `, valid until ${quote.validUntil.toLocaleDateString()}` : "";
+  const validText = quote.validUntil ? `, valid until ${formatDate(quote.validUntil)}` : "";
   // The customer can accept or decline online from this link.
   const link = quoteLink(await ensureQuoteToken(quoteId));
   const linkHtml = link
@@ -229,7 +230,7 @@ export async function emailQuote(quoteId: string) {
     await sendEmailForCompany(session.companyId, {
       to: quote.customer.email,
       subject: `Quote ${quote.quoteNumber} from ${quote.companyRef.name}`,
-      html: `<p>Hi ${escapeHtml(quote.customer.name)},</p><p>Here is our quote ${quote.quoteNumber}${validText}. The PDF is attached.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${rows}</table><p><strong>Total: $${quote.totalAmount.toFixed(2)}</strong></p>${quote.notes ? `<p>${escapeHtml(quote.notes).replace(/\n/g, "<br/>")}</p>` : ""}${linkHtml}<p>${link ? "You can also reply to this email" : "Reply to this email"} to accept it or ask any questions.</p>`,
+      html: `<p>Hi ${escapeHtml(quote.customer.name)},</p><p>Here is our quote ${quote.quoteNumber}${validText}. The PDF is attached.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${rows}</table><p><strong>Total: ${formatCurrency(quote.totalAmount)}</strong></p>${quote.notes ? `<p>${escapeHtml(quote.notes).replace(/\n/g, "<br/>")}</p>` : ""}${linkHtml}<p>${link ? "You can also reply to this email" : "Reply to this email"} to accept it or ask any questions.</p>`,
       attachments: [{ filename: `${quote.quoteNumber}.pdf`, content: Buffer.from(pdf) }],
     });
   } catch (err) {
@@ -241,7 +242,7 @@ export async function emailQuote(quoteId: string) {
   await db.crmActivity.create({
     data: {
       type: "EMAIL",
-      body: `Emailed quote ${quote.quoteNumber} ($${quote.totalAmount.toFixed(2)}) to ${quote.customer.email}.`,
+      body: `Emailed quote ${quote.quoteNumber} (${formatCurrency(quote.totalAmount)}) to ${quote.customer.email}.`,
       companyId: session.companyId,
       customerId: quote.customerId,
       dealId: quote.dealId,

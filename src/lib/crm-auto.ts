@@ -1,3 +1,4 @@
+import { formatDayMonth } from "@/lib/utils";
 import "server-only";
 import { db } from "@/lib/db";
 import { sendEmailForCompany } from "@/lib/email-for-company";
@@ -18,7 +19,7 @@ const QUOTE_EXPIRY_NOTICE_DAYS = 2;
 
 const escapeHtml = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
-const shortDay = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const shortDay = (d: Date) => formatDayMonth(d);
 
 type AutoKey = "autoQuoteOpened" | "autoQuoteExpiry" | "autoDealOverdue" | "dailyDigest";
 

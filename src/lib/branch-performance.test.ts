@@ -38,7 +38,7 @@ describe("scoreBranches", () => {
     ]);
     const athlone = scored.find((s) => s.id === "a")!;
     expect(athlone.status).toBe("attention");
-    expect(athlone.flags).toEqual(["Losing money", "$900 overdue", "$400 expiring soon"]);
+    expect(athlone.flags).toEqual(["Losing money", "R\u00a0900 overdue", "R\u00a0400 expiring soon"]);
   });
 
   it("handles a branch with no revenue yet", () => {
@@ -58,12 +58,12 @@ describe("branchInsights", () => {
       branch({ id: "a", name: "Athlone", revenue: 8000, revenuePrev: 9000, expenses: 7900, expiring: 150, overdue: 300, lowStock: 2 }),
     ]);
     const text = branchInsights(scored, 3).map((i) => i.text);
-    expect(text[0]).toBe("Main store brings in the most: $20,000, 50% of all revenue.");
+    expect(text[0]).toBe("Main store brings in the most: R\u00a020,000, 50% of all revenue.");
     expect(text).toContain("Bellville is growing fastest, up 20% on the period before.");
     expect(text).toContain("Athlone is down 11% on the period before. Worth a visit to find out why.");
     expect(text.some((t) => t.startsWith("Athlone keeps 1% of its revenue as profit"))).toBe(true);
-    expect(text).toContain("Athlone has $150 of stock expiring in the next 3 days. Move it to a busier branch or mark it down.");
-    expect(text).toContain("Athlone has $300 in overdue invoices to follow up.");
+    expect(text).toContain("Athlone has R\u00a0150 of stock expiring in the next 3 days. Move it to a busier branch or mark it down.");
+    expect(text).toContain("Athlone has R\u00a0300 in overdue invoices to follow up.");
     expect(text.join(" ")).not.toMatch(/[—–-]/);
   });
 
@@ -73,8 +73,8 @@ describe("branchInsights", () => {
       branch({ id: "b", name: "Bellville", expiring: 300, overdue: 80 }),
     ]);
     const text = branchInsights(scored, 3).map((i) => i.text);
-    expect(text).toContain("Stock expiring in the next 3 days: Bellville $300, Athlone $120. Move it to a busier branch or mark it down.");
-    expect(text).toContain("Overdue invoices to follow up: Bellville $80, Athlone $50.");
+    expect(text).toContain("Stock expiring in the next 3 days: Bellville R\u00a0300, Athlone R\u00a0120. Move it to a busier branch or mark it down.");
+    expect(text).toContain("Overdue invoices to follow up: Bellville R\u00a080, Athlone R\u00a050.");
   });
 
   it("says nothing stands out when every branch is fine", () => {

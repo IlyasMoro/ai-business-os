@@ -62,9 +62,7 @@ type ProductSeed = {
   orderQty: [number, number];
 };
 
-// Written in rand like a South African shop, converted to the app's US
-// dollars (R18 to $1) when the products are created.
-const ZAR = 18;
+// Written in rand, the currency the app shows.
 const PRODUCTS: ProductSeed[] = [
   { sku: "BEEF-MINCE", name: "Beef mince", unit: "KG", cost: 95, price: 139.99, shelfDays: 4, stock: 42.5, reorder: 15, orderQty: [2, 12] },
   { sku: "BEEF-TBONE", name: "Beef T bone steak", unit: "KG", cost: 140, price: 199.99, shelfDays: 5, stock: 18.4, reorder: 8, orderQty: [1.5, 6] },
@@ -162,8 +160,8 @@ async function main() {
         sku: p.sku,
         name: p.name,
         unit: p.unit,
-        cost: round(p.cost / ZAR),
-        unitPrice: round(p.price / ZAR),
+        cost: round(p.cost),
+        unitPrice: round(p.price),
         reorderLevel: p.reorder,
         trackingMode: fresh ? "LOT" : "NONE",
         tracksExpiry: fresh,
@@ -207,7 +205,7 @@ async function main() {
   for (const c of CUSTOMERS) {
     customers.push(
       await db.customer.create({
-        data: { companyId, name: c.name, company: c.company, status: c.status, creditLimit: c.credit === null ? null : Math.round(c.credit / ZAR), email: `buyer@${c.company.toLowerCase().replace(/[^a-z]+/g, "")}.example`, phone: "021 555 0123", createdAt: daysAgo(90) },
+        data: { companyId, name: c.name, company: c.company, status: c.status, creditLimit: c.credit === null ? null : c.credit, email: `buyer@${c.company.toLowerCase().replace(/[^a-z]+/g, "")}.example`, phone: "021 555 0123", createdAt: daysAgo(90) },
       })
     );
   }
@@ -216,7 +214,7 @@ async function main() {
   for (const [i, [name, position, department]] of STAFF.entries()) {
     const branch = branches[i % branches.length];
     const salary = position === "Branch manager" ? 22000 : position === "Head butcher" ? 18500 : position === "Butcher" ? 12500 : 8500;
-    await db.employee.create({ data: { companyId, branchId: branch.id, name, position, department, salary: Math.round(salary / ZAR), hireDate: daysAgo(200 + i * 30) } });
+    await db.employee.create({ data: { companyId, branchId: branch.id, name, position, department, salary: salary, hireDate: daysAgo(200 + i * 30) } });
   }
 
   // Customer orders over the last 60 days, more around month end (payday).
@@ -235,7 +233,7 @@ async function main() {
         const p = products[idx];
         const [lo, hi] = p.seed.orderQty;
         const qty = p.seed.unit === "EACH" ? Math.max(1, Math.round(between(lo, hi))) : round(between(lo, hi), 2);
-        return { productId: p.id, quantity: qty, unitPrice: round(p.seed.price / ZAR) };
+        return { productId: p.id, quantity: qty, unitPrice: round(p.seed.price) };
       });
       const total = round(items.reduce((s, it) => s + it.quantity * it.unitPrice, 0));
       const status = d > 3 ? (rand() < 0.06 ? "CANCELLED" : "FULFILLED") : d > 1 ? "CONFIRMED" : "PENDING";
@@ -312,7 +310,7 @@ async function main() {
         if (day > new Date()) continue;
         const payday = week === 3 ? 1.25 : 1;
         await db.transaction.create({
-          data: { companyId, branchId: b.id, type: "INCOME", category: "Till sales", amount: round((between(68000, 82000) / ZAR) * b.factor * eidBoost * growth * payday), description: `Week ${week + 1} till takings`, date: day },
+          data: { companyId, branchId: b.id, type: "INCOME", category: "Till sales", amount: round(between(68000, 82000) * b.factor * eidBoost * growth * payday), description: `Week ${week + 1} till takings`, date: day },
         });
       }
       const costs: [string, number][] = [
@@ -328,7 +326,7 @@ async function main() {
         if (day > new Date()) continue;
         const swing = category.includes("purchases") ? eidBoost * growth * between(0.95, 1.05) : between(0.98, 1.02);
         await db.transaction.create({
-          data: { companyId, branchId: b.id, type: "EXPENSE", category, amount: round((base / ZAR) * b.factor * swing), date: day },
+          data: { companyId, branchId: b.id, type: "EXPENSE", category, amount: round(base * b.factor * swing), date: day },
         });
       }
     }

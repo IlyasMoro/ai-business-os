@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { hasFeature } from "@/lib/plan-limits";
@@ -86,7 +87,7 @@ export default async function RulesPage({ searchParams }: { searchParams: Promis
                   rule={rule}
                   sentence={describeRule(rule, names)}
                   runs={run?._count._all ?? 0}
-                  lastRun={run?._max.createdAt ? run._max.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : null}
+                  lastRun={run?._max.createdAt ? formatDate(run._max.createdAt) : null}
                   save={saveRule.bind(null, rule.id)}
                   toggle={setRuleActive.bind(null, rule.id, !rule.active)}
                   remove={deleteRule.bind(null, rule.id)}

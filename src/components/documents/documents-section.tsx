@@ -1,7 +1,7 @@
 import { FileArchive, FileImage, FileSpreadsheet, FileText, File as FileIcon, Download } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
-import { formatFileSize } from "@/lib/utils";
+import { formatFileSize, formatDate } from "@/lib/utils";
 import { uploadDocument, deleteDocument, type DocumentUploadState } from "@/lib/actions/documents";
 import { verifySession, hasRole } from "@/lib/dal";
 import { fileKind, opensInBrowser, type FileKind } from "@/lib/document-files";
@@ -68,7 +68,7 @@ export async function DocumentsSection({
                       {doc.filename}
                     </span>
                     <span className="block text-xs text-slate-500">
-                      {formatFileSize(doc.size)} · {doc.createdAt.toLocaleDateString()}
+                      {formatFileSize(doc.size)} · {formatDate(doc.createdAt)}
                     </span>
                   </a>
                   <a

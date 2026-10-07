@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import "server-only";
 import { getLateOrders, getLotAlerts } from "@/lib/alerts-data";
 import { isDailyAlertDue, SALES_STALL_DAYS } from "@/lib/order-alerts";
@@ -52,7 +53,7 @@ async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string 
       await sendEmailForCompany(companyId, {
         to: invoice.customer.email,
         subject: "Payment reminder: outstanding invoice",
-        html: `<p>Hi ${escapeHtml(invoice.customer.name)},</p><p>This is a friendly automated reminder that $${owed.toFixed(2)} on invoice ${invoice.invoiceNumber} (due ${invoice.dueDate.toLocaleDateString()}) is still outstanding.</p><p>Please arrange payment at your earliest convenience.</p>`,
+        html: `<p>Hi ${escapeHtml(invoice.customer.name)},</p><p>This is a friendly automated reminder that ${formatCurrency(owed)} on invoice ${invoice.invoiceNumber} (due ${formatDate(invoice.dueDate)}) is still outstanding.</p><p>Please arrange payment at your earliest convenience.</p>`,
       });
       await db.invoice.update({
         where: { id: invoice.id },
@@ -60,7 +61,7 @@ async function runOverdueInvoiceReminders(companyId: string, webhookUrl: string 
       });
       await sendWebhookNotification(
         webhookUrl,
-        `Payment reminder sent to ${invoice.customer.name} for invoice ${invoice.invoiceNumber} ($${owed.toFixed(2)} owed)`,
+        `Payment reminder sent to ${invoice.customer.name} for invoice ${invoice.invoiceNumber} (${formatCurrency(owed)} owed)`,
         { event: "overdue_invoice_reminder", invoiceNumber: invoice.invoiceNumber, customer: invoice.customer.name, amount: owed }
       );
     } catch (err) {
@@ -287,7 +288,7 @@ async function runLotExpiryAlerts(companyId: string, webhookUrl: string | null) 
   const line = (l: (typeof lots)[number]) =>
     `<a href="${base}/dashboard/inventory/${l.productId}">${escapeHtml(l.productName)}</a> lot ${escapeHtml(l.lotNumber)}: ${l.quantity} at ${escapeHtml(l.branchName)}, ${
       l.expired ? "expired" : "expires"
-    } ${l.expiresAt.toLocaleDateString()}`;
+    } ${formatDate(l.expiresAt)}`;
   const expired = lots.filter((l) => l.expired);
   const soon = lots.filter((l) => !l.expired);
   await emailManagers(
@@ -334,7 +335,7 @@ async function runCreditLimitWarnings(companyId: string, webhookUrl: string | nu
         await sendEmailForCompany(companyId, {
           to: recipient.email,
           subject: `Credit limit alert: ${customer.name}`,
-          html: `<p>Hi ${recipient.name},</p><p>${customer.name} now owes $${outstandingBalance.toFixed(2)} against a credit limit of $${customer.creditLimit!.toFixed(2)}, ${percent}% of their limit. The next order that would push them over will be blocked automatically until this is resolved.</p><p>Consider following up for payment, or raising their limit if that fits the relationship.</p>`,
+          html: `<p>Hi ${recipient.name},</p><p>${customer.name} now owes ${formatCurrency(outstandingBalance)} against a credit limit of ${formatCurrency(customer.creditLimit!)}, ${percent}% of their limit. The next order that would push them over will be blocked automatically until this is resolved.</p><p>Consider following up for payment, or raising their limit if that fits the relationship.</p>`,
         });
       } catch (err) {
         console.error(`[automations] credit limit warning email failed for ${recipient.email}:`, err);
@@ -345,7 +346,7 @@ async function runCreditLimitWarnings(companyId: string, webhookUrl: string | nu
 
     await sendWebhookNotification(
       webhookUrl,
-      `Credit limit alert: ${customer.name} is at ${percent}% of their $${customer.creditLimit!.toFixed(2)} limit ($${outstandingBalance.toFixed(2)} owed)`,
+      `Credit limit alert: ${customer.name} is at ${percent}% of their ${formatCurrency(customer.creditLimit!)} limit (${formatCurrency(outstandingBalance)} owed)`,
       { event: "credit_limit_warning", customer: customer.name, outstandingBalance, creditLimit: customer.creditLimit, percent }
     );
   }

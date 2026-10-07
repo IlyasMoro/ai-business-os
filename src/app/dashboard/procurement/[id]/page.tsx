@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { sendPurchaseOrderEmail } from "@/lib/actions/procurement";
 import { buttonStyles } from "@/components/ui-dark/button";
@@ -70,15 +71,15 @@ export default async function PurchaseOrderDetailPage({
               <BranchTag name={purchaseOrder.branch?.name} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
-              Created {purchaseOrder.createdAt.toLocaleDateString()}
-              {purchaseOrder.sentAt && <> · Emailed {purchaseOrder.sentAt.toLocaleDateString()}</>}
+              Created {formatDate(purchaseOrder.createdAt)}
+              {purchaseOrder.sentAt && <> · Emailed {formatDate(purchaseOrder.sentAt)}</>}
               {purchaseOrder.expectedDate && (
-                <> · Expected {purchaseOrder.expectedDate.toLocaleDateString()}</>
+                <> · Expected {formatDate(purchaseOrder.expectedDate)}</>
               )}
               {purchaseOrder.receivedAt && (
                 <>
                   {" "}
-                  · Received {purchaseOrder.receivedAt.toLocaleDateString()}
+                  · Received {formatDate(purchaseOrder.receivedAt)}
                   {purchaseOrder.expectedDate && (
                     <span className={purchaseOrder.receivedAt <= purchaseOrder.expectedDate ? "text-emerald-400" : "text-red-400"}>
                       {" "}
@@ -151,8 +152,8 @@ export default async function PurchaseOrderDetailPage({
                     <div>
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {formatQty(item.quantity, item.product.unit)} × ${item.unitCost.toFixed(2)} = $
-                        {(item.quantity * item.unitCost).toFixed(2)}
+                        {formatQty(item.quantity, item.product.unit)} × {formatCurrency(item.unitCost)} ={" "}
+                        {formatCurrency(item.quantity * item.unitCost)}
                       </p>
                     </div>
                     {canEditPoLines(purchaseOrder.status) && (
@@ -177,7 +178,7 @@ export default async function PurchaseOrderDetailPage({
               )
             )}
             <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-800">
-              Total: ${purchaseOrder.totalAmount.toFixed(2)}
+              Total: {formatCurrency(purchaseOrder.totalAmount)}
             </p>
           </CardContent>
         </Card>

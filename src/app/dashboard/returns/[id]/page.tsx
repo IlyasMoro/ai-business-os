@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
@@ -86,9 +87,9 @@ export default async function ReturnDetailPage({
               <Link href={`/dashboard/sales/${rma.order.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                 Order {rma.order.orderNumber}
               </Link>
-              {" · "}Opened {rma.createdAt.toLocaleDateString()}
-              {rma.receivedAt && <> · Received {rma.receivedAt.toLocaleDateString()}</>}
-              {rma.refundedAt && <> · Refunded {rma.refundedAt.toLocaleDateString()}</>}
+              {" · "}Opened {formatDate(rma.createdAt)}
+              {rma.receivedAt && <> · Received {formatDate(rma.receivedAt)}</>}
+              {rma.refundedAt && <> · Refunded {formatDate(rma.refundedAt)}</>}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -128,7 +129,7 @@ export default async function ReturnDetailPage({
                         <StatusBadge status={item.condition} tone={conditionTone[item.condition]} />
                       </p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {formatQty(item.quantity, item.product.unit)} × ${item.unitPrice.toFixed(2)} = ${(item.quantity * item.unitPrice).toFixed(2)}
+                        {formatQty(item.quantity, item.product.unit)} × {formatCurrency(item.unitPrice)} = {formatCurrency(item.quantity * item.unitPrice)}
                         {" · "}
                         {shouldRestock(item.condition, policy.restockDamaged) ? "goes back into stock" : "written off"}
                       </p>
@@ -151,14 +152,14 @@ export default async function ReturnDetailPage({
 
             <dl className="mt-4 space-y-1 text-right text-sm tabular-nums">
               <div className="text-slate-400 light:text-slate-500">
-                Subtotal: ${subtotal.toFixed(2)}
+                Subtotal: {formatCurrency(subtotal)}
               </div>
               {rma.restockingFeePercent > 0 && (
                 <div className="text-slate-400 light:text-slate-500">
-                  Restocking fee ({rma.restockingFeePercent}%): ${fee.toFixed(2)}
+                  Restocking fee ({rma.restockingFeePercent}%): {formatCurrency(fee)}
                 </div>
               )}
-              <div className="font-semibold text-amber-400 light:text-amber-800">Refund: ${refund.toFixed(2)}</div>
+              <div className="font-semibold text-amber-400 light:text-amber-800">Refund: {formatCurrency(refund)}</div>
             </dl>
           </CardContent>
         </Card>

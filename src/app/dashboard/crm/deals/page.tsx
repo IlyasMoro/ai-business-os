@@ -6,13 +6,13 @@ import { DealBoard } from "@/components/crm/deal-board";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { LinkButton } from "@/components/ui-dark/button";
 import { isOpenStage, pipelineSummary } from "@/lib/crm-pipeline";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency } from "@/lib/utils";
 import { dealScope } from "@/lib/crm-access";
 
 export const metadata = { title: "Deals" };
 
 function money(n: number) {
-  return `$${Math.round(n).toLocaleString("en-US")}`;
+  return formatCurrency(n, { cents: false });
 }
 
 /** The sales pipeline: summary figures, then the drag and drop board. */

@@ -5,7 +5,7 @@ import { isPlatformAdmin } from "@/lib/platform-admin";
 import { db } from "@/lib/db";
 import { sizeLine, topicLabel } from "@/lib/contact";
 import { setContactMessageHandled } from "@/lib/actions/contact";
-import { cn } from "@/lib/utils";
+import { cn, formatDate, formatDateTime } from "@/lib/utils";
 
 /* Messages from the public contact form, visible only to the platform
    operator. Open messages first; "Handled" moves one out of the way. */
@@ -71,7 +71,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
                     {m.company && `, ${m.company}`}
                   </span>
                 </p>
-                <p className="text-xs text-slate-500">{m.createdAt.toLocaleString()}</p>
+                <p className="text-xs text-slate-500">{formatDateTime(m.createdAt)}</p>
               </div>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-blue-300 light:text-blue-700">
                 {topicLabel(m.topic)}
@@ -94,7 +94,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
                     {handled ? "Open again" : "Mark handled"}
                   </button>
                 </form>
-                {handled && <span className="text-xs text-slate-500">Handled {m.handledAt!.toLocaleDateString()}</span>}
+                {handled && <span className="text-xs text-slate-500">Handled {formatDate(m.handledAt!)}</span>}
               </div>
             </li>
           );

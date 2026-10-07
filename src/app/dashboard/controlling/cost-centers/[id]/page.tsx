@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
@@ -141,7 +142,7 @@ export default async function CostCenterPage({
               <tbody>
                 {own.map((l, i) => (
                   <tr key={i} className="border-t border-white/[0.04] light:border-slate-100">
-                    <td className="px-5 py-2 text-slate-400">{l.date.toLocaleDateString()}</td>
+                    <td className="px-5 py-2 text-slate-400">{formatDate(l.date)}</td>
                     <td className="px-5 py-2">
                       <Badge tone={l.source === "EXPENSE" ? "slate" : l.source === "PAYROLL" ? "purple" : "blue"}>{SOURCE_LABEL[l.source]}</Badge>
                     </td>

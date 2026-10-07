@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/dal";
@@ -76,7 +77,7 @@ export default async function AdminCompaniesPage({
                   </td>
                   <td className="px-4 py-3 text-slate-300 light:text-slate-600">{company.users.length}</td>
                   <td className="px-4 py-3 text-slate-400 light:text-slate-500">
-                    {company.createdAt.toLocaleDateString()}
+                    {formatDate(company.createdAt)}
                   </td>
                 </tr>
               );

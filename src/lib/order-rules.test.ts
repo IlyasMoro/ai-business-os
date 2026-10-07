@@ -61,8 +61,8 @@ describe("invoiceBlocker", () => {
 
 describe("formatOrderNumber", () => {
   it("pads to four digits and keeps longer numbers whole", () => {
-    expect(formatOrderNumber(1)).toBe("SO-0001");
-    expect(formatOrderNumber(42)).toBe("SO-0042");
-    expect(formatOrderNumber(12345)).toBe("SO-12345");
+    expect(formatOrderNumber(1)).toBe("SO0001");
+    expect(formatOrderNumber(42)).toBe("SO0042");
+    expect(formatOrderNumber(12345)).toBe("SO12345");
   });
 });

@@ -1,3 +1,4 @@
+import { formatWeekdayDate } from "@/lib/utils";
 import { verifySession } from "@/lib/dal";
 import { getAgendaItems } from "@/lib/agenda";
 import { EventForm } from "@/components/calendar/event-form";
@@ -66,12 +67,7 @@ export default async function CalendarPage({
             {Array.from(groups.entries()).map(([dateKey, dateItems]) => (
               <div key={dateKey} className="px-5 py-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  {new Date(dateKey).toLocaleDateString(undefined, {
-                    weekday: "long",
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {formatWeekdayDate(new Date(dateKey))}
                 </p>
                 <ul className="mt-2 space-y-2">
                   {dateItems.map((item) => {

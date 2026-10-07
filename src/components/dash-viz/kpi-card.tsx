@@ -4,6 +4,7 @@ import { ArrowUp, ArrowDown } from "lucide-react";
 import { AnimatedCounter } from "./animated-counter";
 import { Sparkline } from "./sparkline";
 import { SpotlightCard } from "./spotlight-card";
+import { CURRENCY_PREFIX } from "@/lib/utils";
 
 export type KpiChange = {
   /** Percentage change vs the previous period. Null when the previous
@@ -79,7 +80,7 @@ export function KpiCard({
       {/* No line for a series that is all zero: it would only draw the floor. */}
       {trend.length > 1 && trend.some((v) => v !== 0) && (
         <div className="mt-4">
-          <Sparkline data={trend} color={color} labels={trendLabels} currency={prefix === "$"} title={`${label} by month`} />
+          <Sparkline data={trend} color={color} labels={trendLabels} currency={prefix === CURRENCY_PREFIX} title={`${label} by month`} />
         </div>
       )}
       {progress && (

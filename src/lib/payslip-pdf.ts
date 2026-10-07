@@ -1,3 +1,4 @@
+import { formatCurrencyPlain, formatDate } from "@/lib/utils";
 import "server-only";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
@@ -42,7 +43,7 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Uint8Array>
   text("Payslip", 480, 18, bold);
   y -= 26;
   text(
-    `Pay period: ${data.periodStart.toLocaleDateString()} - ${data.periodEnd.toLocaleDateString()}`,
+    `Pay period: ${formatDate(data.periodStart)} to ${formatDate(data.periodEnd)}`,
     margin,
     10,
     font,
@@ -60,15 +61,15 @@ export async function generatePayslipPdf(data: PayslipData): Promise<Uint8Array>
   y -= 30;
 
   text("Gross pay", margin, 10, font, gray);
-  text(`$${data.grossPay.toFixed(2)}`, 480, 10);
+  text(`${formatCurrencyPlain(data.grossPay)}`, 480, 10);
   y -= 18;
   text("Deductions", margin, 10, font, gray);
-  text(`-$${data.deductions.toFixed(2)}`, 480, 10);
+  text(`-${formatCurrencyPlain(data.deductions)}`, 480, 10);
   y -= 10;
   page.drawLine({ start: { x: margin, y }, end: { x: 545, y }, thickness: 0.5, color: gray });
   y -= 20;
   text("Net pay", margin, 12, bold);
-  text(`$${data.netPay.toFixed(2)}`, 480, 12, bold);
+  text(`${formatCurrencyPlain(data.netPay)}`, 480, 12, bold);
 
   return doc.save();
 }

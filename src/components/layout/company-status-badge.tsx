@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { daysLeft } from "@/lib/date-utils";
-import { cn } from "@/lib/utils";
+import { cn, formatDayMonth } from "@/lib/utils";
 
 type Subscription = {
   status: string;
@@ -33,7 +33,7 @@ function statusLine(subscription: Subscription): { text: string | null; tone: "o
     return { text: "No active plan", tone: "bad" };
   }
   if (subscription?.status === "ACTIVE" && subscription.cancelAtPeriodEnd && subscription.currentPeriodEnd) {
-    const date = subscription.currentPeriodEnd.toLocaleDateString("en-ZA", { day: "numeric", month: "short" });
+    const date = formatDayMonth(subscription.currentPeriodEnd);
     return { text: `Cancels ${date}`, tone: "warn" };
   }
   return { text: null, tone: "ok" };

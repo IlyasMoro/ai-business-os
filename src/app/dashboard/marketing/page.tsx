@@ -10,7 +10,7 @@ import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
 import { getCampaignsWithStats } from "@/lib/campaign-data";
 import { formatRoi, totalStats } from "@/lib/campaign-stats";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, CURRENCY_PREFIX } from "@/lib/utils";
 
 const statusOrder = ["DRAFT", "ACTIVE", "PAUSED", "COMPLETED"] as const;
 const statusColor: Record<(typeof statusOrder)[number], string> = {
@@ -80,14 +80,14 @@ export default async function MarketingPage({
         <KpiCard
           label="Spent"
           value={totals.spent}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={Wallet}
           color={VIZ.amber}
           progress={totals.budget > 0 ? { pct: (totals.spent / totals.budget) * 100, label: `of ${formatCurrency(totals.budget)} budgeted` } : undefined}
           hint={totals.budget > 0 ? undefined : "No budget set"}
         />
         <KpiCard label="Leads" value={totals.leads} icon={UserPlus} color={VIZ.blue} hint="From all campaigns" />
-        <KpiCard label="Revenue" value={totals.revenue} prefix="$" icon={TrendingUp} color={VIZ.emerald} hint="Won from campaign leads" />
+        <KpiCard label="Revenue" value={totals.revenue} prefix={CURRENCY_PREFIX} icon={TrendingUp} color={VIZ.emerald} hint="Won from campaign leads" />
         <KpiCard
           label="Return on spend"
           value={totals.roiPct ?? 0}

@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/lib/utils";
 import { useActionState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui-dark/button";
 import { Input, Select, FieldError } from "@/components/ui-dark/input";
@@ -37,7 +38,7 @@ export function OrderItemForm({
           </option>
           {products.map((product) => (
             <option key={product.id} value={product.id}>
-              {product.name} ({product.sku}), ${product.unitPrice.toFixed(2)}{product.unit === "KG" ? "/kg" : product.unit === "L" ? "/L" : ""}, {formatQty(product.stockQty, product.unit)} in stock
+              {product.name} ({product.sku}), {formatCurrency(product.unitPrice)}{product.unit === "KG" ? "/kg" : product.unit === "L" ? "/L" : ""}, {formatQty(product.stockQty, product.unit)} in stock
             </option>
           ))}
         </Select>

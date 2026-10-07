@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -108,7 +109,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                   </Link>
                 </div>
                 <div className="flex items-center gap-2">
-                  {lot.expiresAt && <span className="text-xs text-slate-400">Expires {lot.expiresAt.toLocaleDateString()}</span>}
+                  {lot.expiresAt && <span className="text-xs text-slate-400">Expires {formatDate(lot.expiresAt)}</span>}
                   {isExpired(lot) && <Badge tone="red">Expired</Badge>}
                   <Badge tone={lot.quantity > 0 ? "green" : "slate"}>{lot.quantity > 0 ? `${lot.quantity} on hand` : "None left"}</Badge>
                 </div>
@@ -138,7 +139,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                   return (
                     <li key={m.id} className="flex flex-wrap items-center justify-between gap-2">
                       <span className="text-slate-300 light:text-slate-600">
-                        <span className="text-slate-500">{m.createdAt.toLocaleDateString()}</span> {KIND_LABEL[m.kind]}
+                        <span className="text-slate-500">{formatDate(m.createdAt)}</span> {KIND_LABEL[m.kind]}
                         {tr && (
                           <>
                             {m.kind === "TRANSFER_OUT" ? ` to ${tr.toBranch.name} on ` : ` from ${tr.fromBranch.name} on `}
@@ -212,7 +213,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                       </Link>
                     </td>
                     <td className="px-5 py-2 text-slate-400">{lot.product.name}</td>
-                    <td className="px-5 py-2 text-slate-400">{lot.expiresAt!.toLocaleDateString()}</td>
+                    <td className="px-5 py-2 text-slate-400">{formatDate(lot.expiresAt!)}</td>
                     <td className="px-5 py-2">
                       {isExpired(lot) ? <Badge tone="red">Expired</Badge> : isExpiringSoon(lot, inventory.expiryWarningDays) ? <Badge tone="yellow">Expires soon</Badge> : null}
                     </td>

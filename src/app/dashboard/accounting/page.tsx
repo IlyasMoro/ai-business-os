@@ -10,7 +10,7 @@ import { subMonths, startOfMonth, format } from "date-fns";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, Wallet, TrendingDown, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
@@ -129,12 +129,12 @@ export default async function AccountingPage({
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2">
-          <KpiCard label="Income" value={income} prefix="$" icon={Wallet} color={VIZ.emerald} trend={incomeTrend} trendLabels={monthLabels} />
-          <KpiCard label="Expenses" value={expense} prefix="$" icon={TrendingDown} color={VIZ.red} trend={expenseTrend} trendLabels={monthLabels} />
+          <KpiCard label="Income" value={income} prefix={CURRENCY_PREFIX} icon={Wallet} color={VIZ.emerald} trend={incomeTrend} trendLabels={monthLabels} />
+          <KpiCard label="Expenses" value={expense} prefix={CURRENCY_PREFIX} icon={TrendingDown} color={VIZ.red} trend={expenseTrend} trendLabels={monthLabels} />
           <KpiCard
             label="Net"
             value={net}
-            prefix="$"
+            prefix={CURRENCY_PREFIX}
             icon={TrendingUp}
             color={net >= 0 ? VIZ.blue : VIZ.red}
             trend={netTrend}
@@ -186,7 +186,7 @@ export default async function AccountingPage({
               {transactions.map((transaction) => (
                 <tr key={transaction.id} className="border-b border-white/[0.04] last:border-0">
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {transaction.date.toLocaleDateString()}
+                    {formatDate(transaction.date)}
                   </td>
                   <td className="px-5 py-3">
                     <Link

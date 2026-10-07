@@ -1,5 +1,6 @@
 "use server";
 
+import { formatCurrency } from "@/lib/utils";
 import { orderConfirmationPdf } from "@/lib/document-pdfs";
 import { sendEmailForCompany } from "@/lib/email-for-company";
 import { escapeHtml } from "@/lib/invoice-rules";
@@ -155,7 +156,7 @@ export async function updateOrderStatus(
 
     if (!check.withinLimit) {
       return {
-        message: `Cannot confirm: ${order.customer.name}'s balance would be $${check.projectedBalance.toFixed(2)}, which is $${check.amountOverLimit.toFixed(2)} over their $${order.customer.creditLimit!.toFixed(2)} credit limit. Raise the limit, collect payment first, or reduce this order.`,
+        message: `Cannot confirm: ${order.customer.name}'s balance would be ${formatCurrency(check.projectedBalance)}, which is ${formatCurrency(check.amountOverLimit)} over their ${formatCurrency(order.customer.creditLimit!)} credit limit. Raise the limit, collect payment first, or reduce this order.`,
       };
     }
 

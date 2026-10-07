@@ -10,7 +10,7 @@ import { ChangeBadge } from "@/components/dash-viz/change-badge";
 import { VIZ } from "@/components/dash-viz/colors";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, ShoppingCart, Wallet, Clock } from "lucide-react";
@@ -47,7 +47,7 @@ export default async function SalesPage({
   const where: Prisma.OrderWhereInput = {
     companyId: session.companyId,
     ...inBranch,
-    // Matches the order number (SO-0012) or the customer's name.
+    // Matches the order number (SO0012) or the customer's name.
     ...(q
       ? {
           OR: [
@@ -138,7 +138,7 @@ export default async function SalesPage({
         <KpiCard
           label="Order value (6 months)"
           value={monthlyValueTrend.reduce((a, v) => a + v, 0)}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={Wallet}
           color={VIZ.emerald}
           trend={monthlyValueTrend}
@@ -158,7 +158,7 @@ export default async function SalesPage({
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total order value</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
+            <AnimatedCounter value={totalValue} prefix={CURRENCY_PREFIX} decimals={0} />
           </p>
           <div className="mt-2">
             <ChangeBadge values={monthlyValueTrend} period="last month" />
@@ -225,7 +225,7 @@ export default async function SalesPage({
                     {formatCompactCurrency(order.totalAmount)}
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {order.createdAt.toLocaleDateString()}
+                    {formatDate(order.createdAt)}
                   </td>
                 </tr>
               ))}

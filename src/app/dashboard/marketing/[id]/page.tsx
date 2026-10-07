@@ -14,7 +14,7 @@ import { deleteCampaign } from "@/lib/actions/marketing";
 import { BackButton } from "@/components/ui-dark/back-button";
 import { getCampaignStats } from "@/lib/campaign-data";
 import { formatRoi } from "@/lib/campaign-stats";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 const statusTone = {
   DRAFT: "slate",
@@ -88,8 +88,8 @@ export default async function CampaignDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               {campaign.channel.charAt(0) + campaign.channel.slice(1).toLowerCase()}
-              {campaign.startDate && ` · Starts ${campaign.startDate.toLocaleDateString()}`}
-              {campaign.endDate && ` · Ends ${campaign.endDate.toLocaleDateString()}`}
+              {campaign.startDate && ` · Starts ${formatDate(campaign.startDate)}`}
+              {campaign.endDate && ` · Ends ${formatDate(campaign.endDate)}`}
             </p>
           </div>
           <div className="flex items-center gap-2">

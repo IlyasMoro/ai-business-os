@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Copy, Download, Eye, Link2, Mail, PenLine } from "lucide-react";
@@ -190,7 +191,7 @@ export default async function QuotePage({
               <span className="mb-1 flex items-center gap-1.5 font-medium">
                 <PenLine className="h-4 w-4" aria-hidden />
                 Accepted online by {quote.signedName}
-                {quote.decidedAt ? ` on ${quote.decidedAt.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}` : ""}
+                {quote.decidedAt ? ` on ${formatDateTime(quote.decidedAt)}` : ""}
                 {quote.signedIp ? ` from ${quote.signedIp}` : ""}.
               </span>
             ) : null}

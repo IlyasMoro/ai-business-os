@@ -130,7 +130,7 @@ export function planProductImport(rows: string[][], ctx: { existingSkus: Set<str
       stockQty = Math.floor(stockQty);
     }
     const reorderRaw = (reorder as number | null) ?? 5;
-    if (price === null) plan.warnings.push({ line, message: `${name} has no price, so it starts at $0.` });
+    if (price === null) plan.warnings.push({ line, message: `${name} has no price, so it starts at R 0.` });
 
     seen.add(key);
     plan.ready.push({

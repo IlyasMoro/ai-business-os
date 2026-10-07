@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -92,9 +93,9 @@ export default async function TransferDetailPage({
               {transfer.toBranch.name}
             </p>
             <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-              Created {transfer.createdAt.toLocaleDateString()}
-              {transfer.sentAt && <> · Sent {transfer.sentAt.toLocaleDateString()}</>}
-              {transfer.receivedAt && <> · Received {transfer.receivedAt.toLocaleDateString()}</>}
+              Created {formatDate(transfer.createdAt)}
+              {transfer.sentAt && <> · Sent {formatDate(transfer.sentAt)}</>}
+              {transfer.receivedAt && <> · Received {formatDate(transfer.receivedAt)}</>}
             </p>
             {transfer.note && <p className="mt-2 text-sm text-slate-300 light:text-slate-600">{transfer.note}</p>}
           </div>

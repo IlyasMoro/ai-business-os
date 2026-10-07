@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -218,11 +219,11 @@ export default async function ProductDetailPage({
               <CardContent className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-slate-500">Cost</p>
-                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.cost.toFixed(2)}{perUnit}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">{formatCurrency(product.cost)}{perUnit}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Unit price</p>
-                  <p className="tabular-nums text-slate-50 light:text-slate-900">${product.unitPrice.toFixed(2)}{perUnit}</p>
+                  <p className="tabular-nums text-slate-50 light:text-slate-900">{formatCurrency(product.unitPrice)}{perUnit}</p>
                 </div>
                 <div>
                   <p className="text-slate-500">Stock quantity</p>
@@ -337,7 +338,7 @@ export default async function ProductDetailPage({
                             )}
                           </p>
                           <p className="text-xs text-slate-500">
-                            {m.createdAt.toLocaleString()}
+                            {formatDateTime(m.createdAt)}
                             {multiBranch && ` · ${m.branchName}`}
                             {m.userName && ` · ${m.userName}`}
                           </p>
@@ -435,7 +436,7 @@ export default async function ProductDetailPage({
                           <span className="flex items-center gap-3">
                             {multiBranch && <span className="text-xs text-slate-400">{lot.branch.name}</span>}
                             {lot.expiresAt && (
-                              <span className="text-xs text-slate-400">Expires {lot.expiresAt.toLocaleDateString()}</span>
+                              <span className="text-xs text-slate-400">Expires {formatDate(lot.expiresAt)}</span>
                             )}
                             {isExpired(lot) ? (
                               <Badge tone="red">Expired</Badge>
@@ -491,7 +492,7 @@ export default async function ProductDetailPage({
                                 {line.component.name}
                               </Link>
                               <p className="text-xs tabular-nums text-slate-500">
-                                {formatQty(line.quantity, line.component.unit)} per unit × ${line.component.cost.toFixed(2)} · {formatQty(line.component.stockQty, line.component.unit)} in stock
+                                {formatQty(line.quantity, line.component.unit)} per unit × {formatCurrency(line.component.cost)} · {formatQty(line.component.stockQty, line.component.unit)} in stock
                               </p>
                             </div>
                             <DeleteButton
@@ -510,7 +511,7 @@ export default async function ProductDetailPage({
                     <BomLineForm productId={product.id} components={otherProducts} />
                     {product.bomComponents.length > 0 && (
                       <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
-                        Component cost per unit: <span className="font-semibold text-amber-400 light:text-amber-800">${rolledUpCost.toFixed(2)}</span>
+                        Component cost per unit: <span className="font-semibold text-amber-400 light:text-amber-800">{formatCurrency(rolledUpCost)}</span>
                       </p>
                     )}
                     {product.usedInBoms.length > 0 && (
@@ -546,10 +547,10 @@ export default async function ProductDetailPage({
                           href={`/dashboard/sales/${item.order.id}`}
                           className="text-slate-300 light:text-slate-600 hover:text-blue-400"
                         >
-                          <span className="font-mono">{item.order.orderNumber}</span> · {item.order.customer.name} · {item.order.createdAt.toLocaleDateString()}
+                          <span className="font-mono">{item.order.orderNumber}</span> · {item.order.customer.name} · {formatDate(item.order.createdAt)}
                         </Link>
                         <span className="tabular-nums text-slate-500">
-                          {formatQty(item.quantity, product.unit)} × ${item.unitPrice.toFixed(2)}
+                          {formatQty(item.quantity, product.unit)} × {formatCurrency(item.unitPrice)}
                         </span>
                       </li>
                     ))}
@@ -573,10 +574,10 @@ export default async function ProductDetailPage({
                           href={`/dashboard/procurement/${item.purchaseOrder.id}`}
                           className="text-slate-300 light:text-slate-600 hover:text-blue-400"
                         >
-                          {item.purchaseOrder.supplier.name} · {item.purchaseOrder.createdAt.toLocaleDateString()}
+                          {item.purchaseOrder.supplier.name} · {formatDate(item.purchaseOrder.createdAt)}
                         </Link>
                         <span className="tabular-nums text-slate-500">
-                          {formatQty(item.quantity, product.unit)} × ${item.unitCost.toFixed(2)}
+                          {formatQty(item.quantity, product.unit)} × {formatCurrency(item.unitCost)}
                         </span>
                       </li>
                     ))}

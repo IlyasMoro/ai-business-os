@@ -10,7 +10,7 @@ import { TrendChart } from "@/components/dash-viz/trend-chart";
 import { ChangeBadge } from "@/components/dash-viz/change-badge";
 import { VIZ } from "@/components/dash-viz/colors";
 import { Badge, StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, Truck, Wallet, Clock, PackageCheck } from "lucide-react";
@@ -47,7 +47,7 @@ export default async function ProcurementPage({
   const where: Prisma.PurchaseOrderWhereInput = {
     companyId: session.companyId,
     ...inBranch,
-    // Matches the PO number (PO-0007) or the supplier's name.
+    // Matches the PO number (PO0007) or the supplier's name.
     ...(q
       ? {
           OR: [
@@ -145,7 +145,7 @@ export default async function ProcurementPage({
         <KpiCard
           label="Purchases (6 months)"
           value={monthlyValueTrend.reduce((a, v) => a + v, 0)}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={Wallet}
           color={VIZ.blue}
           trend={monthlyValueTrend}
@@ -165,7 +165,7 @@ export default async function ProcurementPage({
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total PO value</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
+            <AnimatedCounter value={totalValue} prefix={CURRENCY_PREFIX} decimals={0} />
           </p>
           <div className="mt-2">
             <ChangeBadge values={monthlyValueTrend} period="last month" />
@@ -234,7 +234,7 @@ export default async function ProcurementPage({
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     {formatCompactCurrency(po.totalAmount)}
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{po.createdAt.toLocaleDateString()}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(po.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

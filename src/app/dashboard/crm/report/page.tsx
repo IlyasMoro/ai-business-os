@@ -17,7 +17,7 @@ import {
   wonByMonth,
   type ReportPeriod,
 } from "@/lib/sales-report";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency, formatDayMonth, formatMonth } from "@/lib/utils";
 import { customerScope, dealScope, quoteScope } from "@/lib/crm-access";
 
 export const metadata = { title: "Sales report" };
@@ -25,7 +25,7 @@ export const metadata = { title: "Sales report" };
 const STAGE_TONE = { NEW: "slate", QUALIFIED: "blue", PROPOSAL: "purple", NEGOTIATION: "yellow", WON: "green", LOST: "red" } as const;
 
 function money(n: number) {
-  return `$${Math.round(n).toLocaleString("en-US")}`;
+  return formatCurrency(n, { cents: false });
 }
 
 function pct(n: number | null) {
@@ -90,8 +90,8 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
   const owners = statsByOwner(deals, quotes, range).filter((r) => seeEveryone || r.ownerId === session.userId);
   const sources = statsBySource(customers, deals, range);
   const trend = wonByMonth(deals, now, 6).map((m) => ({
-    label: m.start.toLocaleDateString("en-US", { month: "short" }),
-    longLabel: m.start.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+    label: formatMonth(m.start),
+    longLabel: formatMonth(m.start, true),
     value: m.value,
   }));
   const userName = new Map(users.map((u) => [u.id, u.name]));
@@ -353,7 +353,7 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
                       </Link>
                       <span className="text-xs text-slate-500">
                         {d.customer.name} · {d.expectedClose! < new Date(now.getFullYear(), now.getMonth(), now.getDate()) ? "overdue, " : ""}
-                        {d.expectedClose!.toLocaleDateString("en-ZA", { day: "numeric", month: "short" })}
+                        {formatDayMonth(d.expectedClose!)}
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-2">

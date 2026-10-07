@@ -1,3 +1,4 @@
+import { formatCurrency, APP_TIME_ZONE } from "@/lib/utils";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
@@ -11,8 +12,8 @@ import { formatQty } from "@/lib/quantity";
 
 export const metadata: Metadata = { title: "Your quote", robots: { index: false, follow: false } };
 
-const money = (n: number) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-const day = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+const money = (n: number) => formatCurrency(n);
+const day = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric", timeZone: APP_TIME_ZONE });
 
 /** The quote as the customer sees it from the emailed link, with Accept
  * and Decline while it is still open. */

@@ -1,5 +1,6 @@
 "use server";
 
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { startOfDay } from "date-fns";
 import { markOverdueInvoices } from "@/lib/invoice-number";
 import { redirect } from "next/navigation";
@@ -185,7 +186,7 @@ export async function sendInvoiceEmail(invoiceId: string) {
   const lineItemsHtml = invoice.lineItems
     .map(
       (item) =>
-        `<tr><td>${escapeHtml(item.description)}</td><td>${formatQty(item.quantity, item.product?.unit)}</td><td>$${item.unitPrice.toFixed(2)}</td><td>$${(item.quantity * item.unitPrice).toFixed(2)}</td></tr>`
+        `<tr><td>${escapeHtml(item.description)}</td><td>${formatQty(item.quantity, item.product?.unit)}</td><td>${formatCurrency(item.unitPrice)}</td><td>${formatCurrency(item.quantity * item.unitPrice)}</td></tr>`
     )
     .join("");
   // Sending a draft makes it Sent, so the attached PDF says so too.
@@ -210,14 +211,14 @@ export async function sendInvoiceEmail(invoiceId: string) {
   const taxAmount = computeInvoiceTax(subtotal, invoice.taxRate);
   const totalsHtml =
     invoice.taxRate > 0
-      ? `<p>Subtotal: $${subtotal.toFixed(2)}<br/>Tax (${invoice.taxRate}%): $${taxAmount.toFixed(2)}<br/><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p>`
-      : `<p><strong>Total: $${invoice.totalAmount.toFixed(2)}</strong></p>`;
+      ? `<p>Subtotal: ${formatCurrency(subtotal)}<br/>Tax (${invoice.taxRate}%): ${formatCurrency(taxAmount)}<br/><strong>Total: ${formatCurrency(invoice.totalAmount)}</strong></p>`
+      : `<p><strong>Total: ${formatCurrency(invoice.totalAmount)}</strong></p>`;
 
   try {
     await sendEmailForCompany(session.companyId, {
       to: invoice.customer.email,
       subject: `Invoice ${invoice.invoiceNumber} from ${invoice.companyRef.name}`,
-      html: `<p>Hi ${escapeHtml(invoice.customer.name)},</p><p>Please find invoice ${invoice.invoiceNumber} attached as a PDF and summarised below, due ${invoice.dueDate.toLocaleDateString()}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table>${totalsHtml}<p>Thank you.</p>`,
+      html: `<p>Hi ${escapeHtml(invoice.customer.name)},</p><p>Please find invoice ${invoice.invoiceNumber} attached as a PDF and summarised below, due ${formatDate(invoice.dueDate)}.</p><table border="1" cellpadding="6" style="border-collapse:collapse"><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${lineItemsHtml}</table>${totalsHtml}<p>Thank you.</p>`,
       attachments: [{ filename: `${invoice.invoiceNumber}.pdf`, content: Buffer.from(pdf) }],
     });
   } catch (err) {

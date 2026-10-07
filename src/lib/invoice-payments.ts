@@ -82,7 +82,7 @@ export async function removePayment(tx: Tx, companyId: string, invoiceId: string
   return settleInvoice(tx, invoiceId);
 }
 
-/** A credit note against the invoice, numbered CN-0001 per company. */
+/** A credit note against the invoice, numbered CN0001 per company. */
 export async function issueCreditNote(
   tx: Tx,
   c: { companyId: string; invoiceId: string; amount: number; reason: string; userId: string | null }

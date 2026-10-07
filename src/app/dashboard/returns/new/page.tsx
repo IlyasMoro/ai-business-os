@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -34,7 +35,7 @@ export default async function NewReturnPage({
     .filter((o) => isWithinReturnWindow(o.fulfilledAt ?? o.createdAt, policy.windowDays))
     .map((o) => ({
       id: o.id,
-      label: `${o.customer.name}, ${(o.fulfilledAt ?? o.createdAt).toLocaleDateString()}, $${o.totalAmount.toFixed(2)}`,
+      label: `${o.customer.name}, ${formatDate(o.fulfilledAt ?? o.createdAt)}, ${formatCurrency(o.totalAmount)}`,
     }));
 
   return (

@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/utils";
 import "server-only";
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
@@ -73,8 +74,8 @@ export async function acceptQuoteRecord(quoteId: string, companyId: string, sign
       data: {
         type: "NOTE",
         body: online
-          ? `Quote ${quote.quoteNumber} accepted online by ${signer.signedName} ($${total.toFixed(2)}). An order was created from it.`
-          : `Quote ${quote.quoteNumber} accepted ($${total.toFixed(2)}). An order was created from it.`,
+          ? `Quote ${quote.quoteNumber} accepted online by ${signer.signedName} (${formatCurrency(total)}). An order was created from it.`
+          : `Quote ${quote.quoteNumber} accepted (${formatCurrency(total)}). An order was created from it.`,
         companyId,
         customerId: quote.customerId,
         dealId: quote.dealId,

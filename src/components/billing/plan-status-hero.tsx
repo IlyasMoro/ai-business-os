@@ -1,5 +1,5 @@
 import { ArrowDown, CheckCircle2, Clock, AlertTriangle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 
 export const TRIAL_DAYS = 14;
 
@@ -73,9 +73,9 @@ export function PlanStatusHero({ status }: { status: PlanStatus }) {
       eyebrow = "Your plan";
       headline = status.planLabel;
       detail = status.cancelling
-        ? `Cancels${status.renewsOn ? ` on ${status.renewsOn.toLocaleDateString()}` : " at the end of this period"}.`
+        ? `Cancels${status.renewsOn ? ` on ${formatDate(status.renewsOn)}` : " at the end of this period"}.`
         : status.renewsOn
-          ? `Active, renews on ${status.renewsOn.toLocaleDateString()}.`
+          ? `Active, renews on ${formatDate(status.renewsOn)}.`
           : "Active.";
       cta = "Change plan";
       break;

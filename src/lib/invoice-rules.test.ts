@@ -62,8 +62,8 @@ describe("due dates", () => {
 
 describe("formatting", () => {
   it("numbers invoices", () => {
-    expect(formatInvoiceNumber(3)).toBe("INV-0003");
-    expect(formatInvoiceNumber(10001)).toBe("INV-10001");
+    expect(formatInvoiceNumber(3)).toBe("INV0003");
+    expect(formatInvoiceNumber(10001)).toBe("INV10001");
   });
 
   it("escapes HTML", () => {
@@ -103,6 +103,6 @@ describe("payments and credit notes", () => {
   });
 
   it("numbers credit notes", () => {
-    expect(formatCreditNumber(4)).toBe("CN-0004");
+    expect(formatCreditNumber(4)).toBe("CN0004");
   });
 });

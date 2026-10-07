@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
@@ -64,14 +65,14 @@ export default async function TransactionDetailPage({
               <StatusBadge status={transaction.type} tone={typeTone[transaction.type]} />
               {isAnomalous && (
                 <span
-                  title={`More than 2.5x the average ${transaction.category} ${transaction.type.toLowerCase()} of $${avgAmount!.toFixed(2)}`}
+                  title={`More than 2.5x the average ${transaction.category} ${transaction.type.toLowerCase()} of ${formatCurrency(avgAmount!)}`}
                 >
                   <Badge tone="yellow">Unusual amount</Badge>
                 </span>
               )}
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
-              {transaction.date.toLocaleDateString()}
+              {formatDate(transaction.date)}
               {transaction.invoice && (
                 <>
                   {" · "}
@@ -101,7 +102,7 @@ export default async function TransactionDetailPage({
         {warning === "budget" && (
           <p className="mt-4 rounded-md border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300 light:text-amber-800">
             Saved, but this expense puts {transaction.internalOrder ? `internal order ${transaction.internalOrder.orderNumber}` : `cost center ${transaction.costCenter?.code ?? ""}`}{" "}
-            ${Number(over ?? 0).toFixed(2)} over its budget.
+            {formatCurrency(Number(over ?? 0))} over its budget.
           </p>
         )}
 
@@ -117,7 +118,7 @@ export default async function TransactionDetailPage({
                   transaction.type === "EXPENSE" ? "text-red-400" : "text-emerald-400"
                 }`}
               >
-                {transaction.type === "EXPENSE" ? "-" : ""}${transaction.amount.toFixed(2)}
+                {transaction.type === "EXPENSE" ? "-" : ""}{formatCurrency(transaction.amount)}
               </p>
             </div>
             <div>

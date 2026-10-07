@@ -1,5 +1,6 @@
 "use server";
 
+import { formatCurrency } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireRole, verifySession } from "@/lib/dal";
@@ -54,7 +55,7 @@ async function controlCost(
   const a = check.availability;
   if (a?.result === "BLOCK") {
     return {
-      error: `Blocked by budget control: this would put ${check.objectLabel} $${a.overBy.toFixed(2)} over budget ($${Math.max(0, a.available).toFixed(2)} still available).`,
+      error: `Blocked by budget control: this would put ${check.objectLabel} ${formatCurrency(a.overBy)} over budget (${formatCurrency(Math.max(0, a.available))} still available).`,
     } as const;
   }
   return {

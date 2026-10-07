@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -86,7 +87,7 @@ export default async function DuplicatesPage({ searchParams }: { searchParams: P
                   phone: d.phone,
                   company: d.company,
                   owner: d.owner?.name ?? null,
-                  createdAt: d.createdAt.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }),
+                  createdAt: formatDate(d.createdAt),
                   deals: dealCount.get(d.id) ?? 0,
                   orders: orderCount.get(d.id) ?? 0,
                   activities: activityCount.get(d.id) ?? 0,

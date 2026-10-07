@@ -1,3 +1,4 @@
+import { formatCurrency } from "@/lib/utils";
 import "server-only";
 import { db } from "@/lib/db";
 import { lowStockAt } from "@/lib/stock";
@@ -46,7 +47,7 @@ export function formatSnapshotForPrompt(snapshot: BusinessSnapshot) {
     `${snapshot.outstandingInvoiceCount} outstanding invoices (sent or overdue)`,
     `${snapshot.openTicketCount} open support tickets`,
     `${snapshot.activeProjectCount} active projects`,
-    `${snapshot.openDealCount} open deals in the sales pipeline worth $${Math.round(snapshot.openPipelineValue).toLocaleString("en-US")} (company wide)`,
+    `${snapshot.openDealCount} open deals in the sales pipeline worth ${formatCurrency(snapshot.openPipelineValue, { cents: false })} (company wide)`,
   ]
     .map((line) => `- ${line}`)
     .join("\n");

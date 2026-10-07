@@ -2,6 +2,8 @@
    change and compact number labels. Kept free of React so they can be
    unit tested. */
 
+import { CURRENCY_PREFIX, formatCurrency } from "@/lib/utils";
+
 /** A round axis maximum at or above `max`: 1, 2, 2.5 or 5 times a power of ten. */
 export function niceMax(max: number): number {
   if (!(max > 0)) return 1;
@@ -28,22 +30,20 @@ export function periodChange(values: number[]): Change {
   return { kind: "pct", pct: rounded, direction: rounded > 0 ? "up" : rounded < 0 ? "down" : "flat" };
 }
 
-/** Short axis label: 950, 1.2k, 3.4M; with a $ when `currency`. */
+/** Short axis label: 950, 1.2k, 3.4M; with an R when `currency`. */
 export function compactNumber(value: number, currency = false): string {
   const abs = Math.abs(value);
-  const sign = value < 0 ? "-" : "";
-  const prefix = currency ? "$" : "";
+  const sign = value < 0 ? "−" : "";
+  const prefix = currency ? CURRENCY_PREFIX : "";
   const fmt = (n: number, suffix: string) => `${sign}${prefix}${Number(n.toFixed(n < 10 ? 1 : 0))}${suffix}`;
   if (abs >= 1_000_000) return fmt(abs / 1_000_000, "M");
   if (abs >= 1_000) return fmt(abs / 1_000, "k");
   return `${sign}${prefix}${Math.round(abs)}`;
 }
 
-/** Full value for tooltips and tables: $1,234.50 or 1,234. */
+/** Full value for tooltips and tables: R 1,234.50 or 1,234. */
 export function fullNumber(value: number, currency = false): string {
-  return currency
-    ? value.toLocaleString("en-US", { style: "currency", currency: "USD" })
-    : value.toLocaleString("en-US");
+  return currency ? formatCurrency(value) : value.toLocaleString("en-US");
 }
 
 /** Share of the total as a whole percent, keeping tiny non zero shares visible as "<1%". */

@@ -1,3 +1,4 @@
+import { formatCurrency, CURRENCY_PREFIX } from "@/lib/utils";
 import Link from "next/link";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -147,10 +148,10 @@ export default async function InventoryPage({
         <KpiCard
           label="Stock value at cost"
           value={totalValue}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={Wallet}
           color={VIZ.blue}
-          hint={missingCost > 0 ? `${missingCost} product${missingCost === 1 ? " has" : "s have"} stock but no cost, so count as $0` : undefined}
+          hint={missingCost > 0 ? `${missingCost} product${missingCost === 1 ? " has" : "s have"} stock but no cost, so count as R 0` : undefined}
         />
         <KpiCard
           label="Low stock items"
@@ -209,7 +210,7 @@ export default async function InventoryPage({
                   </td>
                   <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
                     {/* Exact price, per kg or litre for weighed products. */}
-                    ${product.unitPrice.toFixed(2)}
+                    {formatCurrency(product.unitPrice)}
                     {product.unit !== "EACH" && <span className="text-slate-500"> / {product.unit === "KG" ? "kg" : "L"}</span>}
                   </td>
                   <td className="px-5 py-3">

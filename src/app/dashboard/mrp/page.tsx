@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { VIZ } from "@/components/dash-viz/colors";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
@@ -163,7 +164,7 @@ export default async function PlanningPage({
                   <td className="px-4 py-3 font-sans text-slate-400 light:text-slate-500">
                     {row.plannedQty > 0 ? (
                       <>
-                        {row.availableBy.toLocaleDateString()}
+                        {formatDate(row.availableBy)}
                         <p className="text-xs text-slate-500">{row.leadTimeDays} day lead time</p>
                       </>
                     ) : null}

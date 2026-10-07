@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { sendOrderConfirmation } from "@/lib/actions/sales";
 import { buttonStyles } from "@/components/ui-dark/button";
@@ -116,8 +117,8 @@ export default async function OrderDetailPage({
               <BranchTag name={order.branch?.name} />
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
-              Created {order.createdAt.toLocaleDateString()}
-              {order.confirmationSentAt && <> · Confirmation emailed {order.confirmationSentAt.toLocaleDateString()}</>}
+              Created {formatDate(order.createdAt)}
+              {order.confirmationSentAt && <> · Confirmation emailed {formatDate(order.confirmationSentAt)}</>}
               {order.quote && (
                 <>
                   {" · from quote "}
@@ -186,8 +187,8 @@ export default async function OrderDetailPage({
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.product.name}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        {formatQty(item.quantity, item.product.unit)} × ${item.unitPrice.toFixed(2)} = $
-                        {(item.quantity * item.unitPrice).toFixed(2)}
+                        {formatQty(item.quantity, item.product.unit)} × {formatCurrency(item.unitPrice)} ={" "}
+                        {formatCurrency(item.quantity * item.unitPrice)}
                       </p>
                       {editable && (
                         <details className="mt-1">
@@ -245,7 +246,7 @@ export default async function OrderDetailPage({
               )
             )}
             <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-800">
-              Total: ${order.totalAmount.toFixed(2)}
+              Total: {formatCurrency(order.totalAmount)}
             </p>
           </CardContent>
         </Card>
@@ -272,7 +273,7 @@ export default async function OrderDetailPage({
                         {rma.rmaNumber}
                       </Link>
                       <span className="flex items-center gap-3">
-                        <span className="tabular-nums text-slate-400">${rma.refundAmount.toFixed(2)}</span>
+                        <span className="tabular-nums text-slate-400">{formatCurrency(rma.refundAmount)}</span>
                         <StatusBadge status={rma.status} tone={returnStatusTone[rma.status]} />
                       </span>
                     </li>
@@ -285,8 +286,8 @@ export default async function OrderDetailPage({
                 <p className="mt-3 text-xs text-slate-500">
                   {deadline
                     ? canOpenReturn
-                      ? `Returnable until ${deadline.toLocaleDateString()}.`
-                      : `The return window closed on ${deadline.toLocaleDateString()}.`
+                      ? `Returnable until ${formatDate(deadline)}.`
+                      : `The return window closed on ${formatDate(deadline)}.`
                     : "This business accepts returns with no time limit."}
                 </p>
               )}

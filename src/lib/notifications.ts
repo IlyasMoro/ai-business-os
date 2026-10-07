@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import "server-only";
 import { getLateOrders, getLotAlerts } from "@/lib/alerts-data";
 import { db } from "@/lib/db";
@@ -125,7 +126,7 @@ export async function getNotifications(companyId: string): Promise<Notification[
     notifications.push({
       id: `lot-${lot.lotId}`,
       severity: lot.expired ? "high" : "medium",
-      message: `${lot.productName} lot ${lot.lotNumber} (${lot.quantity} at ${lot.branchName}) ${lot.expired ? "has expired" : `expires ${lot.expiresAt.toLocaleDateString()}`}`,
+      message: `${lot.productName} lot ${lot.lotNumber} (${lot.quantity} at ${lot.branchName}) ${lot.expired ? "has expired" : `expires ${formatDate(lot.expiresAt)}`}`,
       href: `/dashboard/inventory/${lot.productId}`,
     });
   }

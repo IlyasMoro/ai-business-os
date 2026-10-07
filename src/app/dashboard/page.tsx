@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CURRENCY_PREFIX, formatDayMonth } from "@/lib/utils";
 import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/dal";
 import { db } from "@/lib/db";
@@ -351,7 +352,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         <KpiCard
           label="Revenue (6 months)"
           value={totalRevenue}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           decimals={0}
           icon={Wallet}
           color={VIZ.emerald}
@@ -362,7 +363,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         <KpiCard
           label="Expenses (6 months)"
           value={totalExpenses}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           decimals={0}
           icon={TrendingDown}
           color={VIZ.red}
@@ -373,7 +374,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
         <KpiCard
           label="Net profit (6 months)"
           value={netProfit}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           decimals={0}
           icon={TrendingUp}
           color={VIZ.blue}
@@ -497,7 +498,7 @@ async function DashboardWidgets({ companyId }: { companyId: string }) {
                       <p className="truncate text-sm font-semibold text-slate-50 light:text-slate-900">{item.title}</p>
                       <p className="text-xs text-slate-500">
                         {overdue ? "Overdue · " : ""}
-                        {item.date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                        {formatDayMonth(item.date)}
                       </p>
                     </div>
                   </div>

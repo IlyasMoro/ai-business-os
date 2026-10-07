@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/lib/utils";
 import { useActionState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui-dark/button";
 import { FieldError, Input, Select } from "@/components/ui-dark/input";
@@ -46,7 +47,7 @@ export function QuoteItemForm({
           </option>
           {products.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} ({p.sku}), ${p.unitPrice.toFixed(2)}
+              {p.name} ({p.sku}), {formatCurrency(p.unitPrice)}
             </option>
           ))}
         </Select>

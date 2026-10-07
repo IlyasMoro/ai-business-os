@@ -55,7 +55,7 @@ describe("undoReceiptBlocker", () => {
 
 describe("formatPoNumber", () => {
   it("pads and keeps long numbers", () => {
-    expect(formatPoNumber(7)).toBe("PO-0007");
-    expect(formatPoNumber(12345)).toBe("PO-12345");
+    expect(formatPoNumber(7)).toBe("PO0007");
+    expect(formatPoNumber(12345)).toBe("PO12345");
   });
 });

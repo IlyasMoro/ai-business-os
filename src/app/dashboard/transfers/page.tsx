@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowRight, ArrowRightLeft, Plus } from "lucide-react";
 import { verifySession } from "@/lib/dal";
@@ -98,7 +99,7 @@ export default async function TransfersPage() {
                         {t.autoCreated && t.status === "DRAFT" && <Badge tone="yellow">Needs approval</Badge>}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{t.createdAt.toLocaleDateString()}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(t.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

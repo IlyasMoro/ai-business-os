@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { moveDeal } from "@/lib/actions/pipeline";
 import { DEAL_STAGES, type DealStage } from "@/lib/crm-pipeline";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency, formatDayMonth } from "@/lib/utils";
 
 export type BoardDeal = {
   id: string;
@@ -20,7 +20,7 @@ export type BoardDeal = {
 };
 
 function money(n: number) {
-  return `$${Math.round(n).toLocaleString("en-US")}`;
+  return formatCurrency(n, { cents: false });
 }
 
 /** Overdue close dates on open deals stand out. */
@@ -28,7 +28,7 @@ function closeLabel(iso: string | null, stage: DealStage) {
   if (!iso) return null;
   const date = new Date(iso);
   const late = (stage !== "WON" && stage !== "LOST") && date < new Date(new Date().toDateString());
-  return { text: date.toLocaleDateString("en-ZA", { day: "numeric", month: "short" }), late };
+  return { text: formatDayMonth(date), late };
 }
 
 /**

@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
@@ -80,7 +81,7 @@ export default async function ProjectDetailPage({
             )}
             {project.dueDate && (
               <p className="mt-1 text-sm text-slate-500">
-                Due {project.dueDate.toLocaleDateString()}
+                Due {formatDate(project.dueDate)}
               </p>
             )}
           </div>
@@ -119,7 +120,7 @@ export default async function ProjectDetailPage({
                       </div>
                       <p className="text-slate-500">
                         {task.assignee ? task.assignee.name : "Unassigned"}
-                        {task.dueDate ? ` · Due ${task.dueDate.toLocaleDateString()}` : ""}
+                        {task.dueDate ? ` · Due ${formatDate(task.dueDate)}` : ""}
                         {task._count.comments > 0
                           ? ` · ${task._count.comments} comment${task._count.comments === 1 ? "" : "s"}`
                           : ""}
@@ -150,19 +151,19 @@ export default async function ProjectDetailPage({
               <div>
                 <p className="text-slate-500">Revenue</p>
                 <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
-                  ${projectRevenue.toFixed(2)}
+                  {formatCurrency(projectRevenue)}
                 </p>
               </div>
               <div>
                 <p className="text-slate-500">Costs</p>
                 <p className="mt-1 text-lg font-semibold tabular-nums text-red-400 light:text-red-700">
-                  ${projectCosts.toFixed(2)}
+                  {formatCurrency(projectCosts)}
                 </p>
               </div>
               <div>
                 <p className="text-slate-500">Margin</p>
                 <p className={`mt-1 text-lg font-semibold tabular-nums ${projectRevenue - projectCosts < 0 ? "text-red-400 light:text-red-700" : "text-blue-400 light:text-blue-700"}`}>
-                  ${(projectRevenue - projectCosts).toFixed(2)}
+                  {formatCurrency(projectRevenue - projectCosts)}
                 </p>
               </div>
             </CardContent>

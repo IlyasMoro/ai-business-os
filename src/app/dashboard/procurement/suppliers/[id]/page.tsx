@@ -11,7 +11,7 @@ import { BackButton } from "@/components/ui-dark/back-button";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { updateSupplier } from "@/lib/actions/procurement";
 import { PO_STATUS_LABEL } from "@/lib/po-rules";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Supplier" };
 
@@ -124,8 +124,8 @@ export default async function SupplierPage({
                           {o.poNumber}
                         </Link>
                         <p className="text-xs text-slate-500">
-                          {o.createdAt.toLocaleDateString()}
-                          {o.receivedAt ? ` · received ${o.receivedAt.toLocaleDateString()}` : o.expectedDate ? ` · expected ${o.expectedDate.toLocaleDateString()}` : ""}
+                          {formatDate(o.createdAt)}
+                          {o.receivedAt ? ` · received ${formatDate(o.receivedAt)}` : o.expectedDate ? ` · expected ${formatDate(o.expectedDate)}` : ""}
                         </p>
                       </div>
                       <span className="flex items-center gap-3">

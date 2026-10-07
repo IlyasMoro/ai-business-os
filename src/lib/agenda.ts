@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import "server-only";
 import { db } from "@/lib/db";
 
@@ -63,7 +64,7 @@ export async function getAgendaItems(companyId: string): Promise<AgendaItem[]> {
       id: i.id,
       date: i.dueDate,
       title: `${i.invoiceNumber} · ${i.customer.name}`,
-      subtitle: `$${i.totalAmount.toFixed(2)}`,
+      subtitle: `${formatCurrency(i.totalAmount)}`,
       kind: "invoice" as const,
       href: `/dashboard/invoicing/${i.id}`,
     })),
@@ -85,7 +86,7 @@ export async function getAgendaItems(companyId: string): Promise<AgendaItem[]> {
     ...payrollRuns.map((r) => ({
       id: r.id,
       date: r.periodEnd,
-      title: `Payroll period ending ${r.periodEnd.toLocaleDateString()}`,
+      title: `Payroll period ending ${formatDate(r.periodEnd)}`,
       kind: "payroll" as const,
       href: `/dashboard/payroll/${r.id}`,
     })),
@@ -101,7 +102,7 @@ export async function getAgendaItems(companyId: string): Promise<AgendaItem[]> {
       id: d.id,
       date: d.expectedClose!,
       title: d.title,
-      subtitle: `${d.customer.name} · $${Math.round(d.value).toLocaleString("en-US")}`,
+      subtitle: `${d.customer.name} · ${formatCurrency(d.value, { cents: false })}`,
       kind: "deal" as const,
       href: `/dashboard/crm/deals/${d.id}`,
     })),

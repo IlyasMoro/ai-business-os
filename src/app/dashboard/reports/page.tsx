@@ -4,7 +4,7 @@ import { getSalesReport, getStockValueReport, SALES_REPORT_DAYS } from "@/lib/re
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
 import { getProfitByBranch, PROFIT_MONTHS } from "@/lib/branch-profit-data";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX } from "@/lib/utils";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { GroupedBarChart } from "@/components/dash-viz/grouped-bar-chart";
@@ -147,18 +147,18 @@ export default async function ReportsPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard label="Income (6 months)" value={totalIncome} prefix="$" icon={Wallet} color={VIZ.emerald} trend={monthly.map((m) => m.income)} trendLabels={monthly.map((m) => m.longLabel)} />
-        <KpiCard label="Expenses (6 months)" value={totalExpense} prefix="$" icon={TrendingDown} color={VIZ.red} trend={monthly.map((m) => m.expense)} trendLabels={monthly.map((m) => m.longLabel)} />
+        <KpiCard label="Income (6 months)" value={totalIncome} prefix={CURRENCY_PREFIX} icon={Wallet} color={VIZ.emerald} trend={monthly.map((m) => m.income)} trendLabels={monthly.map((m) => m.longLabel)} />
+        <KpiCard label="Expenses (6 months)" value={totalExpense} prefix={CURRENCY_PREFIX} icon={TrendingDown} color={VIZ.red} trend={monthly.map((m) => m.expense)} trendLabels={monthly.map((m) => m.longLabel)} />
         <KpiCard
           label="Net (6 months)"
           value={net}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={TrendingUp}
           color={net >= 0 ? VIZ.blue : VIZ.red}
           trend={monthly.map((m) => m.income - m.expense)}
           trendLabels={monthly.map((m) => m.longLabel)}
         />
-        <KpiCard label="AI revenue forecast" value={forecast.estimatedNextMonthRevenue} prefix="$" icon={Sparkles} color={VIZ.blue} hint="Estimate for next month, from recent income" />
+        <KpiCard label="AI revenue forecast" value={forecast.estimatedNextMonthRevenue} prefix={CURRENCY_PREFIX} icon={Sparkles} color={VIZ.blue} hint="Estimate for next month, from recent income" />
       </div>
 
       {profit && (
@@ -361,7 +361,7 @@ export default async function ReportsPage() {
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Stock value at cost</h2>
           <p className="text-xs text-slate-500">
             What the stock on hand cost{viewBranch ? ` at ${viewBranch.name}` : ""}.
-            {stock.missingCost > 0 && ` ${stock.missingCost} product${stock.missingCost === 1 ? " has" : "s have"} stock but no cost, counted as $0.`}
+            {stock.missingCost > 0 && ` ${stock.missingCost} product${stock.missingCost === 1 ? " has" : "s have"} stock but no cost, counted as R 0.`}
           </p>
           <p className="mt-4 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">{formatCompactCurrency(stock.total)}</p>
           {stock.branches.length > 1 && (

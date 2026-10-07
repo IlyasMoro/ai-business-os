@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
@@ -64,7 +65,7 @@ export default async function InternalOrderPage({
               ) : (
                 "no cost center yet"
               )}
-              {io.settledAt && <> · Settled {io.settledAt.toLocaleDateString()}</>}
+              {io.settledAt && <> · Settled {formatDate(io.settledAt)}</>}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -122,7 +123,7 @@ export default async function InternalOrderPage({
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={i} className="border-t border-white/[0.04] light:border-slate-100">
-                    <td className="px-5 py-2 text-slate-400">{l.date.toLocaleDateString()}</td>
+                    <td className="px-5 py-2 text-slate-400">{formatDate(l.date)}</td>
                     <td className="px-5 py-2">
                       <Badge tone={l.source === "SETTLEMENT" ? "green" : "slate"}>{l.source === "SETTLEMENT" ? "Settlement" : "Expense"}</Badge>
                     </td>

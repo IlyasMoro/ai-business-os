@@ -11,7 +11,7 @@ import { PayrollItemForm } from "@/components/payroll/payroll-item-form";
 import { PayrollRunStatusForm } from "@/components/payroll/payroll-run-status-form";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { deletePayrollRun, removePayrollItem, duplicatePayrollRun } from "@/lib/actions/payroll";
-import { toDateInputValue } from "@/lib/utils";
+import { toDateInputValue, formatCurrency, formatDate } from "@/lib/utils";
 import { Download } from "lucide-react";
 import { BackButton } from "@/components/ui-dark/back-button";
 
@@ -60,14 +60,14 @@ export default async function PayrollRunDetailPage({
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">
-                {payrollRun.periodStart.toLocaleDateString()} –{" "}
-                {payrollRun.periodEnd.toLocaleDateString()}
+                {formatDate(payrollRun.periodStart)} to{" "}
+                {formatDate(payrollRun.periodEnd)}
               </h1>
               <StatusBadge status={payrollRun.status} tone={statusTone[payrollRun.status]} />
             </div>
             {payrollRun.processedAt && (
               <p className="mt-1 text-sm text-slate-500">
-                Processed {payrollRun.processedAt.toLocaleDateString()}
+                Processed {formatDate(payrollRun.processedAt)}
               </p>
             )}
           </div>
@@ -89,8 +89,8 @@ export default async function PayrollRunDetailPage({
                     <div>
                       <p className="font-semibold text-slate-50 light:text-slate-900">{item.employee.name}</p>
                       <p className="text-xs tabular-nums text-slate-500">
-                        Gross ${item.grossPay.toFixed(2)} − Deductions ${item.deductions.toFixed(2)} =
-                        Net ${item.netPay.toFixed(2)}
+                        Gross {formatCurrency(item.grossPay)} − Deductions {formatCurrency(item.deductions)} =
+                        Net {formatCurrency(item.netPay)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1">
@@ -110,7 +110,7 @@ export default async function PayrollRunDetailPage({
             )}
             <PayrollItemForm payrollRunId={payrollRun.id} employees={employees} />
             <p className="mt-4 text-right text-sm font-semibold tabular-nums text-amber-400 light:text-amber-800">
-              Total: ${payrollRun.totalAmount.toFixed(2)}
+              Total: {formatCurrency(payrollRun.totalAmount)}
             </p>
           </CardContent>
         </Card>

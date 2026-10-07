@@ -10,7 +10,7 @@ import { format } from "date-fns";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, ChevronLeft, ChevronRight, Download, Banknote, Clock, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
@@ -105,7 +105,7 @@ export default async function PayrollPage({
         <KpiCard
           label="Last payroll run"
           value={payrollTrend[payrollTrend.length - 1] ?? 0}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={Banknote}
           color={VIZ.emerald}
           trend={payrollTrend}
@@ -118,14 +118,14 @@ export default async function PayrollPage({
           color={VIZ.amber}
           hint="Draft or processed runs not yet paid"
         />
-        <KpiCard label="Paid in total" value={totalPaid} prefix="$" icon={CheckCircle2} color={VIZ.blue} hint={`${statusMap.get("PAID") ?? 0} runs paid`} />
+        <KpiCard label="Paid in total" value={totalPaid} prefix={CURRENCY_PREFIX} icon={CheckCircle2} color={VIZ.blue} hint={`${statusMap.get("PAID") ?? 0} runs paid`} />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total paid</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalPaid} prefix="$" decimals={0} />
+            <AnimatedCounter value={totalPaid} prefix={CURRENCY_PREFIX} decimals={0} />
           </p>
           <div className="mt-2">
             <ChangeBadge values={payrollTrend} period="previous run" />
@@ -179,7 +179,7 @@ export default async function PayrollPage({
                       href={`/dashboard/payroll/${run.id}`}
                       className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                     >
-                      {run.periodStart.toLocaleDateString()} – {run.periodEnd.toLocaleDateString()}
+                      {formatDate(run.periodStart)} to {formatDate(run.periodEnd)}
                     </Link>
                   </td>
                   <td className="px-5 py-3">

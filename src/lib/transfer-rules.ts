@@ -43,14 +43,14 @@ export function transferRouteError(
 }
 
 export function formatTransferNumber(sequence: number): string {
-  return `TR-${String(sequence).padStart(4, "0")}`;
+  return `TR${String(sequence).padStart(4, "0")}`;
 }
 
-/** Next number from the highest one used so far ("TR-0007" → 8). */
+/** Next number from the highest one used so far ("TR0007" → 8; older numbers had a hyphen, TR-0007). */
 export function nextTransferSequence(existing: string[]): number {
   let max = 0;
   for (const n of existing) {
-    const m = /^TR-(\d+)$/.exec(n);
+    const m = /^TR-?(\d+)$/.exec(n);
     if (m) max = Math.max(max, Number(m[1]));
   }
   return max + 1;

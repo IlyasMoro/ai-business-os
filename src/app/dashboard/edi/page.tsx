@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { VIZ } from "@/components/dash-viz/colors";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
@@ -137,7 +138,7 @@ export default async function EdiPage({
                   <td className="px-5 py-3">
                     <StatusBadge status={doc.status} tone={statusTone[doc.status]} />
                   </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{doc.createdAt.toLocaleString()}</td>
+                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDateTime(doc.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

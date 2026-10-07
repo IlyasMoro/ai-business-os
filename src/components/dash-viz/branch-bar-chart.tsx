@@ -24,7 +24,7 @@ function barPath(x: number, y: number, w: number, h: number) {
 
 /**
  * Revenue per month for every branch side by side: months along the x
- * axis, dollars up the y axis, one bar per branch in its own colour. A
+ * axis, rand up the y axis, one bar per branch in its own colour. A
  * legend names the branches; hover or tap a month to read every branch's
  * figure, highest first.
  */
@@ -70,7 +70,7 @@ export function BranchBarChart({
     const clusterW = barW * series.length + GAP * (series.length - 1);
     const baseline = PAD.top + innerH;
     const y = (v: number) => baseline - (Math.max(0, v) / max) * innerH;
-    // Round steps ($5k, $10k...): the first split of the top value whose
+    // Round steps (R 5k, R 10k...): the first split of the top value whose
     // step starts with 1, 2 or 5.
     const parts = [5, 4, 2].find((n) => {
       const step = max / n;
@@ -125,7 +125,7 @@ export function BranchBarChart({
             aria-label={`Revenue by month for ${series.map((s) => s.name).join(", ")}`}
             onPointerLeave={() => setActive(null)}
           >
-            {/* Y axis: recessive gridlines with dollar labels. */}
+            {/* Y axis: recessive gridlines with rand labels. */}
             {chart.ticks.map((t) => (
               <g key={t.v}>
                 <line

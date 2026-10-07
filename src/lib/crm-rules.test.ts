@@ -27,9 +27,9 @@ describe("whatsapp numbers", () => {
         senderName: "Ana",
         myCompany: "Acme",
         quoteLink: "https://x/q/abc",
-        quoteNumber: "Q-0003",
+        quoteNumber: "Q0003",
       })
-    ).toBe("Hi Thandi, quote Q-0003 from Acme: https://x/q/abc");
+    ).toBe("Hi Thandi, quote Q0003 from Acme: https://x/q/abc");
   });
 });
 

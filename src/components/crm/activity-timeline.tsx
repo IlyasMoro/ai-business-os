@@ -1,3 +1,4 @@
+import { formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { Mail, MessageCircle, MessageSquareText, Phone, Users } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui-dark/card";
@@ -26,7 +27,7 @@ export type TimelineActivity = {
 };
 
 function when(date: Date) {
-  return date.toLocaleString("en-ZA", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  return formatDateTime(date);
 }
 
 /**

@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession, hasRole } from "@/lib/dal";
@@ -224,13 +225,13 @@ export default async function CustomerDetailPage({
             <div>
               <p className="text-slate-500">Outstanding balance</p>
               <p className={overLimit ? "tabular-nums text-red-400" : "tabular-nums text-slate-50 light:text-slate-900"}>
-                ${outstandingBalance.toFixed(2)}
+                {formatCurrency(outstandingBalance)}
               </p>
             </div>
             <div>
               <p className="text-slate-500">Credit limit</p>
               <p className="tabular-nums text-slate-50 light:text-slate-900">
-                {customer.creditLimit != null ? `$${customer.creditLimit.toFixed(2)}` : "No limit"}
+                {customer.creditLimit != null ? `${formatCurrency(customer.creditLimit)}` : "No limit"}
               </p>
               {overLimit && (
                 <Badge tone="red" className="mt-1">
@@ -285,7 +286,7 @@ export default async function CustomerDetailPage({
                         {deal.title}
                       </Link>
                       <span className="flex shrink-0 items-center gap-2">
-                        <span className="tabular-nums text-slate-300 light:text-slate-600">${Math.round(deal.value).toLocaleString("en-US")}</span>
+                        <span className="tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(deal.value, { cents: false })}</span>
                         <Badge tone={dealStageTone[deal.stage]}>{stageInfo(deal.stage).label}</Badge>
                       </span>
                     </li>
@@ -369,10 +370,10 @@ export default async function CustomerDetailPage({
                       className="text-slate-300 light:text-slate-600 hover:text-blue-400"
                     >
                       <span className="font-mono">{order.orderNumber}</span>
-                      <span className="text-slate-500"> · {order.createdAt.toLocaleDateString()}</span>
+                      <span className="text-slate-500"> · {formatDate(order.createdAt)}</span>
                     </Link>
                     <div className="flex items-center gap-3">
-                      <span className="tabular-nums text-slate-500">${order.totalAmount.toFixed(2)}</span>
+                      <span className="tabular-nums text-slate-500">{formatCurrency(order.totalAmount)}</span>
                       <StatusBadge status={order.status} tone={orderStatusTone[order.status]} />
                     </div>
                   </li>
@@ -400,7 +401,7 @@ export default async function CustomerDetailPage({
                       {invoice.invoiceNumber}
                     </Link>
                     <div className="flex items-center gap-3">
-                      <span className="tabular-nums text-slate-500">${invoice.totalAmount.toFixed(2)}</span>
+                      <span className="tabular-nums text-slate-500">{formatCurrency(invoice.totalAmount)}</span>
                       <StatusBadge status={invoice.status} tone={invoiceStatusTone[invoice.status]} />
                     </div>
                   </li>

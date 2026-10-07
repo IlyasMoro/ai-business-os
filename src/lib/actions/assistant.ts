@@ -1,5 +1,6 @@
 "use server";
 
+import { formatDate, formatCurrency } from "@/lib/utils";
 import { balanceDue } from "@/lib/invoice-rules";
 import { takeInvoiceNumber } from "@/lib/invoice-number";
 import { redirect } from "next/navigation";
@@ -214,7 +215,7 @@ async function executeAiAction(
       const lines = invoices
         .map(
           (inv) =>
-            `<li>${inv.invoiceNumber}: $${balanceDue(inv).toFixed(2)} owed, due ${inv.dueDate.toLocaleDateString()}</li>`
+            `<li>${inv.invoiceNumber}: ${formatCurrency(balanceDue(inv))} owed, due ${formatDate(inv.dueDate)}</li>`
         )
         .join("");
 

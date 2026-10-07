@@ -10,7 +10,7 @@ import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { Badge } from "@/components/ui-dark/badge";
 import { BackButton } from "@/components/ui-dark/back-button";
-import { cn } from "@/lib/utils";
+import { cn, formatCurrency, CURRENCY_PREFIX } from "@/lib/utils";
 
 export const metadata = { title: "Branch performance" };
 
@@ -22,7 +22,7 @@ const SORTS = {
 } as const;
 type SortKey = keyof typeof SORTS;
 
-const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
+const money = (n: number) => formatCurrency(n, { cents: false });
 
 const INSIGHT_STYLE: Record<Insight["tone"], { icon: typeof Lightbulb; className: string }> = {
   good: { icon: TrendingUp, className: "text-emerald-400 bg-emerald-500/10 light:text-emerald-700" },
@@ -86,12 +86,12 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
             <KpiCard
               label={`Revenue, last ${PERIOD_DAYS} days`}
               value={revenue}
-              prefix="$"
+              prefix={CURRENCY_PREFIX}
               icon={Wallet}
               color={VIZ.emerald}
               change={{ pct: growth, label: "vs the 30 days before" }}
             />
-            <KpiCard label="Net profit" value={net} prefix="$" icon={TrendingUp} color={net >= 0 ? VIZ.blue : VIZ.red} hint="Revenue less costs, all branches" />
+            <KpiCard label="Net profit" value={net} prefix={CURRENCY_PREFIX} icon={TrendingUp} color={net >= 0 ? VIZ.blue : VIZ.red} hint="Revenue less costs, all branches" />
             <KpiCard
               label="Margin"
               value={revenue > 0 ? Math.round((net / revenue) * 100) : 0}
@@ -226,7 +226,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
                 key={b.id}
                 label={b.name}
                 value={b.revenue}
-                prefix="$"
+                prefix={CURRENCY_PREFIX}
                 icon={Store}
                 color={colorOf.get(b.id)!}
                 trend={b.revenueByMonth}

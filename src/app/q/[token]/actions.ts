@@ -1,5 +1,6 @@
 "use server";
 
+import { formatCurrency } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
@@ -40,7 +41,7 @@ async function tellOwner(quote: NonNullable<Awaited<ReturnType<typeof findByToke
     await sendEmailForCompany(quote.companyId, {
       to: quote.owner.email,
       subject: `Quote ${quote.quoteNumber} ${what} by ${quote.customer.name}`,
-      html: `<p>Hi ${escapeHtml(quote.owner.name)},</p><p>${escapeHtml(quote.customer.name)} ${what} quote ${quote.quoteNumber} ($${quote.totalAmount.toFixed(2)}) online.</p>${
+      html: `<p>Hi ${escapeHtml(quote.owner.name)},</p><p>${escapeHtml(quote.customer.name)} ${what} quote ${quote.quoteNumber} (${formatCurrency(quote.totalAmount)}) online.</p>${
         base ? `<p><a href="${base}/dashboard/quotes/${quote.id}">Open the quote</a></p>` : ""
       }`,
     });

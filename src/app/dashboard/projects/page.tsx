@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession } from "@/lib/dal";
@@ -184,7 +185,7 @@ export default async function ProjectsPage({
                       )}
                     </td>
                     <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                      {project.dueDate ? project.dueDate.toLocaleDateString() : "No due date"}
+                      {project.dueDate ? formatDate(project.dueDate) : "No due date"}
                     </td>
                   </tr>
                 );

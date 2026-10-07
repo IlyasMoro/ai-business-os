@@ -1,3 +1,4 @@
+import { formatCurrency, formatDateTime } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireRole } from "@/lib/dal";
@@ -59,7 +60,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               {doc.partner ? doc.partner.name : "Unknown sender"} · Control number{" "}
-              <span className="font-mono">{String(doc.controlNumber).padStart(9, "0")}</span> · {doc.createdAt.toLocaleString()}
+              <span className="font-mono">{String(doc.controlNumber).padStart(9, "0")}</span> · {formatDateTime(doc.createdAt)}
             </p>
           </div>
           <a
@@ -82,7 +83,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
           <CardContent className="space-y-1 text-sm text-slate-300 light:text-slate-600">
             {orders.map((o) => (
               <p key={o.id}>
-                Sales order for PO <span className="font-mono">{o.customerPoNumber}</span>, ${o.totalAmount.toFixed(2)}:{" "}
+                Sales order for PO <span className="font-mono">{o.customerPoNumber}</span>, {formatCurrency(o.totalAmount)}:{" "}
                 <Link href={`/dashboard/sales/${o.id}`} className={linkClass}>
                   {o.orderNumber}
                 </Link>

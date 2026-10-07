@@ -1,5 +1,6 @@
 "use client";
 
+import { formatCurrency } from "@/lib/utils";
 import { useActionState } from "react";
 import { Upload } from "lucide-react";
 import { Button } from "@/components/ui-dark/button";
@@ -31,7 +32,7 @@ function Issues({ title, tone, items }: { title: string; tone: "red" | "amber" |
 export function ProductImport({ branches }: { branches: { id: string; name: string }[] }) {
   const [state, formAction, pending] = useActionState<ProductImportPreviewState, FormData>(previewProductImport, undefined);
   const plan = state?.plan;
-  const money = (n: number) => `$${n.toFixed(2)}`;
+  const money = (n: number) => formatCurrency(n);
 
   return (
     <div className="space-y-6">

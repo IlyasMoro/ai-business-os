@@ -10,6 +10,7 @@
    A paid invoice's lines are locked and it can't be deleted, so the income
    in Accounting always matches an invoice. */
 
+import { formatCurrency } from "@/lib/utils";
 import { startOfDay } from "date-fns";
 
 export type InvoiceStatus = "DRAFT" | "SENT" | "PAID" | "OVERDUE";
@@ -60,9 +61,9 @@ export function statusAfterUndoPayment(dueDate: Date, now = new Date()): Invoice
   return isPastDue(dueDate, now) ? "OVERDUE" : "SENT";
 }
 
-/** INV-0001; keeps every digit past 9999. */
+/** INV0001; keeps every digit past 9999. */
 export function formatInvoiceNumber(n: number): string {
-  return `INV-${String(n).padStart(4, "0")}`;
+  return `INV${String(n).padStart(4, "0")}`;
 }
 
 const HTML_ESCAPES: Record<string, string> = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -93,7 +94,7 @@ export function balanceDue(invoice: { totalAmount: number; amountPaid: number; a
 /** Why a payment or credit of `amount` can't be recorded, or null. */
 export function amountBlocker(amount: number, balance: number, what: "payment" | "credit note"): string | null {
   if (!Number.isFinite(amount) || amount <= 0) return `Enter a ${what} amount above zero.`;
-  if (cents(amount) > cents(balance)) return `That's more than the $${balance.toFixed(2)} still owed.`;
+  if (cents(amount) > cents(balance)) return `That's more than the ${formatCurrency(balance)} still owed.`;
   return null;
 }
 
@@ -115,7 +116,7 @@ export function statusAfterSettlement(invoice: {
   return isPastDue(invoice.dueDate, now) ? "OVERDUE" : "SENT";
 }
 
-/** CN-0001; keeps every digit past 9999. */
+/** CN0001; keeps every digit past 9999. */
 export function formatCreditNumber(n: number): string {
-  return `CN-${String(n).padStart(4, "0")}`;
+  return `CN${String(n).padStart(4, "0")}`;
 }

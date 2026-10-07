@@ -6,7 +6,7 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { DeleteButton } from "@/components/ui-dark/delete-button";
 import { createFollowUp, deleteFollowUp, toggleFollowUp } from "@/lib/actions/pipeline";
 import { followUpBucket } from "@/lib/crm-pipeline";
-import { cn } from "@/lib/utils";
+import { cn, APP_TIME_ZONE } from "@/lib/utils";
 
 export type ListFollowUp = {
   id: string;
@@ -26,7 +26,7 @@ const BUCKET_STYLE = {
 } as const;
 
 function due(date: Date) {
-  return date.toLocaleString("en-ZA", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: APP_TIME_ZONE });
 }
 
 /** One reminder row: tick to mark done (or undo), due date coloured by

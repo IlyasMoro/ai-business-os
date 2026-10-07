@@ -72,7 +72,7 @@ export function undoReceiptBlocker(order: {
   return null;
 }
 
-/** PO-0001; keeps every digit past 9999. */
+/** PO0001; keeps every digit past 9999. */
 export function formatPoNumber(n: number): string {
-  return `PO-${String(n).padStart(4, "0")}`;
+  return `PO${String(n).padStart(4, "0")}`;
 }

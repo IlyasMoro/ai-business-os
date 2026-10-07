@@ -1,3 +1,4 @@
+import { formatDayMonth } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Pause, Play } from "lucide-react";
@@ -27,7 +28,7 @@ import {
 
 export const metadata = { title: "Email sequence" };
 
-const shortDate = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+const shortDate = (d: Date) => formatDayMonth(d);
 
 function StepFields({ step, first, prefix }: { step?: { subject: string; body: string; delayDays: number }; first: boolean; prefix: string }) {
   return (

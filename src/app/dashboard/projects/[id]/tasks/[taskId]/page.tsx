@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
@@ -45,7 +46,7 @@ export default async function TaskDetailPage({
         </div>
         <p className="mt-1 text-sm text-slate-500">
           {task.project.name} · {task.assignee ? task.assignee.name : "Unassigned"}
-          {task.dueDate ? ` · Due ${task.dueDate.toLocaleDateString()}` : ""}
+          {task.dueDate ? ` · Due ${formatDate(task.dueDate)}` : ""}
         </p>
 
         {task.description && (

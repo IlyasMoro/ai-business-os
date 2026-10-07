@@ -11,7 +11,7 @@ import { RingGauge } from "@/components/dash-viz/ring-gauge";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { formatCompactCurrency } from "@/lib/utils";
+import { formatCompactCurrency, formatCurrency, CURRENCY_PREFIX, formatDate } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { Plus, Search, ChevronLeft, ChevronRight, Download, Receipt, Wallet, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
@@ -139,7 +139,7 @@ export default async function InvoicingPage({
         <KpiCard
           label="Outstanding"
           value={outstandingTotal}
-          prefix="$"
+          prefix={CURRENCY_PREFIX}
           icon={Wallet}
           color={VIZ.amber}
           hint={`${outstandingInvoices.length} invoice${outstandingInvoices.length === 1 ? "" : "s"} waiting for payment`}
@@ -149,7 +149,7 @@ export default async function InvoicingPage({
           value={overdueCount}
           icon={AlertTriangle}
           color={VIZ.red}
-          hint={overdueCount > 0 ? `$${overdueTotal.toLocaleString("en-US", { maximumFractionDigits: 0 })} past the due date` : "Nothing overdue"}
+          hint={overdueCount > 0 ? `${formatCurrency(overdueTotal, { cents: false })} past the due date` : "Nothing overdue"}
         />
         <KpiCard
           label="Invoices paid"
@@ -224,7 +224,7 @@ export default async function InvoicingPage({
                     <StatusBadge status={invoice.status} color={statusColor[invoice.status]} />
                   </td>
                   <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {invoice.dueDate.toLocaleDateString()}
+                    {formatDate(invoice.dueDate)}
                   </td>
                   <td className="px-5 py-3 tabular-nums text-amber-400 light:text-amber-800">
                     {formatCompactCurrency(invoice.totalAmount)}

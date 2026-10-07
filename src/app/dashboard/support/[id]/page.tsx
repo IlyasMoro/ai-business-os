@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
@@ -64,7 +65,7 @@ export default async function TicketDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">For {ticket.customer.name}</p>
             <p className="mt-1 text-sm text-slate-500">
-              Created {ticket.createdAt.toLocaleDateString()}
+              Created {formatDate(ticket.createdAt)}
             </p>
           </div>
           <div className="flex items-center gap-2">

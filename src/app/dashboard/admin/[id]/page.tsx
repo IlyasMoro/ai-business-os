@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/dal";
@@ -38,7 +39,7 @@ export default async function AdminCompanyDetailPage({
         <BackButton href="/dashboard/admin" label="Back to companies" />
         <h1 className="mt-3 text-2xl font-semibold text-slate-50 light:text-slate-900">{company.name}</h1>
         <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-          Signed up on {company.createdAt.toLocaleDateString()}
+          Signed up on {formatDate(company.createdAt)}
         </p>
 
         <div className="mt-4">
@@ -57,7 +58,7 @@ export default async function AdminCompanyDetailPage({
                 <div className="text-right text-slate-400 light:text-slate-500">
                   <p>{u.role}</p>
                   <p className="text-xs text-slate-500">
-                    joined {u.createdAt.toLocaleDateString()}
+                    joined {formatDate(u.createdAt)}
                   </p>
                 </div>
               </li>

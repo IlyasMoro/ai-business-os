@@ -59,7 +59,7 @@ export function invoiceBlocker(order: { status: OrderStatus; hasInvoice: boolean
   return null;
 }
 
-/** SO-0001; keeps every digit past 9999. */
+/** SO0001; keeps every digit past 9999. */
 export function formatOrderNumber(n: number): string {
-  return `SO-${String(n).padStart(4, "0")}`;
+  return `SO${String(n).padStart(4, "0")}`;
 }

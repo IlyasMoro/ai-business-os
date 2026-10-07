@@ -53,15 +53,15 @@ export function quoteTotal(items: { quantity: number; unitPrice: number }[]): nu
   return Math.round(total * 100) / 100;
 }
 
-/** The next number after the highest one in use: Q-0001, Q-0002, ... Taking
+/** The next number after the highest one in use: Q0001, Q0002, ... Taking
  * the highest rather than counting means a deleted quote's number is never
  * given out twice. */
 export function nextQuoteNumber(existing: string[]): string {
   const highest = existing.reduce((max, n) => {
-    const match = /^Q-(\d+)$/.exec(n);
+    const match = /^Q-?(\d+)$/.exec(n);
     return match ? Math.max(max, Number(match[1])) : max;
   }, 0);
-  return `Q-${String(highest + 1).padStart(4, "0")}`;
+  return `Q${String(highest + 1).padStart(4, "0")}`;
 }
 
 /** The default valid until date, counted from `from`. */

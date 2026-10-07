@@ -1,3 +1,4 @@
+import { formatCurrencyPlain, formatDate } from "@/lib/utils";
 import "server-only";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 import { computeInvoiceSubtotal, computeInvoiceTax } from "@/lib/invoicing-math";
@@ -56,7 +57,7 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   text(invoice.companyName, margin, 20, bold);
   const kind = invoice.kind ?? "Invoice";
-  // Right aligned, and smaller when long ("Purchase order PO-0012").
+  // Right aligned, and smaller when long ("Purchase order PO0012").
   const heading = `${kind} ${invoice.invoiceNumber}`;
   let headingSize = 20;
   while (headingSize > 12 && bold.widthOfTextAtSize(heading, headingSize) > 250) headingSize -= 1;
@@ -77,8 +78,8 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
   }
 
   y -= 10;
-  text(`${kind === "Order" ? "Order date" : "Issue date"}: ${invoice.issueDate.toLocaleDateString()}`, margin, 10, font, gray);
-  if (secondDateLabel && invoice.dueDate) text(`${secondDateLabel}: ${invoice.dueDate.toLocaleDateString()}`, 300, 10, font, gray);
+  text(`${kind === "Order" ? "Order date" : "Issue date"}: ${formatDate(invoice.issueDate)}`, margin, 10, font, gray);
+  if (secondDateLabel && invoice.dueDate) text(`${secondDateLabel}: ${formatDate(invoice.dueDate)}`, 300, 10, font, gray);
   y -= 30;
 
   text("Description", margin, 10, bold);
@@ -92,8 +93,8 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
   for (const item of invoice.lineItems) {
     text(item.description.slice(0, 45), margin, 10);
     text(formatQty(item.quantity, item.unit), 340, 10);
-    text(`$${item.unitPrice.toFixed(2)}`, 400, 10);
-    text(`$${(item.quantity * item.unitPrice).toFixed(2)}`, 490, 10);
+    text(`${formatCurrencyPlain(item.unitPrice)}`, 400, 10);
+    text(`${formatCurrencyPlain(item.quantity * item.unitPrice)}`, 490, 10);
     y -= 18;
   }
 
@@ -106,15 +107,15 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
 
   if (invoice.taxRate > 0) {
     text("Subtotal", 400, 10, font, gray);
-    text(`$${subtotal.toFixed(2)}`, 490, 10, font, gray);
+    text(`${formatCurrencyPlain(subtotal)}`, 490, 10, font, gray);
     y -= 16;
     text(`Tax (${invoice.taxRate}%)`, 400, 10, font, gray);
-    text(`$${taxAmount.toFixed(2)}`, 490, 10, font, gray);
+    text(`${formatCurrencyPlain(taxAmount)}`, 490, 10, font, gray);
     y -= 20;
   }
 
   text("Total", 400, 12, bold);
-  text(`$${invoice.totalAmount.toFixed(2)}`, 490, 12, bold);
+  text(`${formatCurrencyPlain(invoice.totalAmount)}`, 490, 12, bold);
   // Part payments and credit notes, then what's left to pay.
   const paid = invoice.amountPaid ?? 0;
   const credited = invoice.amountCredited ?? 0;
@@ -122,16 +123,16 @@ export async function generateInvoicePdf(invoice: InvoicePdfData): Promise<Uint8
     if (paid > 0) {
       y -= 16;
       text("Paid", 400, 10, font, gray);
-      text(`-$${paid.toFixed(2)}`, 490, 10, font, gray);
+      text(`-${formatCurrencyPlain(paid)}`, 490, 10, font, gray);
     }
     if (credited > 0) {
       y -= 16;
       text("Credited", 400, 10, font, gray);
-      text(`-$${credited.toFixed(2)}`, 490, 10, font, gray);
+      text(`-${formatCurrencyPlain(credited)}`, 490, 10, font, gray);
     }
     y -= 18;
     text("Balance due", 400, 12, bold);
-    text(`$${Math.max(0, invoice.totalAmount - paid - credited).toFixed(2)}`, 490, 12, bold);
+    text(`${formatCurrencyPlain(Math.max(0, invoice.totalAmount - paid - credited))}`, 490, 12, bold);
   }
 
   if (invoice.notes) {

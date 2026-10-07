@@ -70,7 +70,7 @@ export function DealForm({
       )}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="value">Value ($)</Label>
+          <Label htmlFor="value">Value (R)</Label>
           <Input
             id="value"
             name="value"

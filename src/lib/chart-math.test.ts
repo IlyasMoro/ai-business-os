@@ -34,16 +34,16 @@ describe("periodChange", () => {
 describe("compactNumber", () => {
   it("shortens thousands and millions", () => {
     expect(compactNumber(950)).toBe("950");
-    expect(compactNumber(1200, true)).toBe("$1.2k");
-    expect(compactNumber(25_000, true)).toBe("$25k");
+    expect(compactNumber(1200, true)).toBe("R\u00a01.2k");
+    expect(compactNumber(25_000, true)).toBe("R\u00a025k");
     expect(compactNumber(3_400_000)).toBe("3.4M");
-    expect(compactNumber(-1500, true)).toBe("-$1.5k");
+    expect(compactNumber(-1500, true)).toBe("\u2212R\u00a01.5k");
   });
 });
 
 describe("fullNumber and sharePct", () => {
   it("formats tooltips and shares", () => {
-    expect(fullNumber(60, true)).toBe("$60.00");
+    expect(fullNumber(60, true)).toBe("R\u00a060.00");
     expect(fullNumber(1234)).toBe("1,234");
     expect(sharePct(1, 3)).toBe("33%");
     expect(sharePct(1, 500)).toBe("<1%");

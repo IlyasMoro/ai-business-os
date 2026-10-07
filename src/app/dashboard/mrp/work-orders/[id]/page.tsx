@@ -1,3 +1,4 @@
+import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { verifySession } from "@/lib/dal";
@@ -91,9 +92,9 @@ export default async function WorkOrderDetailPage({
               <Link href={`/dashboard/inventory/${wo.product.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
                 {wo.product.name}
               </Link>
-              {wo.dueDate && <> · Due {wo.dueDate.toLocaleDateString()}</>}
-              {wo.startedAt && <> · Started {wo.startedAt.toLocaleDateString()}</>}
-              {wo.completedAt && <> · Completed {wo.completedAt.toLocaleDateString()}</>}
+              {wo.dueDate && <> · Due {formatDate(wo.dueDate)}</>}
+              {wo.startedAt && <> · Started {formatDate(wo.startedAt)}</>}
+              {wo.completedAt && <> · Completed {formatDate(wo.completedAt)}</>}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -160,7 +161,7 @@ export default async function WorkOrderDetailPage({
               </table>
             )}
             <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
-              Material cost: <span className="font-semibold text-amber-400 light:text-amber-800">${materialCost.toFixed(2)}</span>
+              Material cost: <span className="font-semibold text-amber-400 light:text-amber-800">{formatCurrency(materialCost)}</span>
             </p>
             {wo.status === "COMPLETED" && (
               <p className="mt-2 text-xs text-slate-500">
