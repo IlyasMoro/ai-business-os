@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
@@ -7,7 +8,7 @@ import { AllocationBar } from "@/components/dash-viz/allocation-bar";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, LifeBuoy } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, LifeBuoy, TriangleAlert, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -110,6 +111,12 @@ export default async function SupportPage({
             New ticket
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard label="Open tickets" value={(statusMap.get("OPEN") ?? 0) + (statusMap.get("IN_PROGRESS") ?? 0)} icon={LifeBuoy} color={VIZ.blue} hint="Open or being worked on" />
+        <KpiCard label="High priority" value={priorityMap.get("HIGH") ?? 0} icon={TriangleAlert} color={VIZ.red} hint="Handle these first" />
+        <KpiCard label="Resolved" value={(statusMap.get("RESOLVED") ?? 0) + (statusMap.get("CLOSED") ?? 0)} icon={CheckCircle2} color={VIZ.emerald} hint="Resolved or closed" />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">

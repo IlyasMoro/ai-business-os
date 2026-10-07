@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { LucideIcon } from "lucide-react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { AnimatedCounter } from "./animated-counter";
@@ -24,9 +25,12 @@ export function KpiCard({
   decimals,
   icon: Icon,
   color,
-  trend,
+  trend = [],
   trendLabels,
   change,
+  progress,
+  hint,
+  href,
 }: {
   label: string;
   value: number;
@@ -35,13 +39,21 @@ export function KpiCard({
   decimals?: number;
   icon: LucideIcon;
   color: string;
-  trend: number[];
+  /** Money over time: drawn as a sparkline. Leave out for counts. */
+  trend?: number[];
   /** Month names for the sparkline tooltip, one per trend point. */
   trendLabels?: string[];
   change?: KpiChange;
+  /** Part of a goal or limit (budget used, invoices collected): a thin bar
+   * in the tile's colour with a short label. */
+  progress?: { pct: number; label: string };
+  /** One short line under the number, e.g. "3 need a reorder". */
+  hint?: string;
+  /** Makes the whole tile a link to the list behind the number. */
+  href?: string;
 }) {
-  return (
-    <SpotlightCard color={color} className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+  const tile = (
+    <SpotlightCard color={color} className="h-full rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
       {/* Thin lit strip along the top edge in the card's accent colour. */}
       <span
         aria-hidden
@@ -55,6 +67,7 @@ export function KpiCard({
             <AnimatedCounter value={value} prefix={prefix} suffix={suffix} decimals={decimals} />
           </p>
           {change && <ChangeBadge change={change} />}
+          {hint && <p className="mt-1 text-xs text-slate-400 light:text-slate-500">{hint}</p>}
         </div>
         <span
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
@@ -69,7 +82,29 @@ export function KpiCard({
           <Sparkline data={trend} color={color} labels={trendLabels} currency={prefix === "$"} title={`${label} by month`} />
         </div>
       )}
+      {progress && (
+        <div className="mt-4">
+          <div
+            className="h-1.5 overflow-hidden rounded-full bg-white/[0.07] light:bg-slate-200"
+            role="progressbar"
+            aria-valuenow={Math.round(progress.pct)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={progress.label}
+          >
+            <div className="h-full rounded-full" style={{ width: `${Math.max(0, Math.min(100, progress.pct))}%`, backgroundColor: color }} />
+          </div>
+          <p className="mt-1.5 text-xs text-slate-400 light:text-slate-500">{progress.label}</p>
+        </div>
+      )}
     </SpotlightCard>
+  );
+  return href ? (
+    <Link href={href} className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 [&>div]:h-full">
+      {tile}
+    </Link>
+  ) : (
+    tile
   );
 }
 

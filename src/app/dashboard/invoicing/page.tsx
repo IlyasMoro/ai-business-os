@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { balanceDue } from "@/lib/invoice-rules";
 import { markOverdueInvoices } from "@/lib/invoice-number";
 import { verifySession } from "@/lib/dal";
@@ -12,7 +13,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, Receipt } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, Receipt, Wallet, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -94,6 +95,9 @@ export default async function InvoicingPage({
     .sort((a, b) => b.value - a.value)
     .slice(0, 6);
 
+  const outstandingTotal = outstandingInvoices.reduce((s, inv) => s + balanceDue(inv), 0);
+  const overdueTotal = outstandingInvoices.filter((inv) => inv.status === "OVERDUE").reduce((s, inv) => s + balanceDue(inv), 0);
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -129,6 +133,32 @@ export default async function InvoicingPage({
             New invoice
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          label="Outstanding"
+          value={outstandingTotal}
+          prefix="$"
+          icon={Wallet}
+          color={VIZ.amber}
+          hint={`${outstandingInvoices.length} invoice${outstandingInvoices.length === 1 ? "" : "s"} waiting for payment`}
+        />
+        <KpiCard
+          label="Overdue"
+          value={overdueCount}
+          icon={AlertTriangle}
+          color={VIZ.red}
+          hint={overdueCount > 0 ? `$${overdueTotal.toLocaleString("en-US", { maximumFractionDigits: 0 })} past the due date` : "Nothing overdue"}
+        />
+        <KpiCard
+          label="Invoices paid"
+          value={paidCount}
+          icon={CheckCircle2}
+          color={VIZ.emerald}
+          progress={collectionRate === null ? undefined : { pct: collectionRate, label: `${Math.round(collectionRate)}% of sent invoices collected` }}
+          hint={collectionRate === null ? "No invoices sent yet" : undefined}
+        />
       </div>
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">

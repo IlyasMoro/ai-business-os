@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { branchWhere } from "@/lib/branches";
@@ -12,7 +13,7 @@ import { Badge, StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, Truck } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, Truck, Wallet, Clock, PackageCheck } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -138,6 +139,26 @@ export default async function ProcurementPage({
             New purchase order
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          label="Purchases (6 months)"
+          value={monthlyValueTrend.reduce((a, v) => a + v, 0)}
+          prefix="$"
+          icon={Wallet}
+          color={VIZ.blue}
+          trend={monthlyValueTrend}
+          trendLabels={trendPoints.map((t) => t.longLabel)}
+        />
+        <KpiCard
+          label="Waiting for delivery"
+          value={statusMap.get("ORDERED") ?? 0}
+          icon={Clock}
+          color={VIZ.amber}
+          hint="Ordered, not yet received"
+        />
+        <KpiCard label="Received" value={statusMap.get("RECEIVED") ?? 0} icon={PackageCheck} color={VIZ.emerald} hint="Delivered into stock" />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

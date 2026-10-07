@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { VIZ } from "@/components/dash-viz/colors";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Badge, StatusBadge } from "@/components/ui-dark/badge";
@@ -6,7 +8,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { getEdiSettings } from "@/lib/edi/settings";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { DOC_TYPE_LABEL } from "@/lib/edi/labels";
-import { ArrowDownToLine, ArrowUpFromLine, Settings2, Upload, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowDownToLine, ArrowUpFromLine, Settings2, Upload, Users, ChevronLeft, ChevronRight, TriangleAlert } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 
 const statusTone = { GENERATED: "blue", PROCESSED: "green", REJECTED: "red" } as const;
@@ -87,24 +89,15 @@ export default async function EdiPage({
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
-            <ArrowDownToLine className="h-4 w-4" /> Received and processed
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{count("INBOUND", "PROCESSED")}</p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
-            <ArrowDownToLine className="h-4 w-4" /> Received and rejected
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-red-400 light:text-red-700">{count("INBOUND", "REJECTED")}</p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
-            <ArrowUpFromLine className="h-4 w-4" /> Generated to send
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{count("OUTBOUND")}</p>
-        </div>
+        <KpiCard label="Received and processed" value={count("INBOUND", "PROCESSED")} icon={ArrowDownToLine} color={VIZ.emerald} />
+        <KpiCard
+          label="Received and rejected"
+          value={count("INBOUND", "REJECTED")}
+          icon={TriangleAlert}
+          color={VIZ.red}
+          hint={count("INBOUND", "REJECTED") > 0 ? "Open one to see why" : "None rejected"}
+        />
+        <KpiCard label="Generated to send" value={count("OUTBOUND")} icon={ArrowUpFromLine} color={VIZ.blue} />
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-white/[0.09] light:border-white/80 glass">

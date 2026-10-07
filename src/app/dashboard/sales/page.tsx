@@ -8,11 +8,12 @@ import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { TrendChart } from "@/components/dash-viz/trend-chart";
 import { ChangeBadge } from "@/components/dash-viz/change-badge";
 import { VIZ } from "@/components/dash-viz/colors";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { subMonths, startOfMonth, endOfMonth, format } from "date-fns";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, ShoppingCart } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, ShoppingCart, Wallet, Clock } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -92,6 +93,10 @@ export default async function SalesPage({
     return { label: format(month, "MMM"), longLabel: format(month, "MMMM yyyy"), value };
   });
 
+  const pendingCount = statusMap.get("PENDING") ?? 0;
+  const openCount = pendingCount + (statusMap.get("CONFIRMED") ?? 0);
+  const monthLabels = trendPoints.map((t) => t.longLabel);
+
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -127,6 +132,26 @@ export default async function SalesPage({
             New order
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          label="Order value (6 months)"
+          value={monthlyValueTrend.reduce((a, v) => a + v, 0)}
+          prefix="$"
+          icon={Wallet}
+          color={VIZ.emerald}
+          trend={monthlyValueTrend}
+          trendLabels={monthLabels}
+        />
+        <KpiCard label="Open orders" value={openCount} icon={ShoppingCart} color={VIZ.blue} hint="Pending or confirmed, not yet fulfilled" />
+        <KpiCard
+          label="Waiting to confirm"
+          value={pendingCount}
+          icon={Clock}
+          color={VIZ.amber}
+          hint={pendingCount > 0 ? "Confirm them to reserve the stock" : "Nothing waiting"}
+        />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
@@ -7,7 +8,7 @@ import { DualProgressBar } from "@/components/dash-viz/dual-progress-bar";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, FolderKanban } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, FolderKanban, PauseCircle, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -95,6 +96,12 @@ export default async function ProjectsPage({
             New project
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard label="Active projects" value={statusMap.get("ACTIVE") ?? 0} icon={FolderKanban} color={VIZ.blue} hint="In progress now" />
+        <KpiCard label="On hold" value={statusMap.get("ON_HOLD") ?? 0} icon={PauseCircle} color={VIZ.amber} hint="Paused, waiting on something" />
+        <KpiCard label="Completed" value={statusMap.get("COMPLETED") ?? 0} icon={CheckCircle2} color={VIZ.emerald} hint="Finished and delivered" />
       </div>
 
       <div className="mt-6 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { branchWhere } from "@/lib/branches";
@@ -9,7 +10,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, UserSquare2 } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, UserSquare2, UserCheck, Building2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -117,6 +118,18 @@ export default async function HrPage({
             New employee
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard label="Employees" value={totalAll} icon={UserSquare2} color={VIZ.blue} hint="Everyone on record" />
+        <KpiCard
+          label="Active"
+          value={statusMap.get("ACTIVE") ?? 0}
+          icon={UserCheck}
+          color={VIZ.emerald}
+          progress={totalAll > 0 ? { pct: ((statusMap.get("ACTIVE") ?? 0) / totalAll) * 100, label: "Share of all employees" } : undefined}
+        />
+        <KpiCard label="Departments" value={deptCounts.size} icon={Building2} color={VIZ.amber} hint="Teams in this view" />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">

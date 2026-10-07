@@ -1,4 +1,5 @@
 import { requireRole } from "@/lib/dal";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { getSalesReport, getStockValueReport, SALES_REPORT_DAYS } from "@/lib/report-data";
 import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
@@ -10,10 +11,9 @@ import { GroupedBarChart } from "@/components/dash-viz/grouped-bar-chart";
 import { auditHref, formatAuditAction, formatAuditDetails } from "@/lib/audit-format";
 import { rankCustomers } from "@/lib/customer-ranking";
 import Link from "next/link";
-import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { forecastNextMonthRevenue } from "@/lib/ai-tools";
-import { Sparkles, Download } from "lucide-react";
+import { Sparkles, Download, Wallet, TrendingDown, TrendingUp } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { getCampaignsWithStats } from "@/lib/campaign-data";
@@ -146,36 +146,19 @@ export default async function ReportsPage() {
         </a>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Income (6 months)</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalIncome} prefix="$" decimals={0} />
-          </p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Expenses (6 months)</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalExpense} prefix="$" decimals={0} />
-          </p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Net (6 months)</p>
-          <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50 light:text-slate-900" : "text-red-400"}`}>
-            <AnimatedCounter value={net} prefix="$" decimals={0} />
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-4 rounded-2xl border border-blue-500/20 bg-blue-500/[0.04] p-5">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-blue-400 light:text-blue-700" />
-          <p className="text-sm font-medium text-slate-200 light:text-slate-700">AI revenue forecast</p>
-        </div>
-        <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-          <AnimatedCounter value={forecast.estimatedNextMonthRevenue} prefix="$" decimals={0} />
-        </p>
-        <p className="mt-1 text-xs text-slate-500">{forecast.method}</p>
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Income (6 months)" value={totalIncome} prefix="$" icon={Wallet} color={VIZ.emerald} trend={monthly.map((m) => m.income)} trendLabels={monthly.map((m) => m.longLabel)} />
+        <KpiCard label="Expenses (6 months)" value={totalExpense} prefix="$" icon={TrendingDown} color={VIZ.red} trend={monthly.map((m) => m.expense)} trendLabels={monthly.map((m) => m.longLabel)} />
+        <KpiCard
+          label="Net (6 months)"
+          value={net}
+          prefix="$"
+          icon={TrendingUp}
+          color={net >= 0 ? VIZ.blue : VIZ.red}
+          trend={monthly.map((m) => m.income - m.expense)}
+          trendLabels={monthly.map((m) => m.longLabel)}
+        />
+        <KpiCard label="AI revenue forecast" value={forecast.estimatedNextMonthRevenue} prefix="$" icon={Sparkles} color={VIZ.blue} hint="Estimate for next month, from recent income" />
       </div>
 
       {profit && (

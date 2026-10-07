@@ -4,13 +4,12 @@ import { db } from "@/lib/db";
 import { getBranchContext } from "@/lib/branches";
 import { lowStockAt } from "@/lib/stock";
 import type { Prisma } from "@/generated/prisma/client";
-import { RingGauge } from "@/components/dash-viz/ring-gauge";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
-import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Boxes } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Boxes, Wallet, AlertTriangle, HeartPulse } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -146,33 +145,30 @@ export default async function InventoryPage({
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Stock value at cost</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totalValue} prefix="$" decimals={0} />
-          </p>
-          {missingCost > 0 && (
-            <p className="mt-1 text-xs text-amber-400 light:text-amber-700">
-              {missingCost} product{missingCost === 1 ? " has" : "s have"} stock but no cost, so count as $0.
-            </p>
-          )}
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Low stock items</p>
-          <p className={`mt-2 text-2xl font-semibold ${lowStockCount > 0 ? "text-red-400" : "text-slate-50 light:text-slate-900"}`}>
-            <AnimatedCounter value={lowStockCount} decimals={0} />
-          </p>
-        </div>
-        <div className="flex items-center justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <RingGauge
-            label="Stock health"
-            pct={healthyRatio}
-            detail={`${allForTotals.length - lowStockCount} of ${allForTotals.length} above reorder level`}
-            emptyText="No products yet"
-            size={96}
-            strokeWidth={8}
-          />
-        </div>
+        <KpiCard
+          label="Stock value at cost"
+          value={totalValue}
+          prefix="$"
+          icon={Wallet}
+          color={VIZ.blue}
+          hint={missingCost > 0 ? `${missingCost} product${missingCost === 1 ? " has" : "s have"} stock but no cost, so count as $0` : undefined}
+        />
+        <KpiCard
+          label="Low stock items"
+          value={lowStockCount}
+          icon={AlertTriangle}
+          color={lowStockCount > 0 ? VIZ.amber : VIZ.emerald}
+          hint={lowStockCount > 0 ? "At or below their reorder level" : "Everything above its reorder level"}
+        />
+        <KpiCard
+          label="Stock health"
+          value={healthyRatio ?? 0}
+          suffix="%"
+          icon={HeartPulse}
+          color={VIZ.emerald}
+          progress={healthyRatio === null ? undefined : { pct: healthyRatio, label: `${allForTotals.length - lowStockCount} of ${allForTotals.length} above reorder level` }}
+          hint={healthyRatio === null ? "No products yet" : undefined}
+        />
       </div>
 
       {topProductsByValue.length > 0 && (

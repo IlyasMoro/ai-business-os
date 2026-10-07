@@ -1,9 +1,9 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
-import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -11,7 +11,7 @@ import { getReturnPolicy } from "@/lib/returns-policy";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
 import { ReturnStatusValues, type ReturnStatus } from "@/lib/returns-math";
-import { Plus, Search, ChevronLeft, ChevronRight, Settings2 } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Settings2, Banknote, Undo2 } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
 
@@ -140,16 +140,14 @@ export default async function ReturnsPage({
 
       <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-1">
-          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-            <p className="text-sm text-slate-400 light:text-slate-500">Refunded to customers</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-              <AnimatedCounter value={refunded} prefix="$" decimals={0} />
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-            <p className="text-sm text-slate-400 light:text-slate-500">Open returns</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{openCount}</p>
-          </div>
+          <KpiCard label="Refunded to customers" value={refunded} prefix="$" icon={Banknote} color={VIZ.red} />
+          <KpiCard
+            label="Open returns"
+            value={openCount}
+            icon={Undo2}
+            color={VIZ.amber}
+            hint={openCount > 0 ? "Requested, approved or received" : "Nothing waiting"}
+          />
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-2 glass">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">

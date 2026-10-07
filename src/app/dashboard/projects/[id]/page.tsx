@@ -149,19 +149,19 @@ export default async function ProjectDetailPage({
             <CardContent className="grid grid-cols-3 gap-4 text-sm">
               <div>
                 <p className="text-slate-500">Revenue</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                <p className="mt-1 text-lg font-semibold tabular-nums text-emerald-400 light:text-emerald-700">
                   ${projectRevenue.toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-slate-500">Costs</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                <p className="mt-1 text-lg font-semibold tabular-nums text-red-400 light:text-red-700">
                   ${projectCosts.toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-slate-500">Margin</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums text-slate-50 light:text-slate-900">
+                <p className={`mt-1 text-lg font-semibold tabular-nums ${projectRevenue - projectCosts < 0 ? "text-red-400 light:text-red-700" : "text-blue-400 light:text-blue-700"}`}>
                   ${(projectRevenue - projectCosts).toFixed(2)}
                 </p>
               </div>

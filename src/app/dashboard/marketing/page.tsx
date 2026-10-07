@@ -1,10 +1,10 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession } from "@/lib/dal";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
-import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
-import { Plus, Search, Download, Megaphone } from "lucide-react";
+import { Plus, Search, Download, Megaphone, Wallet, UserPlus, TrendingUp, Percent } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -76,37 +76,30 @@ export default async function MarketingPage({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
-          <p className="text-sm text-slate-400 light:text-slate-500">Spent</p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-            <AnimatedCounter value={totals.spent} prefix="$" decimals={0} />
-          </p>
-          <p className="text-xs text-slate-500">of {formatCurrency(totals.budget)} budgeted</p>
-          <div className="mt-4 grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-slate-400 light:text-slate-500">Leads</p>
-              <p className="mt-1 text-xl font-semibold text-slate-50 light:text-slate-900">
-                <AnimatedCounter value={totals.leads} decimals={0} />
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-slate-400 light:text-slate-500">Revenue</p>
-              <p className="mt-1 text-xl font-semibold text-slate-50 light:text-slate-900">
-                <AnimatedCounter value={totals.revenue} prefix="$" decimals={0} />
-              </p>
-            </div>
-          </div>
-          <p className="mt-4 text-sm text-slate-400 light:text-slate-500">Return on spend</p>
-          <p
-            className={`mt-1 text-xl font-semibold ${
-              totals.roiPct === null ? "text-slate-50 light:text-slate-900" : totals.roiPct >= 0 ? "text-emerald-400" : "text-red-400"
-            }`}
-          >
-            {formatRoi(totals.roiPct)}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-2 glass">
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <KpiCard
+          label="Spent"
+          value={totals.spent}
+          prefix="$"
+          icon={Wallet}
+          color={VIZ.amber}
+          progress={totals.budget > 0 ? { pct: (totals.spent / totals.budget) * 100, label: `of ${formatCurrency(totals.budget)} budgeted` } : undefined}
+          hint={totals.budget > 0 ? undefined : "No budget set"}
+        />
+        <KpiCard label="Leads" value={totals.leads} icon={UserPlus} color={VIZ.blue} hint="From all campaigns" />
+        <KpiCard label="Revenue" value={totals.revenue} prefix="$" icon={TrendingUp} color={VIZ.emerald} hint="Won from campaign leads" />
+        <KpiCard
+          label="Return on spend"
+          value={totals.roiPct ?? 0}
+          suffix="%"
+          icon={Percent}
+          color={totals.roiPct !== null && totals.roiPct < 0 ? VIZ.red : VIZ.emerald}
+          hint={totals.roiPct === null ? "Nothing spent yet" : totals.roiPct >= 0 ? "Earning more than spent" : "Spending more than earned"}
+        />
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-6">
+        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <div className="flex flex-col items-center gap-8 sm:flex-row sm:items-start sm:justify-center">
             <DonutChart
               title="Campaigns by status"

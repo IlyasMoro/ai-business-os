@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import type { Prisma } from "@/generated/prisma/client";
@@ -6,7 +7,7 @@ import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Copy, Download, Upload, Users } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Copy, Download, Upload, Users, UserCheck, UserPlus } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -191,6 +192,18 @@ export default async function CrmPage({
           ))}
         </div>
         )}
+      </div>
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard label="Customers" value={totalAll} icon={Users} color={VIZ.blue} hint="Leads, active and inactive" />
+        <KpiCard
+          label="Active customers"
+          value={statusMap.get("ACTIVE") ?? 0}
+          icon={UserCheck}
+          color={VIZ.emerald}
+          progress={totalAll > 0 ? { pct: ((statusMap.get("ACTIVE") ?? 0) / totalAll) * 100, label: `${Math.round(((statusMap.get("ACTIVE") ?? 0) / totalAll) * 100)}% of all customers` } : undefined}
+        />
+        <KpiCard label="Leads" value={statusMap.get("LEAD") ?? 0} icon={UserPlus} color={VIZ.amber} hint="Not buying yet, worth a follow up" />
       </div>
 
       <div className="mt-4 rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">

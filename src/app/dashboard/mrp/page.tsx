@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { VIZ } from "@/components/dash-viz/colors";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { verifySession, hasRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui-dark/badge";
@@ -92,24 +94,9 @@ export default async function PlanningPage({
       </div>
 
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
-            <ShoppingCart className="h-4 w-4" /> Items to buy
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{toBuy.length}</p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
-            <Wrench className="h-4 w-4" /> Items to make
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{toMake.length}</p>
-        </div>
-        <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-          <p className="flex items-center gap-2 text-sm text-slate-400 light:text-slate-500">
-            <ClipboardList className="h-4 w-4" /> Open work orders
-          </p>
-          <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">{openWorkOrders}</p>
-        </div>
+        <KpiCard label="Items to buy" value={toBuy.length} icon={ShoppingCart} color={VIZ.blue} hint="Suggested purchase orders" />
+        <KpiCard label="Items to make" value={toMake.length} icon={Wrench} color={VIZ.emerald} hint="Suggested work orders" />
+        <KpiCard label="Open work orders" value={openWorkOrders} icon={ClipboardList} color={VIZ.amber} hint="In production, not yet finished" />
       </div>
 
       <div className="mt-6 flex items-center gap-4 text-sm">

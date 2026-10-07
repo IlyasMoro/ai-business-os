@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
 import { requireRole } from "@/lib/dal";
 import { db } from "@/lib/db";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
@@ -11,7 +12,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, ChevronLeft, ChevronRight, Download, Banknote } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, Download, Banknote, Clock, CheckCircle2 } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 
@@ -98,6 +99,26 @@ export default async function PayrollPage({
             New payroll run
           </Link>
         </div>
+      </div>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <KpiCard
+          label="Last payroll run"
+          value={payrollTrend[payrollTrend.length - 1] ?? 0}
+          prefix="$"
+          icon={Banknote}
+          color={VIZ.emerald}
+          trend={payrollTrend}
+          trendLabels={trendPoints.map((t) => t.longLabel)}
+        />
+        <KpiCard
+          label="Waiting to pay"
+          value={(statusMap.get("DRAFT") ?? 0) + (statusMap.get("PROCESSED") ?? 0)}
+          icon={Clock}
+          color={VIZ.amber}
+          hint="Draft or processed runs not yet paid"
+        />
+        <KpiCard label="Paid in total" value={totalPaid} prefix="$" icon={CheckCircle2} color={VIZ.blue} hint={`${statusMap.get("PAID") ?? 0} runs paid`} />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">

@@ -5,13 +5,14 @@ import { branchWhere } from "@/lib/branches";
 import type { Prisma } from "@/generated/prisma/client";
 import { DonutChart } from "@/components/dash-viz/donut-chart";
 import { HorizontalBarChart } from "@/components/dash-viz/horizontal-bar-chart";
-import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
+import { KpiCard } from "@/components/dash-viz/kpi-card";
+import { subMonths, startOfMonth, format } from "date-fns";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VIZ } from "@/components/dash-viz/colors";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { formatCompactCurrency } from "@/lib/utils";
 import { parsePage, PAGE_SIZE } from "@/lib/pagination";
-import { Plus, Search, ChevronLeft, ChevronRight, Download, Wallet } from "lucide-react";
+import { Plus, Search, ChevronLeft, ChevronRight, Download, Wallet, TrendingDown, TrendingUp } from "lucide-react";
 import { EmptyState } from "@/components/ui-dark/empty-state";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { fieldStyles } from "@/components/ui-dark/input";
@@ -52,7 +53,7 @@ export default async function AccountingPage({
     db.transaction.count({ where }),
     db.transaction.findMany({
       where: { companyId: session.companyId, ...inBranch },
-      select: { type: true, amount: true, category: true },
+      select: { type: true, amount: true, category: true, date: true },
     }),
   ]);
 
@@ -65,6 +66,19 @@ export default async function AccountingPage({
     .filter((t) => t.type === "EXPENSE")
     .reduce((sum, t) => sum + t.amount, 0);
   const net = income - expense;
+
+  // Last 6 months, oldest first, for the tiles' trend lines.
+  const months = Array.from({ length: 6 }, (_, i) => startOfMonth(subMonths(new Date(), 5 - i)));
+  const monthLabels = months.map((m) => format(m, "MMMM yyyy"));
+  const byMonth = (type: "INCOME" | "EXPENSE") =>
+    months.map((m, i) =>
+      allForTotals
+        .filter((t) => t.type === type && t.date >= m && (i === 5 || t.date < months[i + 1]))
+        .reduce((sum, t) => sum + t.amount, 0)
+    );
+  const incomeTrend = byMonth("INCOME");
+  const expenseTrend = byMonth("EXPENSE");
+  const netTrend = incomeTrend.map((v, i) => v - expenseTrend[i]);
 
   const categoryTotals = new Map<string, number>();
   for (const t of allForTotals) {
@@ -114,25 +128,19 @@ export default async function AccountingPage({
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2 lg:grid-cols-1">
-          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-            <p className="text-sm text-slate-400 light:text-slate-500">Income</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-              <AnimatedCounter value={income} prefix="$" decimals={0} />
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-            <p className="text-sm text-slate-400 light:text-slate-500">Expenses</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-50 light:text-slate-900">
-              <AnimatedCounter value={expense} prefix="$" decimals={0} />
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
-            <p className="text-sm text-slate-400 light:text-slate-500">Net</p>
-            <p className={`mt-2 text-2xl font-semibold ${net >= 0 ? "text-slate-50 light:text-slate-900" : "text-red-400"}`}>
-              <AnimatedCounter value={net} prefix="$" decimals={0} />
-            </p>
-          </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2">
+          <KpiCard label="Income" value={income} prefix="$" icon={Wallet} color={VIZ.emerald} trend={incomeTrend} trendLabels={monthLabels} />
+          <KpiCard label="Expenses" value={expense} prefix="$" icon={TrendingDown} color={VIZ.red} trend={expenseTrend} trendLabels={monthLabels} />
+          <KpiCard
+            label="Net"
+            value={net}
+            prefix="$"
+            icon={TrendingUp}
+            color={net >= 0 ? VIZ.blue : VIZ.red}
+            trend={netTrend}
+            trendLabels={monthLabels}
+            hint={net < 0 ? "Spending more than coming in" : undefined}
+          />
         </div>
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 lg:col-span-1 glass">
           <div className="flex justify-center">
