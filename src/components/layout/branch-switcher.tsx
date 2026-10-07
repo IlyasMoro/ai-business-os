@@ -71,7 +71,7 @@ export function BranchSwitcher({
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          "inline-flex items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-1.5 text-sm font-medium text-slate-100 transition-colors hover:bg-white/[0.06] light:border-slate-300 light:text-slate-800 light:hover:bg-slate-900/5",
+          "glass-chip inline-flex items-center gap-2 rounded-xl border border-white/[0.1] px-3 py-2 text-sm font-medium text-slate-100 hover:border-white/[0.16] light:border-slate-200 light:text-slate-800 light:hover:border-slate-300",
           pending && "opacity-60"
         )}
       >

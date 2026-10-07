@@ -109,7 +109,7 @@ export function CompanyStatusBadge({
   );
 
   const shell =
-    "group flex min-w-0 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.06] py-1.5 pl-1.5 pr-3 backdrop-blur-md light:border-slate-200 light:bg-slate-100/70";
+    "glass-chip group flex min-w-0 items-center gap-3 rounded-xl border border-white/[0.1] py-1.5 pl-1.5 pr-3 light:border-slate-200";
 
   return canManage ? (
     <Link
@@ -117,7 +117,7 @@ export function CompanyStatusBadge({
       title="Plan and billing"
       className={cn(
         shell,
-        "transition-colors hover:border-white/20 hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:hover:border-slate-300"
+        "hover:border-white/[0.16] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:hover:border-slate-300"
       )}
     >
       {body}
