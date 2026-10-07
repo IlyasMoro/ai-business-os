@@ -121,28 +121,30 @@ export default async function InternalOrderPage({
           {lines.length === 0 ? (
             <p className="p-6 text-sm text-slate-500">No costs yet. Choose this order as the cost object on an expense in Accounting.</p>
           ) : (
-            <table className="mt-2 w-full text-sm">
-              <tbody>
-                {lines.map((l, i) => (
-                  <tr key={i} className="border-t border-white/[0.04] light:border-slate-100">
-                    <td className="px-5 py-2 text-slate-400">{formatDate(l.date)}</td>
-                    <td className="px-5 py-2">
-                      <Badge tone={l.source === "SETTLEMENT" ? "green" : "slate"}>{l.source === "SETTLEMENT" ? "Settlement" : "Expense"}</Badge>
-                    </td>
-                    <td className="px-5 py-2 text-slate-300 light:text-slate-600">
-                      {l.href ? (
-                        <Link href={l.href} className="hover:text-blue-400">
-                          {l.label}
-                        </Link>
-                      ) : (
-                        l.label
-                      )}
-                    </td>
-                    <td className={`px-5 py-2 text-right tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="mt-2 w-full text-sm">
+                <tbody>
+                  {lines.map((l, i) => (
+                    <tr key={i} className="border-t border-white/[0.04] light:border-slate-100">
+                      <td className="px-5 py-2 text-slate-400">{formatDate(l.date)}</td>
+                      <td className="px-5 py-2">
+                        <Badge tone={l.source === "SETTLEMENT" ? "green" : "slate"}>{l.source === "SETTLEMENT" ? "Settlement" : "Expense"}</Badge>
+                      </td>
+                      <td className="px-5 py-2 text-slate-300 light:text-slate-600">
+                        {l.href ? (
+                          <Link href={l.href} className="hover:text-blue-400">
+                            {l.label}
+                          </Link>
+                        ) : (
+                          l.label
+                        )}
+                      </td>
+                      <td className={`px-5 py-2 text-right tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 

@@ -47,7 +47,7 @@ export default async function AssistantPage() {
   return (
     <div className="-m-4 flex h-[calc(100dvh-4rem)] flex-col sm:-m-6">
       <div className="border-b border-white/[0.06] px-4 py-4 light:border-slate-900/[0.06] sm:px-6">
-        <div className="mx-auto flex max-w-3xl items-center justify-between gap-4">
+        <div className="mx-auto flex flex-wrap max-w-3xl items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             {/* The AIBOS logo's centre point: the Copilot every department feeds. */}
             <CopilotMark className="h-10 w-10" />

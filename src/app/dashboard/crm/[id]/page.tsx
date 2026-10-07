@@ -187,7 +187,7 @@ export default async function CustomerDetailPage({
             {customer.company && <p className="mt-1 text-slate-400 light:text-slate-500">{customer.company}</p>}
             <TagChips tags={customer.tags} className="mt-2 flex" />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <WhatsAppButton
               number={wa.number(customer.phone)}
               customerId={customer.id}
@@ -256,7 +256,7 @@ export default async function CustomerDetailPage({
           </CardContent>
         </Card>
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
           <LeadScoreCard score={score.score} reasons={score.reasons} />
           <CustomerSequences
             customerId={customer.id}
@@ -268,7 +268,7 @@ export default async function CustomerDetailPage({
         </div>
 
         {/* Sales work: deals and reminders side by side, then the history. */}
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Deals ({deals.length})</CardTitle>

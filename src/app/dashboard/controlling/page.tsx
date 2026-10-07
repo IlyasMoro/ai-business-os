@@ -145,44 +145,46 @@ export default async function ControllingPage({
             .
           </p>
         ) : (
-          <table className="mt-2 w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Cost center</th>
-                <th className="px-5 py-3 text-right font-medium">Plan</th>
-                <th className="px-5 py-3 text-right font-medium">Actual</th>
-                <th className="px-5 py-3 text-right font-medium">Variance</th>
-                <th className="px-5 py-3 font-medium">Used</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shown.map((r) => {
-                const v = variance(r.plan, r.actual, tol);
-                return (
-                  <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
-                        <span className="font-mono">{r.code}</span> {r.name}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
-                    <td className={`px-5 py-3 text-right tabular-nums ${v.variance > 0 ? "text-red-400" : "text-emerald-400"}`}>
-                      {money(v.variance)}
-                      {v.variancePercent !== null && <span className="ml-1 text-xs text-slate-500">({percent(v.variancePercent)})</span>}
-                    </td>
-                    <td className="px-5 py-3">
-                      <UsageBar used={v.used} status={v.status} />
-                    </td>
-                    <td className="px-5 py-3">
-                      <VarianceBadge status={v.status} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="mt-2 w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Cost center</th>
+                  <th className="px-5 py-3 text-right font-medium">Plan</th>
+                  <th className="px-5 py-3 text-right font-medium">Actual</th>
+                  <th className="px-5 py-3 text-right font-medium">Variance</th>
+                  <th className="px-5 py-3 font-medium">Used</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((r) => {
+                  const v = variance(r.plan, r.actual, tol);
+                  return (
+                    <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="px-5 py-3">
+                        <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
+                          <span className="font-mono">{r.code}</span> {r.name}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
+                      <td className={`px-5 py-3 text-right tabular-nums ${v.variance > 0 ? "text-red-400" : "text-emerald-400"}`}>
+                        {money(v.variance)}
+                        {v.variancePercent !== null && <span className="ml-1 text-xs text-slate-500">({percent(v.variancePercent)})</span>}
+                      </td>
+                      <td className="px-5 py-3">
+                        <UsageBar used={v.used} status={v.status} />
+                      </td>
+                      <td className="px-5 py-3">
+                        <VarianceBadge status={v.status} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -196,44 +198,46 @@ export default async function ControllingPage({
         {orders.length === 0 ? (
           <p className="p-8 text-center text-sm text-slate-500">No open internal orders.</p>
         ) : (
-          <table className="mt-2 w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Order</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 text-right font-medium">Budget</th>
-                <th className="px-5 py-3 text-right font-medium">Actual</th>
-                <th className="px-5 py-3 text-right font-medium">Available</th>
-                <th className="px-5 py-3 font-medium">Used</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((o) => {
-                const actual = orderActual.get(o.id) ?? 0;
-                const v = variance(o.budget, actual, tol);
-                return (
-                  <tr key={o.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/orders/${o.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
-                        <span className="font-mono">{o.orderNumber}</span> {o.name}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3">
-                      <StatusBadge status={o.status} tone={orderTone[o.status]} />
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(o.budget)}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(actual)}</td>
-                    <td className={`px-5 py-3 text-right tabular-nums ${o.budget - actual < 0 ? "text-red-400" : "text-emerald-400"}`}>
-                      {o.budget > 0 ? money(o.budget - actual) : ""}
-                    </td>
-                    <td className="px-5 py-3">
-                      <UsageBar used={v.used} status={v.status} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="mt-2 w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Order</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 text-right font-medium">Budget</th>
+                  <th className="px-5 py-3 text-right font-medium">Actual</th>
+                  <th className="px-5 py-3 text-right font-medium">Available</th>
+                  <th className="px-5 py-3 font-medium">Used</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map((o) => {
+                  const actual = orderActual.get(o.id) ?? 0;
+                  const v = variance(o.budget, actual, tol);
+                  return (
+                    <tr key={o.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="px-5 py-3">
+                        <Link href={`/dashboard/controlling/orders/${o.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
+                          <span className="font-mono">{o.orderNumber}</span> {o.name}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3">
+                        <StatusBadge status={o.status} tone={orderTone[o.status]} />
+                      </td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(o.budget)}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(actual)}</td>
+                      <td className={`px-5 py-3 text-right tabular-nums ${o.budget - actual < 0 ? "text-red-400" : "text-emerald-400"}`}>
+                        {o.budget > 0 ? money(o.budget - actual) : ""}
+                      </td>
+                      <td className="px-5 py-3">
+                        <UsageBar used={v.used} status={v.status} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

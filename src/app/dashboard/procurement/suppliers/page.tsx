@@ -46,7 +46,7 @@ export default async function SuppliersPage({
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <BackButton href="/dashboard/procurement" label="Back to purchase orders" />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Suppliers</h1>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
@@ -66,45 +66,47 @@ export default async function SuppliersPage({
             No suppliers yet. Add your first one above.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 font-medium">Email</th>
-                <th className="px-5 py-3 font-medium">Phone</th>
-                <th className="px-5 py-3 font-medium">Avg. lead time</th>
-                <th className="px-5 py-3 font-medium">On time rate</th>
-                <th className="px-5 py-3 font-medium" />
-              </tr>
-            </thead>
-            <tbody>
-              {supplierStats.map((supplier) => (
-                <tr key={supplier.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3 font-medium">
-                    <Link href={`/dashboard/procurement/suppliers/${supplier.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
-                      {supplier.name}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.email ?? "Not set"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.phone ?? "Not set"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {supplier.avgLeadTimeDays === null
-                      ? "No deliveries yet"
-                      : `${supplier.avgLeadTimeDays.toFixed(1)} days (${supplier.receivedCount} received)`}
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {supplier.onTimeRate === null ? "No deliveries yet" : `${supplier.onTimeRate.toFixed(0)}%`}
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <DeleteButton
-                      action={deleteSupplier.bind(null, supplier.id)}
-                      confirmMessage="Delete this supplier? Suppliers with purchase orders are kept for your history."
-                    />
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Name</th>
+                  <th className="px-5 py-3 font-medium">Email</th>
+                  <th className="px-5 py-3 font-medium">Phone</th>
+                  <th className="px-5 py-3 font-medium">Avg. lead time</th>
+                  <th className="px-5 py-3 font-medium">On time rate</th>
+                  <th className="px-5 py-3 font-medium" />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {supplierStats.map((supplier) => (
+                  <tr key={supplier.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3 font-medium">
+                      <Link href={`/dashboard/procurement/suppliers/${supplier.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
+                        {supplier.name}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.email ?? "Not set"}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{supplier.phone ?? "Not set"}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">
+                      {supplier.avgLeadTimeDays === null
+                        ? "No deliveries yet"
+                        : `${supplier.avgLeadTimeDays.toFixed(1)} days (${supplier.receivedCount} received)`}
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">
+                      {supplier.onTimeRate === null ? "No deliveries yet" : `${supplier.onTimeRate.toFixed(0)}%`}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <DeleteButton
+                        action={deleteSupplier.bind(null, supplier.id)}
+                        confirmMessage="Delete this supplier? Suppliers with purchase orders are kept for your history."
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

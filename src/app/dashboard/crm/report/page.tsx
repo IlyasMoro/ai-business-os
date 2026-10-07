@@ -158,7 +158,7 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
         ))}
       </div>
 
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>Forecast by expected close</CardTitle>
@@ -299,7 +299,7 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
         </CardContent>
       </Card>
 
-      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <Card>
           <CardHeader>
             <CardTitle>By lead source</CardTitle>

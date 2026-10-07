@@ -129,7 +129,7 @@ export default async function AccountingPage({
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:col-span-2">
           <KpiCard label="Income" value={income} prefix={CURRENCY_PREFIX} icon={Wallet} color={VIZ.emerald} trend={incomeTrend} trendLabels={monthLabels} />
           <KpiCard label="Expenses" value={expense} prefix={CURRENCY_PREFIX} icon={TrendingDown} color={VIZ.red} trend={expenseTrend} trendLabels={monthLabels} />
@@ -175,44 +175,46 @@ export default async function AccountingPage({
             action={q ? { href: "/dashboard/accounting", label: "Clear search", variant: "secondary" } : { href: "/dashboard/accounting/new", label: "New transaction" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Date</th>
-                <th className="px-5 py-3 font-medium">Category</th>
-                <th className="px-5 py-3 font-medium">Type</th>
-                <th className="px-5 py-3 font-medium">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((transaction) => (
-                <tr key={transaction.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {formatDate(transaction.date)}
-                  </td>
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/accounting/${transaction.id}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {transaction.category}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={transaction.type} color={transaction.type === "INCOME" ? VIZ.emerald : VIZ.red} />
-                  </td>
-                  <td
-                    className={`px-5 py-3 tabular-nums ${
-                      transaction.type === "EXPENSE" ? "text-red-400" : "text-emerald-400"
-                    }`}
-                  >
-                    {transaction.type === "EXPENSE" ? "-" : ""}
-                    {formatCurrency(transaction.amount)}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Date</th>
+                  <th className="px-5 py-3 font-medium">Category</th>
+                  <th className="px-5 py-3 font-medium">Type</th>
+                  <th className="px-5 py-3 font-medium">Amount</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {transactions.map((transaction) => (
+                  <tr key={transaction.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">
+                      {formatDate(transaction.date)}
+                    </td>
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/accounting/${transaction.id}`}
+                        className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {transaction.category}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={transaction.type} color={transaction.type === "INCOME" ? VIZ.emerald : VIZ.red} />
+                    </td>
+                    <td
+                      className={`px-5 py-3 tabular-nums ${
+                        transaction.type === "EXPENSE" ? "text-red-400" : "text-emerald-400"
+                      }`}
+                    >
+                      {transaction.type === "EXPENSE" ? "-" : ""}
+                      {formatCurrency(transaction.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

@@ -221,7 +221,7 @@ export default async function QuotePage({
           </div>
         )}
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] [&>*]:min-w-0">
           <Card>
             <CardHeader>
               <CardTitle>Products</CardTitle>

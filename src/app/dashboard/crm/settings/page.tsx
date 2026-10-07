@@ -112,7 +112,7 @@ export default async function CrmSettingsPage({
         )}
       </div>
 
-      <div className="mt-4 grid items-start gap-6 xl:grid-cols-2">
+      <div className="mt-4 grid items-start gap-6 xl:grid-cols-2 [&>*]:min-w-0">
         <div className="space-y-6">
           <Section id="tags" title="Tags" description="Labels like VIP or Wholesale. Add them on the customer form, then filter the customer list by them.">
             {tags.length > 0 && (

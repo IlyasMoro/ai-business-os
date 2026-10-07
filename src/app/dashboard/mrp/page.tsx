@@ -125,81 +125,83 @@ export default async function PlanningPage({
               : "Nothing to buy or make. Stock and open orders cover all demand."}
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-4 py-3 font-medium">Product</th>
-                <th className="px-4 py-3 font-medium">Action</th>
-                <th className="px-4 py-3 text-right font-medium" title="Open sales orders">Sales</th>
-                <th className="px-4 py-3 text-right font-medium" title="Needed to build other products">Components</th>
-                <th className="px-4 py-3 text-right font-medium">On hand</th>
-                <th className="px-4 py-3 text-right font-medium" title="Open purchase orders and work orders">On order</th>
-                <th className="px-4 py-3 text-right font-medium">Safety</th>
-                <th className="px-4 py-3 text-right font-medium">Plan</th>
-                <th className="px-4 py-3 font-medium">Ready by</th>
-                <th className="px-4 py-3" />
-              </tr>
-            </thead>
-            <tbody className="tabular-nums">
-              {visible.map((row) => (
-                <tr key={row.productId} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-4 py-3 font-sans">
-                    <Link
-                      href={`/dashboard/inventory/${row.productId}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {row.name}
-                    </Link>
-                    <p className="text-xs text-slate-500">{row.sku}</p>
-                  </td>
-                  <td className="px-4 py-3 font-sans">
-                    <Badge tone={row.action === "MAKE" ? "purple" : "blue"}>{row.action === "MAKE" ? "Make" : "Buy"}</Badge>
-                  </td>
-                  <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.salesDemand}</td>
-                  <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.componentDemand}</td>
-                  <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.onHand}</td>
-                  <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.onOrder}</td>
-                  <td className="px-4 py-3 text-right text-slate-500">{row.safetyStock}</td>
-                  <td className={`px-4 py-3 text-right font-semibold ${row.plannedQty > 0 ? "text-amber-400" : "text-slate-600"}`}>
-                    {row.plannedQty > 0 ? row.plannedQty : "0"}
-                  </td>
-                  <td className="px-4 py-3 font-sans text-slate-400 light:text-slate-500">
-                    {row.plannedQty > 0 ? (
-                      <>
-                        {formatDate(row.availableBy)}
-                        <p className="text-xs text-slate-500">{row.leadTimeDays} day lead time</p>
-                      </>
-                    ) : null}
-                  </td>
-                  <td className="px-4 py-3 text-right font-sans">
-                    {row.plannedQty > 0 && row.action === "MAKE" && (
-                      <form action={createWorkOrderFromPlan.bind(null, row.productId)}>
-                        <SubmitButton variant="secondary" pendingText="Creating..." className="whitespace-nowrap">
-                          Create work order
-                        </SubmitButton>
-                      </form>
-                    )}
-                    {row.plannedQty > 0 && row.action === "BUY" && row.preferredSupplierId && (
-                      <form action={createPurchaseOrdersFromPlan.bind(null, row.productId)}>
-                        <SubmitButton variant="secondary" pendingText="Creating..." className="whitespace-nowrap">
-                          Order from {supplierName.get(row.preferredSupplierId) ?? "supplier"}
-                        </SubmitButton>
-                      </form>
-                    )}
-                    {row.plannedQty > 0 && row.action === "BUY" && !row.preferredSupplierId && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-4 py-3 font-medium">Product</th>
+                  <th className="px-4 py-3 font-medium">Action</th>
+                  <th className="px-4 py-3 text-right font-medium" title="Open sales orders">Sales</th>
+                  <th className="px-4 py-3 text-right font-medium" title="Needed to build other products">Components</th>
+                  <th className="px-4 py-3 text-right font-medium">On hand</th>
+                  <th className="px-4 py-3 text-right font-medium" title="Open purchase orders and work orders">On order</th>
+                  <th className="px-4 py-3 text-right font-medium">Safety</th>
+                  <th className="px-4 py-3 text-right font-medium">Plan</th>
+                  <th className="px-4 py-3 font-medium">Ready by</th>
+                  <th className="px-4 py-3" />
+                </tr>
+              </thead>
+              <tbody className="tabular-nums">
+                {visible.map((row) => (
+                  <tr key={row.productId} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-4 py-3 font-sans">
                       <Link
                         href={`/dashboard/inventory/${row.productId}`}
-                        className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-amber-400 light:text-amber-800 hover:text-amber-300"
+                        className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
                       >
-                        <TriangleAlert className="h-3.5 w-3.5" />
-                        Set a supplier
+                        {row.name}
                       </Link>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      <p className="text-xs text-slate-500">{row.sku}</p>
+                    </td>
+                    <td className="px-4 py-3 font-sans">
+                      <Badge tone={row.action === "MAKE" ? "purple" : "blue"}>{row.action === "MAKE" ? "Make" : "Buy"}</Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.salesDemand}</td>
+                    <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.componentDemand}</td>
+                    <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.onHand}</td>
+                    <td className="px-4 py-3 text-right text-slate-300 light:text-slate-600">{row.onOrder}</td>
+                    <td className="px-4 py-3 text-right text-slate-500">{row.safetyStock}</td>
+                    <td className={`px-4 py-3 text-right font-semibold ${row.plannedQty > 0 ? "text-amber-400" : "text-slate-600"}`}>
+                      {row.plannedQty > 0 ? row.plannedQty : "0"}
+                    </td>
+                    <td className="px-4 py-3 font-sans text-slate-400 light:text-slate-500">
+                      {row.plannedQty > 0 ? (
+                        <>
+                          {formatDate(row.availableBy)}
+                          <p className="text-xs text-slate-500">{row.leadTimeDays} day lead time</p>
+                        </>
+                      ) : null}
+                    </td>
+                    <td className="px-4 py-3 text-right font-sans">
+                      {row.plannedQty > 0 && row.action === "MAKE" && (
+                        <form action={createWorkOrderFromPlan.bind(null, row.productId)}>
+                          <SubmitButton variant="secondary" pendingText="Creating..." className="whitespace-nowrap">
+                            Create work order
+                          </SubmitButton>
+                        </form>
+                      )}
+                      {row.plannedQty > 0 && row.action === "BUY" && row.preferredSupplierId && (
+                        <form action={createPurchaseOrdersFromPlan.bind(null, row.productId)}>
+                          <SubmitButton variant="secondary" pendingText="Creating..." className="whitespace-nowrap">
+                            Order from {supplierName.get(row.preferredSupplierId) ?? "supplier"}
+                          </SubmitButton>
+                        </form>
+                      )}
+                      {row.plannedQty > 0 && row.action === "BUY" && !row.preferredSupplierId && (
+                        <Link
+                          href={`/dashboard/inventory/${row.productId}`}
+                          className="inline-flex items-center gap-1 whitespace-nowrap text-xs text-amber-400 light:text-amber-800 hover:text-amber-300"
+                        >
+                          <TriangleAlert className="h-3.5 w-3.5" />
+                          Set a supplier
+                        </Link>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

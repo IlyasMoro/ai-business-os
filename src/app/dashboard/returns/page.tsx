@@ -140,7 +140,7 @@ export default async function ReturnsPage({
         )}
       </div>
 
-      <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-2 grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <div className="space-y-4 lg:col-span-1">
           <KpiCard label="Refunded to customers" value={refunded} prefix={CURRENCY_PREFIX} icon={Banknote} color={VIZ.red} />
           <KpiCard
@@ -173,41 +173,43 @@ export default async function ReturnsPage({
             {q ? "No returns match your search." : "No returns yet. Open one from a fulfilled order."}
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">RMA</th>
-                <th className="px-5 py-3 font-medium">Customer</th>
-                <th className="px-5 py-3 font-medium">Reason</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Refund</th>
-                <th className="px-5 py-3 font-medium">Opened</th>
-              </tr>
-            </thead>
-            <tbody>
-              {returns.map((rma) => (
-                <tr key={rma.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/returns/${rma.id}`}
-                      className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {rma.rmaNumber}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{rma.order.customer.name}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{rma.reason}</td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={rma.status} color={statusColor[rma.status]} />
-                  </td>
-                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCurrency(rma.refundAmount)}
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(rma.createdAt)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">RMA</th>
+                  <th className="px-5 py-3 font-medium">Customer</th>
+                  <th className="px-5 py-3 font-medium">Reason</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Refund</th>
+                  <th className="px-5 py-3 font-medium">Opened</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {returns.map((rma) => (
+                  <tr key={rma.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/returns/${rma.id}`}
+                        className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {rma.rmaNumber}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{rma.order.customer.name}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{rma.reason}</td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={rma.status} color={statusColor[rma.status]} />
+                    </td>
+                    <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
+                      {formatCurrency(rma.refundAmount)}
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(rma.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

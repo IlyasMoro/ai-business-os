@@ -51,7 +51,7 @@ export default async function AccountPage({
 
         {/* Same width as the other settings pages; the two cards sit side by
             side on wide screens and stack on smaller ones. */}
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className="rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
           <CardHead icon={UserRound} title="Your details" text="How your name appears to your team and on records you create." />
           <form action={updateMyName} className="mt-5 grid gap-4 border-t border-white/[0.06] pt-4 light:border-slate-200">

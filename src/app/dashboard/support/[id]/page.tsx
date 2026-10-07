@@ -70,7 +70,7 @@ export default async function TicketDetailPage({
               Created {formatDate(ticket.createdAt)}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <TicketStatusForm ticketId={ticket.id} status={ticket.status} />
             <LinkButton href={`/dashboard/support/${ticket.id}/edit`} variant="secondary" size="sm">
               <Pencil className="h-4 w-4" />

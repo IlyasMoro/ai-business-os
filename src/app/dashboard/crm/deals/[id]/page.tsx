@@ -92,7 +92,7 @@ export default async function DealPage({
               {deal.closedAt && ` · closed ${formatDate(deal.closedAt)}`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <WhatsAppButton
               number={wa.number(deal.customer.phone)}
               customerId={deal.customer.id}
@@ -105,7 +105,7 @@ export default async function DealPage({
           </div>
         </div>
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] [&>*]:min-w-0">
           <div className="space-y-6">
             <Card>
               <CardHeader>

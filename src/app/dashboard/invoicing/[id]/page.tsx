@@ -118,7 +118,7 @@ export default async function InvoiceDetailPage({
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <form action={sendInvoiceEmail.bind(null, invoice.id)}>
               <Button type="submit" variant="secondary" size="sm">
                 <Send className="h-4 w-4" />
@@ -226,7 +226,7 @@ export default async function InvoiceDetailPage({
           </CardContent>
         </Card>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
           <Card>
             <CardHeader>
               <CardTitle>Payments</CardTitle>

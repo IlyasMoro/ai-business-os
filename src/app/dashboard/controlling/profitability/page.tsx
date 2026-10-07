@@ -15,39 +15,41 @@ function MarginTable({ title, rows, hrefBase }: { title: string; rows: ReturnTyp
       {rows.length === 0 ? (
         <p className="p-6 text-sm text-slate-500">No fulfilled orders in this period.</p>
       ) : (
-        <table className="mt-2 w-full text-sm">
-          <thead>
-            <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-              <th className="px-5 py-2 font-medium">Name</th>
-              <th className="px-5 py-2 text-right font-medium">Revenue</th>
-              <th className="px-5 py-2 text-right font-medium">Cost of goods</th>
-              <th className="px-5 py-2 text-right font-medium">Margin</th>
-              <th className="px-5 py-2 text-right font-medium">Margin %</th>
-            </tr>
-          </thead>
-          <tbody className="tabular-nums">
-            {rows.map((r) => (
-              <tr key={r.key} className="border-b border-white/[0.04] last:border-0">
-                <td className="px-5 py-2 font-sans">
-                  <Link href={`${hrefBase}/${r.key}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
-                    {r.label}
-                  </Link>
-                </td>
-                <td className="px-5 py-2 text-right text-slate-300 light:text-slate-600">{money(r.revenue)}</td>
-                <td className="px-5 py-2 text-right text-slate-400">{money(r.cost)}</td>
-                <td className={`px-5 py-2 text-right font-semibold ${r.margin < 0 ? "text-red-400" : "text-emerald-400"}`}>{money(r.margin)}</td>
-                <td className="px-5 py-2 text-right text-slate-400">{r.marginPercent === null ? "" : percent(r.marginPercent)}</td>
+        <div className="overflow-x-auto">
+          <table className="mt-2 w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                <th className="px-5 py-2 font-medium">Name</th>
+                <th className="px-5 py-2 text-right font-medium">Revenue</th>
+                <th className="px-5 py-2 text-right font-medium">Cost of goods</th>
+                <th className="px-5 py-2 text-right font-medium">Margin</th>
+                <th className="px-5 py-2 text-right font-medium">Margin %</th>
               </tr>
-            ))}
-            <tr className="border-t border-white/[0.1] font-semibold light:border-slate-300">
-              <td className="px-5 py-2 font-sans text-slate-300 light:text-slate-700">Total</td>
-              <td className="px-5 py-2 text-right text-slate-300 light:text-slate-700">{money(total.revenue)}</td>
-              <td className="px-5 py-2 text-right text-slate-400">{money(total.cost)}</td>
-              <td className={`px-5 py-2 text-right ${total.margin < 0 ? "text-red-400" : "text-emerald-400"}`}>{money(total.margin)}</td>
-              <td className="px-5 py-2 text-right text-slate-400">{total.revenue > 0 ? percent(Math.round((total.margin / total.revenue) * 1000) / 10) : ""}</td>
-            </tr>
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="tabular-nums">
+              {rows.map((r) => (
+                <tr key={r.key} className="border-b border-white/[0.04] last:border-0">
+                  <td className="px-5 py-2 font-sans">
+                    <Link href={`${hrefBase}/${r.key}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
+                      {r.label}
+                    </Link>
+                  </td>
+                  <td className="px-5 py-2 text-right text-slate-300 light:text-slate-600">{money(r.revenue)}</td>
+                  <td className="px-5 py-2 text-right text-slate-400">{money(r.cost)}</td>
+                  <td className={`px-5 py-2 text-right font-semibold ${r.margin < 0 ? "text-red-400" : "text-emerald-400"}`}>{money(r.margin)}</td>
+                  <td className="px-5 py-2 text-right text-slate-400">{r.marginPercent === null ? "" : percent(r.marginPercent)}</td>
+                </tr>
+              ))}
+              <tr className="border-t border-white/[0.1] font-semibold light:border-slate-300">
+                <td className="px-5 py-2 font-sans text-slate-300 light:text-slate-700">Total</td>
+                <td className="px-5 py-2 text-right text-slate-300 light:text-slate-700">{money(total.revenue)}</td>
+                <td className="px-5 py-2 text-right text-slate-400">{money(total.cost)}</td>
+                <td className={`px-5 py-2 text-right ${total.margin < 0 ? "text-red-400" : "text-emerald-400"}`}>{money(total.margin)}</td>
+                <td className="px-5 py-2 text-right text-slate-400">{total.revenue > 0 ? percent(Math.round((total.margin / total.revenue) * 1000) / 10) : ""}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -94,7 +94,7 @@ export default async function CampaignDetailPage({
               {campaign.endDate && ` · Ends ${formatDate(campaign.endDate)}`}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <CampaignStatusForm campaignId={campaign.id} status={campaign.status} />
             <LinkButton href={`/dashboard/marketing/${campaign.id}/edit`} variant="secondary" size="sm">
               <Pencil className="h-4 w-4" />

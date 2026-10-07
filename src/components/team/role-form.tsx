@@ -88,7 +88,7 @@ export function RoleForm({
           View lets them look without changing anything. Full lets them create, edit and delete. Anything else stays hidden from them.
         </p>
         <FieldError messages={state?.errors?.access} />
-        <div className="mt-3 grid gap-4 lg:grid-cols-2">
+        <div className="mt-3 grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
           {SECTIONS.map((section) => (
             <fieldset key={section} className="rounded-xl border border-white/[0.08] p-3 light:border-slate-200">
               <legend className="px-1 text-xs font-semibold uppercase tracking-wider text-slate-400 light:text-slate-500">{section}</legend>
@@ -97,7 +97,7 @@ export function RoleForm({
                   const locked = baseRole === "EMPLOYEE" && MANAGER_MODULES.has(m.key);
                   const current = locked ? "none" : (access[m.key] ?? "none");
                   return (
-                    <div key={m.key} className="flex items-center justify-between gap-3">
+                    <div key={m.key} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5">
                       <span className={cn("text-sm", locked ? "text-slate-500" : "text-slate-200 light:text-slate-700")}>
                         {m.label}
                         {locked && <span className="ml-1.5 text-xs text-slate-500">Manager level only</span>}

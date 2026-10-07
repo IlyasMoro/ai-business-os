@@ -73,7 +73,7 @@ export default async function PayrollRunDetailPage({
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <PayrollRunStatusForm payrollRunId={payrollRun.id} status={payrollRun.status} />
             <DeleteButton action={deletePayrollRun.bind(null, payrollRun.id)} />
           </div>

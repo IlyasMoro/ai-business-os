@@ -73,37 +73,39 @@ export default async function WorkOrdersPage({
             No work orders yet. Create one here or from a Make suggestion on the Planning page.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Work order</th>
-                <th className="px-5 py-3 font-medium">Product</th>
-                <th className="px-5 py-3 text-right font-medium">Quantity</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Due</th>
-              </tr>
-            </thead>
-            <tbody>
-              {workOrders.map((wo) => (
-                <tr key={wo.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/mrp/work-orders/${wo.id}`}
-                      className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {wo.woNumber}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.product.name}</td>
-                  <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{wo.quantity}</td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={wo.status} tone={statusTone[wo.status]} />
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.dueDate ? formatDate(wo.dueDate) : "Not set"}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Work order</th>
+                  <th className="px-5 py-3 font-medium">Product</th>
+                  <th className="px-5 py-3 text-right font-medium">Quantity</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Due</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {workOrders.map((wo) => (
+                  <tr key={wo.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/mrp/work-orders/${wo.id}`}
+                        className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {wo.woNumber}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.product.name}</td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{wo.quantity}</td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={wo.status} tone={statusTone[wo.status]} />
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{wo.dueDate ? formatDate(wo.dueDate) : "Not set"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

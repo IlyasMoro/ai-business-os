@@ -108,36 +108,38 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             action={filter === "ALL" ? { href: "/dashboard/quotes/new", label: "New quote" } : { href: "/dashboard/quotes", label: "Show all", variant: "secondary" }}
           />
         ) : (
-          <table className="w-full min-w-[640px] text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
-                <th className="px-5 py-3 font-medium">Quote</th>
-                <th className="px-5 py-3 font-medium">Customer</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 text-right font-medium">Total</th>
-                <th className="px-5 py-3 font-medium">Valid until</th>
-                <th className="px-5 py-3 font-medium">Owner</th>
-              </tr>
-            </thead>
-            <tbody>
-              {visible.map((q) => (
-                <tr key={q.id} className="border-b border-white/[0.04] last:border-0 light:border-slate-100">
-                  <td className="px-5 py-3">
-                    <Link href={`/dashboard/quotes/${q.id}`} className="whitespace-nowrap font-mono font-semibold text-slate-50 hover:text-blue-400 light:text-slate-900">
-                      {q.quoteNumber}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-300 light:text-slate-700">{q.customer.name}</td>
-                  <td className="px-5 py-3">
-                    <QuoteStatusBadge status={q.shown} />
-                  </td>
-                  <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-700">{money(q.totalAmount, true)}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{q.validUntil ? shortDate(q.validUntil) : "No limit"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{q.owner?.name ?? "Nobody"}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                  <th className="px-5 py-3 font-medium">Quote</th>
+                  <th className="px-5 py-3 font-medium">Customer</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 text-right font-medium">Total</th>
+                  <th className="px-5 py-3 font-medium">Valid until</th>
+                  <th className="px-5 py-3 font-medium">Owner</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {visible.map((q) => (
+                  <tr key={q.id} className="border-b border-white/[0.04] last:border-0 light:border-slate-100">
+                    <td className="px-5 py-3">
+                      <Link href={`/dashboard/quotes/${q.id}`} className="whitespace-nowrap font-mono font-semibold text-slate-50 hover:text-blue-400 light:text-slate-900">
+                        {q.quoteNumber}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-300 light:text-slate-700">{q.customer.name}</td>
+                    <td className="px-5 py-3">
+                      <QuoteStatusBadge status={q.shown} />
+                    </td>
+                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-700">{money(q.totalAmount, true)}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{q.validUntil ? shortDate(q.validUntil) : "No limit"}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{q.owner?.name ?? "Nobody"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

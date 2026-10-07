@@ -200,41 +200,43 @@ export default async function InvoicingPage({
             action={q ? { href: "/dashboard/invoicing", label: "Clear search", variant: "secondary" } : { href: "/dashboard/invoicing/new", label: "New invoice" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Number</th>
-                <th className="px-5 py-3 font-medium">Customer</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Due date</th>
-                <th className="px-5 py-3 font-medium">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((invoice) => (
-                <tr key={invoice.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/invoicing/${invoice.id}`}
-                      className="font-mono text-sm font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {invoice.invoiceNumber}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{invoice.customer.name}</td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={invoice.status} color={statusColor[invoice.status]} />
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                    {formatDate(invoice.dueDate)}
-                  </td>
-                  <td className="px-5 py-3 tabular-nums text-amber-400 light:text-amber-800">
-                    {formatCurrency(invoice.totalAmount)}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Number</th>
+                  <th className="px-5 py-3 font-medium">Customer</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Due date</th>
+                  <th className="px-5 py-3 font-medium">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {invoices.map((invoice) => (
+                  <tr key={invoice.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/invoicing/${invoice.id}`}
+                        className="font-mono text-sm font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {invoice.invoiceNumber}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{invoice.customer.name}</td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={invoice.status} color={statusColor[invoice.status]} />
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">
+                      {formatDate(invoice.dueDate)}
+                    </td>
+                    <td className="px-5 py-3 tabular-nums text-amber-400 light:text-amber-800">
+                      {formatCurrency(invoice.totalAmount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

@@ -48,44 +48,46 @@ export default async function CostCentersPage({
             No cost centers yet. A common start is one per department, like 1000 Administration, 2000 Sales, 3000 Production.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Code</th>
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 text-right font-medium">People</th>
-                <th className="px-5 py-3 text-right font-medium">Plan</th>
-                <th className="px-5 py-3 text-right font-medium">Actual</th>
-                <th className="px-5 py-3 font-medium">Used</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => {
-                const v = variance(r.plan, r.actual, settings.tolerancePercent);
-                return (
-                  <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="px-5 py-3 font-mono text-slate-300 light:text-slate-600">{r.code}</td>
-                    <td className="px-5 py-3">
-                      <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
-                        {r.name}
-                      </Link>
-                      {!r.active && <Badge tone="slate" className="ml-2">Inactive</Badge>}
-                    </td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-400">{heads.get(r.id) ?? 0}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
-                    <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
-                    <td className="px-5 py-3">
-                      <UsageBar used={v.used} status={v.status} />
-                    </td>
-                    <td className="px-5 py-3">
-                      <VarianceBadge status={v.status} />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Code</th>
+                  <th className="px-5 py-3 font-medium">Name</th>
+                  <th className="px-5 py-3 text-right font-medium">People</th>
+                  <th className="px-5 py-3 text-right font-medium">Plan</th>
+                  <th className="px-5 py-3 text-right font-medium">Actual</th>
+                  <th className="px-5 py-3 font-medium">Used</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const v = variance(r.plan, r.actual, settings.tolerancePercent);
+                  return (
+                    <tr key={r.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="px-5 py-3 font-mono text-slate-300 light:text-slate-600">{r.code}</td>
+                      <td className="px-5 py-3">
+                        <Link href={`/dashboard/controlling/cost-centers/${r.id}?fy=${period.fiscalYear}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
+                          {r.name}
+                        </Link>
+                        {!r.active && <Badge tone="slate" className="ml-2">Inactive</Badge>}
+                      </td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-400">{heads.get(r.id) ?? 0}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.plan)}</td>
+                      <td className="px-5 py-3 text-right tabular-nums text-slate-300 light:text-slate-600">{money(r.actual)}</td>
+                      <td className="px-5 py-3">
+                        <UsageBar used={v.used} status={v.status} />
+                      </td>
+                      <td className="px-5 py-3">
+                        <VarianceBadge status={v.status} />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

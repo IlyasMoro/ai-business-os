@@ -131,69 +131,71 @@ export default async function ProjectsPage({
             action={q ? { href: "/dashboard/projects", label: "Clear search", variant: "secondary" } : { href: "/dashboard/projects/new", label: "New project" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 font-medium">Customer</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Progress</th>
-                <th className="px-5 py-3 font-medium">Due date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project) => {
-                const totalTasks = project.tasks.length;
-                const doneTasks = project.tasks.filter((t) => t.status === "DONE").length;
-                const completionPct = totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
-
-                let timelinePct = 0;
-                let overdue = false;
-                if (project.dueDate) {
-                  const start = project.createdAt.getTime();
-                  const due = project.dueDate.getTime();
-                  const span = Math.max(1, due - start);
-                  timelinePct = ((now - start) / span) * 100;
-                  overdue = now > due && project.status !== "COMPLETED";
-                  timelinePct = Math.max(0, Math.min(100, timelinePct));
-                }
-
-                return (
-                  <tr key={project.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="px-5 py-3">
-                      <Link
-                        href={`/dashboard/projects/${project.id}`}
-                        className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                      >
-                        {project.name}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{project.customer?.name ?? "Not set"}</td>
-                    <td className="px-5 py-3">
-                      <StatusBadge status={project.status} color={statusColor[project.status]} />
-                    </td>
-                    <td className="px-5 py-3">
-                      {project.dueDate ? (
-                        <DualProgressBar
-                          completionPct={completionPct}
-                          secondaryPct={timelinePct}
-                          secondaryLabel="Timeline"
-                          secondaryCritical={overdue}
-                        />
-                      ) : (
-                        <span className="text-xs text-slate-500">
-                          {totalTasks > 0 ? `${Math.round(completionPct)}% tasks done` : "No tasks"}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">
-                      {project.dueDate ? formatDate(project.dueDate) : "No due date"}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Name</th>
+                  <th className="px-5 py-3 font-medium">Customer</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Progress</th>
+                  <th className="px-5 py-3 font-medium">Due date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.map((project) => {
+                  const totalTasks = project.tasks.length;
+                  const doneTasks = project.tasks.filter((t) => t.status === "DONE").length;
+                  const completionPct = totalTasks > 0 ? (doneTasks / totalTasks) * 100 : 0;
+  
+                  let timelinePct = 0;
+                  let overdue = false;
+                  if (project.dueDate) {
+                    const start = project.createdAt.getTime();
+                    const due = project.dueDate.getTime();
+                    const span = Math.max(1, due - start);
+                    timelinePct = ((now - start) / span) * 100;
+                    overdue = now > due && project.status !== "COMPLETED";
+                    timelinePct = Math.max(0, Math.min(100, timelinePct));
+                  }
+  
+                  return (
+                    <tr key={project.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="px-5 py-3">
+                        <Link
+                          href={`/dashboard/projects/${project.id}`}
+                          className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                        >
+                          {project.name}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-3 text-slate-400 light:text-slate-500">{project.customer?.name ?? "Not set"}</td>
+                      <td className="px-5 py-3">
+                        <StatusBadge status={project.status} color={statusColor[project.status]} />
+                      </td>
+                      <td className="px-5 py-3">
+                        {project.dueDate ? (
+                          <DualProgressBar
+                            completionPct={completionPct}
+                            secondaryPct={timelinePct}
+                            secondaryLabel="Timeline"
+                            secondaryCritical={overdue}
+                          />
+                        ) : (
+                          <span className="text-xs text-slate-500">
+                            {totalTasks > 0 ? `${Math.round(completionPct)}% tasks done` : "No tasks"}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-slate-400 light:text-slate-500">
+                        {project.dueDate ? formatDate(project.dueDate) : "No due date"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

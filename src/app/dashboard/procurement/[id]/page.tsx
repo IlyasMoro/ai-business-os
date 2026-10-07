@@ -92,7 +92,7 @@ export default async function PurchaseOrderDetailPage({
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {purchaseOrder.status !== "CANCELLED" && purchaseOrder.items.length > 0 && (
               <form action={sendPurchaseOrderEmail.bind(null, purchaseOrder.id)}>
                 <SubmitButton variant="secondary" pendingText="Sending...">

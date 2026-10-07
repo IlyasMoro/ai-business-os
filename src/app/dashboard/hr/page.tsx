@@ -134,7 +134,7 @@ export default async function HrPage({
         <KpiCard label="Departments" value={deptCounts.size} icon={Building2} color={VIZ.amber} hint="Teams in this view" />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className="rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <div className="flex justify-center">
             <DonutChart
@@ -177,35 +177,37 @@ export default async function HrPage({
             action={q ? { href: "/dashboard/hr", label: "Clear search", variant: "secondary" } : { href: "/dashboard/hr/new", label: "New employee" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 font-medium">Position</th>
-                <th className="px-5 py-3 font-medium">Department</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {employees.map((employee) => (
-                <tr key={employee.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/hr/${employee.id}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {employee.name}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.position ?? "Not set"}</td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.department ?? "Not set"}</td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={employee.status} color={statusColor[employee.status]} />
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Name</th>
+                  <th className="px-5 py-3 font-medium">Position</th>
+                  <th className="px-5 py-3 font-medium">Department</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {employees.map((employee) => (
+                  <tr key={employee.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/hr/${employee.id}`}
+                        className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {employee.name}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.position ?? "Not set"}</td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{employee.department ?? "Not set"}</td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={employee.status} color={statusColor[employee.status]} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

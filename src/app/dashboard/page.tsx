@@ -73,7 +73,7 @@ function WidgetsSkeleton() {
         ))}
       </div>
       <div className="mt-6 h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <div className="h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
         <div className="h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
         <div className="h-64 rounded-2xl border border-white/[0.09] light:border-white/80 glass" />
@@ -481,7 +481,7 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         {/* Same interactive donut as the status breakdowns on Reports. */}
         {can("crm") && <div className="flex justify-center rounded-2xl border border-white/[0.09] light:border-white/80 p-6 glass">
           <DonutChart

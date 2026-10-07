@@ -42,7 +42,7 @@ export default async function RolesPage({ searchParams }: { searchParams: Promis
         )}
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-6 grid gap-4 lg:grid-cols-2 [&>*]:min-w-0">
         {roles.map((role) => {
           const full = MODULES.filter((m) => role.access[m.key] === "full");
           const view = MODULES.filter((m) => role.access[m.key] === "view");

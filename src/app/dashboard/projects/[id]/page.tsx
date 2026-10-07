@@ -87,7 +87,7 @@ export default async function ProjectDetailPage({
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <ProjectStatusForm projectId={project.id} status={project.status} />
             <LinkButton href={`/dashboard/projects/${project.id}/edit`} variant="secondary" size="sm">
               <Pencil className="h-4 w-4" />

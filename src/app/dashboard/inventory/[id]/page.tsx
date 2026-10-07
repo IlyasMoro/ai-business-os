@@ -203,7 +203,7 @@ export default async function ProductDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">{product.sku}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LinkButton href={`/dashboard/inventory/${product.id}/edit`} variant="secondary" size="sm">
               <Pencil className="h-4 w-4" />
               Edit
@@ -212,7 +212,7 @@ export default async function ProductDetailPage({
           </div>
         </div>
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-2 [&>*]:min-w-0">
           <div className="space-y-6">
             <Card>
               <CardHeader>
@@ -249,8 +249,8 @@ export default async function ProductDetailPage({
                 <CardHeader>
                   <CardTitle>Stock by branch</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <table className="w-full text-sm">
+                <CardContent className="overflow-x-auto">
+                  <table className="w-full min-w-[30rem] text-sm">
                     <thead>
                       <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
                         <th className="py-2 font-medium">Branch</th>

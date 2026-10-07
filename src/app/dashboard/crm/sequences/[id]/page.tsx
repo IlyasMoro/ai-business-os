@@ -140,7 +140,7 @@ export default async function SequencePage({
           )}
         </div>
 
-        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] [&>*]:min-w-0">
           <div className="space-y-4">
             {isAdmin && (
               <form action={renameSequence.bind(null, id)} className="flex flex-wrap items-center gap-2">

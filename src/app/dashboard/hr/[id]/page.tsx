@@ -71,7 +71,7 @@ export default async function EmployeeDetailPage({
             </div>
             {employee.position && <p className="mt-1 text-slate-400 light:text-slate-500">{employee.position}</p>}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LinkButton href={`/dashboard/hr/${employee.id}/edit`} variant="secondary" size="sm">
               <Pencil className="h-4 w-4" />
               Edit

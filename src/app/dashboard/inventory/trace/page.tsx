@@ -205,25 +205,27 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
           {expiring.length === 0 ? (
             <p className="p-6 text-sm text-slate-500">Nothing on hand is expired or close to expiry.</p>
           ) : (
-            <table className="mt-2 w-full text-sm">
-              <tbody>
-                {expiring.map((lot) => (
-                  <tr key={lot.id} className="border-t border-white/[0.04] light:border-slate-100">
-                    <td className="px-5 py-2">
-                      <Link href={`/dashboard/inventory/trace?q=${encodeURIComponent(lot.lotNumber)}`} className="font-mono text-slate-50 hover:text-blue-400 light:text-slate-900">
-                        {lot.lotNumber}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-2 text-slate-400">{lot.product.name}</td>
-                    <td className="px-5 py-2 text-slate-400">{formatDate(lot.expiresAt!)}</td>
-                    <td className="px-5 py-2">
-                      {isExpired(lot) ? <Badge tone="red">Expired</Badge> : isExpiringSoon(lot, inventory.expiryWarningDays) ? <Badge tone="yellow">Expires soon</Badge> : null}
-                    </td>
-                    <td className="px-5 py-2 text-right tabular-nums text-slate-300">{lot.quantity}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="mt-2 w-full text-sm">
+                <tbody>
+                  {expiring.map((lot) => (
+                    <tr key={lot.id} className="border-t border-white/[0.04] light:border-slate-100">
+                      <td className="px-5 py-2">
+                        <Link href={`/dashboard/inventory/trace?q=${encodeURIComponent(lot.lotNumber)}`} className="font-mono text-slate-50 hover:text-blue-400 light:text-slate-900">
+                          {lot.lotNumber}
+                        </Link>
+                      </td>
+                      <td className="px-5 py-2 text-slate-400">{lot.product.name}</td>
+                      <td className="px-5 py-2 text-slate-400">{formatDate(lot.expiresAt!)}</td>
+                      <td className="px-5 py-2">
+                        {isExpired(lot) ? <Badge tone="red">Expired</Badge> : isExpiringSoon(lot, inventory.expiryWarningDays) ? <Badge tone="yellow">Expires soon</Badge> : null}
+                      </td>
+                      <td className="px-5 py-2 text-right tabular-nums text-slate-300">{lot.quantity}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

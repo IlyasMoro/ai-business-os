@@ -77,7 +77,7 @@ export default async function TeamPage({
 
         {/* Extra wide screens: the invite form in a narrow column beside the
             lists. Otherwise it sits on top so the members table gets the full width. */}
-        <div className="mt-6 grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div className="mt-6 grid items-start gap-6 2xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] [&>*]:min-w-0">
           <Card>
             <CardHeader>
               <CardTitle>Invite a teammate</CardTitle>

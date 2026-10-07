@@ -309,7 +309,7 @@ export default async function ReportsPage() {
         )}
       </div>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
         <div className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Sales, last {SALES_REPORT_DAYS} days</h2>
           <p className="text-xs text-slate-500">Orders fulfilled in that time{viewBranch ? ` at ${viewBranch.name}` : ""}.</p>
@@ -332,30 +332,32 @@ export default async function ReportsPage() {
           {sales.products.length === 0 ? (
             <p className="mt-4 text-sm text-slate-500">No orders fulfilled in this time.</p>
           ) : (
-            <table className="mt-4 w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
-                  <th className="py-2 pr-3 font-medium">Best sellers</th>
-                  <th className="py-2 pr-3 text-right font-medium">Units</th>
-                  <th className="py-2 pr-3 text-right font-medium">Sales</th>
-                  <th className="py-2 text-right font-medium">Share</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sales.products.map((p) => (
-                  <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="max-w-[12rem] truncate py-2 pr-3">
-                      <Link href={`/dashboard/inventory/${p.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
-                        {p.name}
-                      </Link>
-                    </td>
-                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
-                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(p.value, { cents: false })}</td>
-                    <td className="py-2 text-right tabular-nums text-slate-500">{p.sharePct}%</td>
+            <div className="overflow-x-auto">
+              <table className="mt-4 w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                    <th className="py-2 pr-3 font-medium">Best sellers</th>
+                    <th className="py-2 pr-3 text-right font-medium">Units</th>
+                    <th className="py-2 pr-3 text-right font-medium">Sales</th>
+                    <th className="py-2 text-right font-medium">Share</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sales.products.map((p) => (
+                    <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="max-w-[12rem] truncate py-2 pr-3">
+                        <Link href={`/dashboard/inventory/${p.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
+                          {p.name}
+                        </Link>
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(p.value, { cents: false })}</td>
+                      <td className="py-2 text-right tabular-nums text-slate-500">{p.sharePct}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
@@ -377,28 +379,30 @@ export default async function ReportsPage() {
             </ul>
           )}
           {stock.products.length > 0 && (
-            <table className="mt-4 w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
-                  <th className="py-2 pr-3 font-medium">Most stock value</th>
-                  <th className="py-2 pr-3 text-right font-medium">Units</th>
-                  <th className="py-2 text-right font-medium">Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {stock.products.map((p) => (
-                  <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
-                    <td className="max-w-[12rem] truncate py-2 pr-3">
-                      <Link href={`/dashboard/inventory/${p.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
-                        {p.name}
-                      </Link>
-                    </td>
-                    <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
-                    <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(p.value, { cents: false })}</td>
+            <div className="overflow-x-auto">
+              <table className="mt-4 w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06] text-left text-slate-500 light:border-slate-200">
+                    <th className="py-2 pr-3 font-medium">Most stock value</th>
+                    <th className="py-2 pr-3 text-right font-medium">Units</th>
+                    <th className="py-2 text-right font-medium">Value</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {stock.products.map((p) => (
+                    <tr key={p.id} className="border-b border-white/[0.04] last:border-0">
+                      <td className="max-w-[12rem] truncate py-2 pr-3">
+                        <Link href={`/dashboard/inventory/${p.id}`} className="text-slate-50 hover:text-blue-400 light:text-slate-900">
+                          {p.name}
+                        </Link>
+                      </td>
+                      <td className="py-2 pr-3 text-right tabular-nums text-slate-300 light:text-slate-600">{p.units}</td>
+                      <td className="py-2 text-right tabular-nums text-slate-300 light:text-slate-600">{formatCurrency(p.value, { cents: false })}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
@@ -515,30 +519,32 @@ export default async function ReportsPage() {
         {recentAiActions.length === 0 ? (
           <p className="text-sm text-slate-500">No actions have been proposed by the AI assistant yet.</p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="py-2 font-medium">Action</th>
-                <th className="py-2 font-medium">Requested by</th>
-                <th className="py-2 font-medium">Status</th>
-                <th className="py-2 font-medium">When</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentAiActions.map((action) => (
-                <tr key={action.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="py-2 text-slate-50 light:text-slate-900">{action.summary}</td>
-                  <td className="py-2 text-slate-400 light:text-slate-500">{action.requestedBy.name}</td>
-                  <td className="py-2">
-                    <StatusBadge status={action.status} tone={AI_ACTION_TONE[action.status]} />
-                  </td>
-                  <td className="py-2 text-xs tabular-nums text-slate-500">
-                    {format(action.createdAt, "MMM d, HH:mm")}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 font-medium">Requested by</th>
+                  <th className="py-2 font-medium">Status</th>
+                  <th className="py-2 font-medium">When</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentAiActions.map((action) => (
+                  <tr key={action.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="py-2 text-slate-50 light:text-slate-900">{action.summary}</td>
+                    <td className="py-2 text-slate-400 light:text-slate-500">{action.requestedBy.name}</td>
+                    <td className="py-2">
+                      <StatusBadge status={action.status} tone={AI_ACTION_TONE[action.status]} />
+                    </td>
+                    <td className="py-2 text-xs tabular-nums text-slate-500">
+                      {format(action.createdAt, "MMM d, HH:mm")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -549,36 +555,38 @@ export default async function ReportsPage() {
             No sensitive changes (payroll, employee, or invoice status) have been recorded yet.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="py-2 font-medium">Action</th>
-                <th className="py-2 font-medium">By</th>
-                <th className="py-2 font-medium">Details</th>
-                <th className="py-2 font-medium">When</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recentAuditLogs.map((log) => (
-                <tr key={log.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="py-2 text-slate-50 light:text-slate-900">
-                    {auditHref(log.entityType, log.entityId) ? (
-                      <Link href={auditHref(log.entityType, log.entityId)!} className="hover:text-blue-400">
-                        {formatAuditAction(log.action)}
-                      </Link>
-                    ) : (
-                      formatAuditAction(log.action)
-                    )}
-                  </td>
-                  <td className="py-2 text-slate-400 light:text-slate-500">{log.user.name}</td>
-                  <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditDetails(log.metadata, branchNames) ?? "Not set"}</td>
-                  <td className="py-2 text-xs tabular-nums text-slate-500">
-                    {format(log.createdAt, "MMM d, HH:mm")}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="py-2 font-medium">Action</th>
+                  <th className="py-2 font-medium">By</th>
+                  <th className="py-2 font-medium">Details</th>
+                  <th className="py-2 font-medium">When</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {recentAuditLogs.map((log) => (
+                  <tr key={log.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="py-2 text-slate-50 light:text-slate-900">
+                      {auditHref(log.entityType, log.entityId) ? (
+                        <Link href={auditHref(log.entityType, log.entityId)!} className="hover:text-blue-400">
+                          {formatAuditAction(log.action)}
+                        </Link>
+                      ) : (
+                        formatAuditAction(log.action)
+                      )}
+                    </td>
+                    <td className="py-2 text-slate-400 light:text-slate-500">{log.user.name}</td>
+                    <td className="py-2 text-slate-400 light:text-slate-500">{formatAuditDetails(log.metadata, branchNames) ?? "Not set"}</td>
+                    <td className="py-2 text-xs tabular-nums text-slate-500">
+                      {format(log.createdAt, "MMM d, HH:mm")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

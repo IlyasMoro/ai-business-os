@@ -48,7 +48,7 @@ export default async function BranchesPage({
         </div>
 
         {/* Wide screens: the new branch form in a narrow column beside the list. */}
-        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] [&>*]:min-w-0">
           <div className="space-y-3">
             {branches.map((b) => {
               const records = b._count.orders + b._count.invoices + b._count.purchaseOrders;

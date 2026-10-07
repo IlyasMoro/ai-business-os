@@ -140,32 +140,34 @@ export default async function CostCenterPage({
           {own.length === 0 ? (
             <p className="p-6 text-sm text-slate-500">No costs in this fiscal year yet. Assign expenses to this cost center in Accounting, or employees in HR.</p>
           ) : (
-            <table className="mt-2 w-full text-sm">
-              <tbody>
-                {own.map((l, i) => (
-                  <tr key={i} className="border-t border-white/[0.04] light:border-slate-100">
-                    <td className="px-5 py-2 text-slate-400">{formatDate(l.date)}</td>
-                    <td className="px-5 py-2">
-                      <Badge tone={l.source === "EXPENSE" ? "slate" : l.source === "PAYROLL" ? "purple" : "blue"}>{SOURCE_LABEL[l.source]}</Badge>
-                    </td>
-                    <td className="px-5 py-2 text-slate-300 light:text-slate-600">
-                      {l.href ? (
-                        <Link href={l.href} className="hover:text-blue-400">
-                          {l.label}
-                        </Link>
-                      ) : (
-                        l.label
-                      )}
-                    </td>
-                    <td className={`px-5 py-2 text-right tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="overflow-x-auto">
+              <table className="mt-2 w-full text-sm">
+                <tbody>
+                  {own.map((l, i) => (
+                    <tr key={i} className="border-t border-white/[0.04] light:border-slate-100">
+                      <td className="px-5 py-2 text-slate-400">{formatDate(l.date)}</td>
+                      <td className="px-5 py-2">
+                        <Badge tone={l.source === "EXPENSE" ? "slate" : l.source === "PAYROLL" ? "purple" : "blue"}>{SOURCE_LABEL[l.source]}</Badge>
+                      </td>
+                      <td className="px-5 py-2 text-slate-300 light:text-slate-600">
+                        {l.href ? (
+                          <Link href={l.href} className="hover:text-blue-400">
+                            {l.label}
+                          </Link>
+                        ) : (
+                          l.label
+                        )}
+                      </td>
+                      <td className={`px-5 py-2 text-right tabular-nums ${l.amount < 0 ? "text-emerald-400" : "text-slate-300 light:text-slate-600"}`}>{money(l.amount)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        <div className="mt-6 grid gap-6 lg:grid-cols-2 [&>*]:min-w-0">
           <form action={updateCostCenter.bind(null, cc.id)} className={`${card} space-y-4 p-5`}>
             <p className="font-semibold text-slate-50 light:text-slate-900">Details</p>
             <div>

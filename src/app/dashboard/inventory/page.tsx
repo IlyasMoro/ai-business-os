@@ -189,45 +189,47 @@ export default async function InventoryPage({
             action={q ? { href: "/dashboard/inventory", label: "Clear search", variant: "secondary" } : { href: "/dashboard/inventory/new", label: "New product" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">SKU</th>
-                <th className="px-5 py-3 font-medium">Name</th>
-                <th className="px-5 py-3 font-medium">Unit price</th>
-                <th className="px-5 py-3 font-medium">{viewBranch ? `Stock at ${viewBranch.name}` : "Stock"}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3 font-mono text-xs text-slate-400 light:text-slate-500">{product.sku}</td>
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/inventory/${product.id}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {product.name}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {/* Exact price, per kg or litre for weighed products. */}
-                    {formatCurrency(product.unitPrice)}
-                    {product.unit !== "EACH" && <span className="text-slate-500"> / {product.unit === "KG" ? "kg" : "L"}</span>}
-                  </td>
-                  <td className="px-5 py-3">
-                    {product.low ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-xs tabular-nums text-red-400 light:text-red-700">
-                        {formatQty(product.qty, product.unit)} low
-                      </span>
-                    ) : (
-                      <span className="tabular-nums text-slate-300 light:text-slate-600">{formatQty(product.qty, product.unit)}</span>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">SKU</th>
+                  <th className="px-5 py-3 font-medium">Name</th>
+                  <th className="px-5 py-3 font-medium">Unit price</th>
+                  <th className="px-5 py-3 font-medium">{viewBranch ? `Stock at ${viewBranch.name}` : "Stock"}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3 font-mono text-xs text-slate-400 light:text-slate-500">{product.sku}</td>
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/inventory/${product.id}`}
+                        className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {product.name}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
+                      {/* Exact price, per kg or litre for weighed products. */}
+                      {formatCurrency(product.unitPrice)}
+                      {product.unit !== "EACH" && <span className="text-slate-500"> / {product.unit === "KG" ? "kg" : "L"}</span>}
+                    </td>
+                    <td className="px-5 py-3">
+                      {product.low ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-xs tabular-nums text-red-400 light:text-red-700">
+                          {formatQty(product.qty, product.unit)} low
+                        </span>
+                      ) : (
+                        <span className="tabular-nums text-slate-300 light:text-slate-600">{formatQty(product.qty, product.unit)}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

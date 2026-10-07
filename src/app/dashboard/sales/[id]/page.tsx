@@ -144,7 +144,7 @@ export default async function OrderDetailPage({
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {order.status !== "CANCELLED" && order.items.length > 0 && (
               <form action={sendOrderConfirmation.bind(null, order.id)}>
                 <SubmitButton variant="secondary" pendingText="Sending...">

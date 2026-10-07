@@ -88,7 +88,7 @@ export default async function TransactionDetailPage({
               )}
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <LinkButton
               href={`/dashboard/accounting/${transaction.id}/edit`}
               variant="secondary"

@@ -71,7 +71,7 @@ export default async function RulesPage({ searchParams }: { searchParams: Promis
         <div className="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-4 py-2 text-sm text-emerald-300 light:text-emerald-700">Rule saved.</div>
       )}
 
-      <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] [&>*]:min-w-0">
         <div className="space-y-3">
           {rules.length === 0 && (
             <div className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80">

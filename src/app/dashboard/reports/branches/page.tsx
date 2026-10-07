@@ -152,68 +152,70 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
                 ))}
               </div>
             </div>
-            <table className="mt-3 w-full min-w-[56rem] text-sm">
-              <thead>
-                <tr className="border-b border-white/[0.06] text-left text-xs text-slate-400 light:border-slate-200 light:text-slate-500">
-                  <th className="px-5 py-2.5 font-medium">#</th>
-                  <th className="px-3 py-2.5 font-medium">Branch</th>
-                  <th className="px-3 py-2.5 font-medium">Score</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Revenue</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Growth</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Margin</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Avg order</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Per person</th>
-                  <th className="px-3 py-2.5 text-right font-medium">Overdue</th>
-                  <th className="px-5 py-2.5 text-right font-medium">Expiring</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.map((b, i) => (
-                  <tr key={b.id} className="border-b border-white/[0.04] last:border-0 light:border-slate-100">
-                    <td className="px-5 py-3 tabular-nums text-slate-400 light:text-slate-500">{i + 1}</td>
-                    <td className="px-3 py-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-medium text-slate-50 light:text-slate-900">{b.name}</span>
-                        <Badge tone={STATUS[b.status].tone}>{STATUS[b.status].label}</Badge>
-                      </div>
-                      {b.flags.length > 0 && <p className="mt-1 text-xs text-amber-300 light:text-amber-700">{b.flags.join(" · ")}</p>}
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.07] light:bg-slate-200">
-                          <span className="block h-full rounded-full" style={{ width: `${b.score}%`, backgroundColor: colorOf.get(b.id) }} />
-                        </span>
-                        <span className="tabular-nums text-slate-300 light:text-slate-600">{b.score}</span>
-                      </div>
-                    </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-50 light:text-slate-900">{money(b.revenue)}</td>
-                    <td className="px-3 py-3 text-right tabular-nums">
-                      {b.growthPct === null ? (
-                        <span className="text-slate-500">New</span>
-                      ) : (
-                        <span className={cn("inline-flex items-center gap-0.5", b.growthPct >= 0 ? "text-emerald-400 light:text-emerald-700" : "text-red-400 light:text-red-700")}>
-                          {b.growthPct >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                          {Math.abs(b.growthPct).toFixed(0)}%
-                        </span>
-                      )}
-                    </td>
-                    <td className={cn("px-3 py-3 text-right tabular-nums", b.net < 0 ? "text-red-400 light:text-red-700" : "text-slate-300 light:text-slate-700")}>
-                      {b.marginPct === null ? "No sales" : `${b.marginPct.toFixed(0)}%`}
-                    </td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-300 light:text-slate-700">{b.avgOrder === null ? "No orders" : money(b.avgOrder)}</td>
-                    <td className="px-3 py-3 text-right tabular-nums text-slate-300 light:text-slate-700">
-                      {b.revenuePerEmployee === null ? "No staff" : money(b.revenuePerEmployee)}
-                    </td>
-                    <td className={cn("px-3 py-3 text-right tabular-nums", b.overdue > 0 ? "text-amber-300 light:text-amber-700" : "text-slate-500")}>
-                      {b.overdue > 0 ? money(b.overdue) : "None"}
-                    </td>
-                    <td className={cn("px-5 py-3 text-right tabular-nums", b.expiring > 0 ? "text-amber-300 light:text-amber-700" : "text-slate-500")}>
-                      {b.expiring > 0 ? money(b.expiring) : "None"}
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="mt-3 w-full min-w-[56rem] text-sm">
+                <thead>
+                  <tr className="border-b border-white/[0.06] text-left text-xs text-slate-400 light:border-slate-200 light:text-slate-500">
+                    <th className="px-5 py-2.5 font-medium">#</th>
+                    <th className="px-3 py-2.5 font-medium">Branch</th>
+                    <th className="px-3 py-2.5 font-medium">Score</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Revenue</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Growth</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Margin</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Avg order</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Per person</th>
+                    <th className="px-3 py-2.5 text-right font-medium">Overdue</th>
+                    <th className="px-5 py-2.5 text-right font-medium">Expiring</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {sorted.map((b, i) => (
+                    <tr key={b.id} className="border-b border-white/[0.04] last:border-0 light:border-slate-100">
+                      <td className="px-5 py-3 tabular-nums text-slate-400 light:text-slate-500">{i + 1}</td>
+                      <td className="px-3 py-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-medium text-slate-50 light:text-slate-900">{b.name}</span>
+                          <Badge tone={STATUS[b.status].tone}>{STATUS[b.status].label}</Badge>
+                        </div>
+                        {b.flags.length > 0 && <p className="mt-1 text-xs text-amber-300 light:text-amber-700">{b.flags.join(" · ")}</p>}
+                      </td>
+                      <td className="px-3 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="h-1.5 w-20 overflow-hidden rounded-full bg-white/[0.07] light:bg-slate-200">
+                            <span className="block h-full rounded-full" style={{ width: `${b.score}%`, backgroundColor: colorOf.get(b.id) }} />
+                          </span>
+                          <span className="tabular-nums text-slate-300 light:text-slate-600">{b.score}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums text-slate-50 light:text-slate-900">{money(b.revenue)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums">
+                        {b.growthPct === null ? (
+                          <span className="text-slate-500">New</span>
+                        ) : (
+                          <span className={cn("inline-flex items-center gap-0.5", b.growthPct >= 0 ? "text-emerald-400 light:text-emerald-700" : "text-red-400 light:text-red-700")}>
+                            {b.growthPct >= 0 ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                            {Math.abs(b.growthPct).toFixed(0)}%
+                          </span>
+                        )}
+                      </td>
+                      <td className={cn("px-3 py-3 text-right tabular-nums", b.net < 0 ? "text-red-400 light:text-red-700" : "text-slate-300 light:text-slate-700")}>
+                        {b.marginPct === null ? "No sales" : `${b.marginPct.toFixed(0)}%`}
+                      </td>
+                      <td className="px-3 py-3 text-right tabular-nums text-slate-300 light:text-slate-700">{b.avgOrder === null ? "No orders" : money(b.avgOrder)}</td>
+                      <td className="px-3 py-3 text-right tabular-nums text-slate-300 light:text-slate-700">
+                        {b.revenuePerEmployee === null ? "No staff" : money(b.revenuePerEmployee)}
+                      </td>
+                      <td className={cn("px-3 py-3 text-right tabular-nums", b.overdue > 0 ? "text-amber-300 light:text-amber-700" : "text-slate-500")}>
+                        {b.overdue > 0 ? money(b.overdue) : "None"}
+                      </td>
+                      <td className={cn("px-5 py-3 text-right tabular-nums", b.expiring > 0 ? "text-amber-300 light:text-amber-700" : "text-slate-500")}>
+                        {b.expiring > 0 ? money(b.expiring) : "None"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <p className="px-5 pb-4 pt-2 text-xs text-slate-500">
               Score out of 100, against the other branches: margin 35%, growth 30%, size 15%, and 20% for running clean (little overdue money, expiring stock
               or empty shelves). Expiring means within {EXPIRING_DAYS} days.
@@ -236,7 +238,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
             ))}
           </div>
 
-          <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-5">
+          <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-5 [&>*]:min-w-0">
           <section className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80 xl:col-span-2">
             <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Who is ahead</h2>
             <p className="mb-4 mt-1 text-xs text-slate-400 light:text-slate-500">Revenue in the last {PERIOD_DAYS} days, biggest first.</p>

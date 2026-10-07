@@ -65,7 +65,7 @@ export default async function EdiPartnersPage({
         </div>
 
         {/* Wide screens: the add form in a narrow column beside the partners. */}
-        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <div className="mt-4 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] [&>*]:min-w-0">
           <div className="space-y-4">
             {partners.length === 0 && <p className={`${card} text-sm text-slate-500`}>No trading partners yet. Add the first one with the form.</p>}
             {partners.map((p) => (

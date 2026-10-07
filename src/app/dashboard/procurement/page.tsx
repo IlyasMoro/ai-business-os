@@ -163,7 +163,7 @@ export default async function ProcurementPage({
         <KpiCard label="Received" value={statusMap.get("RECEIVED") ?? 0} icon={PackageCheck} color={VIZ.emerald} hint="Delivered into stock" />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total PO value</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
@@ -205,42 +205,44 @@ export default async function ProcurementPage({
             action={q ? { href: "/dashboard/procurement", label: "Clear search", variant: "secondary" } : { href: "/dashboard/procurement/new", label: "New purchase order" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Order</th>
-                <th className="px-5 py-3 font-medium">Supplier</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Total</th>
-                <th className="px-5 py-3 font-medium">Created</th>
-              </tr>
-            </thead>
-            <tbody>
-              {purchaseOrders.map((po) => (
-                <tr key={po.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/procurement/${po.id}`}
-                      className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {po.poNumber}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-300 light:text-slate-600">{po.supplier.name}</td>
-                  <td className="px-5 py-3">
-                    <span className="inline-flex flex-wrap items-center gap-1.5">
-                      <StatusBadge status={po.status} color={statusColor[po.status]} />
-                      {po.autoCreated && po.status === "DRAFT" && <Badge tone="yellow">Needs approval</Badge>}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCurrency(po.totalAmount)}
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(po.createdAt)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Order</th>
+                  <th className="px-5 py-3 font-medium">Supplier</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Total</th>
+                  <th className="px-5 py-3 font-medium">Created</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {purchaseOrders.map((po) => (
+                  <tr key={po.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/procurement/${po.id}`}
+                        className="font-mono font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {po.poNumber}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-300 light:text-slate-600">{po.supplier.name}</td>
+                    <td className="px-5 py-3">
+                      <span className="inline-flex flex-wrap items-center gap-1.5">
+                        <StatusBadge status={po.status} color={statusColor[po.status]} />
+                        {po.autoCreated && po.status === "DRAFT" && <Badge tone="yellow">Needs approval</Badge>}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
+                      {formatCurrency(po.totalAmount)}
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDate(po.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

@@ -78,7 +78,7 @@ export default async function PayrollPage({
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
       <ErrorBanner code={error} />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-slate-50 light:text-slate-900">Payroll runs</h1>
           <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
@@ -123,7 +123,7 @@ export default async function PayrollPage({
         <KpiCard label="Paid in total" value={totalPaid} prefix={CURRENCY_PREFIX} icon={CheckCircle2} color={VIZ.blue} hint={`${statusMap.get("PAID") ?? 0} runs paid`} />
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
         <div className="flex flex-col rounded-2xl border border-white/[0.09] light:border-white/80 p-5 lg:col-span-1 glass">
           <p className="text-sm text-slate-400 light:text-slate-500">Total paid</p>
           <p className="mt-2 text-2xl font-semibold tabular-nums text-slate-50 light:text-slate-900">
@@ -165,35 +165,37 @@ export default async function PayrollPage({
             action={{ href: "/dashboard/payroll/new", label: "New payroll run" }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Period</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {payrollRuns.map((run) => (
-                <tr key={run.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Link
-                      href={`/dashboard/payroll/${run.id}`}
-                      className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
-                    >
-                      {formatDate(run.periodStart)} to {formatDate(run.periodEnd)}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={run.status} color={statusColor[run.status]} />
-                  </td>
-                  <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
-                    {formatCurrency(run.totalAmount)}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Period</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {payrollRuns.map((run) => (
+                  <tr key={run.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Link
+                        href={`/dashboard/payroll/${run.id}`}
+                        className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400"
+                      >
+                        {formatDate(run.periodStart)} to {formatDate(run.periodEnd)}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={run.status} color={statusColor[run.status]} />
+                    </td>
+                    <td className="px-5 py-3 tabular-nums text-slate-300 light:text-slate-600">
+                      {formatCurrency(run.totalAmount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (

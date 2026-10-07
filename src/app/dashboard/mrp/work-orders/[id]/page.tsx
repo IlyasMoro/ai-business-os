@@ -131,36 +131,38 @@ export default async function WorkOrderDetailPage({
             {requirements.length === 0 ? (
               <p className="text-sm text-slate-500">This product has no bill of materials anymore.</p>
             ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-left text-slate-500">
-                    <th className="py-2 font-medium">Component</th>
-                    <th className="py-2 text-right font-medium">Per unit</th>
-                    <th className="py-2 text-right font-medium">Needed</th>
-                    <th className="py-2 text-right font-medium">In stock</th>
-                    {isOpen && <th className="py-2 text-right font-medium">Short</th>}
-                  </tr>
-                </thead>
-                <tbody className="tabular-nums">
-                  {requirements.map((r) => (
-                    <tr key={r.componentId} className="border-t border-white/[0.04] light:border-slate-100">
-                      <td className="py-2 font-sans">
-                        <Link href={`/dashboard/inventory/${r.line.component.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
-                          {r.line.component.name}
-                        </Link>
-                      </td>
-                      <td className="py-2 text-right text-slate-400">{r.line.quantity}</td>
-                      <td className="py-2 text-right text-slate-300 light:text-slate-600">{r.required}</td>
-                      <td className="py-2 text-right text-slate-300 light:text-slate-600">{formatQty(r.line.component.stockQty, r.line.component.unit)}</td>
-                      {isOpen && (
-                        <td className={`py-2 text-right font-semibold ${r.short > 0 ? "text-red-400" : "text-slate-600"}`}>
-                          {r.short}
-                        </td>
-                      )}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-slate-500">
+                      <th className="py-2 font-medium">Component</th>
+                      <th className="py-2 text-right font-medium">Per unit</th>
+                      <th className="py-2 text-right font-medium">Needed</th>
+                      <th className="py-2 text-right font-medium">In stock</th>
+                      {isOpen && <th className="py-2 text-right font-medium">Short</th>}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="tabular-nums">
+                    {requirements.map((r) => (
+                      <tr key={r.componentId} className="border-t border-white/[0.04] light:border-slate-100">
+                        <td className="py-2 font-sans">
+                          <Link href={`/dashboard/inventory/${r.line.component.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
+                            {r.line.component.name}
+                          </Link>
+                        </td>
+                        <td className="py-2 text-right text-slate-400">{r.line.quantity}</td>
+                        <td className="py-2 text-right text-slate-300 light:text-slate-600">{r.required}</td>
+                        <td className="py-2 text-right text-slate-300 light:text-slate-600">{formatQty(r.line.component.stockQty, r.line.component.unit)}</td>
+                        {isOpen && (
+                          <td className={`py-2 text-right font-semibold ${r.short > 0 ? "text-red-400" : "text-slate-600"}`}>
+                            {r.short}
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
             <p className="mt-4 text-right text-sm tabular-nums text-slate-400 light:text-slate-500">
               Material cost: <span className="font-semibold text-amber-400 light:text-amber-800">{formatCurrency(materialCost)}</span>

@@ -110,41 +110,43 @@ export default async function EdiPage({
             fulfilled sales order.
           </p>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
-                <th className="px-5 py-3 font-medium">Direction</th>
-                <th className="px-5 py-3 font-medium">Document</th>
-                <th className="px-5 py-3 font-medium">Partner</th>
-                <th className="px-5 py-3 font-medium">Reference</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium">When</th>
-              </tr>
-            </thead>
-            <tbody>
-              {docs.map((doc) => (
-                <tr key={doc.id} className="border-b border-white/[0.04] last:border-0">
-                  <td className="px-5 py-3">
-                    <Badge tone={doc.direction === "INBOUND" ? "purple" : "slate"}>
-                      {doc.direction === "INBOUND" ? "In" : "Out"}
-                    </Badge>
-                  </td>
-                  <td className="px-5 py-3">
-                    <Link href={`/dashboard/edi/${doc.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
-                      <span className="font-mono">{doc.docType === "unknown" ? "?" : doc.docType}</span>{" "}
-                      {DOC_TYPE_LABEL[doc.docType] ?? doc.docType}
-                    </Link>
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{doc.partner?.name ?? "Unknown"}</td>
-                  <td className="px-5 py-3 font-mono text-slate-400 light:text-slate-500">{doc.reference ?? ""}</td>
-                  <td className="px-5 py-3">
-                    <StatusBadge status={doc.status} tone={statusTone[doc.status]} />
-                  </td>
-                  <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDateTime(doc.createdAt)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/[0.06] light:border-slate-200 text-left text-slate-500">
+                  <th className="px-5 py-3 font-medium">Direction</th>
+                  <th className="px-5 py-3 font-medium">Document</th>
+                  <th className="px-5 py-3 font-medium">Partner</th>
+                  <th className="px-5 py-3 font-medium">Reference</th>
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium">When</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {docs.map((doc) => (
+                  <tr key={doc.id} className="border-b border-white/[0.04] last:border-0">
+                    <td className="px-5 py-3">
+                      <Badge tone={doc.direction === "INBOUND" ? "purple" : "slate"}>
+                        {doc.direction === "INBOUND" ? "In" : "Out"}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-3">
+                      <Link href={`/dashboard/edi/${doc.id}`} className="font-semibold text-slate-50 light:text-slate-900 hover:text-blue-400">
+                        <span className="font-mono">{doc.docType === "unknown" ? "?" : doc.docType}</span>{" "}
+                        {DOC_TYPE_LABEL[doc.docType] ?? doc.docType}
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{doc.partner?.name ?? "Unknown"}</td>
+                    <td className="px-5 py-3 font-mono text-slate-400 light:text-slate-500">{doc.reference ?? ""}</td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={doc.status} tone={statusTone[doc.status]} />
+                    </td>
+                    <td className="px-5 py-3 text-slate-400 light:text-slate-500">{formatDateTime(doc.createdAt)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {totalPages > 1 && (
