@@ -28,7 +28,7 @@ export function Sidebar({
           <Logo />
         </Link>
       </div>
-      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} />
+      <NavLinks role={role} isPlatformAdmin={isPlatformAdmin} hiddenHrefs={hiddenHrefs} lockedHrefs={lockedHrefs} flyout />
       <div className="border-t border-white/[0.06] p-3 light:border-slate-200">
         <UserMenu userName={userName} email={email} role={role} companyName={companyName} />
       </div>

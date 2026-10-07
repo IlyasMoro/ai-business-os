@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, type MouseEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_MIN_PLAN, planById, type PlanFeature } from "@/lib/plans";
-import { navGroups, navItems, navPinned, type NavItem, type Role } from "./nav-config";
+import { navItems, navPinned, visibleNav, type NavGroup, type Role } from "./nav-config";
 
 // One focus outline for every menu control, drawn inside so the scrolling
 // menu never clips it.
@@ -59,6 +59,7 @@ export function NavLinks({
   hiddenHrefs = [],
   lockedHrefs = [],
   onNavigate,
+  flyout = false,
 }: {
   role: Role;
   isPlatformAdmin?: boolean;
@@ -67,6 +68,9 @@ export function NavLinks({
   /** Modules the company's plan doesn't include; they open an upgrade page. */
   lockedHrefs?: string[];
   onNavigate?: () => void;
+  /** Desktop sidebar: hovering a closed group shows its pages beside the
+   * menu, so a page is one move away. Off in the phone menu (no hover). */
+  flyout?: boolean;
 }) {
   const pathname = usePathname();
 
@@ -81,17 +85,7 @@ export function NavLinks({
   }
   const currentPath = pendingHref ?? pathname;
 
-  const visible = (item: NavItem) => {
-    if (hiddenHrefs.includes(item.href)) return false;
-    if (item.platformAdminOnly) return isPlatformAdmin;
-    return !item.roles || item.roles.includes(role);
-  };
-
-  const groups = navGroups
-    .map((group) => ({ ...group, items: group.items.filter(visible) }))
-    .filter((group) => group.items.length > 0);
-
-  const pinned = navPinned.filter(visible);
+  const { pinned, groups } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
   const activeGroup = groups.find((g) => g.items.some((i) => isActive(i.href, currentPath)))?.label;
 
   // One group open at a time. Until the visitor picks one, the group of the
@@ -107,11 +101,69 @@ export function NavLinks({
 
   const linkClick = (href: string) => (e: MouseEvent) => {
     if (isPlainClick(e) && !isActive(href, pathname)) setPendingHref(href);
+    setFly(null);
     onNavigate?.();
   };
 
+  // ---- Hover flyout ----
+  // A short delay before opening so the menu doesn't flash while the mouse
+  // passes by, and a grace period before closing so it can travel into the
+  // panel. Only on devices that really hover (mouse or trackpad).
+  const [fly, setFly] = useState<{ label: string; top: number; left: number } | null>(null);
+  const openTimer = useRef<number | undefined>(undefined);
+  const closeTimer = useRef<number | undefined>(undefined);
+  const [canHover, setCanHover] = useState(false);
+  useEffect(() => {
+    const media = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const update = () => setCanHover(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  useEffect(() => {
+    if (!fly) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFly(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [fly]);
+  useEffect(
+    () => () => {
+      window.clearTimeout(openTimer.current);
+      window.clearTimeout(closeTimer.current);
+    },
+    []
+  );
+  const hoverable = flyout && canHover;
+  const enterHeading = (label: string, el: HTMLElement) => {
+    if (!hoverable) return;
+    window.clearTimeout(closeTimer.current);
+    window.clearTimeout(openTimer.current);
+    // The open group already shows its pages in the menu.
+    if (openGroup === label) {
+      setFly(null);
+      return;
+    }
+    openTimer.current = window.setTimeout(
+      () => {
+        // Just outside the sidebar's edge, level with the heading.
+        const r = el.getBoundingClientRect();
+        const edge = el.closest("aside")?.getBoundingClientRect().right ?? r.right;
+        setFly({ label, top: r.top, left: edge + 8 });
+      },
+      fly ? 60 : 160
+    );
+  };
+  const leave = () => {
+    window.clearTimeout(openTimer.current);
+    closeTimer.current = window.setTimeout(() => setFly(null), 220);
+  };
+  const stay = () => window.clearTimeout(closeTimer.current);
+  const flyGroup = fly ? groups.find((g) => g.label === fly.label) : undefined;
+
   return (
-    <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 antialiased">
+    <nav className="min-h-0 flex-1 space-y-0.5 overflow-y-auto px-3 pb-3 antialiased" onScroll={() => setFly(null)}>
       {/* The everyday pages, always one click away. */}
       {pinned.map((item) => {
         const active = isActive(item.href, currentPath);
@@ -159,7 +211,12 @@ export function NavLinks({
                 turns down when open. */}
             <button
               type="button"
-              onClick={() => toggle(group.label)}
+              onClick={() => {
+                setFly(null);
+                toggle(group.label);
+              }}
+              onMouseEnter={(e) => enterHeading(group.label, e.currentTarget)}
+              onMouseLeave={leave}
               aria-expanded={open}
               aria-controls={panelId}
               className={cn(
@@ -243,6 +300,107 @@ export function NavLinks({
           </div>
         );
       })}
+
+      {flyGroup && fly && (
+        <Flyout
+          group={flyGroup}
+          top={fly.top}
+          left={fly.left}
+          currentPath={currentPath}
+          lockedHrefs={lockedHrefs}
+          onEnter={stay}
+          onLeave={leave}
+          onPick={linkClick}
+        />
+      )}
     </nav>
+  );
+}
+
+/** The pages of a hovered group, floating beside the menu: icon, name and a
+ * one line description each. Fixed position, so the scrolling menu never
+ * clips it; nudged up when it would run off the bottom of the screen. */
+function Flyout({
+  group,
+  top,
+  left,
+  currentPath,
+  lockedHrefs,
+  onEnter,
+  onLeave,
+  onPick,
+}: {
+  group: NavGroup;
+  top: number;
+  left: number;
+  currentPath: string;
+  lockedHrefs: string[];
+  onEnter: () => void;
+  onLeave: () => void;
+  onPick: (href: string) => (e: MouseEvent) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [y, setY] = useState(top);
+  useLayoutEffect(() => {
+    const h = ref.current?.offsetHeight ?? 0;
+    setY(Math.max(8, Math.min(top - 8, window.innerHeight - h - 12)));
+  }, [top, group.label]);
+
+  return (
+    <div
+      ref={ref}
+      role="menu"
+      aria-label={group.label}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      className="glass-strong fixed z-50 w-80 rounded-xl border border-white/10 p-2 shadow-2xl light:border-slate-200 light:bg-white"
+      style={{ top: y, left }}
+    >
+      <p className="flex items-center gap-2 px-2.5 pb-1.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400 light:text-slate-500">
+        <group.icon className="h-3.5 w-3.5" />
+        {group.label}
+      </p>
+      {group.items.map((item) => {
+        const active = isActive(item.href, currentPath);
+        const locked = lockedHrefs.includes(item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            role="menuitem"
+            onClick={onPick(item.href)}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "group/fly flex items-start gap-3 rounded-lg px-2.5 py-2 transition-colors",
+              FOCUS,
+              active ? "bg-blue-500/15 light:bg-blue-500/10" : "hover:bg-white/[0.06] light:hover:bg-slate-900/5"
+            )}
+          >
+            <span
+              className={cn(
+                "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border",
+                active
+                  ? "border-blue-400/30 bg-blue-500/15 text-blue-300 light:text-blue-700"
+                  : "border-white/[0.08] bg-white/[0.04] text-slate-300 group-hover/fly:text-white light:border-slate-200 light:bg-slate-50 light:text-slate-600"
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="flex items-center gap-2 text-sm font-medium text-slate-100 light:text-slate-900">
+                {item.label}
+                {locked && (
+                  <span className="inline-flex items-center gap-1 rounded border border-white/10 px-1.5 py-px text-[11px] font-medium text-slate-400 light:border-slate-300 light:text-slate-500">
+                    <Lock aria-hidden className="h-2.5 w-2.5" />
+                    {lockedPlanName(item.href)}
+                  </span>
+                )}
+              </span>
+              {item.description && <span className="mt-0.5 block text-xs leading-4 text-slate-400 light:text-slate-500">{item.description}</span>}
+            </span>
+          </Link>
+        );
+      })}
+    </div>
   );
 }
