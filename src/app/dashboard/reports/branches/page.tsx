@@ -247,7 +247,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
           <section className="rounded-2xl border border-white/[0.09] p-6 glass light:border-white/80 xl:col-span-3">
             <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Revenue by branch, month by month</h2>
             <p className="mb-4 mt-1 text-xs text-slate-400 light:text-slate-500">
-              Last {months.length} months. The percentage on each bar is that branch's share of the month's revenue; hover a month for the amounts.
+              Last {months.length} months. The percentage on each bar is that branch&apos;s share of the month&apos;s revenue; hover a month for the amounts.
             </p>
             <BranchBarChart
               months={months}
