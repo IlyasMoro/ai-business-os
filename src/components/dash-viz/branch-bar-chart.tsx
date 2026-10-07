@@ -5,7 +5,10 @@ import { compactNumber, fullNumber, niceMax } from "@/lib/chart-math";
 
 export type BranchSeries = { id: string; name: string; color: string; values: number[] };
 
-const PAD = { top: 12, right: 8, bottom: 32, left: 52 };
+// Top padding leaves room for the share labels above the tallest bars.
+const PAD = { top: 22, right: 8, bottom: 32, left: 52 };
+/** Narrowest bar that still fits its "28%" label. */
+const LABEL_MIN_BAR = 19;
 /** Surface gap between neighbouring bars in a month. */
 const GAP = 2;
 
@@ -62,8 +65,8 @@ export function BranchBarChart({
     const innerW = width - PAD.left - PAD.right;
     const innerH = height - PAD.top - PAD.bottom;
     const groupW = innerW / months.length;
-    // Bars fill about 70% of each month, never wider than 28px each.
-    const barW = Math.max(4, Math.min(28, (groupW * 0.7 - GAP * (series.length - 1)) / series.length));
+    // Bars fill about 80% of each month, never wider than 32px each.
+    const barW = Math.max(4, Math.min(32, (groupW * 0.8 - GAP * (series.length - 1)) / series.length));
     const clusterW = barW * series.length + GAP * (series.length - 1);
     const baseline = PAD.top + innerH;
     const y = (v: number) => baseline - (Math.max(0, v) / max) * innerH;
@@ -75,8 +78,10 @@ export function BranchBarChart({
       return [1, 2, 5].some((l) => Math.abs(lead - l) < 1e-9);
     }) ?? 2;
     const ticks = Array.from({ length: parts + 1 }, (_, k) => (max * k) / parts).map((v) => ({ v, y: y(v) }));
-    return { max, innerH, groupW, barW, clusterW, baseline, y, ticks };
-  }, [months.length, series, width, height]);
+    // Each month's total, for every bar's share of it.
+    const totals = months.map((_, i) => series.reduce((sum, s) => sum + (s.values[i] ?? 0), 0));
+    return { max, innerH, groupW, barW, clusterW, baseline, y, ticks, totals };
+  }, [months, series, width, height]);
 
   const empty = series.every((s) => s.values.every((v) => v === 0));
   if (empty) {
@@ -156,14 +161,31 @@ export function BranchBarChart({
                     {series.map((s, si) => {
                       const v = s.values[i] ?? 0;
                       const h = grown ? chart.baseline - chart.y(v) : 0;
-                      return v > 0 ? (
-                        <path
-                          key={s.id}
-                          d={barPath(start + si * (chart.barW + GAP), chart.baseline - h, chart.barW, h)}
-                          fill={s.color}
-                          style={{ transition: `d 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40 + si * 30}ms` }}
-                        />
-                      ) : null;
+                      if (v <= 0) return null;
+                      const x = start + si * (chart.barW + GAP);
+                      // Share of the month's revenue, above every bar when the
+                      // bars are wide enough, else only for the month in focus.
+                      const showLabel = chart.totals[i] > 0 && (chart.barW >= LABEL_MIN_BAR || active === i);
+                      return (
+                        <g key={s.id}>
+                          <path
+                            d={barPath(x, chart.baseline - h, chart.barW, h)}
+                            fill={s.color}
+                            style={{ transition: `d 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40 + si * 30}ms` }}
+                          />
+                          {showLabel && (
+                            <text
+                              x={x + chart.barW / 2}
+                              y={chart.y(v) - 5}
+                              textAnchor="middle"
+                              className="fill-slate-300 text-[10px] font-medium tabular-nums light:fill-slate-600"
+                              style={{ opacity: grown ? 1 : 0, transition: `opacity 0.4s ease ${0.5 + i * 0.04}s` }}
+                            >
+                              {Math.round((v / chart.totals[i]) * 100)}%
+                            </text>
+                          )}
+                        </g>
+                      );
                     })}
                   </g>
                   {/* X axis: the month, marked when it is still running. */}
