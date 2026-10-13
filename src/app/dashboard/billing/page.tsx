@@ -49,7 +49,7 @@ function Meter({
       </div>
       {limit !== null && (
         <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10 light:bg-slate-200">
-          <div className={warn ? "h-full bg-amber-400" : "h-full bg-blue-500"} style={{ width: `${share}%` }} />
+          <div className={warn ? "h-full bg-amber-400" : "h-full bg-cyan-400"} style={{ width: `${share}%` }} />
         </div>
       )}
       {note && <p className="mt-1.5 text-xs text-slate-400 light:text-slate-500">{note}</p>}

@@ -374,7 +374,7 @@ export default async function CrmSettingsPage({
                 )}
                 <p className="text-xs text-slate-500">
                   Manage the connection on the{" "}
-                  <Link href="/dashboard/integrations" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                  <Link href="/dashboard/integrations" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                     Integrations page
                   </Link>
                   .

@@ -294,7 +294,7 @@ function SearchDialog({
                     onClick={() => go(row)}
                     className={cn(
                       "flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2",
-                      on ? "bg-blue-500/15 light:bg-blue-500/10" : "hover:bg-white/[0.04] light:hover:bg-slate-900/[0.03]"
+                      on ? "bg-cyan-400/[0.13] light:bg-cyan-500/10" : "hover:bg-white/[0.04] light:hover:bg-slate-900/[0.03]"
                     )}
                   >
                     {/* The icon in its section's colour, brighter when selected. */}

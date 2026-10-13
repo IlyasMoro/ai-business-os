@@ -80,7 +80,7 @@ export default async function TransactionDetailPage({
                   {" · "}
                   <Link
                     href={`/dashboard/invoicing/${transaction.invoice.id}`}
-                    className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800"
+                    className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900"
                   >
                     Invoice {transaction.invoice.invoiceNumber}
                   </Link>
@@ -137,11 +137,11 @@ export default async function TransactionDetailPage({
               <div>
                 <p className="text-slate-500">Cost object</p>
                 {transaction.internalOrder ? (
-                  <Link href={`/dashboard/controlling/orders/${transaction.internalOrder.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                  <Link href={`/dashboard/controlling/orders/${transaction.internalOrder.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                     {transaction.internalOrder.orderNumber} {transaction.internalOrder.name}
                   </Link>
                 ) : (
-                  <Link href={`/dashboard/controlling/cost-centers/${transaction.costCenter!.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                  <Link href={`/dashboard/controlling/cost-centers/${transaction.costCenter!.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                     {transaction.costCenter!.code} {transaction.costCenter!.name}
                   </Link>
                 )}

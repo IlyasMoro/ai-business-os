@@ -41,8 +41,8 @@ export function FollowUpRow({ followUp, showCustomer = false }: { followUp: List
           type="submit"
           aria-label={done ? `Mark "${followUp.title}" as not done` : `Mark "${followUp.title}" as done`}
           className={cn(
-            "mt-0.5 flex h-5 w-5 items-center justify-center rounded border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-            done ? "border-blue-500 bg-blue-600 text-white" : "border-white/25 hover:border-blue-400 light:border-slate-300"
+            "mt-0.5 flex h-5 w-5 items-center justify-center rounded border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
+            done ? "border-cyan-400 bg-cyan-400 text-[#0a1428]" : "border-white/25 hover:border-cyan-400 light:border-slate-300"
           )}
         >
           {done && <Check aria-hidden className="h-3.5 w-3.5" />}
@@ -60,7 +60,7 @@ export function FollowUpRow({ followUp, showCustomer = false }: { followUp: List
             {showCustomer && followUp.customer && (
               <>
                 {" · "}
-                <Link href={`/dashboard/crm/${followUp.customer.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                <Link href={`/dashboard/crm/${followUp.customer.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                   {followUp.customer.name}
                 </Link>
               </>
@@ -68,7 +68,7 @@ export function FollowUpRow({ followUp, showCustomer = false }: { followUp: List
             {followUp.deal && (
               <>
                 {" · "}
-                <Link href={`/dashboard/crm/deals/${followUp.deal.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                <Link href={`/dashboard/crm/deals/${followUp.deal.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                   {followUp.deal.title}
                 </Link>
               </>

@@ -423,7 +423,7 @@ export default async function ReportsPage() {
         {reportCampaigns.length === 0 ? (
           <p className="text-sm text-slate-500">
             No campaign has recorded spend or leads yet.{" "}
-            <Link href="/dashboard/marketing" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+            <Link href="/dashboard/marketing" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
               Open Marketing
             </Link>
           </p>

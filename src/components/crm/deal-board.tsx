@@ -87,7 +87,7 @@ export function DealBoard({ deals }: { deals: BoardDeal[] }) {
             onDrop={drop(column.id, null)}
             className={cn(
               "flex w-64 shrink-0 flex-col rounded-xl border p-2 transition-colors",
-              overStage === column.id ? "border-blue-500/60 bg-blue-500/[0.06]" : "border-white/[0.08] bg-white/[0.02] light:border-slate-200 light:bg-slate-50"
+              overStage === column.id ? "border-cyan-400/60 bg-cyan-400/[0.06]" : "border-white/[0.08] bg-white/[0.02] light:border-slate-200 light:bg-slate-50"
             )}
           >
             <header className="flex items-baseline justify-between gap-2 px-1.5 pb-2 pt-1">
@@ -122,7 +122,7 @@ export function DealBoard({ deals }: { deals: BoardDeal[] }) {
                   >
                     <Link
                       href={`/dashboard/crm/deals/${deal.id}`}
-                      className="block text-sm font-semibold text-slate-50 hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:text-slate-900"
+                      className="block text-sm font-semibold text-slate-50 hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 light:text-slate-900"
                     >
                       {deal.title}
                     </Link>

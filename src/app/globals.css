@@ -35,8 +35,8 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-jost), sans-serif;
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-figtree), sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -53,10 +53,15 @@ html.light {
 
 body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  /* Inter for everything people read: tables, forms, cards and menus, with
-     tabular-nums lining up figures. Jost is the brand display face for page
-     titles and the AIBOS wordmark (h1 and .font-display below): a loaded web
-     font, so titles look the same on every device. */
+  /* Plus Jakarta Sans for everything people read: tables, forms, cards and
+     menus, with tabular-nums lining up figures. Figtree is the brand display
+     face for page titles and the AIBOS wordmark (h1 and .font-display below).
+     Both match StockPilot and are loaded web fonts, so text looks the same
+     on every device. Smoothing is set for the whole page, not only the app,
+     so the landing and sign in pages render as crisply. */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
@@ -535,7 +540,7 @@ html.light body::after {
 }
 
 /* Dashboard text (not the landing page or the customer facing pages).
-   Regular text gets a touch more weight than Inter's 400, which reads thin
+   Regular text gets a touch more weight than the 400 regular, which reads thin
    at dashboard sizes; nothing becomes bold, since font-medium and up keep
    their own weights. Light text on a dark background looks thinner and
    dimmer than dark text on white, so the dark theme adds a little more

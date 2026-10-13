@@ -88,9 +88,9 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             href={f === "ALL" ? "/dashboard/quotes" : `/dashboard/quotes?status=${f}`}
             aria-current={f === filter ? "page" : undefined}
             className={cn(
-              "rounded-full px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+              "rounded-full px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
               f === filter
-                ? "bg-blue-600 font-medium text-white"
+                ? "bg-cyan-400 font-semibold text-[#0a1428]"
                 : "text-slate-400 hover:bg-white/5 hover:text-slate-100 light:text-slate-600 light:hover:bg-slate-100 light:hover:text-slate-900"
             )}
           >

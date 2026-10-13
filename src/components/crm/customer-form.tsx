@@ -122,7 +122,7 @@ export function CustomerForm({
                 <input type="checkbox" name="tagIds" value={tag.id} defaultChecked={selected.has(tag.id)} className="peer sr-only" />
                 <span
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium opacity-60 transition peer-checked:opacity-100 peer-checked:ring-1 peer-checked:ring-current peer-focus-visible:ring-2 peer-focus-visible:ring-blue-500",
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium opacity-60 transition peer-checked:opacity-100 peer-checked:ring-1 peer-checked:ring-current peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-400",
                     tagColor(tag.color).chip
                   )}
                 >

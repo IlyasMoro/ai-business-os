@@ -18,7 +18,8 @@ import bcrypt from "bcryptjs";
 import { formatOrderNumber } from "../src/lib/order-rules";
 import { formatInvoiceNumber } from "../src/lib/invoice-rules";
 
-const COMPANY_NAME = "Good Hope Demo Butchery";
+// DEMO_COMPANY_NAME fills a different local test company instead.
+const COMPANY_NAME = process.env.DEMO_COMPANY_NAME ?? "Good Hope Demo Butchery";
 const url = process.env.DATABASE_URL ?? "";
 if (!url.includes("127.0.0.1") && !url.includes("localhost")) {
   console.error("Refusing to run: DATABASE_URL is not a local database.");

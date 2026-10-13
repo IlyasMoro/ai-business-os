@@ -106,7 +106,7 @@ export function Sparkline({
   return (
     <div
       ref={wrapRef}
-      className="relative w-full rounded outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50"
+      className="relative w-full rounded outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50"
       style={{ height }}
       tabIndex={0}
       aria-label={`${title}. Use the arrow keys to read each month.`}

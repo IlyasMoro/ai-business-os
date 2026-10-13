@@ -42,9 +42,9 @@ export function CrmShell({ isAdmin, children }: { isAdmin: boolean; children: Re
               href={tab.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "whitespace-nowrap border-b-2 px-3 py-2 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500",
+                "whitespace-nowrap border-b-2 px-3 py-2 text-sm transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400",
                 active
-                  ? "border-blue-500 font-medium text-slate-50 light:text-slate-900"
+                  ? "border-cyan-400 font-medium text-slate-50 light:border-cyan-600 light:text-slate-900"
                   : "border-transparent text-slate-400 hover:text-slate-200 light:text-slate-500 light:hover:text-slate-800"
               )}
             >

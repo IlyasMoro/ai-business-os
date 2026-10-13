@@ -51,9 +51,9 @@ export function DocumentDropzone({
           if (!pending) upload(e.dataTransfer.files);
         }}
         className={cn(
-          "flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-6 text-center transition-colors focus-within:ring-2 focus-within:ring-blue-500",
+          "flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-6 text-center transition-colors focus-within:ring-2 focus-within:ring-cyan-400",
           dragging
-            ? "border-blue-400 bg-blue-500/10 light:bg-blue-50"
+            ? "border-cyan-400 bg-cyan-400/10 light:bg-cyan-50"
             : "border-white/15 hover:border-white/30 hover:bg-white/[0.03] light:border-slate-300 light:hover:border-slate-400 light:hover:bg-slate-50",
           pending && "pointer-events-none opacity-70"
         )}

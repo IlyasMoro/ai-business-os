@@ -7,6 +7,10 @@ export const VIZ = {
   amber: "#d97706",
   emerald: "#059669",
   red: "#ef4444",
+  // The brand accent (the website's cyan) and a calm identity colour for
+  // counts that are neither good nor bad news.
+  cyan: "#22d3ee",
+  violet: "#8b5cf6",
   bg: "#020617", // slate-950
   surface: "#0f172a", // slate-900
   border: "#1e293b", // slate-800

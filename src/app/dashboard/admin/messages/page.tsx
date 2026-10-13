@@ -31,7 +31,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
     cn(
       "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
       active
-        ? "bg-blue-500/15 text-white light:bg-blue-500/10 light:text-blue-700"
+        ? "bg-cyan-400/[0.13] text-white light:bg-cyan-500/10 light:text-cyan-800"
         : "text-slate-400 hover:text-slate-100 light:text-slate-500 light:hover:text-slate-900"
     );
 
@@ -85,7 +85,7 @@ export default async function AdminMessagesPage({ searchParams }: { searchParams
               </p>
               <p className="mt-2 whitespace-pre-wrap text-sm text-slate-300 light:text-slate-700">{m.message}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                <a href={reply} className="font-medium text-blue-400 hover:text-blue-300 light:text-blue-700">
+                <a href={reply} className="font-medium text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                   Reply by email
                 </a>
                 <form action={setContactMessageHandled.bind(null, m.id, !handled)}>

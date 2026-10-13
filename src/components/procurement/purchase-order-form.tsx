@@ -15,7 +15,7 @@ export function PurchaseOrderForm({
     return (
       <p className="text-sm text-slate-400 light:text-slate-500">
         You need a supplier before creating a purchase order.{" "}
-        <Link href="/dashboard/procurement/suppliers" className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+        <Link href="/dashboard/procurement/suppliers" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
           Add one first
         </Link>
         .

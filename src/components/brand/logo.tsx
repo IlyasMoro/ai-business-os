@@ -5,8 +5,10 @@ import { cn } from "@/lib/utils";
  * The AIBOS lockup: the network mark plus the wordmark, at fixed
  * proportions so it looks the same everywhere it appears.
  *
- * - inline:  mark beside the name (sidebar, mobile drawer, landing header)
- * - stacked: mark above the name (sign in, sign up and other auth cards)
+ * - compact: mark above a small spaced out name, sized for a header or menu
+ *            row (the default: sidebar, mobile drawer, landing header, footers)
+ * - inline:  mark beside the name
+ * - stacked: a large mark above a large name
  *
  * `alwaysDark` is for surfaces that stay dark in the light theme too, such as
  * the public landing pages, so the wordmark does not switch to near black.
@@ -17,17 +19,40 @@ import { cn } from "@/lib/utils";
  * trim it so the mark sits tight to the name and lines up with nearby content.
  */
 export function Logo({
-  layout = "inline",
+  layout = "compact",
   alwaysDark = false,
   onLight = false,
   className,
 }: {
-  layout?: "inline" | "stacked";
+  layout?: "compact" | "inline" | "stacked";
   alwaysDark?: boolean;
   onLight?: boolean;
   className?: string;
 }) {
   const stacked = layout === "stacked";
+  if (layout === "compact") {
+    return (
+      <span className={cn("inline-flex flex-col items-center leading-none", className)}>
+        <Image
+          src="/logo-mark.png"
+          alt=""
+          width={48}
+          height={48}
+          className="-mb-2 -mt-2 shrink-0"
+          loading="eager"
+        />
+        <span
+          className={cn(
+            "font-display text-[12px] font-extrabold tracking-[0.24em] pl-[0.24em]",
+            onLight ? "text-[#0b1f5e]" : "text-white",
+            !alwaysDark && !onLight && "light:text-slate-900"
+          )}
+        >
+          AIBOS
+        </span>
+      </span>
+    );
+  }
   return (
     <span className={cn("flex items-center", stacked ? "flex-col" : "gap-0", className)}>
       <Image

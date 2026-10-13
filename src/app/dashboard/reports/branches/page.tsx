@@ -144,7 +144,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
                     aria-current={sort === key ? "true" : undefined}
                     className={cn(
                       "rounded-full px-3 py-1 font-medium transition-colors",
-                      sort === key ? "bg-blue-600 text-white" : "text-slate-300 hover:bg-white/[0.06] light:text-slate-600 light:hover:bg-slate-100"
+                      sort === key ? "bg-cyan-400 text-[#0a1428]" : "text-slate-300 hover:bg-white/[0.06] light:text-slate-600 light:hover:bg-slate-100"
                     )}
                   >
                     {SORTS[key].label}

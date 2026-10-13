@@ -118,7 +118,7 @@ export function ActivityTimeline({
                       {activity.deal && (
                         <>
                           {" · "}
-                          <Link href={`/dashboard/crm/deals/${activity.deal.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                          <Link href={`/dashboard/crm/deals/${activity.deal.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                             {activity.deal.title}
                           </Link>
                         </>

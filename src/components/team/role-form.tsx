@@ -62,7 +62,7 @@ export function RoleForm({
                 className={cn(
                   "cursor-pointer rounded-lg border px-3 py-2 transition-colors",
                   baseRole === o.value
-                    ? "border-blue-500 bg-blue-500/10 light:bg-blue-50"
+                    ? "border-cyan-400 bg-cyan-400/10 light:bg-cyan-50"
                     : "border-white/[0.1] hover:border-white/25 light:border-slate-200 light:hover:border-slate-300"
                 )}
               >
@@ -112,7 +112,7 @@ export function RoleForm({
                               current === l.value
                                 ? l.value === "none"
                                   ? "bg-white/[0.08] text-slate-200 light:bg-slate-100 light:text-slate-700"
-                                  : "bg-blue-600 text-white"
+                                  : "bg-cyan-400 text-[#0a1428]"
                                 : "text-slate-400 hover:text-slate-200 light:text-slate-500 light:hover:text-slate-800"
                             )}
                           >

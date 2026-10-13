@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
-import { Jost, Geist_Mono, Inter } from "next/font/google";
+import { Figtree, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
-const jost = Jost({
-  variable: "--font-jost",
+// The same pair as StockPilot: Figtree is the display face for page titles,
+// landing headings and the wordmark; Plus Jakarta Sans is the body and UI
+// text. Both are variable fonts, so in between weights (see .app-text in
+// globals.css) render exactly rather than snapping to the nearest file.
+const figtree = Figtree({
+  variable: "--font-figtree",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
-// Body and UI text. Jost is the display face for page titles and the
-// wordmark; see globals.css.
-const inter = Inter({
-  variable: "--font-inter",
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
 });
 
@@ -60,7 +61,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jost.variable} ${inter.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${figtree.variable} ${jakarta.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

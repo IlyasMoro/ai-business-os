@@ -62,7 +62,7 @@ export function CompanyStatusBadge({
   const status = statusLine(subscription);
   const noPlan = status.text === "No active plan";
   const toneClass = {
-    ok: "text-slate-300 light:text-slate-600",
+    ok: "text-slate-400 light:text-slate-600",
     warn: "text-amber-300 light:text-amber-700",
     bad: "text-red-300 light:text-red-700",
   }[status.tone];
@@ -72,11 +72,11 @@ export function CompanyStatusBadge({
     <>
       {logoUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={logoUrl} alt="" className="h-9 w-9 shrink-0 rounded-lg bg-white object-contain p-0.5" />
+        <img src={logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-xl bg-white object-contain p-0.5" />
       ) : (
         <span
           aria-hidden
-          className="font-display flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-sm font-semibold tracking-wide text-white"
+          className="font-display flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-[#3e5a80] to-[#2a3d5c] text-sm font-semibold tracking-wide text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] ring-1 ring-white/10"
         >
           {initials(companyName)}
         </span>
@@ -85,15 +85,20 @@ export function CompanyStatusBadge({
         <span className="font-display block max-w-[11rem] truncate text-[15px] font-semibold leading-5 text-white sm:max-w-[16rem] light:text-slate-900">
           {companyName}
         </span>
-        <span className="mt-0.5 flex max-w-[11rem] items-center gap-2 text-xs leading-4 sm:max-w-[16rem]">
+        <span className="mt-1 flex max-w-[11rem] items-center gap-1.5 text-xs leading-4 sm:max-w-[16rem]">
           {!noPlan && (
-            <span className="shrink-0 rounded-full bg-blue-500/15 px-2 py-px font-medium text-blue-200 ring-1 ring-inset ring-blue-400/25 light:bg-blue-50 light:text-blue-700 light:ring-blue-200">
+            <span className="shrink-0 rounded-full bg-blue-200 px-2.5 py-0.5 font-semibold text-[#0b1f5e] light:bg-blue-100 light:text-blue-800">
               {planName}
             </span>
           )}
           {status.text && (
-            <span className={cn("flex min-w-0 items-center gap-1.5 font-medium tabular-nums", toneClass)}>
-              {status.tone !== "ok" && <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-current" />}
+            <span className={cn("flex min-w-0 items-center gap-1.5 tabular-nums", toneClass)}>
+              {/* A dot ahead of the status: grey when all is well, the
+                  status colour when it needs attention. */}
+              <span
+                aria-hidden
+                className={cn("h-1 w-1 shrink-0 rounded-full", status.tone === "ok" ? "bg-slate-500" : "h-1.5 w-1.5 bg-current")}
+              />
               <span className="truncate">{status.text}</span>
             </span>
           )}
@@ -109,7 +114,7 @@ export function CompanyStatusBadge({
   );
 
   const shell =
-    "glass-chip group flex min-w-0 shrink-0 items-center gap-3 rounded-xl border border-white/[0.1] p-1 sm:py-1.5 sm:pl-1.5 sm:pr-3 light:border-slate-200";
+    "group flex min-w-0 shrink-0 items-center gap-3 rounded-2xl border border-white/[0.1] bg-[#1b2232]/80 p-1 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.6)] backdrop-blur sm:py-1.5 sm:pl-1.5 sm:pr-3.5 light:border-slate-200 light:bg-white";
 
   return canManage ? (
     <Link
@@ -118,7 +123,7 @@ export function CompanyStatusBadge({
       aria-label={`${companyName}, ${summary}. Plan and billing`}
       className={cn(
         shell,
-        "hover:border-white/[0.16] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:hover:border-slate-300"
+        "hover:border-white/[0.16] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 light:hover:border-slate-300"
       )}
     >
       {body}

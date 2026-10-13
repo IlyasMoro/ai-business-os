@@ -44,7 +44,7 @@ export default async function EdiDocumentPage({ params }: { params: Promise<{ id
   ]);
 
   const pretty = prettyX12(doc.content);
-  const linkClass = "text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800";
+  const linkClass = "text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900";
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">

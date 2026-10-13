@@ -96,13 +96,13 @@ export default async function QuotePage({
             </div>
             <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
               For{" "}
-              <Link href={`/dashboard/crm/${quote.customer.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+              <Link href={`/dashboard/crm/${quote.customer.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                 {quote.customer.name}
               </Link>
               {quote.deal && (
                 <>
                   {" · deal "}
-                  <Link href={`/dashboard/crm/deals/${quote.deal.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                  <Link href={`/dashboard/crm/deals/${quote.deal.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                     {quote.deal.title}
                   </Link>
                 </>

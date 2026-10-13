@@ -29,7 +29,7 @@ export function CopyField({ value, label, multiline = false }: { value: string; 
         type="button"
         onClick={copy}
         className={cn(
-          "inline-flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+          "inline-flex shrink-0 items-center gap-1.5 rounded-md border px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
           copied
             ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 light:text-emerald-700"
             : "border-white/10 text-slate-200 hover:bg-white/5 light:border-slate-300 light:text-slate-700 light:hover:bg-slate-50"

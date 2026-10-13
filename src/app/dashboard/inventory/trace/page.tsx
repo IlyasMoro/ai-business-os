@@ -106,7 +106,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                   <p className="font-mono text-lg font-semibold text-slate-50 light:text-slate-900">
                     {lot.lotNumber} <span className="font-sans text-sm font-normal text-slate-400">at {lot.branch.name}</span>
                   </p>
-                  <Link href={`/dashboard/inventory/${lot.product.id}`} className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                  <Link href={`/dashboard/inventory/${lot.product.id}`} className="text-sm text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                     {lot.product.name} ({lot.product.sku})
                   </Link>
                 </div>
@@ -123,7 +123,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                   {[...customers].map(([id, name], i) => (
                     <span key={id}>
                       {i > 0 && ", "}
-                      <Link href={`/dashboard/crm/${id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                      <Link href={`/dashboard/crm/${id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                         {name}
                       </Link>
                     </span>
@@ -145,7 +145,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {tr && (
                           <>
                             {m.kind === "TRANSFER_OUT" ? ` to ${tr.toBranch.name} on ` : ` from ${tr.fromBranch.name} on `}
-                            <Link href={`/dashboard/transfers/${tr.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            <Link href={`/dashboard/transfers/${tr.id}`} className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                               {tr.transferNumber}
                             </Link>
                           </>
@@ -153,7 +153,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {po && (
                           <>
                             {" from "}
-                            <Link href={`/dashboard/procurement/${po.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            <Link href={`/dashboard/procurement/${po.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                               {po.supplier.name}
                             </Link>
                           </>
@@ -161,7 +161,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {wo && (
                           <>
                             {" on "}
-                            <Link href={`/dashboard/mrp/work-orders/${wo.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            <Link href={`/dashboard/mrp/work-orders/${wo.id}`} className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                               {wo.woNumber}
                             </Link>
                           </>
@@ -169,7 +169,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {o && !rma && (
                           <>
                             {" to "}
-                            <Link href={`/dashboard/sales/${o.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            <Link href={`/dashboard/sales/${o.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                               {o.orderNumber} · {o.customer.name}
                               {o.customerPoNumber ? ` (PO ${o.customerPoNumber})` : ""}
                             </Link>
@@ -178,7 +178,7 @@ export default async function LotTracePage({ searchParams }: { searchParams: Pro
                         {rma && (
                           <>
                             {" on "}
-                            <Link href={`/dashboard/returns/${rma.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            <Link href={`/dashboard/returns/${rma.id}`} className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                               {rma.rmaNumber}
                             </Link>
                           </>

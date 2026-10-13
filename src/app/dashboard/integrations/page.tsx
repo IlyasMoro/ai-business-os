@@ -88,7 +88,7 @@ export default async function IntegrationsPage({
           )}
           <p className="mt-4 text-sm text-slate-400 light:text-slate-500">
             Want customer emails logged on their history?{" "}
-            <Link href="/dashboard/crm/settings#email-logging" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+            <Link href="/dashboard/crm/settings#email-logging" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
               Turn on email logging in the CRM settings
             </Link>
             .

@@ -61,7 +61,7 @@ export default async function InternalOrderPage({
             <p className="mt-1 text-sm text-slate-500">
               Settles to{" "}
               {io.settleTo ? (
-                <Link href={`/dashboard/controlling/cost-centers/${io.settleTo.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                <Link href={`/dashboard/controlling/cost-centers/${io.settleTo.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                   {io.settleTo.code} {io.settleTo.name}
                 </Link>
               ) : (

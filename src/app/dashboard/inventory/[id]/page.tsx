@@ -333,7 +333,7 @@ export default async function ProductDetailPage({
                             {m.source && (
                               <>
                                 {" · "}
-                                <Link href={m.source.href} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700">
+                                <Link href={m.source.href} className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                                   {m.source.label}
                                 </Link>
                               </>
@@ -522,7 +522,7 @@ export default async function ProductDetailPage({
                         {product.usedInBoms.map((line, i) => (
                           <span key={line.id}>
                             {i > 0 && ", "}
-                            <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                            <Link href={`/dashboard/inventory/${line.parent.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                               {line.parent.name}
                             </Link>
                           </span>

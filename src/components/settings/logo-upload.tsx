@@ -145,7 +145,7 @@ export function LogoUpload({
             type="button"
             onClick={clear}
             aria-label="Choose a different file"
-            className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            className="rounded-md p-1.5 text-slate-400 hover:bg-white/5 hover:text-slate-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           >
             <X className="h-4 w-4" />
           </button>
@@ -164,7 +164,7 @@ export function LogoUpload({
             "flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed px-4 py-6 text-center transition-colors",
             "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500",
             dragging
-              ? "border-blue-500 bg-blue-500/10"
+              ? "border-cyan-400 bg-cyan-400/10"
               : "border-white/15 hover:border-white/30 hover:bg-white/[0.03] light:border-slate-300 light:hover:border-slate-400"
           )}
         >

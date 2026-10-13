@@ -86,7 +86,7 @@ export default async function ReturnDetailPage({
                 {rma.order.customer.name}
               </Link>
               {" · "}
-              <Link href={`/dashboard/sales/${rma.order.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+              <Link href={`/dashboard/sales/${rma.order.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                 Order {rma.order.orderNumber}
               </Link>
               {" · "}Opened {formatDate(rma.createdAt)}

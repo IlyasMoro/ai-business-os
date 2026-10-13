@@ -33,7 +33,7 @@ export function PlanStatusHero({ status }: { status: PlanStatus }) {
     good: "border-emerald-500/40 from-emerald-600/20 via-emerald-500/5 to-transparent light:from-emerald-100 light:via-emerald-50",
   }[tone];
   const accent = { info: "text-blue-300 light:text-blue-700", warn: "text-amber-300 light:text-amber-700", bad: "text-red-300 light:text-red-700", good: "text-emerald-300 light:text-emerald-700" }[tone];
-  const bar = { info: "bg-blue-500", warn: "bg-amber-500", bad: "bg-red-500", good: "bg-emerald-500" }[tone];
+  const bar = { info: "bg-cyan-400", warn: "bg-amber-500", bad: "bg-red-500", good: "bg-emerald-500" }[tone];
   const Icon = tone === "good" ? CheckCircle2 : tone === "bad" ? AlertTriangle : Clock;
 
   let eyebrow: string;
@@ -104,7 +104,7 @@ export function PlanStatusHero({ status }: { status: PlanStatus }) {
             href="#plans"
             className={cn(
               "inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-lg transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
-              tone === "bad" ? "bg-red-600 hover:bg-red-500" : tone === "warn" ? "bg-amber-600 hover:bg-amber-500" : "bg-blue-600 hover:bg-blue-500"
+              tone === "bad" ? "bg-red-600 hover:bg-red-500" : tone === "warn" ? "bg-amber-600 hover:bg-amber-500" : "bg-cyan-400 !text-[#0a1428] hover:bg-cyan-300"
             )}
           >
             {cta}

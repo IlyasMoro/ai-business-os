@@ -163,7 +163,7 @@ export default async function CampaignDetailPage({
             ) : (
               <p className="text-slate-400 light:text-slate-500">
                 Set up your web lead form in{" "}
-                <Link href="/dashboard/crm/settings" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+                <Link href="/dashboard/crm/settings" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                   CRM settings
                 </Link>{" "}
                 first, then a link for this campaign appears here.

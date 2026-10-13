@@ -54,7 +54,7 @@ export function MobileNav({
             <div className="flex h-16 items-center justify-between px-5">
               <Link
                 href="/dashboard"
-                className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
                 onClick={() => setOpen(false)}
               >
                 <Logo />

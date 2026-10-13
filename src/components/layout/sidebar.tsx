@@ -53,7 +53,7 @@ export function Sidebar({
       )}
     >
       <div className={cn("flex h-16 items-center", collapsed ? "justify-center px-2" : "px-5")}>
-        <Link href="/dashboard" aria-label="AIBOS dashboard" className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+        <Link href="/dashboard" aria-label="AIBOS dashboard" className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400">
           {collapsed ? <Image src="/logo-mark.png" alt="" width={40} height={40} className="-m-1" /> : <Logo />}
         </Link>
       </div>
@@ -77,7 +77,7 @@ export function Sidebar({
           title={collapsed ? "Show the full menu" : "Shrink the menu to icons"}
           // Shrunk, the button stacks above the avatar so it stays easy to find.
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 light:text-slate-500 light:hover:bg-slate-900/5 light:hover:text-slate-900",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 light:text-slate-500 light:hover:bg-slate-900/5 light:hover:text-slate-900",
             collapsed && "order-first"
           )}
         >

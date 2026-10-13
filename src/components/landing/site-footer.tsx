@@ -14,7 +14,7 @@ export function SiteFooter() {
     <footer className="relative border-t border-white/10 px-6 py-10">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <Link href="/" className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+          <Link href="/" className="inline-flex rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400">
             <Logo alwaysDark />
           </Link>
           <p className="mt-2 text-sm text-slate-400">Run your business, with AI that asks before it acts.</p>

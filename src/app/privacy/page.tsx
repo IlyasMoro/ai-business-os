@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <div className="relative isolate min-h-screen px-4 py-12 text-slate-300">
       <AuroraBackdrop />
       <div className="mx-auto max-w-3xl rounded-2xl border border-white/10 bg-white/[0.03] p-6 shadow-2xl shadow-black/40 backdrop-blur-xl sm:p-10">
-        <Link href="/" className="text-sm text-blue-400 hover:text-blue-300">
+        <Link href="/" className="text-sm text-cyan-300 hover:text-cyan-200">
           Back to home
         </Link>
 

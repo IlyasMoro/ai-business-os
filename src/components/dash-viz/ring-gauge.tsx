@@ -8,7 +8,8 @@ function prefersReducedMotion() {
 }
 
 /**
- * A single percentage as a ring, coloured by how good it is. `pct` null
+ * A single percentage as a ring, coloured by how good it is, or in one
+ * fixed `color` where the number is progress rather than a warning. `pct` null
  * means there is nothing to measure yet (no invoices, no projects): the
  * ring stays empty and says so, instead of faking 0% or 100%. `detail`
  * says what the percentage is made of, e.g. "3 of 4 paid".
@@ -19,6 +20,7 @@ export function RingGauge({
   detail,
   emptyText = "No data yet",
   goodIsHigh = true,
+  color: fixedColor,
   size = 112,
   strokeWidth = 9,
 }: {
@@ -27,12 +29,13 @@ export function RingGauge({
   detail?: string;
   emptyText?: string;
   goodIsHigh?: boolean;
+  color?: string;
   size?: number;
   strokeWidth?: number;
 }) {
   const empty = pct === null || !Number.isFinite(pct);
   const clamped = empty ? 0 : Math.max(0, Math.min(100, pct));
-  const color = thresholdColor(clamped, goodIsHigh);
+  const color = fixedColor ?? thresholdColor(clamped, goodIsHigh);
   const radius = (size - strokeWidth) / 2 - 2;
   const circumference = 2 * Math.PI * radius;
 

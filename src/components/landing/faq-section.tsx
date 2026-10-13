@@ -67,7 +67,7 @@ export function FaqSection({ light = false }: { light?: boolean }) {
               href="/privacy"
               className={cn(
                 "group mt-4 inline-flex items-center gap-1.5 text-sm font-medium",
-                light ? "font-bold text-cyan-400 hover:text-white" : "text-blue-400 hover:text-blue-300"
+                light ? "font-bold text-cyan-400 hover:text-white" : "text-cyan-300 hover:text-cyan-200"
               )}
             >
               Read the Privacy Policy
@@ -126,7 +126,7 @@ export function FaqRows({
               "flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-left text-base transition-colors focus-visible:outline-none focus-visible:ring-2 [&::-webkit-details-marker]:hidden",
               light
                 ? "font-bold text-[#0b1f5e] hover:text-[#1848d8] focus-visible:ring-cyan-400"
-                : "font-medium text-slate-100 hover:text-white focus-visible:ring-blue-500"
+                : "font-medium text-slate-100 hover:text-white focus-visible:ring-cyan-400"
             )}
           >
             {item.q}

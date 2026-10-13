@@ -124,7 +124,7 @@ export default async function OrderDetailPage({
               {order.quote && (
                 <>
                   {" · from quote "}
-                  <Link href={`/dashboard/quotes/${order.quote.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                  <Link href={`/dashboard/quotes/${order.quote.id}`} className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                     {order.quote.quoteNumber}
                   </Link>
                 </>
@@ -136,7 +136,7 @@ export default async function OrderDetailPage({
               )}
               {" · "}
               {order.invoice ? (
-                <Link href={`/dashboard/invoicing/${order.invoice.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                <Link href={`/dashboard/invoicing/${order.invoice.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                   Invoice {order.invoice.invoiceNumber} ({order.invoice.status})
                 </Link>
               ) : (
@@ -194,7 +194,7 @@ export default async function OrderDetailPage({
                       </p>
                       {editable && (
                         <details className="mt-1">
-                          <summary className="cursor-pointer list-none text-xs font-medium text-blue-400 hover:text-blue-300 light:text-blue-700">Edit</summary>
+                          <summary className="cursor-pointer list-none text-xs font-medium text-cyan-300 hover:text-cyan-200 light:text-cyan-800">Edit</summary>
                           <form action={updateOrderItem.bind(null, order.id, item.id)} className="mt-2 flex flex-wrap items-end gap-2">
                             <Input name="quantity" type="number" min="0.001" step={qtyStep(item.product.unit)} defaultValue={item.quantity} required aria-label="Quantity" className="w-24" />
                             {canPrice && (
@@ -216,7 +216,7 @@ export default async function OrderDetailPage({
                                 {i > 0 && ", "}
                                 <Link
                                   href={`/dashboard/inventory/trace?q=${encodeURIComponent(m.lot.lotNumber)}`}
-                                  className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800"
+                                  className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900"
                                 >
                                   {m.lot.lotNumber}
                                 </Link>
@@ -260,7 +260,7 @@ export default async function OrderDetailPage({
               {canOpenReturn && (
                 <Link
                   href={`/dashboard/returns/new?orderId=${order.id}`}
-                  className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-1.5 text-sm font-medium text-blue-300 transition-colors hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+                  className="rounded-md border border-cyan-400/30 bg-cyan-400/10 px-3 py-1.5 text-sm font-medium text-cyan-200 transition-colors hover:bg-cyan-400/20 light:border-cyan-600/30 light:bg-cyan-500/10 light:text-cyan-800 light:hover:bg-cyan-500/15"
                 >
                   Create return
                 </Link>

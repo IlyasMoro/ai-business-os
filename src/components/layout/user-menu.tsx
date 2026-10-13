@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Building2, ChevronDown, CircleHelp, CreditCard, LogOut, Monitor, Moon, Sun, UserRound } from "lucide-react";
+import { ChevronDown, CircleHelp, CreditCard, LogOut, Monitor, Moon, Settings, Sun, UserRound } from "lucide-react";
 import { logout } from "@/lib/actions/auth";
 import { cn } from "@/lib/utils";
 
@@ -111,9 +111,9 @@ export function UserMenu({
         aria-expanded={open}
         aria-haspopup="menu"
         aria-label="Account menu"
-        className="flex w-full items-center gap-2 rounded-md px-2 py-2 transition-colors duration-150 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500 light:hover:bg-slate-100"
+        className="flex w-full items-center gap-2 rounded-md px-2 py-2 transition-colors duration-150 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400 light:hover:bg-slate-100"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-blue-400/30 bg-blue-500/20 text-xs font-semibold text-blue-300 backdrop-blur-md light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/15 text-xs font-semibold text-cyan-200 backdrop-blur-md light:border-cyan-600/30 light:bg-cyan-500/10 light:text-cyan-800">
           {initial}
         </span>
         {!compact && <span className="flex-1 truncate text-left text-sm text-slate-300 light:text-slate-600">{firstName}</span>}
@@ -145,8 +145,8 @@ export function UserMenu({
             </Link>
             {(role === "OWNER" || role === "ADMIN") && (
               <Link href="/dashboard/settings" role="menuitem" onClick={() => setOpen(false)} className={itemClass}>
-                <Building2 className="h-4 w-4" />
-                Company settings
+                <Settings className="h-4 w-4" />
+                Settings
               </Link>
             )}
             {role === "OWNER" && (
@@ -169,9 +169,9 @@ export function UserMenu({
                   aria-checked={theme === value}
                   onClick={() => setTheme(value)}
                   className={cn(
-                    "flex items-center justify-center gap-1 rounded px-1.5 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                    "flex items-center justify-center gap-1 rounded px-1.5 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
                     theme === value
-                      ? "bg-blue-600 font-medium text-white"
+                      ? "bg-cyan-400 font-semibold text-[#0a1428]"
                       : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
                   )}
                 >

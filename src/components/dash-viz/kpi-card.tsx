@@ -15,6 +15,9 @@ export type KpiChange = {
    * most metrics it is, but for something like "Outstanding invoices"
    * a rise is bad, so the badge color should invert. */
   goodIsUp?: boolean;
+  /** Neither direction is good or bad news (how many new projects started
+   * this month): shown in grey instead of green or red. */
+  neutral?: boolean;
   label: string;
 };
 
@@ -32,6 +35,7 @@ export function KpiCard({
   progress,
   hint,
   href,
+  featured = false,
 }: {
   label: string;
   value: number;
@@ -52,9 +56,22 @@ export function KpiCard({
   hint?: string;
   /** Makes the whole tile a link to the list behind the number. */
   href?: string;
+  /** The page's headline number: a larger figure and a soft glow in the
+   * card's colour, so the eye lands on it first. */
+  featured?: boolean;
 }) {
   const tile = (
-    <SpotlightCard color={color} className="h-full rounded-2xl border border-white/[0.09] light:border-white/80 p-5 glass">
+    <SpotlightCard
+      color={color}
+      className={`h-full rounded-2xl border p-5 glass ${featured ? "border-white/[0.14] sm:p-6" : "border-white/[0.11]"} light:border-white/80`}
+    >
+      {featured && (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 -z-10 rounded-2xl"
+          style={{ background: `radial-gradient(120% 90% at 100% 0%, ${color}2e, transparent 60%)` }}
+        />
+      )}
       {/* Thin lit strip along the top edge in the card's accent colour. */}
       <span
         aria-hidden
@@ -63,8 +80,10 @@ export function KpiCard({
       />
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-slate-400 light:text-slate-500">{label}</p>
-          <p className="mt-2 text-3xl font-semibold text-slate-50 light:text-slate-900">
+          <p className="text-sm font-medium text-slate-300 light:text-slate-600">{label}</p>
+          <p
+            className={`mt-2 font-semibold tracking-tight text-slate-50 light:text-slate-900 ${featured ? "text-4xl sm:text-[2.6rem]" : "text-3xl"}`}
+          >
             <AnimatedCounter value={value} prefix={prefix} suffix={suffix} decimals={decimals} />
           </p>
           {change && <ChangeBadge change={change} />}
@@ -101,7 +120,7 @@ export function KpiCard({
     </SpotlightCard>
   );
   return href ? (
-    <Link href={href} className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 [&>div]:h-full">
+    <Link href={href} className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 [&>div]:h-full">
       {tile}
     </Link>
   ) : (
@@ -110,7 +129,7 @@ export function KpiCard({
 }
 
 function ChangeBadge({ change }: { change: KpiChange }) {
-  const { pct, label, goodIsUp = true } = change;
+  const { pct, label, goodIsUp = true, neutral = false } = change;
 
   if (pct === null) {
     return <p className="mt-1 text-xs text-slate-500">New this period</p>;
@@ -126,7 +145,7 @@ function ChangeBadge({ change }: { change: KpiChange }) {
 
   return (
     <p
-      className={`mt-1 flex items-center gap-1 text-xs ${isGood ? "text-emerald-400" : "text-red-400"}`}
+      className={`mt-1 flex items-center gap-1 text-xs ${neutral ? "text-slate-400" : isGood ? "text-emerald-400" : "text-red-400"}`}
     >
       <Arrow className="h-3 w-3" />
       {Math.abs(pct).toFixed(0)}% {label}

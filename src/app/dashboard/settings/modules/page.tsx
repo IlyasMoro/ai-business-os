@@ -76,8 +76,8 @@ export default async function ModulesPage({ searchParams }: { searchParams: Prom
                         aria-checked={m.on}
                         aria-label={`${m.label}: ${m.on ? "on, switch off" : "off, switch on"}`}
                         className={cn(
-                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
-                          m.on ? "bg-blue-600" : "bg-white/15 light:bg-slate-300",
+                          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent",
+                          m.on ? "bg-cyan-400" : "bg-white/15 light:bg-slate-300",
                         )}
                       >
                         <span className={cn("inline-block h-5 w-5 rounded-full bg-white shadow transition-transform", m.on ? "translate-x-5" : "translate-x-0.5")} />

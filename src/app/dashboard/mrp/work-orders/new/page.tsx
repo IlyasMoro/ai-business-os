@@ -38,7 +38,7 @@ export default async function NewWorkOrderPage({
           {products.length === 0 ? (
             <p className="text-sm text-slate-400 light:text-slate-500">
               No products have a bill of materials yet. Open a product in{" "}
-              <Link href="/dashboard/inventory" className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+              <Link href="/dashboard/inventory" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                 Inventory
               </Link>{" "}
               and add its components first.

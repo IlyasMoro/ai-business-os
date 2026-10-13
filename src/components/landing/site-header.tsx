@@ -60,7 +60,7 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
 
   const linkClass = (active: boolean) =>
     cn(
-      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+      "rounded-md px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
       active ? "text-white" : "text-slate-400 hover:text-slate-50"
     );
 
@@ -139,7 +139,7 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
         <Link
           href="/"
           onClick={() => setMenuOpen(false)}
-          className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+          className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
         >
           <Logo alwaysDark />
         </Link>
@@ -155,7 +155,7 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
         <div className="flex items-center gap-2">
           <Link
             href="/login"
-            className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 sm:block"
+            className="hidden rounded-md px-3 py-1.5 text-sm font-medium text-slate-300 transition-colors hover:text-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 sm:block"
           >
             Sign in
           </Link>

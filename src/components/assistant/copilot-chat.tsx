@@ -142,7 +142,7 @@ export function CopilotChat({
             submit(inputRef.current?.value ?? "");
           }}
         >
-          <div className="flex items-end gap-2 rounded-2xl border border-white/[0.09] bg-white/[0.04] p-2 backdrop-blur-md transition-colors focus-within:border-blue-500/60 focus-within:shadow-[0_0_0_3px_rgb(59_130_246/0.18)] light:border-slate-300 light:bg-white/70">
+          <div className="flex items-end gap-2 rounded-2xl border border-white/[0.09] bg-white/[0.04] p-2 backdrop-blur-md transition-colors focus-within:border-cyan-400/60 focus-within:shadow-[0_0_0_3px_rgb(59_130_246/0.18)] light:border-slate-300 light:bg-white/70">
             <textarea
               ref={inputRef}
               name="content"
@@ -163,7 +163,7 @@ export function CopilotChat({
               type="submit"
               disabled={pending}
               aria-label="Send message"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white transition-colors hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40 light:bg-blue-600 light:hover:bg-blue-700"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400 text-[#0a1428] transition-colors hover:bg-cyan-300 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ArrowUp className="h-4 w-4" />
             </button>

@@ -137,8 +137,8 @@ export default async function SalesReportPage({ searchParams }: { searchParams: 
               href={`/dashboard/crm/report?period=${p.id}`}
               aria-current={p.id === period ? "page" : undefined}
               className={cn(
-                "rounded-full px-3 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                p.id === period ? "bg-blue-600 font-medium text-white" : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
+                "rounded-full px-3 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
+                p.id === period ? "bg-cyan-400 font-semibold text-[#0a1428]" : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
               )}
             >
               {p.label}

@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronRight, Lock, Settings, Star } from "lucide-react";
+import { ChevronRight, Lock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FEATURE_MIN_PLAN, planById, type PlanFeature } from "@/lib/plans";
 import { navItems, navPinned, visibleNav, type NavBadge, type NavBadges, type NavGroup, type NavItem, type Role } from "./nav-config";
@@ -11,7 +11,7 @@ import { useFavourites } from "./nav-prefs";
 
 // One focus outline for every menu control, drawn inside so the scrolling
 // menu never clips it.
-const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-500";
+const FOCUS = "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-cyan-400";
 
 /** Name of the plan a locked module needs, from its href (/dashboard/mrp). */
 function lockedPlanName(href: string): string | null {
@@ -21,7 +21,7 @@ function lockedPlanName(href: string): string | null {
 
 /** The page you're on: tinted background and a short blue bar on its left. */
 function ActiveBar({ className }: { className?: string }) {
-  return <span aria-hidden className={cn("absolute top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-blue-500", className)} />;
+  return <span aria-hidden className={cn("absolute top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]", className)} />;
 }
 
 function matches(href: string, pathname: string) {
@@ -151,8 +151,8 @@ export function NavLinks({
   }
   const currentPath = pendingHref ?? pathname;
 
-  const { pinned, groups, settings } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
-  const settingsActive = settings.some((i) => matches(i.href, currentPath));
+  // Settings live in the user menu at the foot of the sidebar, not here.
+  const { pinned, groups } = visibleNav({ role, isPlatformAdmin, hiddenHrefs });
   const activeGroup = groups.find((g) => g.items.some((i) => isActive(i.href, currentPath)))?.label;
   const allVisible = [...pinned.map((i) => ({ item: i, color: "#3987e5" })), ...groups.flatMap((g) => g.items.map((i) => ({ item: i, color: g.color })))];
   const favouriteItems = favourites.map((href) => allVisible.find((v) => v.item.href === href)).filter((v): v is (typeof allVisible)[number] => Boolean(v));
@@ -201,10 +201,11 @@ export function NavLinks({
     [],
   );
   const place = (label: string, el: HTMLElement) => {
-    // Just outside the sidebar's edge, level with the heading.
+    // Right beside the heading row, level with it. Anchored to the row
+    // rather than the sidebar's outer edge, which sits past the menu's
+    // padding and left a strip of empty space between the two.
     const r = el.getBoundingClientRect();
-    const edge = el.closest("aside")?.getBoundingClientRect().right ?? r.right;
-    setFly({ label, top: r.top, left: edge + 8 });
+    setFly({ label, top: r.top, left: r.right + 4 });
   };
   const enterHeading = (label: string, el: HTMLElement) => {
     if (!flyout || !canHover) return;
@@ -247,7 +248,7 @@ export function NavLinks({
           collapsed ? "justify-center px-0 py-2" : "gap-2.5 px-3 py-2",
           FOCUS,
           active
-            ? "bg-blue-500/15 font-medium text-white light:bg-blue-500/10 light:text-blue-700"
+            ? "bg-cyan-400/[0.13] font-medium text-white light:bg-cyan-500/10 light:text-cyan-800"
             : "text-slate-100 hover:bg-white/[0.07] hover:text-white light:text-slate-800 light:hover:bg-slate-900/5 light:hover:text-slate-950",
         )}
       >
@@ -256,7 +257,7 @@ export function NavLinks({
           className={cn(
             "h-4 w-4 shrink-0 transition-colors",
             active
-              ? "text-blue-400 light:text-blue-600"
+              ? "text-cyan-300 light:text-cyan-700"
               : "text-slate-300 group-hover/link:text-white light:text-slate-600 light:group-hover/link:text-slate-800",
           )}
         />
@@ -349,7 +350,7 @@ export function NavLinks({
                     className={cn(
                       "h-3.5 w-3.5 shrink-0 transition-[transform,color,opacity] duration-200 ease-out",
                       open
-                        ? "rotate-90 text-blue-400 opacity-100 light:text-blue-600"
+                        ? "rotate-90 text-cyan-300 opacity-100 light:text-cyan-700"
                         : "text-slate-500 opacity-60 group-hover/heading:text-slate-200 group-hover/heading:opacity-100 light:text-slate-400 light:group-hover/heading:text-slate-700",
                     )}
                   />
@@ -385,7 +386,7 @@ export function NavLinks({
                               FOCUS,
                               // Only the open page is medium weight; the rest stay regular.
                               active
-                                ? "bg-blue-500/15 font-medium text-white light:bg-blue-500/10 light:text-blue-700"
+                                ? "bg-cyan-400/[0.13] font-medium text-white light:bg-cyan-500/10 light:text-cyan-800"
                                 : "text-slate-300 hover:bg-white/[0.07] hover:text-white light:text-slate-600 light:hover:bg-slate-900/5 light:hover:text-slate-950",
                             )}
                           >
@@ -413,33 +414,6 @@ export function NavLinks({
           </div>
         );
       })}
-
-      {/* Company settings sit apart from the everyday modules: one link
-          that opens them, with tabs across the top of each settings page. */}
-      {settings.length > 0 && (
-        <>
-          <div aria-hidden className="mx-3 !my-2.5 border-t border-white/[0.08] light:border-slate-900/10" />
-          <Link
-            href={settings[0].href}
-            onClick={linkClick(settings[0].href)}
-            aria-current={settingsActive ? "page" : undefined}
-            aria-label={collapsed ? "Settings" : undefined}
-            title={collapsed ? "Settings" : undefined}
-            className={cn(
-              "group/link relative flex items-center rounded-md text-[13.5px] leading-5 transition-colors duration-150",
-              collapsed ? "justify-center px-0 py-2" : "gap-2.5 px-3 py-2",
-              FOCUS,
-              settingsActive
-                ? "bg-blue-500/15 font-medium text-white light:bg-blue-500/10 light:text-blue-700"
-                : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100 light:text-slate-500 light:hover:bg-slate-900/5 light:hover:text-slate-900",
-            )}
-          >
-            {settingsActive && <ActiveBar className="left-0" />}
-            <Settings className={cn("h-4 w-4 shrink-0", settingsActive ? "text-blue-400 light:text-blue-600" : "text-slate-500 group-hover/link:text-slate-200 light:text-slate-400")} />
-            {!collapsed && <span className="flex-1 truncate">Settings</span>}
-          </Link>
-        </>
-      )}
 
       {flyGroup && fly && (
         <Flyout

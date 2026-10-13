@@ -22,7 +22,7 @@ export function ControllingTabs({ active }: { active: string }) {
           href={t.href}
           className={`-mb-px border-b-2 px-3 py-2 text-sm transition-colors ${
             active === t.href
-              ? "border-blue-500 font-medium text-blue-400"
+              ? "border-cyan-400 font-medium text-cyan-300 light:border-cyan-600 light:text-cyan-800"
               : "border-transparent text-slate-400 hover:text-slate-200 light:text-slate-500 light:hover:text-slate-800"
           }`}
         >

@@ -135,9 +135,9 @@ export function PlanPicker({
               aria-pressed={interval === value}
               onClick={() => setBillingInterval(value)}
               className={cn(
-                "rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
+                "rounded-full px-4 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400",
                 interval === value
-                  ? "bg-blue-600 text-white"
+                  ? "bg-cyan-400 text-[#0a1428]"
                   : "text-slate-300 hover:text-white light:text-slate-600 light:hover:text-slate-900"
               )}
             >
@@ -160,7 +160,7 @@ export function PlanPicker({
                 "relative flex min-w-0 cursor-pointer flex-col rounded-xl border px-4 pb-4 pt-4 transition-all",
                 "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500",
                 on
-                  ? "border-blue-500 bg-blue-500/10 shadow-[0_0_0_1px_rgb(59_130_246),0_12px_40px_-12px_rgb(59_130_246/0.6)] light:bg-blue-50"
+                  ? "border-cyan-400 bg-cyan-400/10 shadow-[0_0_0_1px_rgb(34_211_238),0_12px_40px_-12px_rgb(34_211_238/0.6)] light:bg-blue-50"
                   : "border-white/[0.1] hover:-translate-y-0.5 hover:border-white/25 light:border-slate-200 light:bg-white light:hover:border-slate-300"
               )}
             >
@@ -171,7 +171,7 @@ export function PlanPicker({
                     "absolute -top-2.5 left-4 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
                     card.badge === "Most popular"
                       ? "border border-blue-500/60 bg-slate-950 text-blue-300 light:bg-white light:text-blue-700"
-                      : "bg-blue-600 text-white"
+                      : "bg-cyan-400 text-[#0a1428]"
                   )}
                 >
                   {card.badge}
@@ -183,7 +183,7 @@ export function PlanPicker({
                   aria-hidden
                   className={cn(
                     "mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-2",
-                    on ? "border-blue-500 bg-blue-500 text-white" : "border-slate-500"
+                    on ? "border-cyan-400 bg-cyan-400 text-[#0a1428]" : "border-slate-500"
                   )}
                 >
                   {on && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -220,14 +220,14 @@ export function PlanPicker({
               ? "Change users, branches, AI requests or EDI. Stripe charges or credits the difference straight away."
               : "Everything in Growth, with as many users and branches as you need."}{" "}
             Contracts or invoicing instead of a card?{" "}
-            <Link href={ENTERPRISE_CONTACT_HREF} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+            <Link href={ENTERPRISE_CONTACT_HREF} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
               Talk to us
             </Link>
           </p>
           <EnterpriseBuilder tone="app" interval={interval} initial={enterprise.initial} minUsers={enterprise.minUsers} minBranches={enterprise.minBranches}>
             <SubmitButton
               pendingText="Working..."
-              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white light:text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-cyan-400 px-5 py-2.5 text-sm font-semibold text-[#0a1428] light:text-[#0a1428] shadow-md shadow-cyan-500/25 hover:bg-cyan-300 sm:w-auto"
             >
               {enterprise.submitLabel}
             </SubmitButton>
@@ -240,7 +240,7 @@ export function PlanPicker({
           <p className="text-sm text-slate-400 light:text-slate-500">
             Extra users ${interval === "monthly" ? `${EXTRA_USER_PRICE} a month` : `${EXTRA_USER_YEARLY_PRICE} a year`} each on Starter
             and up ·{" "}
-            <Link href="/pricing#compare" className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+            <Link href="/pricing#compare" className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
               Compare every feature
             </Link>
           </p>
@@ -249,7 +249,7 @@ export function PlanPicker({
           ) : (
             <SubmitButton
               pendingText="One moment..."
-              className="h-auto w-full rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white light:text-white shadow-md shadow-blue-600/25 hover:bg-blue-500 sm:w-auto"
+              className="h-auto w-full rounded-lg bg-cyan-400 px-5 py-2.5 text-sm font-semibold text-[#0a1428] light:text-[#0a1428] shadow-md shadow-cyan-500/25 hover:bg-cyan-300 sm:w-auto"
             >
               {mode === "checkout" ? "Subscribe to" : "Switch to"} {chosen!.name} · ${priceOf(chosen!.id).toLocaleString("en-US")}/{per}
             </SubmitButton>

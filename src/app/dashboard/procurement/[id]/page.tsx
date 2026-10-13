@@ -108,7 +108,7 @@ export default async function PurchaseOrderDetailPage({
               purchaseOrder.items.some((i) => i.product.trackingMode !== "NONE") && (
                 <Link
                   href={`/dashboard/procurement/${purchaseOrder.id}/receive`}
-                  className="whitespace-nowrap rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-sm font-medium text-blue-300 hover:bg-blue-500/20 light:border-blue-600/30 light:bg-blue-600/10 light:text-blue-700 light:hover:bg-blue-600/15"
+                  className="whitespace-nowrap rounded-md border border-cyan-400/30 bg-cyan-400/10 px-3 py-2 text-sm font-medium text-cyan-200 hover:bg-cyan-400/20 light:border-cyan-600/30 light:bg-cyan-500/10 light:text-cyan-800 light:hover:bg-cyan-500/15"
                 >
                   Receive with lots
                 </Link>

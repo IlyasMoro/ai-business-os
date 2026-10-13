@@ -91,7 +91,7 @@ export default async function WorkOrderDetailPage({
             </div>
             <p className="mt-1 text-slate-400 light:text-slate-500">
               Make {wo.quantity} ×{" "}
-              <Link href={`/dashboard/inventory/${wo.product.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+              <Link href={`/dashboard/inventory/${wo.product.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                 {wo.product.name}
               </Link>
               {wo.dueDate && <> · Due {formatDate(wo.dueDate)}</>}

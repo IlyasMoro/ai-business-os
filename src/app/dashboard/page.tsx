@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { CURRENCY_PREFIX, formatDayMonth } from "@/lib/utils";
+import { APP_TIME_ZONE, CURRENCY_PREFIX, formatDayMonth } from "@/lib/utils";
 import { Suspense } from "react";
 import { getCurrentUser, verifySession } from "@/lib/dal";
 import { canOpenModule, type ModuleKey } from "@/lib/role-access";
 import { MyWorkDashboard } from "@/components/dashboard/my-work";
+import { GreetingStrip, type AttentionItem } from "@/components/dashboard/greeting-strip";
 import { db } from "@/lib/db";
 import { branchWhere, getCompanyBranches } from "@/lib/branches";
 import { auditHref, formatAuditAction, formatAuditDetails } from "@/lib/audit-format";
@@ -18,7 +19,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { SpotlightCard } from "@/components/dash-viz/spotlight-card";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { subMonths, startOfMonth, endOfMonth, format, formatDistanceToNow } from "date-fns";
-import { Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, TrendingUp, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
+import { Sparkles, Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, TrendingUp, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
 
 export const metadata = { title: "Dashboard" };
 
@@ -93,6 +94,7 @@ export default async function DashboardOverviewPage({
   // Company revenue, costs and profit are only for people who can open the
   // books or the reports; everyone else gets their own work instead.
   const seesCompanyMoney = can("accounting") || can("reports");
+  const firstName = user.name.trim().split(" ")[0] || user.name;
 
   return (
     <div className="-m-4 min-h-[calc(100%+2rem)] p-4 sm:-m-6 sm:p-6">
@@ -100,17 +102,33 @@ export default async function DashboardOverviewPage({
 
       <Suspense fallback={<WidgetsSkeleton />}>
         {seesCompanyMoney ? (
-          <DashboardWidgets companyId={user.companyId} can={can} />
+          <DashboardWidgets companyId={user.companyId} firstName={firstName} can={can} />
         ) : (
-          <MyWorkDashboard companyId={user.companyId} userId={user.id} email={user.email} firstName={user.name.trim().split(" ")[0] || user.name} can={can} />
+          <MyWorkDashboard companyId={user.companyId} userId={user.id} email={user.email} firstName={firstName} can={can} />
         )}
       </Suspense>
     </div>
   );
 }
 
-async function DashboardWidgets({ companyId, can }: { companyId: string; can: (key: ModuleKey) => boolean }) {
+/** Midnight today in the app's time zone (South Africa has no daylight
+ * saving, so the offset is always +02:00). */
+function startOfToday(now: Date) {
+  const day = new Intl.DateTimeFormat("en-CA", { timeZone: APP_TIME_ZONE }).format(now);
+  return new Date(`${day}T00:00:00+02:00`);
+}
+
+async function DashboardWidgets({
+  companyId,
+  firstName,
+  can,
+}: {
+  companyId: string;
+  firstName: string;
+  can: (key: ModuleKey) => boolean;
+}) {
   const now = new Date();
+  const todayStart = startOfToday(now);
   const inBranch = await branchWhere();
   const sixMonthsAgo = startOfMonth(subMonths(now, 5));
   const months = monthBuckets(6);
@@ -141,6 +159,8 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
     recentAiActions,
     recentAuditLogs,
     agendaItems,
+    todayOrderCount,
+    pendingApprovalCount,
   ] = await Promise.all([
     db.customer.count({ where: { companyId } }),
     db.order.count({ where: { companyId, ...inBranch, status: { in: ["PENDING", "CONFIRMED"] } } }),
@@ -199,6 +219,8 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
       },
     }),
     getAgendaItems(companyId),
+    db.order.count({ where: { companyId, ...inBranch, createdAt: { gte: todayStart } } }),
+    db.aiAction.count({ where: { companyId, status: "PENDING" } }),
   ]);
 
   const lowStockCount = new Set(products.map((r) => r.productId)).size;
@@ -282,14 +304,17 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
   const projectsChange: KpiChange = {
     pct: pctChange(newProjectsThisMonth, newProjectsLastMonth),
     label: "new projects vs last month",
+    neutral: true,
   };
   const customersChange: KpiChange = {
     pct: pctChange(newCustomersThisMonth, newCustomersLastMonth),
     label: "new customers vs last month",
+    neutral: true,
   };
   const campaignsChange: KpiChange = {
     pct: pctChange(newCampaignsThisMonth, newCampaignsLastMonth),
     label: "new campaigns vs last month",
+    neutral: true,
   };
 
   const taskStatusMap = new Map(taskStatusGroups.map((g) => [g.status, g._count._all]));
@@ -360,10 +385,27 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
   ].filter((stat) => can(stat.module as ModuleKey));
   const growthTiles = [can("projects"), can("crm"), can("marketing")].filter(Boolean).length;
 
+  const todaySales = incomeTx.filter((t) => t.date >= todayStart).reduce((s, t) => s + t.amount, 0);
+  const attention: AttentionItem[] = [
+    can("invoicing") && { label: overdueCount === 1 ? "overdue invoice" : "overdue invoices", count: overdueCount, href: "/dashboard/invoicing", icon: Receipt, tone: "red" as const },
+    can("inventory") && { label: "low on stock", count: lowStockCount, href: "/dashboard/inventory", icon: Boxes, tone: "red" as const },
+    { label: pendingApprovalCount === 1 ? "AI action to approve" : "AI actions to approve", count: pendingApprovalCount, href: "/dashboard/assistant", icon: Sparkles, tone: "amber" as const },
+    can("support") && { label: openTicketCount === 1 ? "open ticket" : "open tickets", count: openTicketCount, href: "/dashboard/support", icon: LifeBuoy, tone: "amber" as const },
+  ].filter((item): item is AttentionItem => Boolean(item));
+
   return (
     <>
-      <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <GreetingStrip
+        firstName={firstName}
+        todaySales={todaySales}
+        todayOrders={can("sales") ? todayOrderCount : null}
+        attention={attention}
+      />
+
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="sm:col-span-2">
         <KpiCard
+          featured
           label="Revenue (6 months)"
           value={totalRevenue}
           prefix={CURRENCY_PREFIX}
@@ -374,6 +416,7 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
           trendLabels={monthLabels}
           change={revenueChange}
         />
+        </div>
         <KpiCard
           label="Expenses (6 months)"
           value={totalExpenses}
@@ -412,7 +455,7 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
           label="Total customers"
           value={snapshot.customerCount}
           icon={Users}
-          color={VIZ.amber}
+          color={VIZ.violet}
           trend={customersCumulative}
           trendLabels={monthLabels}
           change={customersChange}
@@ -421,7 +464,7 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
           label="Active campaigns"
           value={activeCampaignCount}
           icon={Megaphone}
-          color={VIZ.emerald}
+          color={VIZ.cyan}
           trend={campaignsCumulative}
           trendLabels={monthLabels}
           change={campaignsChange}
@@ -442,14 +485,7 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
                 </p>
                 <stat.icon className={`mt-1 h-4 w-4 shrink-0 ${stat.alert ? "text-amber-500" : "text-slate-500"}`} />
               </div>
-              <p className="mt-1 flex items-center gap-1.5 text-xs leading-snug text-slate-400 light:text-slate-500">
-                {/* Pulsing dot on tiles that need attention. */}
-                {stat.alert && (
-                  <span aria-hidden className="relative flex h-1.5 w-1.5 shrink-0">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75 motion-safe:animate-ping" />
-                    <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-amber-500" />
-                  </span>
-                )}
+              <p className="mt-1 flex items-center gap-1.5 text-xs font-medium leading-snug text-slate-300 light:text-slate-600">
                 {stat.label}
               </p>
             </SpotlightCard>
@@ -465,18 +501,21 @@ async function DashboardWidgets({ companyId, can }: { companyId: string; can: (k
             pct={completionRatio}
             detail={`${completedCount} of ${totalProjects} completed`}
             emptyText="No projects yet"
+            color={VIZ.cyan}
           />}
           {can("projects") && <RingGauge
             label="Task progress"
             pct={avgTaskCompletion}
             detail={`${doneTaskCount} of ${totalActiveProjectTasks} tasks done`}
             emptyText="No tasks in active projects"
+            color={VIZ.cyan}
           />}
           {can("invoicing") && <RingGauge
             label="Invoice collection rate"
             pct={collectionRate}
             detail={`${paidCount} of ${collectibleTotal} invoices paid`}
             emptyText="No invoices sent yet"
+            color={VIZ.cyan}
           />}
         </div>
       </div>

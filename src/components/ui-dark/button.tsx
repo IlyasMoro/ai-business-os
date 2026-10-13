@@ -6,9 +6,11 @@ type Variant = "primary" | "secondary" | "ghost" | "danger";
 type Size = "sm" | "md" | "lg";
 
 const variantClasses: Record<Variant, string> = {
+  // The brand cyan with dark ink, the same as the website's main buttons,
+  // so signing up and working in the app feel like one product.
   primary:
-    "border border-blue-400/30 bg-blue-500/15 text-blue-200 backdrop-blur-md hover:bg-blue-500/25 hover:shadow-[0_0_24px_-6px_rgb(59_130_246/0.6)] " +
-    "light:text-blue-700 light:hover:bg-blue-500/20",
+    "border border-cyan-300/60 bg-cyan-400 font-semibold text-[#0a1428] hover:bg-cyan-300 hover:shadow-[0_0_24px_-6px_rgb(34_211_238/0.7)] " +
+    "light:border-cyan-500/50 light:text-[#0a1428]",
   secondary:
     "border border-white/[0.08] bg-white/[0.04] backdrop-blur-md text-slate-200 hover:border-white/10 hover:bg-white/5 " +
     "light:border-slate-300 light:bg-white/70 light:text-slate-700 light:hover:border-slate-400 light:hover:bg-white",
@@ -27,7 +29,7 @@ const sizeClasses: Record<Size, string> = {
 };
 
 const base =
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-[color,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 light:focus-visible:ring-offset-white disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-md font-medium transition-[color,background-color,border-color,box-shadow] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 light:focus-visible:ring-offset-white disabled:opacity-50 disabled:pointer-events-none";
 
 /** Button look for elements that can't be <Button>/<LinkButton>, such as a
  * plain <a> pointing at a file download route. */

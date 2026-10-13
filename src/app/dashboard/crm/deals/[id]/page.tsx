@@ -84,7 +84,7 @@ export default async function DealPage({
               <Badge tone={STAGE_TONE[deal.stage]}>{stageInfo(deal.stage).label}</Badge>
             </div>
             <p className="mt-1 text-sm text-slate-400 light:text-slate-500">
-              <Link href={`/dashboard/crm/${deal.customer.id}`} className="text-blue-400 hover:text-blue-300 light:text-blue-700">
+              <Link href={`/dashboard/crm/${deal.customer.id}`} className="text-cyan-300 hover:text-cyan-200 light:text-cyan-800">
                 {deal.customer.name}
               </Link>
               {" · "}

@@ -132,7 +132,7 @@ export default async function ControllingPage({
       <div className={`${card} mt-6 overflow-x-auto`}>
         <div className="flex items-center justify-between px-5 pt-4">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Cost centers</h2>
-          <Link href="/dashboard/controlling/cost-centers" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+          <Link href="/dashboard/controlling/cost-centers" className="text-sm text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
             Manage
           </Link>
         </div>
@@ -191,7 +191,7 @@ export default async function ControllingPage({
       <div className={`${card} mt-6 overflow-x-auto`}>
         <div className="flex items-center justify-between px-5 pt-4">
           <h2 className="text-sm font-semibold text-slate-50 light:text-slate-900">Open internal orders</h2>
-          <Link href="/dashboard/controlling/orders" className="text-sm text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+          <Link href="/dashboard/controlling/orders" className="text-sm text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
             Manage
           </Link>
         </div>

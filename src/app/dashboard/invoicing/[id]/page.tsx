@@ -111,7 +111,7 @@ export default async function InvoiceDetailPage({
               {invoice.order && (
                 <>
                   {" · from order "}
-                  <Link href={`/dashboard/sales/${invoice.order.id}`} className="font-mono text-blue-400 hover:text-blue-300 light:text-blue-700 light:hover:text-blue-800">
+                  <Link href={`/dashboard/sales/${invoice.order.id}`} className="font-mono text-cyan-300 hover:text-cyan-200 light:text-cyan-800 light:hover:text-cyan-900">
                     {invoice.order.orderNumber}
                   </Link>
                 </>
@@ -179,7 +179,7 @@ export default async function InvoiceDetailPage({
                       </p>
                       {editable && (
                         <details className="mt-1">
-                          <summary className="cursor-pointer list-none text-xs font-medium text-blue-400 hover:text-blue-300 light:text-blue-700">Edit</summary>
+                          <summary className="cursor-pointer list-none text-xs font-medium text-cyan-300 hover:text-cyan-200 light:text-cyan-800">Edit</summary>
                           <form action={updateInvoiceLineItem.bind(null, invoice.id, item.id)} className="mt-2 flex flex-wrap items-end gap-2">
                             <Input name="description" defaultValue={item.description} required aria-label="Description" className="min-w-48 flex-1" />
                             <Input name="quantity" type="number" min="0.001" step={item.product ? qtyStep(item.product.unit) : "any"} defaultValue={item.quantity} required aria-label="Quantity" className="w-20" />

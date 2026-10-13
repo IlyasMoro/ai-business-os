@@ -58,7 +58,7 @@ export function DuplicateGroup({
               key={r.id}
               className={cn(
                 "flex cursor-pointer gap-3 rounded-xl border p-3 text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-blue-500",
-                on ? "border-blue-500/60 bg-blue-500/10" : "border-white/[0.08] hover:border-white/20 light:border-slate-200 light:hover:border-slate-300"
+                on ? "border-cyan-400/60 bg-cyan-400/10" : "border-white/[0.08] hover:border-white/20 light:border-slate-200 light:hover:border-slate-300"
               )}
             >
               <input type="radio" name={`keep-${suggestedKeepId}`} checked={on} onChange={() => setKeepId(r.id)} className="mt-1 h-4 w-4 accent-blue-500" />
@@ -67,7 +67,7 @@ export function DuplicateGroup({
                   <Link href={`/dashboard/crm/${r.id}`} target="_blank" className="truncate font-semibold text-slate-50 hover:text-blue-400 light:text-slate-900">
                     {r.name}
                   </Link>
-                  {on && <span className="shrink-0 rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-medium text-white">Keep</span>}
+                  {on && <span className="shrink-0 rounded-full bg-cyan-400 px-2 py-0.5 text-[11px] font-semibold text-[#0a1428]">Keep</span>}
                 </span>
                 <span className="mt-1 block truncate text-slate-400 light:text-slate-500">{r.email ?? "No email"}</span>
                 <span className="block truncate text-slate-400 light:text-slate-500">
