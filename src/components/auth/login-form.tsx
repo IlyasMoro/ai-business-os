@@ -3,7 +3,8 @@
 import { Suspense, useActionState, useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Mail, Sparkles } from "lucide-react";
+import { Fingerprint, Loader2, Mail } from "lucide-react";
+import { browserSupportsWebAuthn, startAuthentication, WebAuthnError } from "@simplewebauthn/browser";
 import { login } from "@/lib/actions/auth";
 import { AuthAlert, AuthField, AuthSubmit, PasswordField, authLink } from "@/components/auth/auth-fields";
 
@@ -20,6 +21,70 @@ function readSavedEmail(): string | null {
 }
 
 export type LoginProvider = { id: "google" | "microsoft"; label: string };
+
+/** Sign in with a passkey: the device offers the passkeys it has for this
+    site and checks the person's fingerprint, face or PIN. Cancelling the
+    device's prompt is not an error, so it says nothing. */
+function PasskeyButton() {
+  const supported = useSyncExternalStore(noSubscribe, () => browserSupportsWebAuthn(), () => false);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  if (!supported) return null;
+
+  async function signIn() {
+    setBusy(true);
+    setMessage(null);
+    try {
+      const options = await fetch("/api/auth/passkey/login/options", { method: "POST" }).then((r) => r.json());
+      if (options.error) {
+        setMessage(options.error);
+        return;
+      }
+      const response = await startAuthentication({ optionsJSON: options });
+      const result = await fetch("/api/auth/passkey/login/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response }),
+      }).then((r) => r.json());
+      if (result.ok) {
+        window.location.assign(result.redirect ?? "/dashboard");
+        return;
+      }
+      setMessage(result.error ?? "That passkey didn't work. Try again.");
+    } catch (error) {
+      const cancelled =
+        (error instanceof WebAuthnError && error.code === "ERROR_CEREMONY_ABORTED") ||
+        (error instanceof Error && error.name === "NotAllowedError");
+      if (!cancelled) setMessage("That passkey didn't work. Try again, or use your email and password.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="my-5 flex items-center gap-3 text-xs font-medium text-slate-400" aria-hidden>
+        <span className="h-px flex-1 bg-slate-200" />
+        or
+        <span className="h-px flex-1 bg-slate-200" />
+      </div>
+      {message && (
+        <div className="mb-4">
+          <AuthAlert tone="error">{message}</AuthAlert>
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={signIn}
+        disabled={busy}
+        className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[0.95rem] font-semibold text-[#0b1f5e] transition hover:border-[#0b1f5e] hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-400/30 disabled:cursor-not-allowed disabled:opacity-70"
+      >
+        {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Fingerprint className="h-[1.1rem] w-[1.1rem] text-cyan-600" aria-hidden />}
+        {busy ? "Waiting for your device" : "Sign in with a passkey"}
+      </button>
+    </div>
+  );
+}
 
 /* Messages from the address bar: a finished password reset, an expired
    second step, or a Google / Microsoft sign in that could not finish. */
@@ -69,9 +134,12 @@ function MicrosoftMark() {
   );
 }
 
-/** The sign in form: Google / Microsoft when set up, then email and
-    password with Caps Lock warning and "Keep me signed in". The email
-    stays filled in after a wrong password. */
+/** The sign in form, in two steps: the email first (with Google /
+    Microsoft above it when set up), then the password with Caps Lock
+    warning and "Keep me signed in". A remembered email starts at the
+    password. The email stays filled in after a wrong password.
+    Which step comes next never depends on whether the email has an
+    account, so the form gives nothing away about who uses AIBOS. */
 export function LoginForm({ providers = [] }: { providers?: LoginProvider[] }) {
   const [state, action, pending] = useActionState(login, undefined);
   const saved = useSyncExternalStore(noSubscribe, readSavedEmail, () => null);
@@ -81,11 +149,23 @@ export function LoginForm({ providers = [] }: { providers?: LoginProvider[] }) {
   const [rememberTicked, setRemember] = useState<boolean | null>(null);
   const email = typedEmail ?? saved ?? "";
   const remember = rememberTicked ?? Boolean(saved);
+  // null until the person moves on: then the saved email decides the start.
+  const [chosenStep, setStep] = useState<"email" | "password" | null>(null);
+  const emailRejected = Boolean(state?.errors?.email?.length);
+  const step = emailRejected ? "email" : (chosenStep ?? (saved ? "password" : "email"));
 
-  // Email already known: start in the password box.
+  // Each step starts with its own box focused.
   useEffect(() => {
-    if (saved) document.getElementById("password")?.focus();
-  }, [saved]);
+    document.getElementById(step === "password" ? "password" : "email")?.focus();
+  }, [step]);
+
+  /** Continue: check the email looks right (the browser's own message if
+      not), then show the password step. */
+  function next() {
+    const input = document.getElementById("email") as HTMLInputElement | null;
+    if (input && !input.reportValidity()) return;
+    setStep("password");
+  }
 
   function rememberChoice() {
     try {
@@ -131,65 +211,85 @@ export function LoginForm({ providers = [] }: { providers?: LoginProvider[] }) {
         </>
       )}
 
-      <form action={action} onSubmit={rememberChoice} className="space-y-5">
-        <AuthField
-          id="email"
-          type="email"
-          label="Work email"
-          icon={Mail}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="you@company.com"
-          autoComplete="email"
-          autoFocus
-          required
-          errors={state?.errors?.email}
-        />
-
-        <PasswordField
-          autoComplete="current-password"
-          placeholder="Your password"
-          errors={state?.errors?.password}
-          labelAside={
-            <Link href="/forgot-password" className={`mb-1.5 text-sm ${authLink}`}>
-              Forgot password?
-            </Link>
+      <form
+        action={action}
+        onSubmit={(e) => {
+          // Enter in the email box moves on instead of signing in.
+          if (step === "email") {
+            e.preventDefault();
+            next();
+            return;
           }
-        />
-
-        <label className="flex w-fit cursor-pointer select-none items-start gap-2.5 text-sm text-slate-600">
-          <input
-            type="checkbox"
-            name="remember"
-            checked={remember}
-            onChange={(e) => setRemember(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#1b3fbf]"
-          />
-          <span>
-            Keep me signed in for 30 days
-            <span className="block text-xs text-slate-400">Only on your own device.</span>
-          </span>
-        </label>
-
-        <AuthSubmit pending={pending} pendingText="Signing in">
-          Sign in
-        </AuthSubmit>
-      </form>
-
-      {/* No account yet: a clear second way in, not just the corner link. */}
-      <div className="mt-7 flex items-center gap-3 text-xs font-medium text-slate-400" aria-hidden>
-        <span className="h-px flex-1 bg-slate-200" />
-        New to AIBOS?
-        <span className="h-px flex-1 bg-slate-200" />
-      </div>
-      <Link
-        href="/register"
-        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-3 text-[0.95rem] font-semibold text-[#0b1f5e] transition hover:border-[#0b1f5e] hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1b3fbf]/20"
+          rememberChoice();
+        }}
+        className="space-y-5"
       >
-        <Sparkles className="h-4 w-4 text-cyan-500" aria-hidden />
-        Create a free account
-      </Link>
-      <p className="mt-2.5 text-center text-xs text-slate-400">14 days free with every module. No card needed.</p>
+        {step === "email" ? (
+          <>
+            <AuthField
+              id="email"
+              type="email"
+              label="Work email"
+              icon={Mail}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              autoComplete="username"
+              required
+              errors={state?.errors?.email}
+            />
+            <AuthSubmit pending={false} pendingText="">
+              Continue
+            </AuthSubmit>
+          </>
+        ) : (
+          <>
+            {/* The email being signed in, with a way back to change it. It is
+                still a real field, so password managers match the login. */}
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <span className="flex min-w-0 items-center gap-2.5 text-sm text-slate-700">
+                <Mail className="h-4 w-4 shrink-0 text-slate-400" aria-hidden />
+                <span className="truncate font-medium">{email}</span>
+              </span>
+              <button type="button" onClick={() => setStep("email")} className={`shrink-0 text-sm ${authLink}`}>
+                Change
+              </button>
+            </div>
+            <input type="email" name="email" value={email} readOnly autoComplete="username" className="sr-only" tabIndex={-1} aria-hidden />
+
+            <PasswordField
+              autoComplete="current-password"
+              placeholder="Your password"
+              errors={state?.errors?.password}
+              labelAside={
+                <Link href="/forgot-password" className={`mb-1.5 text-sm ${authLink}`}>
+                  Forgot password?
+                </Link>
+              }
+            />
+
+            <label className="flex w-fit cursor-pointer select-none items-start gap-2.5 text-sm text-slate-600">
+              <input
+                type="checkbox"
+                name="remember"
+                checked={remember}
+                onChange={(e) => setRemember(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#1b3fbf]"
+              />
+              <span>
+                Keep me signed in for 30 days
+                <span className="block text-xs text-slate-400">Only on your own device.</span>
+              </span>
+            </label>
+
+            <AuthSubmit pending={pending} pendingText="Signing in">
+              Sign in
+            </AuthSubmit>
+          </>
+        )}
+      </form>
+      {step === "email" && <PasskeyButton />}
+      {/* Signing up is offered once, in the top corner of the page. */}
     </div>
   );
 }

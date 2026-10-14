@@ -1,8 +1,12 @@
 import Link from "next/link";
-import { Bot, Check, type LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
+import { Check } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { CopilotMark } from "@/components/brand/copilot-mark";
+import { CountUp } from "./count-up";
 
-export type AuthPoint = { icon: LucideIcon; text: string };
+/** A lucide icon, or a brand mark such as CopilotMark. */
+export type AuthPoint = { icon: ComponentType<{ className?: string }>; text: string };
 
 /* The screen every public form sits on (sign in, sign up, password reset,
    invites, contact): the form on white at the left, the dark blue glass
@@ -79,7 +83,7 @@ export function AuthShell({
         aria-label="About AIBOS"
       >
         <Backdrop />
-        <div>
+        <div className="auth-rise">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-cyan-300">{panelEyebrow}</p>
           <h2 className="mt-4 max-w-md font-display text-[2.1rem] font-bold leading-[1.15] tracking-tight">{panelTitle}</h2>
         </div>
@@ -88,10 +92,11 @@ export function AuthShell({
 
         {/* Three glass tiles side by side, each with its icon above the text. */}
         <ul className="grid grid-cols-3 gap-3">
-          {points.map((p) => (
+          {points.map((p, i) => (
             <li
               key={p.text}
-              className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-snug text-white/80 backdrop-blur-xl"
+              style={{ "--d": `${1.9 + i * 0.12}s` } as React.CSSProperties}
+              className="auth-rise flex flex-col gap-3 rounded-xl border border-white/10 bg-white/[0.04] p-4 text-sm leading-snug text-white/80 backdrop-blur-xl"
             >
               <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-cyan-300/10 text-cyan-300 ring-1 ring-cyan-300/20" aria-hidden>
                 <p.icon className="h-[1.1rem] w-[1.1rem]" />
@@ -121,10 +126,10 @@ function Backdrop() {
 function AppPreview() {
   return (
     <div className="relative mb-24 mt-8 max-w-lg" aria-hidden>
-      <div className="rounded-2xl border border-white/10 bg-[#0b1430]/60 p-5 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl">
+      <div style={{ "--d": "0.1s" } as React.CSSProperties} className="auth-rise rounded-2xl border border-white/10 bg-[#0b1430]/60 p-5 shadow-[0_30px_60px_-30px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl">
         <div className="grid grid-cols-2 gap-3">
-          <PreviewTile label="Revenue this month" value="R 1,108,240" change="+6%" />
-          <PreviewTile label="Invoices paid" value="23 of 36" change="64%" />
+          <PreviewTile label="Revenue this month" value={<CountUp to={1108240} prefix="R " delay={0.3} />} change="+6%" delay="0.2s" />
+          <PreviewTile label="Invoices paid" value={<CountUp to={23} suffix=" of 36" delay={0.4} />} change="64%" delay="0.3s" />
         </div>
         <div className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.03] p-4">
           <div className="flex items-center justify-between text-xs text-white/50">
@@ -138,15 +143,16 @@ function AppPreview() {
                 <stop offset="1" stopColor="#22d3ee" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <path d="M0 52 L50 46 L100 50 L150 34 L200 38 L250 20 L300 12 L300 70 L0 70 Z" fill="url(#auth-trend)" />
-            <path d="M0 52 L50 46 L100 50 L150 34 L200 38 L250 20 L300 12" fill="none" stroke="#22d3ee" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+            <path className="auth-fill" d="M0 52 L50 46 L100 50 L150 34 L200 38 L250 20 L300 12 L300 70 L0 70 Z" fill="url(#auth-trend)" />
+            {/* pathLength 1 lets the draw animation work in fractions of the line. */}
+            <path className="auth-draw" pathLength={1} d="M0 52 L50 46 L100 50 L150 34 L200 38 L250 20 L300 12" fill="none" stroke="#22d3ee" strokeWidth="2" vectorEffect="non-scaling-stroke" />
           </svg>
         </div>
       </div>
 
-      <div className="absolute -bottom-[5.5rem] -right-4 w-72 rounded-xl border border-white/10 bg-[#101c3d]/90 p-4 shadow-[0_20px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur-xl xl:-right-10">
+      <div className="auth-slide-in absolute -bottom-[5.5rem] -right-4 w-72 rounded-xl border border-white/10 bg-[#101c3d]/90 p-4 shadow-[0_20px_40px_-16px_rgba(0,0,0,0.9)] backdrop-blur-xl xl:-right-10">
         <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300">
-          <Bot className="h-3.5 w-3.5" />
+          <CopilotMark className="h-4 w-4" />
           AI Copilot
         </div>
         <p className="mt-2 text-sm leading-snug text-white/85">3 invoices are overdue. Send a friendly reminder to each customer?</p>
@@ -162,11 +168,11 @@ function AppPreview() {
   );
 }
 
-function PreviewTile({ label, value, change }: { label: string; value: string; change: string }) {
+function PreviewTile({ label, value, change, delay }: { label: string; value: React.ReactNode; change: string; delay: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.07] bg-white/[0.03] p-4">
+    <div style={{ "--d": delay } as React.CSSProperties} className="auth-rise rounded-xl border border-white/[0.07] bg-white/[0.03] p-4">
       <p className="text-xs text-white/50">{label}</p>
-      <p className="mt-1.5 font-display text-xl font-bold text-white">{value}</p>
+      <p className="mt-1.5 font-display text-xl font-bold tabular-nums text-white">{value}</p>
       <p className="mt-1 text-xs font-semibold text-emerald-300">{change}</p>
     </div>
   );

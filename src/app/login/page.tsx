@@ -1,4 +1,5 @@
-import { Bot, GitBranch, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { GitBranch, LayoutDashboard, ShieldCheck } from "lucide-react";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 import { LoginForm } from "@/components/auth/login-form";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { enabledProviders, providerLabel } from "@/lib/oauth-login";
@@ -20,7 +21,7 @@ export default function LoginPage() {
       panelTitle="Run every branch from one calm screen."
       points={[
         { icon: LayoutDashboard, text: "Sales, stock, money and your team on one dashboard" },
-        { icon: Bot, text: "An AI Copilot that suggests, and waits for your approval" },
+        { icon: CopilotMark, text: "An AI Copilot that suggests, and waits for your approval" },
         { icon: GitBranch, text: "Every branch on its own, or the whole company at once" },
       ]}
       below={

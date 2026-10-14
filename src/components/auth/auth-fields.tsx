@@ -174,13 +174,14 @@ export function AuthSubmit({ pending, pendingText, children }: { pending: boolea
     <button
       type="submit"
       disabled={pending}
-      // Glass: see through navy, a shine across the top half, a bright
-      // edge and a soft glow; on hover a light sweep runs across it.
-      className="group relative isolate flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-white/15 bg-[linear-gradient(180deg,rgba(14,36,108,0.97),rgba(7,21,66,0.98))] px-5 py-3.5 text-[0.95rem] font-semibold text-white shadow-[0_14px_32px_-12px_rgba(11,31,94,0.7),inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.3)] backdrop-blur-md transition hover:-translate-y-px hover:shadow-[0_18px_38px_-12px_rgba(11,31,94,0.8),inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-1px_0_rgba(0,0,0,0.3)] hover:brightness-115 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1b3fbf]/30 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
+      // The brand cyan with dark ink, the same as the website's and the
+      // app's main buttons; a shine across the top half, a soft cyan glow,
+      // and on hover a light sweep runs across it.
+      className="group relative isolate flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl border border-cyan-300 bg-[linear-gradient(180deg,#5ee4f5,#22d3ee)] px-5 py-3.5 text-[0.95rem] font-bold text-[#0a1428] shadow-[0_14px_32px_-14px_rgba(8,145,178,0.75),inset_0_1px_0_rgba(255,255,255,0.55)] transition hover:-translate-y-px hover:shadow-[0_18px_38px_-14px_rgba(8,145,178,0.85),inset_0_1px_0_rgba(255,255,255,0.6)] hover:brightness-105 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-cyan-400/40 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 motion-reduce:transition-none"
     >
-      <span className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-1/2 bg-gradient-to-b from-white/10 to-white/0" aria-hidden />
+      <span className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-1/2 bg-gradient-to-b from-white/25 to-white/0" aria-hidden />
       <span
-        className="pointer-events-none absolute inset-y-0 -left-1/3 -z-10 w-1/3 -skew-x-12 bg-gradient-to-r from-white/0 via-white/20 to-white/0 opacity-0 transition-all duration-700 group-hover:left-[110%] group-hover:opacity-100 motion-reduce:hidden"
+        className="pointer-events-none absolute inset-y-0 -left-1/3 -z-10 w-1/3 -skew-x-12 bg-gradient-to-r from-white/0 via-white/40 to-white/0 opacity-0 transition-all duration-700 group-hover:left-[110%] group-hover:opacity-100 motion-reduce:hidden"
         aria-hidden
       />
       {pending ? (

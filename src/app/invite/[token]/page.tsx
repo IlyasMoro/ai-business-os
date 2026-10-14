@@ -1,6 +1,7 @@
 import { createHash } from "crypto";
 import Link from "next/link";
-import { Bot, GitBranch, Users } from "lucide-react";
+import { GitBranch, Users } from "lucide-react";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 import { db } from "@/lib/db";
 import { acceptInvite } from "@/lib/actions/team";
 import { AcceptInviteForm } from "@/components/team/accept-invite-form";
@@ -41,7 +42,7 @@ export default async function InvitePage({
     points: [
       { icon: Users, text: "See exactly what your role lets you open" },
       { icon: GitBranch, text: "Work in your own branch, alongside everyone else" },
-      { icon: Bot, text: "Ask the AI Copilot anything about your work" },
+      { icon: CopilotMark, text: "Ask the AI Copilot anything about your work" },
     ],
   };
 

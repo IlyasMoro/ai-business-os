@@ -608,3 +608,46 @@ select option {
   background-color: #ffffff;
   color: #0f172a;
 }
+
+/* Sign in panel: the made up dashboard comes alive once, on load. Tiles
+   rise in one by one, the sales line draws itself, its fill fades in
+   after it, and the Copilot suggestion slides in last, as if it had just
+   thought of it. Nothing moves for people who turn motion off. */
+@keyframes auth-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes auth-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes auth-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes auth-slide-in {
+  from { opacity: 0; transform: translate(18px, 10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+.auth-rise {
+  animation: auth-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--d, 0s);
+}
+.auth-draw {
+  stroke-dasharray: 1;
+  animation: auth-draw 1.4s cubic-bezier(0.65, 0, 0.35, 1) 0.45s both;
+}
+.auth-fill {
+  animation: auth-fade 0.8s ease-out 1.3s both;
+}
+.auth-slide-in {
+  animation: auth-slide-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 1.6s both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .auth-rise,
+  .auth-draw,
+  .auth-fill,
+  .auth-slide-in {
+    animation: none;
+  }
+}

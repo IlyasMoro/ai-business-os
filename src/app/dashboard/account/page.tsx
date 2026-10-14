@@ -1,4 +1,5 @@
-import { KeyRound, LogIn, ShieldCheck, UserRound } from "lucide-react";
+import { Fingerprint, KeyRound, LogIn, ShieldCheck, UserRound } from "lucide-react";
+import { headers } from "next/headers";
 import QRCode from "qrcode";
 import { getCurrentUser } from "@/lib/dal";
 import { updateMyName, changePassword } from "@/lib/actions/account";
@@ -7,6 +8,8 @@ import { SubmitButton } from "@/components/ui-dark/submit-button";
 import { Input, Label } from "@/components/ui-dark/input";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { TwoFactorCard } from "@/components/account/two-factor-card";
+import { PasskeysCard } from "@/components/account/passkeys-card";
+import { guessPasskeyName } from "@/lib/passkeys";
 import { db } from "@/lib/db";
 import { openSecret } from "@/lib/secret-box";
 import { otpauthUrl } from "@/lib/totp";
@@ -47,6 +50,10 @@ export default async function AccountPage({
       twoFactorPendingSecret: true,
       twoFactorRecoveryCodes: true,
       externalLogins: { select: { provider: true, email: true } },
+      passkeys: {
+        select: { id: true, name: true, createdAt: true, lastUsedAt: true, backedUp: true },
+        orderBy: { createdAt: "asc" },
+      },
     },
   });
   // Setting up: the QR code for the app, made here so the secret never
@@ -62,6 +69,7 @@ export default async function AccountPage({
     "linked-google": "Google connected. You can now sign in with it.",
     "linked-microsoft": "Microsoft connected. You can now sign in with it.",
     unlinked: "Disconnected. Your password still works.",
+    "passkey-removed": "Passkey removed. Your password still works.",
     "recovery-used": `You signed in with a recovery code. ${left ?? "Some"} left: make new ones below if you are running low.`,
   };
   const oauthError: Record<string, string> = {
@@ -134,6 +142,20 @@ export default async function AccountPage({
               <SubmitButton pendingText="Changing...">Change password</SubmitButton>
             </div>
           </form>
+        </div>
+
+        <div id="passkeys" className="scroll-mt-6 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">
+          <CardHead icon={Fingerprint} title="Passkeys" text="Sign in with your fingerprint, face or device PIN. No password to type." />
+          <PasskeysCard
+            passkeys={security.passkeys.map((p) => ({
+              id: p.id,
+              name: p.name,
+              createdAt: p.createdAt.toISOString(),
+              lastUsedAt: p.lastUsedAt?.toISOString() ?? null,
+              backedUp: p.backedUp,
+            }))}
+            suggestedName={guessPasskeyName((await headers()).get("user-agent"))}
+          />
         </div>
 
         <div id="two-factor" className="scroll-mt-6 rounded-2xl border border-white/[0.09] p-5 glass light:border-white/80">

@@ -202,6 +202,7 @@ model User {
   stockMovements      StockMovement[]
   passwordResetTokens PasswordResetToken[]
   externalLogins      ExternalLogin[]
+  passkeys            Passkey[]
   auditLogs           AuditLog[]
   taskComments        TaskComment[]
   ticketMessages      TicketMessage[]
@@ -363,6 +364,46 @@ model ExternalLogin {
   @@unique([provider, subject])
   @@unique([userId, provider])
   @@index([userId])
+}
+
+/// A passkey: sign in with the device's fingerprint, face or PIN (Windows
+/// Hello, Face ID, Touch ID, an Android phone, a security key) instead of
+/// a password. Only the public key is stored; the private key never leaves
+/// the device.
+model Passkey {
+  id           String    @id @default(cuid())
+  /// The credential id from the device, base64url.
+  credentialId String    @unique
+  publicKey    Bytes
+  /// The device's signature counter, to catch a cloned passkey.
+  counter      Int       @default(0)
+  transports   String[]  @default([])
+  /// Synced across the person's devices (iCloud Keychain, Google Password Manager).
+  backedUp     Boolean   @default(false)
+  /// What the person called it, e.g. "Work laptop".
+  name         String
+  createdAt    DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// A one time passkey challenge: made when a passkey prompt opens, used up
+/// when the answer is checked, and useless after five minutes.
+model PasskeyChallenge {
+  id        String   @id @default(cuid())
+  challenge String
+  /// "register" (adding a passkey, signed in) or "login".
+  purpose   String
+  /// Set when adding a passkey: whose account it is for.
+  userId    String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 model PasswordResetToken {
