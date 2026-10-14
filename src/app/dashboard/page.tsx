@@ -19,7 +19,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { SpotlightCard } from "@/components/dash-viz/spotlight-card";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { subMonths, startOfMonth, endOfMonth, format, formatDistanceToNow } from "date-fns";
-import { Sparkles, Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, TrendingUp, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
+import { BarChart3, Sparkles, Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
 
 export const metadata = { title: "Dashboard" };
 
@@ -433,7 +433,8 @@ async function DashboardWidgets({
           value={netProfit}
           prefix={CURRENCY_PREFIX}
           decimals={0}
-          icon={TrendingUp}
+          // The Reports icon from the menu, where profit over time lives.
+          icon={BarChart3}
           color={VIZ.blue}
           trend={profitTrend}
           trendLabels={monthLabels}
