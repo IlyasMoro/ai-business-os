@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getCurrentUser, verifySession } from "@/lib/dal";
 import { canOpenModule, type ModuleKey } from "@/lib/role-access";
 import { MyWorkDashboard } from "@/components/dashboard/my-work";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 import { GreetingStrip, type AttentionItem } from "@/components/dashboard/greeting-strip";
 import { db } from "@/lib/db";
 import { branchWhere, getCompanyBranches } from "@/lib/branches";
@@ -19,7 +20,7 @@ import { VIZ } from "@/components/dash-viz/colors";
 import { SpotlightCard } from "@/components/dash-viz/spotlight-card";
 import { AnimatedCounter } from "@/components/dash-viz/animated-counter";
 import { subMonths, startOfMonth, endOfMonth, format, formatDistanceToNow } from "date-fns";
-import { BarChart3, Sparkles, Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
+import { BarChart3, Users, ShoppingCart, Boxes, Receipt, LifeBuoy, FolderKanban, Wallet, TrendingDown, Megaphone, Truck, UserSquare2, CalendarClock, FileText, CheckSquare, Banknote, BellRing, Handshake } from "lucide-react";
 
 export const metadata = { title: "Dashboard" };
 
@@ -386,12 +387,12 @@ async function DashboardWidgets({
   const growthTiles = [can("projects"), can("crm"), can("marketing")].filter(Boolean).length;
 
   const todaySales = incomeTx.filter((t) => t.date >= todayStart).reduce((s, t) => s + t.amount, 0);
-  const attention: AttentionItem[] = [
+  const attention: AttentionItem[] = ([
     can("invoicing") && { label: overdueCount === 1 ? "overdue invoice" : "overdue invoices", count: overdueCount, href: "/dashboard/invoicing", icon: Receipt, tone: "red" as const },
     can("inventory") && { label: "low on stock", count: lowStockCount, href: "/dashboard/inventory", icon: Boxes, tone: "red" as const },
-    { label: pendingApprovalCount === 1 ? "AI action to approve" : "AI actions to approve", count: pendingApprovalCount, href: "/dashboard/assistant", icon: Sparkles, tone: "amber" as const },
+    { label: pendingApprovalCount === 1 ? "AI action to approve" : "AI actions to approve", count: pendingApprovalCount, href: "/dashboard/assistant", icon: CopilotMark, tone: "amber" as const },
     can("support") && { label: openTicketCount === 1 ? "open ticket" : "open tickets", count: openTicketCount, href: "/dashboard/support", icon: LifeBuoy, tone: "amber" as const },
-  ].filter((item): item is AttentionItem => Boolean(item));
+  ] as (AttentionItem | false)[]).filter((item): item is AttentionItem => Boolean(item));
 
   return (
     <>

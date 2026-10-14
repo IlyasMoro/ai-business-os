@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { APP_TIME_ZONE, formatCurrency } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ export type AttentionItem = {
   label: string;
   count: number;
   href: string;
-  icon: LucideIcon;
+  icon: ComponentType<{ className?: string }>;
   /** red for money or stock at risk, amber for things waiting on someone. */
   tone: "red" | "amber";
 };

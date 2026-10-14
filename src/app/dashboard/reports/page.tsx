@@ -13,7 +13,8 @@ import { rankCustomers } from "@/lib/customer-ranking";
 import Link from "next/link";
 import { VIZ } from "@/components/dash-viz/colors";
 import { forecastNextMonthRevenue } from "@/lib/ai-tools";
-import { Sparkles, Download, Wallet, TrendingDown, TrendingUp } from "lucide-react";
+import { CopilotMark } from "@/components/brand/copilot-mark";
+import { BarChart3, Download, Wallet, TrendingDown } from "lucide-react";
 import { buttonStyles } from "@/components/ui-dark/button";
 import { StatusBadge } from "@/components/ui-dark/badge";
 import { getCampaignsWithStats } from "@/lib/campaign-data";
@@ -155,12 +156,12 @@ export default async function ReportsPage() {
           label="Net (6 months)"
           value={net}
           prefix={CURRENCY_PREFIX}
-          icon={TrendingUp}
+          icon={BarChart3}
           color={net >= 0 ? VIZ.blue : VIZ.red}
           trend={monthly.map((m) => m.income - m.expense)}
           trendLabels={monthly.map((m) => m.longLabel)}
         />
-        <KpiCard label="AI revenue forecast" value={forecast.estimatedNextMonthRevenue} prefix={CURRENCY_PREFIX} icon={Sparkles} color={VIZ.blue} hint="Estimate for next month, from recent income" />
+        <KpiCard label="AI revenue forecast" value={forecast.estimatedNextMonthRevenue} prefix={CURRENCY_PREFIX} icon={CopilotMark} color={VIZ.cyan} hint="Estimate for next month, from recent income" />
       </div>
 
       {profit && (

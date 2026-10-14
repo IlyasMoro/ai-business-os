@@ -20,10 +20,6 @@ function lockedPlanName(href: string): string | null {
 }
 
 /** The page you're on: tinted background and a short blue bar on its left. */
-function ActiveBar({ className }: { className?: string }) {
-  return <span aria-hidden className={cn("absolute top-1/2 h-5 w-0.5 -translate-y-1/2 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]", className)} />;
-}
-
 function matches(href: string, pathname: string) {
   return href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
 }
@@ -252,7 +248,6 @@ export function NavLinks({
             : "text-slate-100 hover:bg-white/[0.07] hover:text-white light:text-slate-800 light:hover:bg-slate-900/5 light:hover:text-slate-950",
         )}
       >
-        {active && <ActiveBar className="left-0" />}
         <item.icon
           className={cn(
             "h-4 w-4 shrink-0 transition-colors",
@@ -390,7 +385,6 @@ export function NavLinks({
                                 : "text-slate-300 hover:bg-white/[0.07] hover:text-white light:text-slate-600 light:hover:bg-slate-900/5 light:hover:text-slate-950",
                             )}
                           >
-                            {active && <ActiveBar className="-left-[9px]" />}
                             <span className="min-w-0 flex-1 truncate">{item.label}</span>
                             {lockedHrefs.includes(item.href) && (
                               <span

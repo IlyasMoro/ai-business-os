@@ -61,12 +61,15 @@ export function UserMenu({
   email,
   role,
   companyName,
+  status,
   compact = false,
 }: {
   userName: string;
   email: string;
   role: Role;
   companyName: string;
+  /** The trial countdown or a billing problem, shown under the name. */
+  status?: { text: string | null; short?: string; tone: "ok" | "warn" | "bad" };
   /** Icons only menu: just the initial; the menu opens wider to the right. */
   compact?: boolean;
 }) {
@@ -116,7 +119,25 @@ export function UserMenu({
         <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-cyan-400/30 bg-cyan-400/15 text-xs font-semibold text-cyan-200 backdrop-blur-md light:border-cyan-600/30 light:bg-cyan-500/10 light:text-cyan-800">
           {initial}
         </span>
-        {!compact && <span className="flex-1 truncate text-left text-sm text-slate-300 light:text-slate-600">{firstName}</span>}
+        {!compact && (
+          <span className="min-w-0 flex-1 text-left leading-tight">
+            <span className="block truncate text-sm text-slate-300 light:text-slate-600">{firstName}</span>
+            {status?.text && (
+              <span
+                title={status.text}
+                className={`block truncate text-[11px] tabular-nums ${
+                  status.tone === "bad"
+                    ? "text-red-300 light:text-red-700"
+                    : status.tone === "warn"
+                      ? "text-amber-300 light:text-amber-700"
+                      : "text-slate-500 light:text-slate-500"
+                }`}
+              >
+                {status.short ?? status.text}
+              </span>
+            )}
+          </span>
+        )}
         {!compact && <ChevronDown
           strokeWidth={3}
           aria-hidden

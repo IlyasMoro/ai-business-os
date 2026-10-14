@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { format } from "date-fns";
-import { AlertTriangle, ArrowDown, ArrowUp, Lightbulb, Store, TrendingDown, TrendingUp, Trophy, Wallet, Percent } from "lucide-react";
+import { BarChart3, AlertTriangle, ArrowDown, ArrowUp, Lightbulb, Store, TrendingDown, TrendingUp, Trophy, Wallet, Percent } from "lucide-react";
 import { requireRole } from "@/lib/dal";
 import { getBranchPerformance, PERIOD_DAYS, EXPIRING_DAYS } from "@/lib/branch-performance-data";
 import type { Insight, ScoredBranch } from "@/lib/branch-performance";
@@ -91,7 +91,7 @@ export default async function BranchPerformancePage({ searchParams }: { searchPa
               color={VIZ.emerald}
               change={{ pct: growth, label: "vs the 30 days before" }}
             />
-            <KpiCard label="Net profit" value={net} prefix={CURRENCY_PREFIX} icon={TrendingUp} color={net >= 0 ? VIZ.blue : VIZ.red} hint="Revenue less costs, all branches" />
+            <KpiCard label="Net profit" value={net} prefix={CURRENCY_PREFIX} icon={BarChart3} color={net >= 0 ? VIZ.blue : VIZ.red} hint="Revenue less costs, all branches" />
             <KpiCard
               label="Margin"
               value={revenue > 0 ? Math.round((net / revenue) * 100) : 0}

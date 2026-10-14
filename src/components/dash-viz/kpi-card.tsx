@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { LucideIcon } from "lucide-react";
+import type { ComponentType } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
 import { AnimatedCounter } from "./animated-counter";
 import { Sparkline } from "./sparkline";
@@ -42,7 +42,8 @@ export function KpiCard({
   prefix?: string;
   suffix?: string;
   decimals?: number;
-  icon: LucideIcon;
+  /** A lucide icon, or a brand mark such as CopilotMark. */
+  icon: ComponentType<{ className?: string }>;
   color: string;
   /** Money over time: drawn as a sparkline. Leave out for counts. */
   trend?: number[];

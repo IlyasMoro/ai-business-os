@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { NavLinks } from "./nav-links";
 import { UserMenu } from "./user-menu";
 import type { NavBadges, Role } from "./nav-config";
+import { statusLine, type CompanyCard } from "./company-status";
 
 /** Cookie the dashboard layout reads, so the menu loads at the chosen width. */
 export const SIDEBAR_COOKIE = "aibos_sidebar";
@@ -22,6 +23,7 @@ export function Sidebar({
   hiddenHrefs,
   lockedHrefs,
   badges,
+  company,
   initialCollapsed = false,
 }: {
   role: Role;
@@ -32,6 +34,8 @@ export function Sidebar({
   hiddenHrefs?: string[];
   lockedHrefs?: string[];
   badges?: NavBadges;
+  /** The company's plan and trial: the trial countdown shows in the user menu. */
+  company: CompanyCard;
   /** From the cookie: the menu was shrunk to icons last time. */
   initialCollapsed?: boolean;
 }) {
@@ -68,7 +72,7 @@ export function Sidebar({
       />
       <div className={cn("flex gap-1 border-t border-white/[0.06] p-3 light:border-slate-200", collapsed ? "flex-col items-center px-2" : "items-center")}>
         <div className={collapsed ? "" : "min-w-0 flex-1"}>
-          <UserMenu userName={userName} email={email} role={role} companyName={companyName} compact={collapsed} />
+          <UserMenu userName={userName} email={email} role={role} companyName={companyName} status={statusLine(company.subscription)} compact={collapsed} />
         </div>
         <button
           type="button"
