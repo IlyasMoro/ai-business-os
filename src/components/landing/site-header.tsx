@@ -3,19 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles, Workflow, LayoutGrid, CircleHelp, Tag, Mail, LogIn, type LucideIcon } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
 import { Logo } from "@/components/brand/logo";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
-/* Landing page sections, in page order so the scroll highlight moves left
-   to right as you read. Each id is set on its <section> in app/page.tsx. */
+/* Landing page sections, in page order. Each id is set on its <section> in
+   app/page.tsx. The desktop bar keeps only the main ones (AI Copilot,
+   Features, Pricing): "How it works" counts as Features for the highlight,
+   and FAQ and Contact live in the footer and the phone menu. */
 const SECTIONS = [
-  { id: "copilot", label: "AI Copilot" },
-  { id: "how", label: "How it works" },
-  { id: "features", label: "Features" },
-  { id: "faq", label: "FAQ" },
+  { id: "copilot", label: "AI Copilot", icon: Sparkles, inBar: true, highlights: "copilot" },
+  { id: "how", label: "How it works", icon: Workflow, inBar: false, highlights: "features" },
+  { id: "features", label: "Features", icon: LayoutGrid, inBar: true, highlights: "features" },
+  { id: "faq", label: "FAQ", icon: CircleHelp, inBar: false, highlights: "faq" },
 ];
 
 const CTA_CLASS =
@@ -52,11 +54,22 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
 
   // On the landing page the links scroll in place; elsewhere they go home first.
   const sectionHref = (id: string) => (onLanding ? `#${id}` : `/#${id}`);
-  const links = [
-    ...SECTIONS.map((s) => ({ href: sectionHref(s.id), label: s.label, active: onLanding && activeSection === s.id })),
-    { href: "/pricing", label: "Pricing", active: pathname.startsWith("/pricing") },
-    { href: "/contact", label: "Contact", active: pathname.startsWith("/contact") },
+  const highlighted = SECTIONS.find((sec) => sec.id === activeSection)?.highlights ?? null;
+  type NavLink = { href: string; label: string; icon: LucideIcon; active: boolean; inBar: boolean };
+  // Every link, in order: the phone menu shows them all, the desktop bar only the main ones.
+  const allLinks: NavLink[] = [
+    ...SECTIONS.map((sec) => ({
+      href: sectionHref(sec.id),
+      label: sec.label,
+      icon: sec.icon,
+      inBar: sec.inBar,
+      active: onLanding && (sec.inBar ? highlighted === sec.id : activeSection === sec.id),
+    })),
+    { href: "/pricing", label: "Pricing", icon: Tag, inBar: true, active: pathname.startsWith("/pricing") },
+    { href: "/contact", label: "Contact", icon: Mail, inBar: false, active: pathname.startsWith("/contact") },
   ];
+  const links = allLinks.filter((l) => l.inBar);
+  const menuLinks: NavLink[] = [...allLinks, { href: "/login", label: "Sign in", icon: LogIn, inBar: false, active: false }];
 
   const linkClass = (active: boolean) =>
     cn(
@@ -114,16 +127,17 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
 
         {menuOpen && (
           <nav id="site-menu" aria-label="Main" className="border-t border-[#e6e9ee] px-6 pb-4 pt-2 lg:hidden">
-            {[...links, { href: "/login", label: "Sign in", active: false }].map((link) => (
+            {menuLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 className={cn(
-                  "block rounded-md px-3 py-2.5 text-sm font-extrabold uppercase tracking-[0.04em]",
-                  link.active ? "text-cyan-600" : "text-[#0b1f5e] hover:bg-slate-100"
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-extrabold uppercase tracking-[0.04em]",
+                  link.active ? "bg-cyan-50 text-cyan-600" : "text-[#0b1f5e] hover:bg-slate-100"
                 )}
               >
+                <link.icon className="h-4 w-4 shrink-0 opacity-70" strokeWidth={2} />
                 {link.label}
               </Link>
             ))}
@@ -179,16 +193,17 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
           page, because the header's backdrop filter would trap a fixed panel. */}
       {menuOpen && (
         <nav id="site-menu" aria-label="Main" className="border-t border-white/10 px-6 pb-4 pt-2 md:hidden">
-          {[...links, { href: "/login", label: "Sign in", active: false }].map((link) => (
+          {menuLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setMenuOpen(false)}
               className={cn(
-                "block rounded-md px-3 py-2.5 text-base font-medium",
-                link.active ? "text-white" : "text-slate-300 hover:bg-white/5 hover:text-slate-50"
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-base font-medium",
+                link.active ? "bg-white/5 text-white" : "text-slate-300 hover:bg-white/5 hover:text-slate-50"
               )}
             >
+              <link.icon className="h-4 w-4 shrink-0 opacity-70" strokeWidth={2} />
               {link.label}
             </Link>
           ))}
