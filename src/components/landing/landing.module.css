@@ -904,34 +904,4 @@
   }
 }
 
-/* Hero calls to action: the trial first, the tour second. */
-.heroCtas {
-  margin-top: 2rem;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.75rem;
-}
-.heroBtn {
-  padding: 0.95rem 1.7rem;
-  font-size: 0.85rem;
-}
-.heroGhost {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  padding: 0.95rem 1.7rem;
-  font-size: 0.85rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #fff;
-  backdrop-filter: blur(8px);
-  transition: background-color 0.2s, border-color 0.2s;
-}
-.heroGhost:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.6);
-}
 

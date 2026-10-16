@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight, Download, Lock, ShieldCheck, UserCog } from "lucide-react";
+import { Download, Lock, ShieldCheck, UserCog } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -87,15 +86,6 @@ export default function Home() {
               CRM, sales, inventory, accounting, HR, payroll, invoicing, projects and support in one place, with an AI
               assistant that looks up real data, proposes actions, and only acts once you approve.
             </p>
-            <div className={cn(styles.heroCtas, "animate-fade-up animate-fade-up-4")}>
-              <Link href="/register" className={cn(styles.btn, styles.heroBtn)}>
-                Start free trial
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </Link>
-              <Link href="#how" className={styles.heroGhost}>
-                See how it works
-              </Link>
-            </div>
             <p className={cn(styles.heroNote, "animate-fade-up animate-fade-up-4")}>
               14 day free trial &nbsp;·&nbsp; No credit card required
             </p>

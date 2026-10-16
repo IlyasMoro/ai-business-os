@@ -10,12 +10,12 @@ import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
 /* Landing page sections, in page order. Each id is set on its <section> in
-   app/page.tsx. The desktop bar keeps only the main ones (AI Copilot,
-   Features, Pricing): "How it works" counts as Features for the highlight,
-   and FAQ and Contact live in the footer and the phone menu. */
+   app/page.tsx. The desktop bar keeps the main ones (AI Copilot, How it
+   works, Features, Pricing); FAQ and Contact live in the footer and the
+   phone menu. */
 const SECTIONS = [
   { id: "copilot", label: "AI Copilot", icon: Sparkles, inBar: true, highlights: "copilot" },
-  { id: "how", label: "How it works", icon: Workflow, inBar: false, highlights: "features" },
+  { id: "how", label: "How it works", icon: Workflow, inBar: true, highlights: "how" },
   { id: "features", label: "Features", icon: LayoutGrid, inBar: true, highlights: "features" },
   { id: "faq", label: "FAQ", icon: CircleHelp, inBar: false, highlights: "faq" },
 ];
