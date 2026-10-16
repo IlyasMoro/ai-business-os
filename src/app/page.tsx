@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Check, Download, Lock, ShieldCheck, UserCog } from "lucide-react";
+import { ArrowRight, Download, Lock, ShieldCheck, UserCog } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -9,7 +9,7 @@ import { ProductPreview } from "@/components/landing/product-preview";
 import { ModuleConstellation } from "@/components/landing/module-constellation";
 import { FeatureSlider } from "@/components/landing/feature-slider";
 import { FaqSection } from "@/components/landing/faq-section";
-import { STARTING_PRICE, LISTED_PLANS, CUSTOM_PLAN } from "@/lib/plans";
+import { STARTING_PRICE } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
@@ -160,54 +160,6 @@ export default function Home() {
               ))}
             </div>
           </Reveal>
-        </section>
-
-        {/* Pricing at a glance, so visitors can compare without leaving the page. */}
-        <section id="plans" className={styles.section}>
-          <SectionHead eyebrow="Pricing" title="Simple plans, every module included" sub="Start free for 14 days on any plan. Pay monthly, or yearly with two months free." />
-          <div className={styles.planGrid}>
-            {LISTED_PLANS.map((plan, i) => (
-              <Reveal key={plan.id} delay={i * 75} className={cn(styles.glass, styles.planCard, plan.popular && styles.planPopular)}>
-                {plan.popular && <span className={styles.planBadge}>Most popular</span>}
-                <p className={styles.planName}>{plan.name}</p>
-                <p className={styles.planPrice}>
-                  ${plan.monthly}
-                  <span className={styles.planPer}> / month</span>
-                </p>
-                <p className={styles.planTag}>{plan.tagline}</p>
-                <ul className={styles.planList}>
-                  {plan.features.slice(0, 3).map((f) => (
-                    <li key={f}>
-                      <Check className="h-4 w-4 shrink-0 text-cyan-500" aria-hidden />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <Link href="/register" className={cn(styles.btn, styles.planBtn)}>
-                  Start free trial
-                </Link>
-              </Reveal>
-            ))}
-            <Reveal delay={LISTED_PLANS.length * 75} className={cn(styles.glass, styles.planCard)}>
-              <p className={styles.planName}>{CUSTOM_PLAN.name}</p>
-              <p className={styles.planPrice}>{CUSTOM_PLAN.priceLabel}</p>
-              <p className={styles.planTag}>{CUSTOM_PLAN.tagline}</p>
-              <ul className={styles.planList}>
-                {CUSTOM_PLAN.features.slice(0, 3).map((f) => (
-                  <li key={f}>
-                    <Check className="h-4 w-4 shrink-0 text-cyan-500" aria-hidden />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href="/pricing" className={cn(styles.btnDark, styles.planBtn)}>
-                Build your plan
-              </Link>
-            </Reveal>
-          </div>
-          <p className={styles.planMore}>
-            <Link href="/pricing">Compare every feature on the pricing page</Link>
-          </p>
         </section>
 
         <section id="faq" className={styles.section}>
