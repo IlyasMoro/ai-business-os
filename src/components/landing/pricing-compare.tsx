@@ -35,7 +35,7 @@ export function PricingCompare() {
   return (
     // The plans on sale as columns: on narrow screens the table scrolls
     // sideways inside its card instead of squeezing the columns.
-    <div className="overflow-x-auto border border-[#d5dce5] bg-white shadow-[0_18px_38px_-26px_rgba(24,67,111,0.45)]">
+    <div className="overflow-x-auto rounded-3xl border border-[#d5dce5] bg-white shadow-[0_18px_38px_-26px_rgba(24,67,111,0.45)]">
       <table className="w-full min-w-[560px] table-fixed border-collapse text-left">
         <caption className="sr-only">Every feature by plan</caption>
         <colgroup>

@@ -1,17 +1,18 @@
 "use client";
 
 import { useRef, useState, type CSSProperties } from "react";
+import Image from "next/image";
 import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 import { FEATURES } from "@/components/landing/feature-bento";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
-/* The landing page features as one square cornered split panel that slides
-   between them: a pale left half with the feature's icon on an isometric
-   block, a dark glass right half with the copy and the feature's live
-   preview. Arrows, dots, the corner square, a horizontal swipe and the
-   keyboard arrow keys all move it. Slides out of view are inert, so focus
-   and screen readers only ever reach the visible one. */
+/* The landing page features as one rounded split panel that slides
+   between them: a pale left half with a real screenshot of the module, a
+   dark glass right half with the copy and the feature's live preview.
+   Arrows, dots, the corner button, a horizontal swipe and the keyboard
+   arrow keys all move it. Slides out of view are inert, so focus and
+   screen readers only ever reach the visible one. */
 
 const SWIPE_MIN = 40;
 
@@ -66,12 +67,14 @@ export function FeatureSlider() {
                 inert={!active}
               >
                 <div className={styles.slideL}>
-                  <div className={styles.iso} aria-hidden>
-                    <div className={styles.isoBase}>
-                      <div className={styles.isoTop}>
-                        <feature.icon />
-                      </div>
-                    </div>
+                  <div className={styles.slideShot}>
+                    <Image
+                      src={feature.shot.src}
+                      alt={feature.shot.alt}
+                      width={1888}
+                      height={1400}
+                      sizes="(min-width: 760px) 560px, 100vw"
+                    />
                   </div>
                 </div>
                 <div className={cn(styles.glass, styles.slideR)}>

@@ -1,26 +1,24 @@
+import Image from "next/image";
+
+/* The AI Copilot window over the product shot: a real answer from the
+   demo company, with the task it proposed and its approval status. */
 export function AiTerminalPreview() {
   return (
-    <div className="mx-auto w-full max-w-xl overflow-hidden rounded-2xl border border-white/10 bg-black/60 text-left shadow-2xl shadow-black/40 backdrop-blur-xl">
-      <div className="flex items-center gap-1.5 border-b border-white/10 px-5 py-4">
+    <div className="mx-auto w-full overflow-hidden rounded-2xl border border-white/10 bg-black/70 text-left shadow-2xl shadow-black/40 backdrop-blur-xl">
+      <div className="flex items-center gap-1.5 border-b border-white/10 px-5 py-3.5">
         <span className="h-2.5 w-2.5 rounded-full bg-red-500/70" />
         <span className="h-2.5 w-2.5 rounded-full bg-amber-500/70" />
         <span className="h-2.5 w-2.5 rounded-full bg-emerald-500/70" />
-        <span className="ml-2 font-mono text-xs text-slate-500">AI Copilot</span>
+        <span className="ml-2 text-xs font-medium text-slate-400">AI Copilot</span>
       </div>
-      <div className="space-y-4 p-7 font-mono text-sm leading-relaxed">
-        <p className="text-slate-400">
-          <span className="text-emerald-400">you</span> &gt; Draft a follow up email to Nova
-          Fitness Studio
-        </p>
-        <p className="text-slate-300">
-          <span className="text-blue-400">aibos</span> &gt; Drafted, referencing their interest
-          from last week. Want me to send it?
-        </p>
-        <p className="text-slate-400">
-          <span className="text-emerald-400">you</span> &gt; Yes, send it
-          <span className="ml-0.5 inline-block h-4 w-2 animate-pulse bg-emerald-400 align-middle" />
-        </p>
-      </div>
+      <Image
+        src="/screenshots/feature-copilot.png"
+        alt="The AI Copilot totals three overdue invoices and proposes a follow up task, which waits for approval"
+        width={1580}
+        height={770}
+        className="w-full"
+        sizes="(min-width: 768px) 560px, 100vw"
+      />
     </div>
   );
 }

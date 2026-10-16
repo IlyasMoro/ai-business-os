@@ -14,6 +14,8 @@ export type Feature = {
   description: string;
   icon: LucideIcon;
   color: string;
+  /** A real screenshot of the module, taken from the demo company. */
+  shot: { src: string; alt: string };
   preview: ReactNode;
 };
 
@@ -46,6 +48,7 @@ const automations = ["Overdue invoice reminders", "Low stock reorders", "Stale t
 export const FEATURES: Feature[] = [
   {
     name: "CRM and Sales",
+    shot: { src: "/screenshots/feature-crm.png", alt: "The CRM deals board with open pipeline, weighted forecast and win rate" },
     label: "Sales",
     description: "Track deals from first contact to signed, send quotes that become orders, and see your forecast and win rate in one report.",
     icon: Users,
@@ -75,6 +78,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Inventory",
+    shot: { src: "/screenshots/feature-inventory.png", alt: "The inventory page with stock value, low stock items and stock health" },
     label: "Stock",
     description: "Set a reorder point once. Get flagged the moment stock dips below it, before you run out.",
     icon: Boxes,
@@ -100,6 +104,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Invoicing",
+    shot: { src: "/screenshots/feature-invoicing.png", alt: "The invoices page with outstanding, overdue and paid invoices" },
     label: "Invoices",
     description: "Line items, tax, and totals calculated automatically. Send a professional invoice in one click.",
     icon: Receipt,
@@ -118,6 +123,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Accounting and Payroll",
+    shot: { src: "/screenshots/feature-accounting.png", alt: "The accounting page with income, expenses and net profit" },
     label: "Finance",
     description: "Income and expenses linked back to the invoice or project that created them, so the books reconcile themselves.",
     icon: Wallet,
@@ -141,6 +147,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Reports",
+    shot: { src: "/screenshots/feature-reports.png", alt: "The reports page with six month income, expenses and an AI revenue forecast" },
     label: "Insights",
     description: "Trends over six months and the numbers at risk, plus an AI summary of what actually needs your attention this week.",
     icon: BarChart3,
@@ -167,6 +174,7 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Automation",
+    shot: { src: "/screenshots/feature-automation.png", alt: "The automation rules page with reminders, restocking and cleanup switched on" },
     label: "Automation",
     description: "Overdue invoice reminders, low stock reorders, escalating stale tickets, and clearing out dead leads, running every day without you lifting a finger.",
     icon: Zap,

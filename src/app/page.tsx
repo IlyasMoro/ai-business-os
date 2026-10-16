@@ -97,7 +97,7 @@ export default function Home() {
         <section id="copilot" className="scroll-mt-24">
           <div className={styles.shot}>
             <ProductPreview />
-            <div className="relative mt-6 sm:absolute sm:-bottom-12 sm:-right-6 sm:mt-0 sm:w-80 md:-bottom-16 md:-right-10 md:w-[26rem]">
+            <div className="relative mt-6 sm:absolute sm:-bottom-12 sm:-right-6 sm:mt-0 sm:w-[24rem] md:-bottom-16 md:-right-10 md:w-[34rem]">
               <AiTerminalPreview />
             </div>
           </div>

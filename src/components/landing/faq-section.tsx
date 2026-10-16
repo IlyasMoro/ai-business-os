@@ -55,7 +55,7 @@ export function FaqSection({ light = false }: { light?: boolean }) {
           <div
             className={cn(
               "mt-8 p-5",
-              light ? cn(styles.glass, "rounded-xl") : "rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl"
+              light ? cn(styles.glass, "rounded-3xl") : "rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl"
             )}
           >
             <ShieldCheck className={cn("h-5 w-5", light ? "text-cyan-400" : "text-emerald-400")} />
