@@ -17,7 +17,6 @@
   --btn-ink: #0a1428;
   --btn-dark: linear-gradient(180deg, #161d2c, #0b0f17);
   --btn-dark-hover: linear-gradient(180deg, #1c2538, #111827);
-  --panel-radius: 24px;
   --glass-edge: inset 0 0 0 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   position: relative;
   min-height: 100vh;
@@ -299,21 +298,18 @@
 /* ── How it works: the constellation in a dark glass panel ── */
 .constellationPanel {
   margin-top: 2.6rem;
-  /* Rounded like every other landing panel. */
-  border-radius: var(--panel-radius);
+  /* Square corners, like the feature slider and trust band. */
+  border-radius: 0;
   padding: clamp(1.4rem, 4vw, 3rem);
 }
 
-/* ── Feature slider: rounded split panel ── */
+/* ── Feature slider: square cornered split panel ── */
 .slider {
   position: relative;
   margin-top: 3rem;
 }
 .viewport {
   overflow: hidden;
-  border-radius: var(--panel-radius);
-  /* Keeps the rounded clip while the track slides. */
-  isolation: isolate;
 }
 .viewport:focus-visible {
   outline: 2px solid var(--cyan);
@@ -433,15 +429,14 @@
 }
 .corner {
   position: absolute;
-  right: 1.2rem;
-  bottom: 1.2rem;
+  right: 0;
+  bottom: 0;
   z-index: 4;
   display: flex;
-  width: 48px;
-  height: 48px;
+  width: 52px;
+  height: 52px;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
   background: var(--btn-dark);
   color: var(--cyan);
   box-shadow: var(--glass-edge);
@@ -481,7 +476,6 @@
 
 /* ── Trust panel ── */
 .trustbox {
-  border-radius: var(--panel-radius);
   padding: 3.2rem clamp(1.5rem, 4vw, 3.2rem);
 }
 .trustEyebrow {

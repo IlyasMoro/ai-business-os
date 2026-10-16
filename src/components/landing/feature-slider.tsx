@@ -7,10 +7,10 @@ import { FEATURES } from "@/components/landing/feature-bento";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
-/* The landing page features as one rounded split panel that slides
+/* The landing page features as one square cornered split panel that slides
    between them: a pale left half with a real screenshot of the module, a
    dark glass right half with the copy and the feature's live preview.
-   Arrows, dots, the corner button, a horizontal swipe and the keyboard
+   Arrows, dots, the corner square, a horizontal swipe and the keyboard
    arrow keys all move it. Slides out of view are inert, so focus and
    screen readers only ever reach the visible one. */
 
