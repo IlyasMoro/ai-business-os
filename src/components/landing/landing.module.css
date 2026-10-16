@@ -174,10 +174,10 @@
 .heroH {
   font-family: var(--font-display);
   font-weight: 800;
-  /* Sentence case reads faster than capitals; one short line on desktops. */
-  font-size: clamp(2rem, 4.6vw, 3.75rem);
+  /* Sentence case reads faster than capitals; two large lines, split at the full stop. */
+  font-size: clamp(2.5rem, 6vw, 5rem);
   text-wrap: balance;
-  line-height: 1.12;
+  line-height: 1.06;
   letter-spacing: -0.005em;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 30px rgba(0, 0, 0, 0.6);
@@ -193,12 +193,14 @@
   }
 }
 .heroSub {
-  max-width: 760px;
-  margin: 1.6rem auto 0;
+  /* Wide enough for the paragraph to sit on two lines on laptops and desktops. */
+  max-width: 1080px;
+  margin: 1.8rem auto 0;
   color: #fff;
   font-weight: 500;
-  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
-  line-height: 1.5;
+  font-size: clamp(1.05rem, 1.45vw, 1.25rem);
+  line-height: 1.55;
+  text-wrap: balance;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.55);
 }
 .heroNote {
