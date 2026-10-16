@@ -91,35 +91,87 @@
   outline-offset: 3px;
 }
 
-/* ── Nav pill: the section links, grouped in dark glass. Its display is
-   left to Tailwind (hidden lg:flex) in the header: an unlayered rule here
-   would beat Tailwind's layered utilities and show it on phones. ── */
-.navPill {
-  gap: 2px;
+/* ── Nav bar: one floating white pill, links in plain sentence case ── */
+.navBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
   border-radius: 999px;
-  padding: 5px;
-  box-shadow: var(--glass-edge), 0 8px 20px -10px rgba(11, 18, 32, 0.55);
+  padding: 7px 7px 7px 8px;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(11, 15, 23, 0.06), 0 14px 34px -14px rgba(11, 15, 23, 0.4);
+}
+/* The mark in a dark round badge. */
+.navBadge {
+  display: flex;
+  width: 46px;
+  height: 46px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #26324a, #0b0f17 70%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.navBadge img {
+  width: 58px;
+  height: 58px;
+  max-width: none;
+  filter: brightness(1.9) saturate(1.2);
 }
 .navLink {
   border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #fff;
+  padding: 8px 16px;
+  font-size: 0.98rem;
+  font-weight: 500;
+  color: #0b0f17;
   white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease;
 }
 .navLink:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: #f1f4f8;
 }
 .navLink:focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 2px;
 }
 .navLinkActive {
-  color: var(--cyan);
+  color: #0891b2;
+}
+/* Glossy black pill, lit from the top left like polished glass. */
+.navCta {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.85rem 1.6rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background:
+    radial-gradient(ellipse 60% 90% at 22% 18%, rgba(255, 255, 255, 0.32), transparent 60%),
+    radial-gradient(ellipse 50% 80% at 85% 90%, rgba(255, 255, 255, 0.14), transparent 60%),
+    linear-gradient(180deg, #1c1f26, #050608);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 22px -10px rgba(5, 6, 8, 0.7);
+  transition: transform 0.16s ease, filter 0.16s ease;
+}
+.navCta:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+.navCta:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+@media (max-width: 640px) {
+  .navCta {
+    padding: 0.7rem 1.1rem;
+    font-size: 0.85rem;
+  }
+  .navBadge {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 /* ── Hero: black glass over the blurred dashboard ── */
@@ -526,9 +578,35 @@
 
 /* ── Pricing page ── */
 .pricingTop {
-  margin-top: 5rem;
+  /* Clears the floating nav bar, which overlaps the top of the page. */
+  margin-top: 9.5rem;
 }
-.navLink.cycleOn {
+/* Monthly or yearly: a dark glass pill of uppercase options. */
+.cyclePill {
+  gap: 2px;
+  border-radius: 999px;
+  padding: 5px;
+  box-shadow: var(--glass-edge), 0 8px 20px -10px rgba(11, 18, 32, 0.55);
+}
+.cycleLink {
+  border-radius: 999px;
+  padding: 7px 14px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.cycleLink:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.cycleLink:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+.cycleLink.cycleOn {
   background: var(--cyan);
   color: var(--btn-ink);
 }
@@ -857,7 +935,8 @@
 @media (max-width: 640px) {
   .hero {
     min-height: 0;
-    padding: 3.5rem 1.25rem 7rem;
+    /* Clears the floating nav bar. */
+    padding: 6.5rem 1.25rem 7rem;
   }
   /* In capitals the headline runs to six lines on a phone. */
   .heroH {

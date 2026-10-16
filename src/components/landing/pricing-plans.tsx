@@ -19,14 +19,14 @@ export function PricingPlans() {
   return (
     <div>
       <div className="flex justify-center">
-        <div role="group" aria-label="Billing period" className={cn(styles.glass, styles.navPill, "inline-flex")}>
+        <div role="group" aria-label="Billing period" className={cn(styles.glass, styles.cyclePill, "inline-flex")}>
           {(["monthly", "yearly"] as const).map((c) => (
             <button
               key={c}
               type="button"
               aria-pressed={cycle === c}
               onClick={() => setCycle(c)}
-              className={cn(styles.navLink, cycle === c && styles.cycleOn)}
+              className={cn(styles.cycleLink, cycle === c && styles.cycleOn)}
             >
               {c === "monthly" ? "Monthly" : "Yearly"}
               {c === "yearly" && <span className={styles.cycleSave}>2 months free</span>}

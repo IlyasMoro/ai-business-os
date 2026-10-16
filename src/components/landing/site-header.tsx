@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles, Workflow, LayoutGrid, CircleHelp, Tag, Mail, LogIn, type LucideIcon } from "lucide-react";
@@ -23,8 +24,8 @@ const SECTIONS = [
 const CTA_CLASS =
   "rounded-full border-transparent bg-white text-[#0a1428] shadow-lg shadow-black/40 hover:bg-blue-50 hover:shadow-xl";
 
-/** `light`: the landing page's white bar with a dark glass link pill and a
- * cyan call to action. Other public pages keep the dark header. */
+/** `light`: the landing page's floating white pill bar with a glossy black
+ * call to action. Other public pages keep the dark header. */
 export function SiteHeader({ light = false }: { light?: boolean }) {
   const pathname = usePathname();
   const onLanding = pathname === "/";
@@ -79,17 +80,24 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
 
   if (light) {
     return (
-      <header className="sticky top-0 z-50 border-b border-[#e6e9ee] bg-white">
-        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-[4vw] py-3 xl:px-0">
+      <header className="sticky top-0 z-50 h-0 px-3 sm:px-[4vw] xl:px-0">
+        {/* One floating white pill: the mark in a dark badge, the links in
+            the middle, the trial as a glossy black pill on the right. The
+            header takes no height, so the page runs up behind it. */}
+        <div className={cn(styles.navBar, "mx-auto max-w-[1180px] translate-y-3")}>
           <Link
             href="/"
             onClick={() => setMenuOpen(false)}
-            className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+            aria-label="AIBOS home"
+            className="flex shrink-0 items-center gap-2.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           >
-            <Logo onLight className="drop-shadow-[0_3px_6px_rgba(24,67,111,0.28)]" />
+            <span className={styles.navBadge} aria-hidden>
+              <Image src="/logo-mark.png" alt="" width={64} height={64} priority />
+            </span>
+            <span className="font-display text-[15px] font-extrabold tracking-[0.18em] text-[#0b0f17]">AIBOS</span>
           </Link>
 
-          <nav aria-label="Main" className={cn(styles.glass, styles.navPill, "hidden lg:flex")}>
+          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
             {links.map((link) => (
               <Link
                 key={link.href}
@@ -102,14 +110,11 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-4">
-            <Link
-              href="/login"
-              className="hidden text-[0.8rem] font-extrabold uppercase tracking-[0.04em] text-[#0b1f5e] transition-colors hover:text-cyan-500 sm:block"
-            >
+          <div className="flex shrink-0 items-center gap-2 sm:gap-4">
+            <Link href="/login" className={cn(styles.navLink, "hidden sm:block")}>
               Sign in
             </Link>
-            <Link href="/register" className={cn(styles.btn, "whitespace-nowrap px-4 py-2 text-[0.7rem] sm:px-5 sm:text-[0.76rem]")}>
+            <Link href="/register" className={cn(styles.navCta, "whitespace-nowrap")}>
               Start free trial
             </Link>
             <button
@@ -118,7 +123,7 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
               aria-expanded={menuOpen}
               aria-controls="site-menu"
               aria-label={menuOpen ? "Close menu" : "Open menu"}
-              className="flex h-9 w-9 items-center justify-center rounded-md text-[#0b1f5e] transition-colors hover:bg-slate-100 lg:hidden"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-[#0b0f17] transition-colors hover:bg-slate-100 lg:hidden"
             >
               {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
@@ -126,15 +131,19 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
         </div>
 
         {menuOpen && (
-          <nav id="site-menu" aria-label="Main" className="border-t border-[#e6e9ee] px-6 pb-4 pt-2 lg:hidden">
+          <nav
+            id="site-menu"
+            aria-label="Main"
+            className="mx-auto mt-2 max-w-[1180px] translate-y-3 rounded-3xl border border-[#e6e9ee] bg-white p-2 shadow-[0_18px_40px_-20px_rgba(11,15,23,0.45)] lg:hidden"
+          >
             {menuLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMenuOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-extrabold uppercase tracking-[0.04em]",
-                  link.active ? "bg-cyan-50 text-cyan-600" : "text-[#0b1f5e] hover:bg-slate-100"
+                  "flex items-center gap-3 rounded-2xl px-4 py-3 text-[0.95rem] font-medium",
+                  link.active ? "bg-cyan-50 text-cyan-700" : "text-[#0b0f17] hover:bg-slate-100"
                 )}
               >
                 <link.icon className="h-4 w-4 shrink-0 opacity-70" strokeWidth={2} />
