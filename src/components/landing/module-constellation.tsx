@@ -200,10 +200,13 @@ export function ModuleConstellation() {
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cyan-400">
               {active === 0 ? "At the center" : "Department"}
             </p>
-            <p className="text-xs tabular-nums text-white/60">
-              <b className="font-extrabold text-white">{String(active + 1).padStart(2, "0")}</b> /{" "}
-              {String(NODES.length).padStart(2, "0")}
-            </p>
+            {/* Departments count 01 to 08; the AI at the center is not one of them. */}
+            {active > 0 && (
+              <p className="text-xs tabular-nums text-white/60">
+                <b className="font-extrabold text-white">{String(active).padStart(2, "0")}</b> /{" "}
+                {String(DEPARTMENTS.length).padStart(2, "0")}
+              </p>
+            )}
           </div>
           <h3 className="font-display mt-3 text-3xl font-extrabold uppercase leading-[1.05] text-white sm:text-[2.1rem]">
             {current.name}

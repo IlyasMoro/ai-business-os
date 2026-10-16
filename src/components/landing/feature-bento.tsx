@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { BarChart3, Boxes, Check, Receipt, Sparkles, Users, Wallet, Zap, type LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { CURRENCY_PREFIX, cn, formatCurrency } from "@/lib/utils";
 
 /* The landing page features, shown one at a time by FeatureSlider. Each
    pairs the pitch with a small, static preview of the feature so visitors
@@ -37,7 +37,7 @@ const pipeline = [
 
 const salesFigures = [
   { label: "Quotes accepted", value: "12" },
-  { label: "Forecast", value: "$18.4k" },
+  { label: "Forecast", value: `${CURRENCY_PREFIX}184k` },
   { label: "Win rate", value: "42%" },
 ];
 
@@ -106,12 +106,12 @@ export const FEATURES: Feature[] = [
     color: "#38bdf8",
     preview: (
       <Panel className="space-y-1.5">
-        <div className="flex justify-between"><span>Website redesign</span><span className="font-mono tabular-nums">$800.00</span></div>
-        <div className="flex justify-between"><span>Hosting, 12 months</span><span className="font-mono tabular-nums">$200.00</span></div>
-        <div className="flex justify-between text-slate-500"><span>Tax 15%</span><span className="font-mono tabular-nums">$150.00</span></div>
+        <div className="flex justify-between"><span>Website redesign</span><span className="font-mono tabular-nums">{formatCurrency(8000)}</span></div>
+        <div className="flex justify-between"><span>Hosting, 12 months</span><span className="font-mono tabular-nums">{formatCurrency(2000)}</span></div>
+        <div className="flex justify-between text-slate-500"><span>Tax 15%</span><span className="font-mono tabular-nums">{formatCurrency(1500)}</span></div>
         <div className="flex items-center justify-between border-t border-white/[0.07] pt-2">
           <span className="font-semibold text-slate-100">Total</span>
-          <span className="font-mono font-semibold tabular-nums text-(--accent)">$1,150.00</span>
+          <span className="font-mono font-semibold tabular-nums text-(--accent)">{formatCurrency(11500)}</span>
         </div>
       </Panel>
     ),
@@ -130,7 +130,7 @@ export const FEATURES: Feature[] = [
         </div>
         <div className="flex items-center justify-between rounded-lg bg-(color:--accent)/10 px-3 py-2">
           <span className="text-slate-100">Income, Client work</span>
-          <span className="font-mono tabular-nums text-(--accent)">+$1,150</span>
+          <span className="font-mono tabular-nums text-(--accent)">+{formatCurrency(11500, { cents: false })}</span>
         </div>
         <div className="flex items-center gap-1.5 text-(--accent)">
           <Check className="h-3.5 w-3.5" />
