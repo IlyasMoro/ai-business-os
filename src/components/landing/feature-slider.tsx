@@ -9,7 +9,7 @@ import styles from "@/components/landing/landing.module.css";
 
 /* The landing page features as one square cornered split panel that slides
    between them: a soft navy left half with a real screenshot of the module,
-   slightly tilted and running off the edge, and a dark glass right half
+   slightly tilted, and a dark glass right half
    with the copy and three points. The arrows sit beside the slide count;
    the dots, a horizontal swipe and the keyboard arrow keys also move it.
    Slides out of view are inert, so focus and screen readers only ever
@@ -74,7 +74,7 @@ export function FeatureSlider() {
                       alt={feature.shot.alt}
                       width={1888}
                       height={1400}
-                      sizes="(min-width: 760px) 760px, 140vw"
+                      sizes="(min-width: 760px) 560px, 100vw"
                     />
                   </div>
                 </div>

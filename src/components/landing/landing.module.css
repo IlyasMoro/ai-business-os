@@ -380,27 +380,30 @@
   min-height: 500px;
 }
 /* A soft navy tinted surface, so the dark screen belongs with the dark
-   right half. The screenshot runs off its right and bottom edges. */
+   right half. The whole screenshot sits inside it, nothing hidden. */
 .slideL {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  padding: 3.25rem 0 0 2.75rem;
+  padding: 2.5rem 2.75rem;
   background:
     radial-gradient(ellipse at 15% 10%, rgba(255, 255, 255, 0.9), transparent 55%),
     radial-gradient(ellipse at 90% 100%, rgba(27, 63, 191, 0.16), transparent 60%),
     linear-gradient(160deg, #eef2f9 0%, #d9e1ee 55%, #c8d3e6 100%);
 }
-/* The module's real screen, a little larger than the half and turned
-   slightly away, with a soft shadow and a thin lit edge. */
+/* The module's real screen, turned slightly away, with a soft shadow and
+   a thin lit edge. */
 .slideShot {
   position: relative;
-  width: 128%;
+  width: 100%;
   overflow: hidden;
   /* Square, like the panel around it. */
   border-radius: 0;
   background: #0b0f17;
-  transform: perspective(1800px) rotateY(-7deg) rotateX(2deg);
-  transform-origin: left center;
+  transform: perspective(1800px) rotateY(-6deg) rotateX(2deg);
+  transform-origin: center;
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.55),
     0 0 0 2px rgba(11, 18, 32, 0.1),
@@ -931,8 +934,7 @@
     grid-template-columns: 1fr;
   }
   .slideL {
-    height: 250px;
-    padding: 1.6rem 0 0 1.4rem;
+    padding: 1.6rem 1.4rem;
   }
   /* Phones swipe; the dots and the corner button stay. */
   .arrow {
