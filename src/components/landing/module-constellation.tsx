@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import {
   BarChart3,
   Boxes,
+  Check,
   FolderKanban,
   Plug,
   SlidersHorizontal,
@@ -23,6 +24,8 @@ type Node = {
   name: string;
   tagline: string;
   modules: string[];
+  /** Three things the department does, each true of the product. */
+  points: [string, string, string];
   icon: LucideIcon;
   color: string;
 };
@@ -31,19 +34,76 @@ const CORE: Node = {
   name: "AI Copilot",
   tagline: "Reads every department, answers in plain language, and always asks before it acts.",
   modules: ["Dashboard", "AI Copilot", "Calendar"],
+  points: ["Answers questions from your live data", "Proposes tasks, emails and orders", "Nothing changes until you approve"],
   icon: Sparkles,
   color: "#67e8f9",
 };
 
 const DEPARTMENTS: Node[] = [
-  { name: "Customers and Sales", tagline: "Win customers, take orders and get paid.", modules: ["CRM", "Marketing", "Sales", "Returns", "Invoicing", "Support"], icon: Users, color: "#60a5fa" },
-  { name: "Operations", tagline: "Keep stock moving from supplier to shelf.", modules: ["Inventory", "Procurement", "Planning / MRP"], icon: Boxes, color: "#fbbf24" },
-  { name: "Finance", tagline: "Every transaction and cost, reconciled as it happens.", modules: ["Accounting", "Controlling"], icon: Wallet, color: "#34d399" },
-  { name: "People", tagline: "Hire, pay and organize your team.", modules: ["HR", "Payroll", "Team"], icon: UserSquare2, color: "#f472b6" },
-  { name: "Work Management", tagline: "Plan projects and automate the busywork.", modules: ["Projects", "Automation"], icon: FolderKanban, color: "#a78bfa" },
-  { name: "Insights", tagline: "The whole business in one report, with an AI summary.", modules: ["Reports"], icon: BarChart3, color: "#22d3ee" },
-  { name: "Connectivity", tagline: "Connect the tools and trading partners you already use.", modules: ["Integrations", "EDI"], icon: Plug, color: "#fb923c" },
-  { name: "Administration", tagline: "Control access, billing and settings in one place.", modules: ["Billing", "Settings"], icon: SlidersHorizontal, color: "#94a3b8" },
+  {
+    name: "Customers and Sales",
+    tagline: "Win customers, take orders and get paid.",
+    modules: ["CRM", "Marketing", "Sales", "Returns", "Invoicing", "Support"],
+    points: ["Deals, quotes and orders in one flow", "Invoices with overdue flags", "Support tickets beside each customer"],
+    icon: Users,
+    color: "#60a5fa",
+  },
+  {
+    name: "Operations",
+    tagline: "Keep stock moving from supplier to shelf.",
+    modules: ["Inventory", "Procurement", "Planning / MRP"],
+    points: ["Reorder points and low stock alerts", "Purchase orders and stock transfers", "Material planning for what you make"],
+    icon: Boxes,
+    color: "#fbbf24",
+  },
+  {
+    name: "Finance",
+    tagline: "Every transaction and cost, reconciled as it happens.",
+    modules: ["Accounting", "Controlling"],
+    points: ["Income and expenses by category", "Paid invoices recorded as income", "Costs tracked in Controlling"],
+    icon: Wallet,
+    color: "#34d399",
+  },
+  {
+    name: "People",
+    tagline: "Hire, pay and organize your team.",
+    modules: ["HR", "Payroll", "Team"],
+    points: ["Staff records in one place", "Payroll for the whole team", "Pay kept private to owners and admins"],
+    icon: UserSquare2,
+    color: "#f472b6",
+  },
+  {
+    name: "Work Management",
+    tagline: "Plan projects and automate the busywork.",
+    modules: ["Projects", "Automation"],
+    points: ["Projects with tasks and due dates", "Daily rules for reminders and restocking", "Drafts wait for your approval"],
+    icon: FolderKanban,
+    color: "#a78bfa",
+  },
+  {
+    name: "Insights",
+    tagline: "The whole business in one report, with an AI summary.",
+    modules: ["Reports"],
+    points: ["Six month trends for the whole business", "Profit and margin for every branch", "AI forecast for next month"],
+    icon: BarChart3,
+    color: "#22d3ee",
+  },
+  {
+    name: "Connectivity",
+    tagline: "Connect the tools and trading partners you already use.",
+    modules: ["Integrations", "EDI"],
+    points: ["Connect the tools you already use", "EDI with your trading partners", "Alerts sent to your own systems"],
+    icon: Plug,
+    color: "#fb923c",
+  },
+  {
+    name: "Administration",
+    tagline: "Control access, billing and settings in one place.",
+    modules: ["Billing", "Settings"],
+    points: ["Roles for owners, admins and employees", "Your plan and billing in one place", "Company details and logo"],
+    icon: SlidersHorizontal,
+    color: "#94a3b8",
+  },
 ];
 
 // Index 0 is the core; 1 to 8 are the departments, clockwise from the top.
@@ -70,14 +130,15 @@ export function ModuleConstellation() {
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
     () => true
   );
-  const [active, setActive] = useState(0);
+  const [active, setActive] = useState(1);
   const [paused, setPaused] = useState(false);
   const [lastPick, setLastPick] = useState(0);
 
-  // Tour the departments on its own until the visitor takes over.
+  // Tour the eight departments on its own until the visitor takes over.
+  // The AI Copilot at the center is always lit, so it is not a stop.
   useEffect(() => {
     if (reducedMotion || paused) return;
-    const id = window.setInterval(() => setActive((i) => (i + 1) % NODES.length), 3200);
+    const id = window.setInterval(() => setActive((i) => (i % DEPARTMENTS.length) + 1), 3200);
     return () => window.clearInterval(id);
   }, [reducedMotion, paused]);
 
@@ -176,16 +237,15 @@ export function ModuleConstellation() {
               >
                 <Icon className={isCore ? "h-7 w-7 sm:h-8 sm:w-8" : "h-5 w-5 sm:h-6 sm:w-6"} />
               </span>
-              {!isCore && (
-                <span
-                  className={cn(
-                    "pointer-events-none absolute left-1/2 top-full mt-1.5 hidden -translate-x-1/2 whitespace-nowrap text-xs font-medium transition-colors sm:block",
-                    isActive ? "text-white" : "text-slate-400"
-                  )}
-                >
-                  {node.name}
-                </span>
-              )}
+              <span
+                className={cn(
+                  "pointer-events-none absolute left-1/2 top-full mt-1.5 -translate-x-1/2 whitespace-nowrap text-xs transition-colors",
+                  isCore ? "block font-bold text-cyan-200" : "hidden font-medium sm:block",
+                  !isCore && (isActive ? "text-white" : "text-slate-300 group-hover:text-white")
+                )}
+              >
+                {node.name}
+              </span>
             </button>
           );
         })}
@@ -193,8 +253,8 @@ export function ModuleConstellation() {
 
       {/* Editorial text straight on the glass panel: eyebrow and counter,
           a capital title in the landing heading style, an accent rule in the
-          node's colour, then its modules as one quiet line. */}
-      <div className="flex min-h-[17rem] flex-col sm:min-h-[19rem]">
+          node's colour, its modules as chips and three points. */}
+      <div className="flex min-h-[24rem] flex-col sm:min-h-[26rem]">
         <div key={current.name} className="animate-fade-up">
           <div className="flex items-baseline justify-between gap-4">
             <p className="text-xs font-extrabold uppercase tracking-[0.12em] text-cyan-400">
@@ -213,32 +273,64 @@ export function ModuleConstellation() {
           </h3>
           <span aria-hidden className="mt-4 block h-1 w-11 rounded-full" style={{ backgroundColor: current.color }} />
           <p className="mt-4 max-w-md text-base leading-relaxed text-white/70">{current.tagline}</p>
-          {/* The core's own name is one of its modules; listing it again
-              under the title would repeat it. */}
-          <p className="mt-5 text-sm font-semibold tracking-wide text-white/85">
-            {current.modules.filter((m) => m !== current.name).join("  ·  ")}
-          </p>
+          {/* The modules as chips in the node's colour. The core's own name
+              is one of its modules; listing it again would repeat it. */}
+          <ul className="mt-5 flex flex-wrap gap-2">
+            {current.modules
+              .filter((m) => m !== current.name)
+              .map((m) => (
+                <li
+                  key={m}
+                  className="rounded-full border px-3 py-1 text-xs font-semibold text-white"
+                  style={{ borderColor: `${current.color}66`, backgroundColor: `${current.color}1f` }}
+                >
+                  {m}
+                </li>
+              ))}
+          </ul>
+          <ul className="mt-6 grid gap-2.5">
+            {current.points.map((point) => (
+              <li key={point} className="flex items-center gap-3 text-[0.95rem] font-semibold text-white">
+                <span
+                  aria-hidden
+                  className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full"
+                  style={{ color: current.color, backgroundColor: `${current.color}21`, boxShadow: `inset 0 0 0 1px ${current.color}6b` }}
+                >
+                  <Check className="h-3.5 w-3.5" strokeWidth={3} />
+                </span>
+                {point}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        {/* Progress through the tour; each dash also jumps to its point. */}
-        <div className="mt-auto flex gap-1.5 pt-8">
-          {NODES.map((node, i) => (
-            <button
-              key={node.name}
-              type="button"
-              aria-label={`Show ${node.name}`}
-              aria-current={i === active ? "true" : undefined}
-              onClick={() => select(i)}
-              className="group flex-1 py-2 focus-visible:outline-none"
-            >
-              <span
-                className={cn(
-                  "block h-[3px] rounded-full transition-colors duration-300 group-focus-visible:ring-2 group-focus-visible:ring-cyan-400",
-                  i === active ? "bg-cyan-400" : "bg-white/15 group-hover:bg-white/35"
-                )}
-              />
-            </button>
-          ))}
+        {/* One dash per department, in its colour when shown; each jumps to
+            it. The AI Copilot is the center, not a step. */}
+        <div className="mt-auto pt-8">
+          <div className="flex gap-1.5">
+            {DEPARTMENTS.map((dept, n) => {
+              const i = n + 1;
+              return (
+                <button
+                  key={dept.name}
+                  type="button"
+                  aria-label={`Show ${dept.name}`}
+                  aria-current={i === active ? "true" : undefined}
+                  onClick={() => select(i)}
+                  className="group flex-1 py-2 focus-visible:outline-none"
+                >
+                  <span
+                    className={cn(
+                      "block h-[3px] rounded-full transition-colors duration-300 group-focus-visible:ring-2 group-focus-visible:ring-cyan-400",
+                      i !== active && "bg-white/15 group-hover:bg-white/35"
+                    )}
+                    style={i === active ? { backgroundColor: dept.color } : undefined}
+                  />
+                </button>
+              );
+            })}
+          </div>
+          <p className="mt-2 text-xs text-white/50">Tap a department, or the AI Copilot in the middle, to explore.</p>
         </div>
       </div>
     </div>
