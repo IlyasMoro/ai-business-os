@@ -896,27 +896,16 @@
   }
 }
 
-/* ── Footer: full width dark glass with the closing call to action ── */
+/* ── Footer: the closing pitch, then brand and titled link columns ── */
 .foot {
   margin-top: 9rem;
-  padding: 4.2rem 4vw 2.2rem;
+  padding: 4.6rem 4vw 2.2rem;
 }
 .footIn {
   max-width: 1180px;
   margin: 0 auto;
 }
-.footTop {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 2.4rem;
-}
-.footMark {
-  filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 10px rgba(34, 211, 238, 0.45));
-}
 .footH {
-  margin-top: 2rem;
   font-family: var(--font-display);
   font-weight: 800;
   text-transform: uppercase;
@@ -935,63 +924,115 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 22px;
+  gap: 12px;
   margin-top: 1.6rem;
 }
 .footCta .btn {
-  padding: 12px 30px;
+  padding: 13px 30px;
   font-size: 0.86rem;
 }
-.footNav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.95rem;
-}
-.footContactRow {
-  padding-top: 0.9rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
-  text-align: center;
-}
-.footContact {
+/* The quieter second choice: an outlined pill. */
+.footGhost {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.8rem;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.footGhost svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.15s ease;
+}
+.footGhost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+.footGhost:hover svg {
+  transform: translateX(3px);
+}
+.footGhost:focus-visible,
+.footLink:focus-visible,
+.footBottomLinks a:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+}
+.footMain {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 2.6rem;
+  margin-top: 3.6rem;
+  padding-top: 2.6rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+.footTag {
+  margin-top: 1rem;
+  max-width: 19rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.6);
+}
+.footCols {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2rem 1.6rem;
+}
+.footColH {
+  font-size: 0.74rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--cyan);
-  transition: color 0.15s ease;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
 }
-.footContact:hover {
-  color: #fff;
-}
-.footLinks {
+.footColList {
   display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 0.95rem 2.6rem;
+  gap: 0.7rem;
+  margin-top: 1rem;
 }
 .footLink {
-  width: fit-content;
-  padding-bottom: 3px;
-  font-size: 0.86rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.88);
-  background: linear-gradient(var(--cyan), var(--cyan)) left bottom / 0 2px no-repeat;
-  transition: color 0.15s ease, background-size 0.25s ease;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  transition: color 0.15s ease;
 }
 .footLink:hover {
   color: #fff;
-  background-size: 100% 2px;
 }
 .footBottom {
-  margin-top: 2.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.8rem;
+  margin-top: 2.8rem;
   padding-top: 1.4rem;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-size: 0.8rem;
   color: rgba(255, 255, 255, 0.5);
+}
+.footBottomLinks {
+  display: flex;
+  gap: 0.6rem;
+}
+.footBottomLinks a {
+  transition: color 0.15s ease;
+}
+.footBottomLinks a:hover {
+  color: #fff;
+}
+@media (max-width: 900px) {
+  .footMain {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .footCols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ── Smaller screens ── */
