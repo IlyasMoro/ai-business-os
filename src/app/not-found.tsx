@@ -26,12 +26,12 @@ export default function NotFound() {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <span>
-              <Link href="/" className={cn(styles.btnDark, "px-[28px] py-3 text-[0.95rem]")}>
+              <Link href="/" className={cn(styles.btnDark, "px-[26px] py-2.5 text-[0.95rem]")}>
                 Back to home
               </Link>
             </span>
             <span>
-              <Link href="/pricing" className={cn(styles.btn, "px-[28px] py-3 text-[0.95rem]")}>
+              <Link href="/pricing" className={cn(styles.btn, "px-[26px] py-2.5 text-[0.95rem]")}>
                 See pricing
               </Link>
             </span>

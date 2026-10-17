@@ -148,7 +148,7 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  padding: 0.85rem 1.6rem;
+  padding: 0.7rem 1.5rem;
   font-size: 0.95rem;
   font-weight: 600;
   color: #fff;
@@ -803,7 +803,7 @@
 }
 .planBtn {
   margin-top: 1.6rem;
-  padding: 0.85rem 1rem;
+  padding: 0.65rem 1rem;
   font-size: 0.95rem;
 }
 .planList {
@@ -930,7 +930,7 @@
   margin-top: 1.6rem;
 }
 .footCta .btn {
-  padding: 12px 28px;
+  padding: 9px 26px;
   font-size: 0.95rem;
 }
 /* The quieter second choice: an outlined pill. */
@@ -939,7 +939,7 @@
   align-items: center;
   gap: 0.45rem;
   border-radius: 999px;
-  padding: 12px 24px;
+  padding: 9px 22px;
   font-size: 0.95rem;
   font-weight: 600;
   color: #fff;
