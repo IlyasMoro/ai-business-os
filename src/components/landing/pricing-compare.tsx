@@ -68,7 +68,7 @@ export function PricingCompare() {
                 {/* The wrapper hides it on phones: the button class sets its
                     own display, which would beat a utility on the link. */}
                 <span className="mt-3 hidden sm:block">
-                  <Link href="/register" className={cn(plan.popular ? styles.btn : styles.btnDark, "px-4 py-2 text-[11px]")}>
+                  <Link href="/register" className={cn(plan.popular ? styles.btn : styles.btnDark, "px-4 py-2 text-[12.5px]")}>
                     Start trial
                   </Link>
                 </span>
@@ -84,7 +84,7 @@ export function PricingCompare() {
                 <span className="block text-[11px] font-semibold text-[#8a93a3] sm:inline sm:text-xs"> /mo</span>
               </span>
               <span className="mt-3 hidden sm:block">
-                <a href="#enterprise" className={cn(styles.btnDark, "px-4 py-2 text-[11px]")}>
+                <a href="#enterprise" className={cn(styles.btnDark, "px-4 py-2 text-[12.5px]")}>
                   Build yours
                 </a>
               </span>

@@ -49,7 +49,9 @@
   position: relative;
 }
 
-/* ── Buttons: cyan for the main action, blue tinted black for the rest ── */
+/* ── Buttons: the trial is cyan on dark surfaces and black on white ones
+   (the nav bar's glossy pill). Every button is sentence case; capitals
+   are for titles only. ── */
 .btn,
 .btnDark {
   display: inline-flex;
@@ -57,9 +59,8 @@
   justify-content: center;
   gap: 0.5rem;
   border-radius: 999px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.005em;
   transition: filter 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 .btn {
@@ -694,11 +695,9 @@
 }
 .cycleLink {
   border-radius: 999px;
-  padding: 7px 14px;
-  font-size: 0.74rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  padding: 7px 16px;
+  font-size: 0.86rem;
+  font-weight: 700;
   color: #fff;
   white-space: nowrap;
   transition: background 0.15s ease, color 0.15s ease;
@@ -805,7 +804,7 @@
 .planBtn {
   margin-top: 1.6rem;
   padding: 0.85rem 1rem;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
 }
 .planList {
   margin-top: 1.8rem;
@@ -931,8 +930,8 @@
   margin-top: 1.6rem;
 }
 .footCta .btn {
-  padding: 13px 30px;
-  font-size: 0.86rem;
+  padding: 12px 28px;
+  font-size: 0.95rem;
 }
 /* The quieter second choice: an outlined pill. */
 .footGhost {
@@ -941,7 +940,7 @@
   gap: 0.45rem;
   border-radius: 999px;
   padding: 12px 24px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #fff;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
