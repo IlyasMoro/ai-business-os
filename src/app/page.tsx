@@ -79,12 +79,13 @@ export default function Home() {
           />
           <div className={styles.heroIn}>
             <h1 className={cn(styles.heroH, "animate-fade-up animate-fade-up-2")}>
-              <span className={styles.heroLine}>Run your business.</span>{" "}
-              <span className={styles.heroLine}>Let AI handle the busywork.</span>
+              <span className={styles.heroLine}>Run your business. Let AI handle the busywork,</span>{" "}
+              <span className={styles.heroLine}>with your approval on everything that matters.</span>
             </h1>
+            {/* The approval promise lives in the headline, so the paragraph doesn't repeat it. */}
             <p className={cn(styles.heroSub, "animate-fade-up animate-fade-up-3")}>
               CRM, sales, inventory, accounting, HR, payroll, invoicing, projects and support in one place, with an AI
-              assistant that looks up real data, proposes actions, and only acts once you approve.
+              assistant that looks up real data and proposes the next step for you.
             </p>
             <p className={cn(styles.heroNote, "animate-fade-up animate-fade-up-4")}>
               14 day free trial &nbsp;·&nbsp; No credit card required

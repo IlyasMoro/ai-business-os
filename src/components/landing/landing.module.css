@@ -226,8 +226,9 @@
 .heroH {
   font-family: var(--font-display);
   font-weight: 800;
-  /* Sentence case reads faster than capitals; two large lines, split at the full stop. */
-  font-size: clamp(2.5rem, 6vw, 5rem);
+  /* Sentence case reads faster than capitals. Two lines on laptops and
+     desktops, split at the comma, each sized to fit on one line. */
+  font-size: clamp(2rem, 3.8vw, 3.6rem);
   text-wrap: balance;
   line-height: 1.06;
   letter-spacing: -0.005em;
