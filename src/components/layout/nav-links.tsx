@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type MouseEvent } from "react";
 import Link from "next/link";
+import { CopilotMark } from "@/components/brand/copilot-mark";
 import { usePathname } from "next/navigation";
 import { ChevronRight, Lock, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -248,14 +249,27 @@ export function NavLinks({
             : "text-slate-100 hover:bg-white/[0.07] hover:text-white light:text-slate-800 light:hover:bg-slate-900/5 light:hover:text-slate-950",
         )}
       >
-        <item.icon
-          className={cn(
-            "h-4 w-4 shrink-0 transition-colors",
-            active
-              ? "text-cyan-300 light:text-cyan-700"
-              : "text-slate-300 group-hover/link:text-white light:text-slate-600 light:group-hover/link:text-slate-800",
-          )}
-        />
+        {/* The AI Copilot keeps its own brand mark exactly as designed. */}
+        {item.icon === CopilotMark ? (
+          <item.icon
+            className={cn(
+              "h-4 w-4 shrink-0 transition-colors",
+              active
+                ? "text-cyan-300 light:text-cyan-700"
+                : "text-slate-300 group-hover/link:text-white light:text-slate-600 light:group-hover/link:text-slate-800",
+            )}
+          />
+        ) : (
+          <item.icon
+            className={cn(
+              "h-[18px] w-[18px] shrink-0 [stroke-width:1.75] transition-[color,filter,transform] duration-200",
+              // Neon at rest, brighter when open or hovered; flat on the light theme.
+              active
+                ? "text-cyan-200 drop-shadow-[0_0_7px_rgb(34_211_238/0.95)] light:text-cyan-700 light:drop-shadow-none"
+                : "text-cyan-300/80 drop-shadow-[0_0_4px_rgb(34_211_238/0.45)] group-hover/link:scale-105 group-hover/link:text-cyan-200 group-hover/link:drop-shadow-[0_0_7px_rgb(34_211_238/0.85)] light:text-cyan-700/80 light:drop-shadow-none",
+            )}
+          />
+        )}
         {collapsed ? null : (
           <>
             <span className="min-w-0 flex-1 truncate">{item.label}</span>
@@ -332,7 +346,13 @@ export function NavLinks({
               )}
             >
               <group.icon
-                className={cn("h-4 w-4 shrink-0 transition-colors", lit ? "text-(--c)" : "text-slate-500 group-hover/heading:text-(--c) light:text-slate-400")}
+                className={cn(
+                  "h-[18px] w-[18px] shrink-0 [stroke-width:1.75] transition-[color,filter,transform] duration-200",
+                  // Each section glows in its own colour: soft at rest, bright when lit.
+                  lit
+                    ? "text-(--c) drop-shadow-[0_0_7px_var(--c)] light:drop-shadow-none"
+                    : "text-[color-mix(in_oklab,var(--c)_72%,transparent)] drop-shadow-[0_0_4px_color-mix(in_oklab,var(--c)_45%,transparent)] group-hover/heading:scale-105 group-hover/heading:text-(--c) group-hover/heading:drop-shadow-[0_0_7px_var(--c)] light:drop-shadow-none",
+                )}
               />
               {collapsed ? null : (
                 <>
