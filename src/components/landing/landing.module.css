@@ -226,21 +226,22 @@
 .heroH {
   font-family: var(--font-display);
   font-weight: 800;
-  /* Sentence case reads faster than capitals. Two lines on laptops and
+  /* Capitals, like the section titles (.title). Two lines on laptops and
      desktops, split at the comma, each sized to fit on one line. */
-  font-size: clamp(2rem, 3.8vw, 3.6rem);
+  text-transform: uppercase;
+  font-size: clamp(1.9rem, 3.1vw, 3.15rem);
   text-wrap: balance;
-  line-height: 1.06;
-  letter-spacing: -0.005em;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
   color: #fff;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35), 0 4px 30px rgba(0, 0, 0, 0.6);
 }
-/* Each half of the headline is its own line on wider screens; phones wrap
-   normally. */
+/* Each half of the headline is its own line on laptops and up; tablets and
+   phones wrap normally. */
 .heroLine {
   display: block;
 }
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .heroLine {
     white-space: nowrap;
   }
@@ -939,12 +940,10 @@
     /* Clears the floating nav bar. */
     padding: 6.5rem 1.25rem 7rem;
   }
-  /* In capitals the headline runs to six lines on a phone. */
+  /* Smaller on a phone so the capitals stay at about five lines. */
   .heroH {
-    text-transform: none;
-    font-size: 1.8rem;
-    line-height: 1.15;
-    letter-spacing: -0.01em;
+    font-size: 1.6rem;
+    line-height: 1.1;
   }
   .heroSub {
     font-size: 1rem;
