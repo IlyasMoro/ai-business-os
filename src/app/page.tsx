@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Download, Lock, ShieldCheck, UserCog } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, Download, Lock, ShieldCheck, UserCog } from "lucide-react";
 import { Reveal } from "@/components/landing/reveal";
 import { SiteHeader } from "@/components/landing/site-header";
 import { LandingFooter } from "@/components/landing/landing-footer";
@@ -17,27 +18,32 @@ import styles from "@/components/landing/landing.module.css";
    Features, the trust panel and the FAQ, closing on a dark glass
    footer. Styles live in components/landing/landing.module.css. */
 
-// Each point restates an answer in faq-data.ts, so the two never disagree.
+// Each point restates an answer in faq-data.ts, so the two never disagree,
+// and links to where a visitor can check it. Kept to about three lines each.
 const TRUST = [
   {
     icon: ShieldCheck,
     title: "AI that asks first",
     text: "Every action the AI Copilot proposes waits for an owner or admin to approve it.",
+    link: { href: "#faq", label: "See how approvals work" },
   },
   {
     icon: Lock,
     title: "Your data stays private",
-    text: "Kept separate from every other company, never sold, and never used to train AI for other customers.",
+    text: "Kept separate from every other company, never sold, and never used to train AI for others.",
+    link: { href: "/privacy", label: "Read the Privacy Policy" },
   },
   {
     icon: UserCog,
     title: "Roles for every user",
-    text: "Employees see the modules they work in, while HR, payroll and accounting stay with owners and admins.",
+    text: "Employees see only their own modules. HR, payroll and accounting stay with owners and admins.",
+    link: { href: "/pricing", label: "Compare plans" },
   },
   {
     icon: Download,
     title: "Export anytime",
-    text: "Export any list as a CSV file or download a full backup, and cancel from the Billing page.",
+    text: "Export any list as a CSV file or download a full backup. Your data is never locked in.",
+    link: { href: "#faq", label: "How backups work" },
   },
 ];
 
@@ -139,6 +145,7 @@ export default function Home() {
         <section className={styles.section}>
           <Reveal className={cn(styles.glass, styles.trustbox)}>
             <p className={styles.trustEyebrow}>What you can count on</p>
+            <h2 className={styles.trustTitle}>Built to earn your trust</h2>
             <div className={styles.trustGrid}>
               {TRUST.map((item) => (
                 <div key={item.title} className={styles.trust}>
@@ -147,6 +154,10 @@ export default function Home() {
                   </span>
                   <p className={styles.trustT}>{item.title}</p>
                   <p className={styles.trustD}>{item.text}</p>
+                  <Link href={item.link.href} className={styles.trustLink}>
+                    {item.link.label}
+                    <ArrowRight aria-hidden />
+                  </Link>
                 </div>
               ))}
             </div>
