@@ -118,6 +118,9 @@
   width: 58px;
   height: 58px;
   max-width: none;
+  /* The mark sits 7px below the middle of its 128px canvas (rows 35 to
+     107); lift it by that share so it centres in the badge. */
+  transform: translateY(-5.5%);
   filter: brightness(1.9) saturate(1.2);
 }
 .navLink {
