@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { LogoBadge } from "@/components/brand/logo-badge";
 import { cn } from "@/lib/utils";
 import { NavLinks } from "./nav-links";
 import { UserMenu } from "./user-menu";
@@ -58,7 +57,8 @@ export function Sidebar({
     >
       <div className={cn("flex h-16 items-center", collapsed ? "justify-center px-2" : "px-5")}>
         <Link href="/dashboard" aria-label="AIBOS dashboard" className="flex items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400">
-          {collapsed ? <Image src="/logo-mark.png" alt="" width={40} height={40} className="-m-1" /> : <Logo />}
+          {/* The same lockup as the landing page: the mark in its dark badge. */}
+          <LogoBadge iconOnly={collapsed} />
         </Link>
       </div>
       <NavLinks

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
+import { LogoBadge } from "@/components/brand/logo-badge";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles, Workflow, LayoutGrid, CircleHelp, Tag, Mail, LogIn, type LucideIcon } from "lucide-react";
 import { LinkButton } from "@/components/ui/button";
@@ -91,10 +91,7 @@ export function SiteHeader({ light = false }: { light?: boolean }) {
             aria-label="AIBOS home"
             className="flex shrink-0 items-center gap-2.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
           >
-            <span className={styles.navBadge} aria-hidden>
-              <Image src="/logo-mark.png" alt="" width={64} height={64} priority />
-            </span>
-            <span className="font-display text-[15px] font-extrabold tracking-[0.18em] text-[#0b0f17]">AIBOS</span>
+            <LogoBadge className="[&>span:last-child]:text-[#0b0f17]" />
           </Link>
 
           <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">

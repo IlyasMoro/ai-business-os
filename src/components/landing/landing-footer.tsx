@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { LogoBadge } from "@/components/brand/logo-badge";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
@@ -71,10 +71,7 @@ export function LandingFooter({ className }: { className?: string }) {
               aria-label="AIBOS home"
               className="inline-flex items-center gap-2.5 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             >
-              <span className={styles.navBadge} aria-hidden>
-                <Image src="/logo-mark.png" alt="" width={64} height={64} />
-              </span>
-              <span className="font-display text-[15px] font-extrabold tracking-[0.18em] text-white">AIBOS</span>
+              <LogoBadge onDark />
             </Link>
             <p className={styles.footTag}>Every department of your business in one place, with an AI that asks before it acts.</p>
           </div>
