@@ -1,18 +1,19 @@
 "use client";
 
-import { useRef, useState, type CSSProperties } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
-import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { FEATURES } from "@/components/landing/feature-bento";
 import { cn } from "@/lib/utils";
 import styles from "@/components/landing/landing.module.css";
 
 /* The landing page features as one square cornered split panel that slides
-   between them: a pale left half with a real screenshot of the module, a
-   dark glass right half with the copy and the feature's live preview.
-   Arrows, dots, the corner square, a horizontal swipe and the keyboard
-   arrow keys all move it. Slides out of view are inert, so focus and
-   screen readers only ever reach the visible one. */
+   between them: a soft navy left half with a real screenshot of the module,
+   slightly tilted and running off the edge, and a dark glass right half
+   with the copy and three points. The arrows sit beside the slide count;
+   the dots, a horizontal swipe and the keyboard arrow keys also move it.
+   Slides out of view are inert, so focus and screen readers only ever
+   reach the visible one. */
 
 const SWIPE_MIN = 40;
 
@@ -73,7 +74,7 @@ export function FeatureSlider() {
                       alt={feature.shot.alt}
                       width={1888}
                       height={1400}
-                      sizes="(min-width: 760px) 560px, 100vw"
+                      sizes="(min-width: 760px) 760px, 140vw"
                     />
                   </div>
                 </div>
@@ -82,9 +83,16 @@ export function FeatureSlider() {
                     <p className={styles.slideEyebrow}>{feature.label}</p>
                     <h3 className={styles.slideTitle}>{feature.name}</h3>
                     <p className={styles.slideDesc}>{feature.description}</p>
-                    <div className={styles.slidePreview} style={{ "--accent": feature.color } as CSSProperties}>
-                      {feature.preview}
-                    </div>
+                    <ul className={styles.slidePoints}>
+                      {feature.points.map((point) => (
+                        <li key={point}>
+                          <span className={styles.slideTick} aria-hidden>
+                            <Check />
+                          </span>
+                          {point}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                   <p className={styles.slideCount}>
                     <b>{String(i + 1).padStart(2, "0")}</b> / {String(count).padStart(2, "0")}
@@ -101,9 +109,6 @@ export function FeatureSlider() {
       </button>
       <button type="button" onClick={next} className={cn(styles.arrow, styles.arrowNext)} aria-label="Next feature">
         <ArrowRight className="h-5 w-5" />
-      </button>
-      <button type="button" onClick={next} className={styles.corner} aria-label="Next feature">
-        <ChevronRight className="h-5 w-5" />
       </button>
       </div>
 
